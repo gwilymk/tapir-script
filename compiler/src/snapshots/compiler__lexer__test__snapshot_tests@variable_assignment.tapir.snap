@@ -1,0 +1,11 @@
+---
+source: crates/tapir-script/compiler/src/lexer.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/snapshot_tests/lexer/variable_assignment.tapir
+---
+[
+  Ok(Identifier("my_property")),
+  Ok(Assign),
+  Ok(Fix("33.6")),
+  Ok(Semicolon),
+]

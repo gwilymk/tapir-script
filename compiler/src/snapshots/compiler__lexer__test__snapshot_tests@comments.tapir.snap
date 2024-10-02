@@ -1,0 +1,11 @@
+---
+source: crates/tapir-script/compiler/src/lexer.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/snapshot_tests/lexer/comments.tapir
+---
+[
+  Ok(KeywordWait),
+  Ok(Semicolon),
+  Ok(KeywordWait),
+  Ok(Semicolon),
+]

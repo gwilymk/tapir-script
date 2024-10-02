@@ -1,0 +1,12 @@
+---
+source: crates/tapir-script/compiler/src/lexer.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/snapshot_tests/lexer/variable_declaration.tapir
+---
+[
+  Ok(KeywordVar),
+  Ok(Identifier("x")),
+  Ok(Assign),
+  Ok(Integer("3")),
+  Ok(Semicolon),
+]

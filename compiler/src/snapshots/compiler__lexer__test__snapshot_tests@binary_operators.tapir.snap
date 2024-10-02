@@ -1,0 +1,24 @@
+---
+source: crates/tapir-script/compiler/src/lexer.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/snapshot_tests/lexer/binary_operators.tapir
+---
+[
+  Ok(KeywordVar),
+  Ok(Identifier("foo")),
+  Ok(Assign),
+  Ok(LParen),
+  Ok(Integer("3")),
+  Ok(OperatorAdd),
+  Ok(Fix("5.5")),
+  Ok(OperatorRealDiv),
+  Ok(Integer("2")),
+  Ok(OperatorMul),
+  Ok(LParen),
+  Ok(Integer("1")),
+  Ok(OperatorSub),
+  Ok(Integer("3")),
+  Ok(RParen),
+  Ok(RParen),
+  Ok(Semicolon),
+]

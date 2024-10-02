@@ -6,6 +6,12 @@ use serde::Serialize;
 #[derive(Clone, Debug, Copy, PartialEq, Eq, Serialize)]
 pub struct FileId(usize);
 
+impl FileId {
+    pub fn new(id: usize) -> Self {
+        Self(id)
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Span {
     file_id: FileId,
@@ -24,7 +30,7 @@ impl Span {
     }
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Serialize)]
 pub struct LexicalError {
     pub kind: LexicalErrorKind,
     pub span: Span,
@@ -52,7 +58,7 @@ impl LexicalErrorKind {
     }
 }
 
-#[derive(Logos, Clone, Debug, PartialEq)]
+#[derive(Logos, Clone, Debug, PartialEq, Serialize)]
 #[logos(skip r"[ \t\n\f\r]+", skip r"#.*\n?", error = LexicalErrorKind)]
 pub enum Token<'input> {
     #[token("wait")]

@@ -1,0 +1,5 @@
+# this is a comment
+wait;
+wait; # comment afterwards, and wait;
+
+# this is another comment without a new line
