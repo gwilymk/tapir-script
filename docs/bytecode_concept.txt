@@ -1,0 +1,130 @@
+push 3.5
+set_prop 0
+
+push 4.2
+set_prop 1
+
+spawn change_sprite_offset 0
+
+wait
+
+push 0
+
+loop:
+wait
+
+get_prop 0
+push 1.
+add
+set_prop 0
+
+get_prop 2
+push 1
+add
+set_prop 2
+
+dup 0      // counter
+push 6
+gt
+jump_if_false line_86
+drop 1
+jump loop_end
+
+line_86:
+drop 1
+dup 0       // counter
+frame
+call_rust 0 // my_cool_rust_fn
+
+// stack = ..., counter, alpha, beta
+dup 0       // beta
+push 0.
+gt
+jump_if_false 
+// stack = ..., counter, alpha, beta, beta > 0.
+dup 2       // alpha
+
+
+loop_end:
+
+dup 0     // counter
+trigger 0 // Bar(...)
+push 3
+trigger 0 // Bar(...)
+
+drop 1    // stack now empty
+ret
+
+flash:
+push 20
+push 1 // true
+set_prop 4 // is_taking_damage
+
+loop_99:
+
+frame
+rshift_const 2  // automatically removed the division. Also not quite C division, div_floor
+band_const 1    // 
+push 2
+add
+...
+
+drop 1
+ret
+
+
+my_function:
+// stack = argument
+push 3
+// stack = argument, my_var
+
+dup 1
+// stack = argument, my_var, argument
+push 22
+// stack = argument, my_var, argument, 22
+add
+// stack = argument, my_var, argument + 22
+dup 1
+// stack = argument, my_var, argument + 22, my_var
+ret 2
+
+
+// need to track the offset here
+event TakeDamage:
+push 3.5
+gt
+jump_if_false line_123
+drop 1
+call flash
+
+line_123:
+drop 1
+ret
+
+
+
+
+Instruction format:
+
+8 bit | 8 bit | 8 bit? | 8 bit?  |
+----------------------------------
+push8 | value |
+push24| value                    |
+call  |       | offset           |
+jump  |       | offset           |
+jeq   |       | offset           |
+spawn | args  | offset           |
+ret   |       | args   | returns |
+trigger|offset|
+call_rust|offset|
+finish|
+dup   | offset|
+drop  | amount|
+get_prop|index|
+set_prop|index|
+frame |
+wait  |
+arith | add/sub/mul/div... |
+arithfix| add/sub/mul/div... |
+cmp   |eq/gt/lt/...|
+nop   |
