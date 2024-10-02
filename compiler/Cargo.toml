@@ -1,0 +1,19 @@
+[package]
+name = "compiler"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ariadne = { version = "0.4.1", features = ["auto-color"] }
+lalrpop-util = "0.21.0"
+logos = "0.14.2"
+
+[dev-dependencies]
+insta = { version = "1.40.0", features = ["ron", "glob"] }
+
+[build-dependencies]
+lalrpop = "0.21.0"
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3
