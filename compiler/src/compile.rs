@@ -7,6 +7,7 @@ use crate::{
 };
 
 mod symtab_visitor;
+mod type_visitor;
 
 #[derive(Clone, Debug)]
 pub struct Property {
@@ -21,10 +22,14 @@ pub struct CompileSettings {
 
 pub fn compile(mut ast: Vec<Statement>, settings: &CompileSettings) -> Result<(), Message> {
     // build the symbol table
-    let mut sym_tab_visitor = SymTabVisitor::new(settings);
+    let symtab = {
+        let mut sym_tab_visitor = SymTabVisitor::new(settings);
 
-    // resolve all the identifiers
-    ast.visit(&mut sym_tab_visitor)?;
+        // resolve all the identifiers
+        ast.visit(&mut sym_tab_visitor)?;
+
+        sym_tab_visitor.into_symtab()
+    };
 
     Ok(())
 }

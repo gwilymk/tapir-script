@@ -1,6 +1,9 @@
 use serde::Serialize;
 
-use crate::tokens::{self, FileId, LexicalError, LexicalErrorKind, Span};
+use crate::{
+    tokens::{self, FileId, LexicalError, LexicalErrorKind, Span},
+    types::Type,
+};
 
 pub(crate) mod format;
 
@@ -91,6 +94,10 @@ impl Message {
 #[derive(Clone, Debug, Serialize)]
 pub enum CompilerErrorKind {
     UnknownVariable(String),
+    TypeError { expected: Type, actual: Type },
+    UnknownType(String),
+    BinaryOperatorTypeError { lhs_type: Type, rhs_type: Type },
+    InvalidTypeForBinaryOperator { type_: Type },
 }
 
 impl CompilerErrorKind {

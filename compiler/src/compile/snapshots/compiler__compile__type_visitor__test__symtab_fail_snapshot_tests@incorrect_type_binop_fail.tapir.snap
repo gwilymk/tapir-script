@@ -1,0 +1,12 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_type_binop_fail.tapir
+---
+Error: Left hand side has type int but right hand side has type fix
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_type_binop_fail.tapir:1:1]
+   │
+ 1 │ var x = 3 * 3.4;
+   │         ───┬───  
+   │            ╰───── Mismatching types on binary operator
+───╯

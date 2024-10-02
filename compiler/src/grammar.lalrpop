@@ -2,9 +2,11 @@ use crate::{
     tokens::{
         FileId, LexicalError, LexicalErrorKind, Token
     },
-    ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator},
+    ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator, Fix},
     Message,
 };
+
+use num_traits::Num;
 
 grammar<'input>(file_id: FileId);
 
@@ -79,8 +81,13 @@ Term: Box<Expression<'input>> = {
     <start: @L> <error: !> <end: @R> => ExpressionKind::Error(Message::from_lalrpop(error.error, file_id)).with_span(file_id, start, end),
 }
 
-Num: Box<Expression<'input>> =
+Num: Box<Expression<'input>> = {
     <start: @L> <value: integer> <end: @R> => match value.parse::<i32>() {
         Ok(value) => ExpressionKind::Integer(value).with_span(file_id, start, end),
         Err(e) => LexicalErrorKind::from(e).with_span(file_id, start, end).into(),
-    };
+    },
+    <start: @L> <value: fix> <end: @R> => match Fix::from_str_radix(value, 10) {
+        Ok(value) => ExpressionKind::Fix(value).with_span(file_id, start, end),
+        Err(e) => LexicalErrorKind::from(e).with_span(file_id, start, end).into(),
+    }
+}

@@ -26,6 +26,10 @@ impl SymTabVisitor {
                 .collect(),
         }
     }
+
+    pub fn into_symtab(self) -> SymTab {
+        self.symtab
+    }
 }
 
 impl Visitor<()> for SymTabVisitor {
@@ -106,6 +110,23 @@ impl SymTab {
     fn new_symbol(&mut self, ident: String, span: Span) -> SymbolId {
         self.symbol_names.push((ident, Some(span)));
         SymbolId(self.symbol_names.len() - 1)
+    }
+
+    pub(crate) fn name_for_symbol(&self, symbol_id: SymbolId) -> String {
+        self.symbol_names[symbol_id.0].0.clone()
+    }
+
+    pub(crate) fn span_for_symbol(&self, symbol_id: SymbolId) -> Span {
+        self.symbol_names[symbol_id.0]
+            .1
+            .expect("Symbol should have a span")
+    }
+
+    pub fn all_symbols(&self) -> impl Iterator<Item = (&'_ str, SymbolId)> + '_ {
+        self.symbol_names
+            .iter()
+            .enumerate()
+            .map(|(i, (name, _span))| (name.as_ref(), SymbolId(i)))
     }
 }
 

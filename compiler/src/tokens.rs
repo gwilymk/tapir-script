@@ -1,6 +1,7 @@
 use std::num::ParseIntError;
 
 use logos::Logos;
+use num_traits::ParseFloatError;
 use serde::Serialize;
 
 #[derive(Clone, Debug, Copy, Hash, PartialEq, Eq, Serialize)]
@@ -39,6 +40,7 @@ pub struct LexicalError {
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum LexicalErrorKind {
     InvalidNumber(#[serde(skip)] ParseIntError),
+    InvalidFix,
     #[default]
     InvalidToken,
 }
@@ -46,6 +48,12 @@ pub enum LexicalErrorKind {
 impl From<ParseIntError> for LexicalErrorKind {
     fn from(value: ParseIntError) -> Self {
         Self::InvalidNumber(value)
+    }
+}
+
+impl From<ParseFloatError> for LexicalErrorKind {
+    fn from(_: ParseFloatError) -> Self {
+        Self::InvalidFix
     }
 }
 

@@ -1,0 +1,2 @@
+int_prop = 3;
+int_prop = int_prop + 2;

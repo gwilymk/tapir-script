@@ -1,5 +1,6 @@
 use crate::{
     tokens::{FileId, LexicalError, Span},
+    types::Type,
     Message,
 };
 
@@ -11,6 +12,8 @@ pub use visitor::{VResult, Visitable, Visitor};
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize)]
 pub struct SymbolId(pub usize);
+
+pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Statement<'input> {
@@ -71,6 +74,7 @@ impl<'input> From<LexicalError> for Box<Expression<'input>> {
 #[derive(Clone, Default, Debug, Serialize)]
 pub enum ExpressionKind<'input> {
     Integer(i32),
+    Fix(#[serde(skip)] Fix),
     Variable(&'input str),
     BinaryOperation {
         lhs: Box<Expression<'input>>,
@@ -103,4 +107,18 @@ pub enum BinaryOperator {
     Mod,
     RealDiv,
     RealMod,
+}
+
+impl BinaryOperator {
+    pub fn can_handle_type(&self, lhs_type: Type) -> bool {
+        match self {
+            BinaryOperator::Add
+            | BinaryOperator::Sub
+            | BinaryOperator::Mul
+            | BinaryOperator::Div
+            | BinaryOperator::Mod
+            | BinaryOperator::RealDiv
+            | BinaryOperator::RealMod => matches!(lhs_type, Type::Fix | Type::Int),
+        }
+    }
 }

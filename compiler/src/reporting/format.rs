@@ -125,6 +125,9 @@ fn lexical_error_report(
         LexicalErrorKind::InvalidToken => {
             build_error_report(span).with_label(Label::new(span).with_message("Invalid token"))
         }
+        LexicalErrorKind::InvalidFix => {
+            build_error_report(span).with_label(Label::new(span).with_message("Invalid fixnum"))
+        }
     }
 }
 
@@ -136,5 +139,23 @@ fn compiler_error_report(
         CompilerErrorKind::UnknownVariable(var) => build_error_report(span)
             .with_label(Label::new(span).with_message("Unknown variable"))
             .with_message(format!("Unknown variable '{var}'")),
+        CompilerErrorKind::TypeError { expected, actual } => build_error_report(span)
+            .with_label(Label::new(span).with_message("Incorrect type"))
+            .with_message(format!(
+                "Incorrect type, expected {expected} but got {actual}",
+            )),
+        CompilerErrorKind::UnknownType(var) => build_error_report(span)
+            .with_label(Label::new(span).with_message("Unknown type for variable"))
+            .with_message(format!("Unknown type for variable '{var}'")),
+        CompilerErrorKind::BinaryOperatorTypeError { lhs_type, rhs_type } => {
+            build_error_report(span)
+                .with_label(Label::new(span).with_message("Mismatching types on binary operator"))
+                .with_message(format!(
+                    "Left hand side has type {lhs_type} but right hand side has type {rhs_type}"
+                ))
+        }
+        CompilerErrorKind::InvalidTypeForBinaryOperator { type_ } => build_error_report(span)
+            .with_label(Label::new(span).with_message("Binary operator cannot handle this type"))
+            .with_message(format!("Binary operator cannot items of type {type_}")),
     }
 }

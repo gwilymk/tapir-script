@@ -1,5 +1,7 @@
 use std::mem;
 
+use agb_fixnum::Num;
+
 use crate::{tokens::Span, Message};
 
 use super::{BinaryOperator, Expression, ExpressionKind, Statement, StatementKind, SymbolId};
@@ -15,6 +17,10 @@ where
     T: Default,
     Self: Sized,
 {
+    fn visit_expression_finish(&mut self, _expression: &mut Expression<'_>) -> VResult<T> {
+        Ok(T::default())
+    }
+
     fn visit_statement_error<'input>(&mut self, error: Message) -> VResult<StatementKind<'input>> {
         Ok(StatementKind::Error(error))
     }
@@ -47,6 +53,14 @@ where
 
     fn visit_integer<'input>(&mut self, i: i32, _span: Span) -> VResult<ExpressionKind<'input>> {
         Ok(ExpressionKind::Integer(i))
+    }
+
+    fn visit_fix<'input>(
+        &mut self,
+        fix: Num<i32, 8>,
+        _span: Span,
+    ) -> VResult<ExpressionKind<'input>> {
+        Ok(ExpressionKind::Fix(fix))
     }
 
     fn visit_variable<'input>(
@@ -154,6 +168,7 @@ where
     fn visit(&mut self, v: &mut impl Visitor<T>) -> VResult<T> {
         self.kind = match mem::take(&mut self.kind) {
             ExpressionKind::Integer(i) => v.visit_integer(i, self.span)?,
+            ExpressionKind::Fix(num) => v.visit_fix(num, self.span)?,
             ExpressionKind::Variable(ident) => v.visit_variable(ident, self.span)?,
             ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
                 v.visit_binop(lhs, operator, rhs, self.span)?
@@ -164,6 +179,6 @@ where
             ExpressionKind::Symbol(symbol_id) => v.visit_symbol(symbol_id, self.span)?,
         };
 
-        Ok(T::default())
+        v.visit_expression_finish(self)
     }
 }

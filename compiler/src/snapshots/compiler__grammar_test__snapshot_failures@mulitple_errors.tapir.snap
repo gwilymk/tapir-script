@@ -21,28 +21,28 @@ Error: number too large to fit in target type
    │ 
    │ Note: Larger than maximum positive number which is 2147483647
 ───╯
-Error: Unexpected token Semicolon, expected one of identifier, integer, "("
+Error: Unexpected token Semicolon, expected one of identifier, integer, fix, "("
    ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir:1:1]
    │
  4 │ x = 3 * ;
    │         ┬  
    │         ╰── Unexpected token
 ───╯
-Error: Unexpected token OperatorRealMod, expected one of identifier, integer, "("
+Error: Unexpected token OperatorRealMod, expected one of identifier, integer, fix, "("
    ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir:1:1]
    │
  5 │ y = %% 2;
    │     ─┬  
    │      ╰── Unexpected token
 ───╯
-Error: Unexpected token RParen, expected one of identifier, integer, "("
+Error: Unexpected token RParen, expected one of identifier, integer, fix, "("
    ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir:1:1]
    │
  7 │ var x = 3 + (2 * ) - 4 +;
    │                  ┬  
    │                  ╰── Unexpected token
 ───╯
-Error: Unexpected token Semicolon, expected one of identifier, integer, "("
+Error: Unexpected token Semicolon, expected one of identifier, integer, fix, "("
    ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir:1:1]
    │
  7 │ var x = 3 + (2 * ) - 4 +;

@@ -1,0 +1,5 @@
+var x = 3;
+var y = x + 2;
+
+var z = 3.2;
+var alpha = 3.2 * z;

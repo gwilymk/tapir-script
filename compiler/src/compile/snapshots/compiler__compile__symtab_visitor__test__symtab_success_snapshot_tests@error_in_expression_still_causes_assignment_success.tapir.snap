@@ -25,6 +25,7 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visit
                 expected: [
                   "identifier",
                   "integer",
+                  "fix",
                   "\"(\"",
                 ],
               )),
