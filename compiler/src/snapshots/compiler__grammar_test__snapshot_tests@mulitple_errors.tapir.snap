@@ -35,3 +35,17 @@ Error: Unexpected token OperatorRealMod, expected one of identifier, integer, "(
    │     ─┬  
    │      ╰── Unexpected token
 ───╯
+Error: Unexpected token RParen, expected one of identifier, integer, "("
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir:1:1]
+   │
+ 7 │ var x = 3 + (2 * ) - 4 +;
+   │                  ┬  
+   │                  ╰── Unexpected token
+───╯
+Error: Unexpected token Semicolon, expected one of identifier, integer, "("
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir:1:1]
+   │
+ 7 │ var x = 3 + (2 * ) - 4 +;
+   │                         ┬  
+   │                         ╰── Unexpected token
+───╯

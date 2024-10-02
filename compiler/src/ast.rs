@@ -1,5 +1,5 @@
 use crate::{
-    tokens::{FileId, LexicalError, LexicalErrorKind, Span},
+    tokens::{FileId, LexicalError, Span},
     Message,
 };
 
@@ -44,7 +44,7 @@ impl<'input> From<LexicalError> for Box<Expression<'input>> {
     fn from(value: LexicalError) -> Self {
         Box::new(Expression {
             span: value.span,
-            kind: ExpressionKind::Error(value.kind),
+            kind: ExpressionKind::Error(Message::from(value)),
         })
     }
 }
@@ -58,7 +58,7 @@ pub enum ExpressionKind<'input> {
         operator: BinaryOperator,
         rhs: Box<Expression<'input>>,
     },
-    Error(LexicalErrorKind),
+    Error(Message),
 }
 
 impl<'input> ExpressionKind<'input> {

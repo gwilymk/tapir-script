@@ -81,14 +81,8 @@ fn collect_errors(statements: &[ast::Statement<'_>]) -> Vec<Message> {
                 gather_errors_in_expression(lhs, errors);
                 gather_errors_in_expression(rhs, errors);
             }
-            ast::ExpressionKind::Error(lexical_error_kind) => {
-                let span = expression.span;
-                errors.push(
-                    lexical_error_kind
-                        .clone()
-                        .with_span(span.file_id, span.start, span.end)
-                        .into(),
-                );
+            ast::ExpressionKind::Error(message) => {
+                errors.push(message.clone());
             }
         }
     }

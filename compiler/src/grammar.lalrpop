@@ -76,6 +76,7 @@ Term: Box<Expression<'input>> = {
     "(" <Expression> ")",
     <Num>,
     <start: @L> <ident: identifier> <end: @R> => ExpressionKind::Variable(ident).with_span(file_id, start, end),
+    <start: @L> <error: !> <end: @R> => ExpressionKind::Error(Message::from_lalrpop(error.error, file_id)).with_span(file_id, start, end),
 }
 
 Num: Box<Expression<'input>> =
