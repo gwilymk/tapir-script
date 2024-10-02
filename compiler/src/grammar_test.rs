@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[test]
-fn snapshot_tests() {
+fn snapshot_success() {
     glob!("snapshot_tests", "grammar/*.tapir", |path| {
         let input = fs::read_to_string(path).unwrap();
 
@@ -24,7 +24,10 @@ fn snapshot_tests() {
             ".**.span" => "[span]",
         });
     });
+}
 
+#[test]
+fn snapshot_failures() {
     glob!("snapshot_tests", "grammar/errors/*.tapir", |path| {
         let input = fs::read_to_string(path).unwrap();
 
@@ -53,7 +56,7 @@ fn snapshot_tests() {
         let error_str = String::from_utf8_lossy(&output);
 
         assert_snapshot!(error_str);
-    })
+    });
 }
 
 fn collect_errors(statements: &[ast::Statement<'_>]) -> Vec<Message> {
