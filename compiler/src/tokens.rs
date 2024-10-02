@@ -38,6 +38,7 @@ pub struct LexicalError {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize)]
+#[allow(clippy::enum_variant_names)]
 pub enum LexicalErrorKind {
     InvalidNumber(#[serde(skip)] ParseIntError),
     InvalidFix,
