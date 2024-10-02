@@ -3,7 +3,7 @@ use std::{fs, iter};
 use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
 use crate::{
-    ast::{self, Expression},
+    ast::{self, Expression, ExpressionKind, StatementKind, VResult, Visitable, Visitor},
     grammar,
     lexer::Lexer,
     tokens::FileId,
@@ -37,7 +37,11 @@ fn snapshot_failures() {
         let parser = grammar::ScriptParser::new();
 
         let errors = match parser.parse(file_id, lexer) {
-            Ok(ast) => collect_errors(&ast),
+            Ok(mut ast) => {
+                let mut error_visitor = ErrorVisitor::default();
+                ast.visit(&mut error_visitor).unwrap();
+                error_visitor.errors
+            }
             Err(e) => vec![Message::from_lalrpop(e, file_id)],
         };
 
@@ -59,38 +63,22 @@ fn snapshot_failures() {
     });
 }
 
-fn collect_errors(statements: &[ast::Statement<'_>]) -> Vec<Message> {
-    let mut errors = vec![];
+#[derive(Default)]
+struct ErrorVisitor {
+    errors: Vec<Message>,
+}
 
-    for statement in statements {
-        match &statement.kind {
-            ast::StatementKind::Error(message) => {
-                errors.push(message.clone());
-            }
-            ast::StatementKind::VariableDeclaration { value, .. } => {
-                gather_errors_in_expression(value, &mut errors);
-            }
-            ast::StatementKind::Assignment { value, .. } => {
-                gather_errors_in_expression(value, &mut errors);
-            }
-            ast::StatementKind::Wait | ast::StatementKind::Nop => {}
-        }
+impl Visitor<()> for ErrorVisitor {
+    fn visit_statement_error<'input>(&mut self, error: Message) -> VResult<StatementKind<'input>> {
+        self.errors.push(error.clone());
+        Ok(StatementKind::Error(error))
     }
 
-    fn gather_errors_in_expression(expression: &Expression<'_>, errors: &mut Vec<Message>) {
-        match &expression.kind {
-            ast::ExpressionKind::Integer(_)
-            | ast::ExpressionKind::Variable(_)
-            | ast::ExpressionKind::Nop => {}
-            ast::ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
-                gather_errors_in_expression(lhs, errors);
-                gather_errors_in_expression(rhs, errors);
-            }
-            ast::ExpressionKind::Error(message) => {
-                errors.push(message.clone());
-            }
-        }
+    fn visit_expression_error<'input>(
+        &mut self,
+        error: Message,
+    ) -> VResult<ExpressionKind<'input>> {
+        self.errors.push(error.clone());
+        Ok(ExpressionKind::Error(error))
     }
-
-    errors
 }

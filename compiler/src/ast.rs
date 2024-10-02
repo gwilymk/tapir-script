@@ -89,13 +89,14 @@ pub enum BinaryOperator {
 
 pub type VResult<T> = Result<T, Message>;
 
-pub trait Visitable<T> {
-    fn visit(&mut self, v: &mut dyn Visitor<T>) -> VResult<T>;
+pub trait Visitable<T: Default> {
+    fn visit(&mut self, v: &mut impl Visitor<T>) -> VResult<T>;
 }
 
 pub trait Visitor<T>
 where
     T: Default,
+    Self: Sized,
 {
     fn start_statement(&mut self, _statement: &mut Statement<'_>) -> VResult<()> {
         Ok(())
@@ -108,16 +109,20 @@ where
     fn visit_variable_declaration<'input>(
         &mut self,
         ident: &'input str,
-        value: Box<Expression<'input>>,
+        mut value: Box<Expression<'input>>,
     ) -> VResult<StatementKind<'input>> {
+        value.visit(self)?;
+
         Ok(StatementKind::VariableDeclaration { ident, value })
     }
 
     fn visit_assignment<'input>(
         &mut self,
         ident: &'input str,
-        value: Box<Expression<'input>>,
+        mut value: Box<Expression<'input>>,
     ) -> VResult<StatementKind<'input>> {
+        value.visit(self)?;
+
         Ok(StatementKind::Assignment { ident, value })
     }
 
@@ -169,7 +174,7 @@ impl<'input, T> Visitable<T> for Statement<'input>
 where
     T: Default,
 {
-    fn visit(&mut self, v: &mut dyn Visitor<T>) -> VResult<T> {
+    fn visit(&mut self, v: &mut impl Visitor<T>) -> VResult<T> {
         v.start_statement(self)?;
 
         self.kind = match mem::take(&mut self.kind) {
@@ -190,7 +195,7 @@ impl<'input, T> Visitable<T> for Vec<Statement<'input>>
 where
     T: Default,
 {
-    fn visit(&mut self, v: &mut dyn Visitor<T>) -> VResult<T> {
+    fn visit(&mut self, v: &mut impl Visitor<T>) -> VResult<T> {
         for statement in self {
             statement.visit(v)?;
         }
@@ -203,7 +208,7 @@ impl<'input, T> Visitable<T> for Expression<'input>
 where
     T: Default,
 {
-    fn visit(&mut self, v: &mut dyn Visitor<T>) -> VResult<T> {
+    fn visit(&mut self, v: &mut impl Visitor<T>) -> VResult<T> {
         v.start_expression(self)?;
 
         self.kind = match mem::take(&mut self.kind) {
