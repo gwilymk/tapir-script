@@ -128,6 +128,10 @@ impl SymTab {
             .enumerate()
             .map(|(i, (name, _span))| (name.as_ref(), SymbolId(i)))
     }
+
+    pub fn get_property(&self, symbol_id: SymbolId) -> Option<&Property> {
+        self.properties.get(symbol_id.0)
+    }
 }
 
 #[cfg(test)]

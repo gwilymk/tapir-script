@@ -98,7 +98,7 @@ impl<'input> ExpressionKind<'input> {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub enum BinaryOperator {
     Add,
     Sub,

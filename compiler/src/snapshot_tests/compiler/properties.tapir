@@ -1,0 +1,4 @@
+int_prop = 3;
+
+var x = int_prop * 5 + 2;
+int_prop = x;

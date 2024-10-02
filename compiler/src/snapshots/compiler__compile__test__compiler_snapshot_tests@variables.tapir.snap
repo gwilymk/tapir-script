@@ -1,0 +1,16 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: bytecode.get_opcodes()
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/variables.tapir
+---
+[
+  Push8(3),
+  Dup(0),
+  Push8(2),
+  MathsOp(Add),
+  Dup(1),
+  Dup(1),
+  Push8(3),
+  MathsOp(Mul),
+  MathsOp(Add),
+]
