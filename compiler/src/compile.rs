@@ -1,4 +1,5 @@
 use symtab_visitor::SymTabVisitor;
+use type_visitor::TypeVisitor;
 
 use crate::{
     ast::{Statement, Visitable},
@@ -29,6 +30,14 @@ pub fn compile(mut ast: Vec<Statement>, settings: &CompileSettings) -> Result<()
         ast.visit(&mut sym_tab_visitor)?;
 
         sym_tab_visitor.into_symtab()
+    };
+
+    let type_table = {
+        let mut type_visitor = TypeVisitor::new(settings);
+
+        type_visitor.visit(&ast, &symtab)?;
+
+        type_visitor.into_type_table(&symtab)?
     };
 
     Ok(())
