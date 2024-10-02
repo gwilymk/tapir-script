@@ -1,0 +1,3 @@
+my_property = 4;
+wait;
+my_property = 7;
