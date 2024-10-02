@@ -2,9 +2,11 @@
 use lalrpop_util::lalrpop_mod;
 
 mod ast;
+mod compile;
 mod lexer;
 mod reporting;
 mod tokens;
+mod types;
 
 lalrpop_mod!(grammar);
 

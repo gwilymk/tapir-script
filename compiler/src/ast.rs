@@ -1,3 +1,5 @@
+use std::mem;
+
 use crate::{
     tokens::{FileId, LexicalError, Span},
     Message,
@@ -11,7 +13,7 @@ pub struct Statement<'input> {
     pub kind: StatementKind<'input>,
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Default, Serialize)]
 pub enum StatementKind<'input> {
     Error(Message),
     VariableDeclaration {
@@ -23,6 +25,8 @@ pub enum StatementKind<'input> {
         value: Box<Expression<'input>>,
     },
     Wait,
+    #[default]
+    Nop,
 }
 
 impl<'input> StatementKind<'input> {
@@ -49,7 +53,7 @@ impl<'input> From<LexicalError> for Box<Expression<'input>> {
     }
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Default, Debug, Serialize)]
 pub enum ExpressionKind<'input> {
     Integer(i32),
     Variable(&'input str),
@@ -59,6 +63,8 @@ pub enum ExpressionKind<'input> {
         rhs: Box<Expression<'input>>,
     },
     Error(Message),
+    #[default]
+    Nop,
 }
 
 impl<'input> ExpressionKind<'input> {
@@ -79,4 +85,137 @@ pub enum BinaryOperator {
     Mod,
     RealDiv,
     RealMod,
+}
+
+pub type VResult<T> = Result<T, Message>;
+
+pub trait Visitable<T> {
+    fn visit(&mut self, v: &mut dyn Visitor<T>) -> VResult<T>;
+}
+
+pub trait Visitor<T>
+where
+    T: Default,
+{
+    fn start_statement(&mut self, _statement: &mut Statement<'_>) -> VResult<()> {
+        Ok(())
+    }
+
+    fn visit_statement_error<'input>(&mut self, error: Message) -> VResult<StatementKind<'input>> {
+        Ok(StatementKind::Error(error))
+    }
+
+    fn visit_variable_declaration<'input>(
+        &mut self,
+        ident: &'input str,
+        value: Box<Expression<'input>>,
+    ) -> VResult<StatementKind<'input>> {
+        Ok(StatementKind::VariableDeclaration { ident, value })
+    }
+
+    fn visit_assignment<'input>(
+        &mut self,
+        ident: &'input str,
+        value: Box<Expression<'input>>,
+    ) -> VResult<StatementKind<'input>> {
+        Ok(StatementKind::Assignment { ident, value })
+    }
+
+    fn visit_wait<'input>(&mut self) -> VResult<StatementKind<'input>> {
+        Ok(StatementKind::Wait)
+    }
+
+    fn end_statement(&mut self, _statement: &mut Statement<'_>) -> VResult<T> {
+        Ok(T::default())
+    }
+
+    fn start_expression(&mut self, _expression: &mut Expression<'_>) -> VResult<()> {
+        Ok(())
+    }
+
+    fn end_expression(&mut self, _expression: &mut Expression<'_>) -> VResult<T> {
+        Ok(T::default())
+    }
+
+    fn visit_integer<'input>(&mut self, i: i32) -> VResult<ExpressionKind<'input>> {
+        Ok(ExpressionKind::Integer(i))
+    }
+
+    fn visit_variable<'input>(&mut self, ident: &'input str) -> VResult<ExpressionKind<'input>> {
+        Ok(ExpressionKind::Variable(ident))
+    }
+
+    fn visit_binop<'input>(
+        &mut self,
+        mut lhs: Box<Expression<'input>>,
+        operator: BinaryOperator,
+        mut rhs: Box<Expression<'input>>,
+    ) -> VResult<ExpressionKind<'input>> {
+        lhs.visit(self)?;
+        rhs.visit(self)?;
+
+        Ok(ExpressionKind::BinaryOperation { lhs, operator, rhs })
+    }
+
+    fn visit_expression_error<'input>(
+        &mut self,
+        error: Message,
+    ) -> VResult<ExpressionKind<'input>> {
+        Ok(ExpressionKind::Error(error))
+    }
+}
+
+impl<'input, T> Visitable<T> for Statement<'input>
+where
+    T: Default,
+{
+    fn visit(&mut self, v: &mut dyn Visitor<T>) -> VResult<T> {
+        v.start_statement(self)?;
+
+        self.kind = match mem::take(&mut self.kind) {
+            StatementKind::Error(message) => v.visit_statement_error(message)?,
+            StatementKind::VariableDeclaration { ident, value } => {
+                v.visit_variable_declaration(ident, value)?
+            }
+            StatementKind::Assignment { ident, value } => v.visit_assignment(ident, value)?,
+            StatementKind::Wait => v.visit_wait()?,
+            StatementKind::Nop => StatementKind::Nop,
+        };
+
+        v.end_statement(self)
+    }
+}
+
+impl<'input, T> Visitable<T> for Vec<Statement<'input>>
+where
+    T: Default,
+{
+    fn visit(&mut self, v: &mut dyn Visitor<T>) -> VResult<T> {
+        for statement in self {
+            statement.visit(v)?;
+        }
+
+        Ok(T::default())
+    }
+}
+
+impl<'input, T> Visitable<T> for Expression<'input>
+where
+    T: Default,
+{
+    fn visit(&mut self, v: &mut dyn Visitor<T>) -> VResult<T> {
+        v.start_expression(self)?;
+
+        self.kind = match mem::take(&mut self.kind) {
+            ExpressionKind::Integer(i) => v.visit_integer(i)?,
+            ExpressionKind::Variable(ident) => v.visit_variable(ident)?,
+            ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
+                v.visit_binop(lhs, operator, rhs)?
+            }
+            ExpressionKind::Error(message) => v.visit_expression_error(message)?,
+            ExpressionKind::Nop => ExpressionKind::Nop,
+        };
+
+        v.end_expression(self)
+    }
 }

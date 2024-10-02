@@ -73,13 +73,15 @@ fn collect_errors(statements: &[ast::Statement<'_>]) -> Vec<Message> {
             ast::StatementKind::Assignment { value, .. } => {
                 gather_errors_in_expression(value, &mut errors);
             }
-            ast::StatementKind::Wait => {}
+            ast::StatementKind::Wait | ast::StatementKind::Nop => {}
         }
     }
 
     fn gather_errors_in_expression(expression: &Expression<'_>, errors: &mut Vec<Message>) {
         match &expression.kind {
-            ast::ExpressionKind::Integer(_) | ast::ExpressionKind::Variable(_) => {}
+            ast::ExpressionKind::Integer(_)
+            | ast::ExpressionKind::Variable(_)
+            | ast::ExpressionKind::Nop => {}
             ast::ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
                 gather_errors_in_expression(lhs, errors);
                 gather_errors_in_expression(rhs, errors);
