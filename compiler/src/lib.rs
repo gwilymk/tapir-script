@@ -6,3 +6,6 @@ mod lexer;
 mod tokens;
 
 lalrpop_mod!(grammar);
+
+#[cfg(test)]
+mod grammar_test;

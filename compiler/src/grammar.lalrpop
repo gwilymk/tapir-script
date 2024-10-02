@@ -15,8 +15,8 @@ extern {
         wait => Token::KeywordWait,
         var => Token::KeywordVar,
         identifier => Token::Identifier(<&'input str>),
-        int => Token::Identifier(<&'input str>),
-        fix => Token::Identifier(<&'input str>),
+        integer => Token::Integer(<&'input str>),
+        fix => Token::Fix(<&'input str>),
 
         "(" => Token::LParen,
         ")" => Token::RParen,
@@ -77,7 +77,7 @@ Term: Box<Expression<'input>> = {
 }
 
 Num: Box<Expression<'input>> =
-    <start: @L> <value: int> <end: @R> => match value.parse::<i32>() {
+    <start: @L> <value: integer> <end: @R> => match value.parse::<i32>() {
         Ok(value) => ExpressionKind::Integer(value).with_span(file_id, start, end),
         Err(e) => LexicalErrorKind::from(e).with_span(file_id, start, end).into(),
     };

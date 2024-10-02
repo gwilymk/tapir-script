@@ -30,7 +30,7 @@ impl Span {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct LexicalError {
     pub kind: LexicalErrorKind,
     pub span: Span,
