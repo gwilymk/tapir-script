@@ -3,7 +3,7 @@ use std::num::ParseIntError;
 use logos::Logos;
 use serde::Serialize;
 
-#[derive(Clone, Debug, Copy, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, Copy, Hash, PartialEq, Eq, Serialize)]
 pub struct FileId(usize);
 
 impl FileId {
@@ -12,16 +12,16 @@ impl FileId {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Span {
-    file_id: FileId,
-    start: usize,
-    end: usize,
+    pub(crate) file_id: FileId,
+    pub(crate) start: usize,
+    pub(crate) end: usize,
 }
 
 impl Span {
     pub fn new(file_id: FileId, start: usize, end: usize) -> Self {
-        assert!(start < end, "{} was not less than {}", start, end);
+        assert!(start <= end, "{} was not <= {}", start, end);
         Self {
             file_id,
             start,

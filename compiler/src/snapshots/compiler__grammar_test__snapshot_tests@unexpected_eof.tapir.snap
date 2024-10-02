@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: error_str
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/unexpected_eof.tapir
+---
+Error: Unexpected end of file
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/unexpected_eof.tapir:1:1]
+   │
+ 1 │ var x = 3
+   │          │ 
+   │          ╰─ End of file not expected here
+   │ 
+   │ Note: Expected one of tokens ";", "+", "-", "*", "/", "%", "//", "%%"
+───╯

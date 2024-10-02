@@ -1,4 +1,7 @@
-use crate::tokens::{FileId, LexicalError, LexicalErrorKind, Span};
+use crate::{
+    tokens::{FileId, LexicalError, LexicalErrorKind, Span},
+    Message,
+};
 
 use serde::Serialize;
 
@@ -10,6 +13,7 @@ pub struct Statement<'input> {
 
 #[derive(Clone, Debug, Serialize)]
 pub enum StatementKind<'input> {
+    Error(Message),
     VariableDeclaration {
         ident: &'input str,
         value: Box<Expression<'input>>,

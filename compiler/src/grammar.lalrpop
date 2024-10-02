@@ -2,7 +2,8 @@ use crate::{
     tokens::{
         FileId, LexicalError, LexicalErrorKind, Token
     },
-    ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator}
+    ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator},
+    Message,
 };
 
 grammar<'input>(file_id: FileId);
@@ -42,6 +43,7 @@ StatementKind: StatementKind<'input> = {
     var <ident: identifier> "=" <value: Expression> ";" => StatementKind::VariableDeclaration { <> },
     <ident: identifier> "=" <value: Expression> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
+    <error: !> ";" => StatementKind::Error(Message::from_lalrpop(<>.error, file_id)),
 }
 
 Expression: Box<Expression<'input>> = {

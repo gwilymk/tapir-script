@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: error_str
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/big_number.tapir
+---
+Error: number too large to fit in target type
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/big_number.tapir:1:1]
+   │
+ 1 │ var x = 238472398472917948237;
+   │         ──────────┬──────────  
+   │                   ╰──────────── Invalid integer
+   │ 
+   │ Note: Larger than maximum positive number which is 2147483647
+───╯
