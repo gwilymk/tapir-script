@@ -27,9 +27,11 @@ impl From<LexicalError> for Message {
 }
 
 #[derive(Clone, Debug, Serialize)]
+#[allow(clippy::enum_variant_names)]
 pub enum MessageKind {
     ParseError(ParseError),
     LexerError(LexicalErrorKind),
+    ComplierError(CompilerErrorKind),
 }
 
 impl MessageKind {
@@ -82,6 +84,20 @@ impl Message {
                 .with_span(file_id, token.0, token.2)
             }
             lalrpop_util::ParseError::User { error } => error.into(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub enum CompilerErrorKind {
+    UnknownVariable(String),
+}
+
+impl CompilerErrorKind {
+    pub fn into_message(self, span: Span) -> Message {
+        Message {
+            span,
+            error: Box::new(MessageKind::ComplierError(self)),
         }
     }
 }

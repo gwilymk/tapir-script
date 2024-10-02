@@ -3,7 +3,7 @@ use std::{fs, iter};
 use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
 use crate::{
-    ast::{self, Expression, ExpressionKind, StatementKind, VResult, Visitable, Visitor},
+    ast::{ExpressionKind, StatementKind, VResult, Visitable, Visitor},
     grammar,
     lexer::Lexer,
     tokens::FileId,
@@ -64,8 +64,8 @@ fn snapshot_failures() {
 }
 
 #[derive(Default)]
-struct ErrorVisitor {
-    errors: Vec<Message>,
+pub(crate) struct ErrorVisitor {
+    pub errors: Vec<Message>,
 }
 
 impl Visitor<()> for ErrorVisitor {

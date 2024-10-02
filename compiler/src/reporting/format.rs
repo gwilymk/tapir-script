@@ -7,7 +7,7 @@ use ariadne::{Label, Source};
 
 use crate::tokens::{FileId, LexicalErrorKind, Span};
 
-use super::{Message, MessageKind, ParseError};
+use super::{CompilerErrorKind, Message, MessageKind, ParseError};
 
 impl Message {
     pub fn write_diagnostic<W: Write>(
@@ -20,6 +20,9 @@ impl Message {
             MessageKind::ParseError(parse_error) => parse_error_report(parse_error, self.span),
             MessageKind::LexerError(lexical_error_kind) => {
                 lexical_error_report(lexical_error_kind, self.span)
+            }
+            MessageKind::ComplierError(compiler_error_kind) => {
+                compiler_error_report(compiler_error_kind, self.span)
             }
         };
 
@@ -122,5 +125,16 @@ fn lexical_error_report(
         LexicalErrorKind::InvalidToken => {
             build_error_report(span).with_label(Label::new(span).with_message("Invalid token"))
         }
+    }
+}
+
+fn compiler_error_report(
+    compiler_error_kind: &CompilerErrorKind,
+    span: Span,
+) -> ariadne::ReportBuilder<'_, Span> {
+    match compiler_error_kind {
+        CompilerErrorKind::UnknownVariable(var) => build_error_report(span)
+            .with_label(Label::new(span).with_message("Unknown variable"))
+            .with_message(format!("Unknown variable '{var}'")),
     }
 }

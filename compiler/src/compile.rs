@@ -1,18 +1,22 @@
-use std::collections::HashMap;
+use symtab_visitor::SymTabVisitor;
 
 use crate::{
-    ast::{Statement, Visitable, Visitor},
+    ast::{Statement, Visitable},
     types::Type,
     Message,
 };
 
+mod symtab_visitor;
+
+#[derive(Clone, Debug)]
 pub struct Property {
     pub ty: Type,
     pub index: usize,
+    pub name: String,
 }
 
 pub struct CompileSettings {
-    pub properties: HashMap<String, Property>,
+    pub properties: Vec<Property>,
 }
 
 pub fn compile(mut ast: Vec<Statement>, settings: &CompileSettings) -> Result<(), Message> {
@@ -24,22 +28,3 @@ pub fn compile(mut ast: Vec<Statement>, settings: &CompileSettings) -> Result<()
 
     Ok(())
 }
-
-struct SymbolId(usize);
-
-struct SymTabVisitor<'a> {
-    properties: &'a HashMap<String, Property>,
-
-    symbols: HashMap<String, SymbolId>,
-}
-
-impl<'a> SymTabVisitor<'a> {
-    pub fn new(settings: &'a CompileSettings) -> Self {
-        Self {
-            properties: &settings.properties,
-            symbols: HashMap::new(),
-        }
-    }
-}
-
-impl<'a> Visitor<()> for SymTabVisitor<'a> {}

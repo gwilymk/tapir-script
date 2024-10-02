@@ -1,0 +1,2 @@
+var x = 33 + 4;
+var y = z + 3; # z is not defined

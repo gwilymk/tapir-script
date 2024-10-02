@@ -1,0 +1,57 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: ast
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/error_in_expression_still_causes_assignment_success.tapir
+---
+[
+  Statement(
+    span: "[span]",
+    kind: SymbolDeclare(
+      ident: SymbolId(1),
+      value: Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Integer(3),
+          ),
+          operator: Add,
+          rhs: Expression(
+            span: "[span]",
+            kind: Error(Message(
+              span: "[span]",
+              error: ParseError(UnrecognizedToken(
+                token: "Semicolon",
+                expected: [
+                  "identifier",
+                  "integer",
+                  "\"(\"",
+                ],
+              )),
+            )),
+          ),
+        ),
+      ),
+    ),
+  ),
+  Statement(
+    span: "[span]",
+    kind: SymbolDeclare(
+      ident: SymbolId(2),
+      value: Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Symbol(SymbolId(1)),
+          ),
+          operator: Add,
+          rhs: Expression(
+            span: "[span]",
+            kind: Integer(3),
+          ),
+        ),
+      ),
+    ),
+  ),
+]
