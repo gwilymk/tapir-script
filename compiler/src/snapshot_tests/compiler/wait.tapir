@@ -1,0 +1,9 @@
+var x = 5;
+int_prop = 3;
+wait;
+x = x + 1;
+int_prop = x;
+wait;
+x = x + 1;
+int_prop = x;
+wait;

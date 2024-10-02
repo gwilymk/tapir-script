@@ -95,7 +95,7 @@ impl Compiler {
                     self.stack.pop();
                 } else {
                     let offset = self.get_offset(*ident);
-                    self.bytecode.add_opcode(Opcode::Move(offset as u8));
+                    self.bytecode.add_opcode(Opcode::Move(offset as u8 - 1));
                     self.stack.pop();
                 }
             }
@@ -214,7 +214,7 @@ pub mod opcodes {
     }
 }
 
-struct Bytecode {
+pub struct Bytecode {
     data: Vec<Opcode>,
     length: usize,
 }
