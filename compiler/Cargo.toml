@@ -7,6 +7,7 @@ edition = "2021"
 ariadne = { version = "0.4.1", features = ["auto-color"] }
 lalrpop-util = "0.21.0"
 logos = "0.14.2"
+serde = { version = "1.0.210", features = ["derive"] }
 
 [dev-dependencies]
 insta = { version = "1.40.0", features = ["ron", "glob"] }

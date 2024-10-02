@@ -1,0 +1,83 @@
+use crate::{
+    tokens::{
+        FileId, LexicalError, LexicalErrorKind, Token
+    },
+    ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator}
+};
+
+grammar<'input>(file_id: FileId);
+
+extern {
+    type Location = usize;
+    type Error = LexicalError;
+
+    enum Token<'input> {
+        wait => Token::KeywordWait,
+        var => Token::KeywordVar,
+        identifier => Token::Identifier(<&'input str>),
+        int => Token::Identifier(<&'input str>),
+        fix => Token::Identifier(<&'input str>),
+
+        "(" => Token::LParen,
+        ")" => Token::RParen,
+        ";" => Token::Semicolon,
+        "=" => Token::Assign,
+
+        "+" => Token::OperatorAdd,
+        "-" => Token::OperatorSub,
+        "*" => Token::OperatorMul,
+        "/" => Token::OperatorDiv,
+        "%" => Token::OperatorMod,
+        "//" => Token::OperatorRealDiv,
+        "%%" => Token::OperatorRealMod,
+    }
+}
+
+pub Script: Vec<Statement<'input>> = <Statement*>;
+
+Statement: Statement<'input> =
+    <start: @L> <kind: StatementKind> <end: @R> => kind.with_span(file_id, start, end);
+
+StatementKind: StatementKind<'input> = {
+    var <ident: identifier> "=" <value: Expression> ";" => StatementKind::VariableDeclaration { <> },
+    <ident: identifier> "=" <value: Expression> ";" => StatementKind::Assignment { <> },
+    wait ";" => StatementKind::Wait,
+}
+
+Expression: Box<Expression<'input>> = {
+    #[precedence(level="1")]
+    <Term>,
+
+    #[precedence(level="2")]
+    #[assoc(side="left")]
+    <start: @L> <lhs: Expression> <operator: MulDiv> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs, operator, rhs }.with_span(file_id, start, end),
+
+    #[precedence(level="3")]
+    #[assoc(side="left")]
+    <start: @L> <lhs: Expression> <operator: AddSub> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs, operator, rhs }.with_span(file_id, start, end),
+}
+
+MulDiv: BinaryOperator = {
+    "*" => BinaryOperator::Mul,
+    "/" => BinaryOperator::Div,
+    "//" => BinaryOperator::RealDiv,
+    "%%" => BinaryOperator::RealMod,
+    "%" => BinaryOperator::Mod,
+}
+
+AddSub: BinaryOperator = {
+    "+" => BinaryOperator::Add,
+    "-" => BinaryOperator::Sub,
+}
+
+Term: Box<Expression<'input>> = {
+    "(" <Expression> ")",
+    <Num>,
+    <start: @L> <ident: identifier> <end: @R> => ExpressionKind::Variable(ident).with_span(file_id, start, end),
+}
+
+Num: Box<Expression<'input>> =
+    <start: @L> <value: int> <end: @R> => match value.parse::<i32>() {
+        Ok(value) => ExpressionKind::Integer(value).with_span(file_id, start, end),
+        Err(e) => LexicalErrorKind::from(e).with_span(file_id, start, end).into(),
+    };
