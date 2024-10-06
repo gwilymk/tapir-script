@@ -21,7 +21,7 @@ pub enum Instruction {
 
 #[repr(u8)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, N)]
-pub enum MathOp {
+pub enum MathsOp {
     Add,
     Sub,
     Mul,

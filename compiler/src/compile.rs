@@ -182,10 +182,24 @@ pub mod opcodes {
         Add,
         Sub,
         Mul,
-        RShiftConst,
-        LShiftConst,
         RealMod,
         RealDiv,
+    }
+
+    impl From<MathsOp> for bytecode::MathsOp {
+        fn from(value: MathsOp) -> Self {
+            macro_rules! arm {
+                ($($kind:ident),*) => {
+                    match value {
+                        $(
+                            MathsOp::$kind => bytecode::MathsOp::$kind,
+                        )*
+                    }
+                };
+            }
+
+            arm!(Add, Sub, Mul, RealMod, RealDiv)
+        }
     }
 
     impl Opcode {
@@ -232,16 +246,20 @@ impl Bytecode {
         self.length += opcode.size();
     }
 
-    pub fn new_label(&mut self) -> Label {
-        Label(self.length as u16)
+    fn new_label(&mut self) -> Label {
+        Label(
+            self.length
+                .try_into()
+                .expect("Offset bigger than 16 bit maximum"),
+        )
     }
 
-    pub fn new_jump(&mut self) -> Jump {
+    fn new_jump(&mut self) -> Jump {
         self.add_opcode(Opcode::Jump(0));
         Jump(self.length - 1)
     }
 
-    pub fn patch_jump(&mut self, jump: Jump, label: Label) {
+    fn patch_jump(&mut self, jump: Jump, label: Label) {
         match &mut self.data[jump.0] {
             Opcode::Jump(target) | Opcode::JumpIfFalse(target) => *target = label.0,
             opcode => panic!("Tried to patch {opcode:?} which isn't a jump"),
@@ -250,6 +268,69 @@ impl Bytecode {
 
     pub fn get_opcodes(&self) -> &[Opcode] {
         &self.data
+    }
+
+    pub fn compile(&self) -> Vec<u8> {
+        let mut result = Vec::with_capacity(self.length);
+
+        for opcode in &self.data {
+            match *opcode {
+                Opcode::Push8(value) => {
+                    result.push(bytecode::Instruction::Push8 as u8);
+                    result.push(value);
+                }
+                Opcode::Push24(value) => {
+                    result.push(bytecode::Instruction::Push24 as u8);
+
+                    let bytes = value.to_be_bytes();
+                    result.extend_from_slice(&bytes[1..]);
+                }
+                Opcode::Dup(amount) => {
+                    result.push(bytecode::Instruction::Dup as u8);
+                    result.push(amount);
+                }
+                Opcode::Drop(amount) => {
+                    result.push(bytecode::Instruction::Drop as u8);
+                    result.push(amount);
+                }
+                Opcode::GetProp(index) => {
+                    result.push(bytecode::Instruction::GetProp as u8);
+                    result.push(index);
+                }
+                Opcode::SetProp(index) => {
+                    result.push(bytecode::Instruction::SetProp as u8);
+                    result.push(index);
+                }
+                Opcode::Nop => {
+                    result.push(bytecode::Instruction::Nop as u8);
+                    result.push(0);
+                }
+                Opcode::Wait => {
+                    result.push(bytecode::Instruction::Wait as u8);
+                    result.push(0);
+                }
+                Opcode::Move(amount) => {
+                    result.push(bytecode::Instruction::Move as u8);
+                    result.push(amount);
+                }
+                Opcode::MathsOp(op) => {
+                    result.push(bytecode::Instruction::MathsOp as u8);
+                    result.push(bytecode::MathsOp::from(op) as u8);
+                }
+                Opcode::JumpIfFalse(target) => {
+                    result.push(bytecode::Instruction::JumpIfFalse as u8);
+                    result.push(0);
+                    result.extend_from_slice(&target.to_be_bytes());
+                }
+                Opcode::Jump(target) => {
+                    result.push(bytecode::Instruction::Jump as u8);
+                    result.push(0);
+                    result.extend_from_slice(&target.to_be_bytes());
+                }
+            }
+        }
+
+        result
     }
 }
 
