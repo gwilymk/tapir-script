@@ -111,7 +111,7 @@ impl Compiler {
     ) -> Result<(), Message> {
         match &value.kind {
             ast::ExpressionKind::Integer(i) => {
-                self.bytecode.add_opcode(Opcode::Push8(*i as i8 as u8));
+                self.bytecode.add_opcode(Opcode::Push8(*i as i8));
                 self.stack.push(None);
             }
             ast::ExpressionKind::Fix(_) => todo!("Fixnum compilation"),
@@ -163,7 +163,7 @@ pub mod opcodes {
 
     #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize)]
     pub enum Opcode {
-        Push8(u8),
+        Push8(i8),
         Push24(u32),
         Dup(u8),
         Drop(u8),
@@ -270,62 +270,56 @@ impl Bytecode {
         &self.data
     }
 
-    pub fn compile(&self) -> Vec<u8> {
+    pub fn compile(&self) -> Vec<u16> {
         let mut result = Vec::with_capacity(self.length);
+
+        macro_rules! one_arg {
+            ($kind:ident, $value:expr) => {
+                result.push(((bytecode::Instruction::$kind as u16) << 8) | $value as u16);
+            };
+        }
 
         for opcode in &self.data {
             match *opcode {
                 Opcode::Push8(value) => {
-                    result.push(bytecode::Instruction::Push8 as u8);
-                    result.push(value);
+                    one_arg!(Push8, value);
                 }
                 Opcode::Push24(value) => {
-                    result.push(bytecode::Instruction::Push24 as u8);
-
                     let bytes = value.to_be_bytes();
-                    result.extend_from_slice(&bytes[1..]);
+                    one_arg!(Push24, bytes[1]);
+                    result.push(u16::from_be_bytes(bytes[2..].try_into().unwrap()));
                 }
                 Opcode::Dup(amount) => {
-                    result.push(bytecode::Instruction::Dup as u8);
-                    result.push(amount);
+                    one_arg!(Dup, amount);
                 }
                 Opcode::Drop(amount) => {
-                    result.push(bytecode::Instruction::Drop as u8);
-                    result.push(amount);
+                    one_arg!(Drop, amount);
                 }
                 Opcode::GetProp(index) => {
-                    result.push(bytecode::Instruction::GetProp as u8);
-                    result.push(index);
+                    one_arg!(GetProp, index);
                 }
                 Opcode::SetProp(index) => {
-                    result.push(bytecode::Instruction::SetProp as u8);
-                    result.push(index);
+                    one_arg!(SetProp, index);
                 }
                 Opcode::Nop => {
-                    result.push(bytecode::Instruction::Nop as u8);
-                    result.push(0);
+                    one_arg!(Nop, 0);
                 }
                 Opcode::Wait => {
-                    result.push(bytecode::Instruction::Wait as u8);
-                    result.push(0);
+                    one_arg!(Wait, 0);
                 }
                 Opcode::Move(amount) => {
-                    result.push(bytecode::Instruction::Move as u8);
-                    result.push(amount);
+                    one_arg!(Move, amount);
                 }
                 Opcode::MathsOp(op) => {
-                    result.push(bytecode::Instruction::MathsOp as u8);
-                    result.push(bytecode::MathsOp::from(op) as u8);
+                    one_arg!(MathsOp, bytecode::MathsOp::from(op));
                 }
                 Opcode::JumpIfFalse(target) => {
-                    result.push(bytecode::Instruction::JumpIfFalse as u8);
-                    result.push(0);
-                    result.extend_from_slice(&target.to_be_bytes());
+                    one_arg!(JumpIfFalse, 0);
+                    result.push(target);
                 }
                 Opcode::Jump(target) => {
-                    result.push(bytecode::Instruction::Jump as u8);
-                    result.push(0);
-                    result.extend_from_slice(&target.to_be_bytes());
+                    one_arg!(Jump, 0);
+                    result.push(target);
                 }
             }
         }

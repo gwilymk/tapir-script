@@ -1,0 +1,8 @@
+var x = int_prop;
+x = x + 3;
+wait;
+
+int_prop = x;
+wait;
+
+int_prop = int_prop + 1;

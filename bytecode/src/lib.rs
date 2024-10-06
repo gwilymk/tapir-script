@@ -25,8 +25,6 @@ pub enum MathsOp {
     Add,
     Sub,
     Mul,
-    RShiftConst,
-    LShiftConst,
     RealMod,
     RealDiv,
 }

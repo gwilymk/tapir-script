@@ -3,4 +3,20 @@ name = "vm"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["std"]
+
+std = []
+
 [dependencies]
+bytecode = { path = "../bytecode" }
+
+[dev-dependencies]
+compiler = { path = "../compiler" }
+
+serde = { version = "1", features = ["derive"] }
+insta = { version = "1.40.0", features = ["ron", "glob", "redactions"] }
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3

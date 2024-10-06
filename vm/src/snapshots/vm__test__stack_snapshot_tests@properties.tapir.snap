@@ -1,0 +1,24 @@
+---
+source: crates/tapir-script/vm/src/lib.rs
+expression: stack_at_waits
+input_file: crates/tapir-script/vm/src/snapshot_tests/stack/properties.tapir
+---
+[
+  ([
+    [
+      8,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [
+      8,
+    ],
+  ], PropObj(
+    int_prop: 8,
+  )),
+  ([], PropObj(
+    int_prop: 9,
+  )),
+]

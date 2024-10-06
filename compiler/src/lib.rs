@@ -1,6 +1,8 @@
 #![deny(clippy::all)]
-use compile::CompileSettings;
 use lalrpop_util::lalrpop_mod;
+
+use lexer::Lexer;
+use tokens::FileId;
 
 mod ast;
 mod compile;
@@ -14,16 +16,11 @@ lalrpop_mod!(grammar);
 #[cfg(test)]
 mod grammar_test;
 
+pub use compile::{CompileSettings, Property};
 pub use reporting::{format::DiagnosticCache, Message};
+pub use types::Type;
 
-use lexer::Lexer;
-use tokens::FileId;
-
-pub fn compile(
-    input: &str,
-    fname: &str,
-    compile_settings: CompileSettings,
-) -> Result<Vec<u8>, Message> {
+pub fn compile(input: &str, compile_settings: CompileSettings) -> Result<Vec<u16>, Message> {
     let file_id = FileId::new(0);
 
     let lexer = Lexer::new(input, file_id);
