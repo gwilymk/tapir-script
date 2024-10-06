@@ -66,7 +66,7 @@ impl Compiler {
 
     pub fn compile_statement(
         &mut self,
-        statement: &ast::Statement<'_>,
+        statement: &ast::Statement,
         symtab: &SymTab,
     ) -> Result<(), Message> {
         match &statement.kind {
@@ -106,7 +106,7 @@ impl Compiler {
 
     fn compile_expression(
         &mut self,
-        value: &ast::Expression<'_>,
+        value: &ast::Expression,
         symtab: &SymTab,
     ) -> Result<(), Message> {
         match &value.kind {
@@ -114,7 +114,7 @@ impl Compiler {
                 self.bytecode.add_opcode(Opcode::Push8(*i as i8 as u8));
                 self.stack.push(None);
             }
-            ast::ExpressionKind::Fix(num) => todo!(),
+            ast::ExpressionKind::Fix(_) => todo!("Fixnum compilation"),
             ast::ExpressionKind::Variable(_) => {
                 unreachable!("Should have resolved this in symbol visiting")
             }
