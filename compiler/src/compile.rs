@@ -2,7 +2,7 @@ use symtab_visitor::{SymTab, SymTabVisitor};
 use type_visitor::TypeVisitor;
 
 use crate::{
-    ast::{self, BinaryOperator, Statement, SymbolId, Visitable},
+    ast::{self, Statement, SymbolId},
     types::Type,
     Message,
 };
@@ -29,7 +29,7 @@ pub fn compile(mut ast: Vec<Statement>, settings: &CompileSettings) -> Result<By
         let mut sym_tab_visitor = SymTabVisitor::new(settings);
 
         // resolve all the identifiers
-        ast.visit(&mut sym_tab_visitor)?;
+        sym_tab_visitor.visit(&mut ast);
 
         sym_tab_visitor.into_symtab()
     };

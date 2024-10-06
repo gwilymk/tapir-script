@@ -6,10 +6,6 @@ use crate::{
 
 use serde::Serialize;
 
-mod visitor;
-
-pub use visitor::{VResult, Visitable, Visitor};
-
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize)]
 pub struct SymbolId(pub usize);
 

@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, mem};
 
 use crate::{
-    ast::{Expression, ExpressionKind, StatementKind, SymbolId, VResult, Visitable, Visitor},
+    ast::{Expression, ExpressionKind, Statement, StatementKind, SymbolId},
     reporting::CompilerErrorKind,
     tokens::Span,
 };
@@ -30,60 +30,77 @@ impl SymTabVisitor {
     pub fn into_symtab(self) -> SymTab {
         self.symtab
     }
-}
 
-impl Visitor<()> for SymTabVisitor {
-    fn visit_assignment<'input>(
-        &mut self,
-        ident: &'input str,
-        mut value: Box<Expression<'input>>,
-        span: Span,
-    ) -> VResult<StatementKind<'input>> {
-        value.visit(self)?;
+    pub fn visit(&mut self, ast: &mut [Statement<'_>]) {
+        for statement in ast {
+            let kind = mem::take(&mut statement.kind);
 
-        let symbol_id = if let Some(symbol_id) = self.symbol_names.get(ident) {
-            *symbol_id
-        } else {
-            return Ok(StatementKind::Error(
-                CompilerErrorKind::UnknownVariable(ident.to_string()).into_message(span),
-            ));
-        };
+            statement.kind = match kind {
+                StatementKind::VariableDeclaration { ident, mut value } => {
+                    self.visit_expr(&mut value);
 
-        Ok(StatementKind::SymbolAssign {
-            ident: symbol_id,
-            value,
-        })
+                    let symbol_id = self.symtab.new_symbol(ident.to_string(), statement.span);
+                    self.symbol_names.insert(ident.to_string(), symbol_id);
+
+                    StatementKind::SymbolDeclare {
+                        ident: symbol_id,
+                        value,
+                    }
+                }
+                StatementKind::Assignment { ident, mut value } => {
+                    self.visit_expr(&mut value);
+
+                    if let Some(symbol_id) = self.symbol_names.get(ident) {
+                        StatementKind::SymbolAssign {
+                            ident: *symbol_id,
+                            value,
+                        }
+                    } else {
+                        StatementKind::Error(
+                            CompilerErrorKind::UnknownVariable(ident.to_string())
+                                .into_message(statement.span),
+                        )
+                    }
+                }
+                StatementKind::Error(_)
+                | StatementKind::Wait
+                | StatementKind::Nop
+                | StatementKind::SymbolDeclare { .. }
+                | StatementKind::SymbolAssign { .. } => kind,
+            };
+        }
     }
 
-    fn visit_variable_declaration<'input>(
-        &mut self,
-        ident: &'input str,
-        mut value: Box<Expression<'input>>,
-        span: Span,
-    ) -> VResult<StatementKind<'input>> {
-        value.visit(self)?;
+    fn visit_expr(&self, expr: &mut Expression<'_>) {
+        let kind = mem::take(&mut expr.kind);
 
-        let symbol_id = self.symtab.new_symbol(ident.to_string(), span);
-        self.symbol_names.insert(ident.to_string(), symbol_id);
+        expr.kind = match kind {
+            ExpressionKind::Variable(ident) => {
+                if let Some(symbol_id) = self.symbol_names.get(ident) {
+                    ExpressionKind::Symbol(*symbol_id)
+                } else {
+                    ExpressionKind::Error(
+                        CompilerErrorKind::UnknownVariable(ident.to_string())
+                            .into_message(expr.span),
+                    )
+                }
+            }
+            ExpressionKind::BinaryOperation {
+                mut lhs,
+                operator,
+                mut rhs,
+            } => {
+                self.visit_expr(&mut lhs);
+                self.visit_expr(&mut rhs);
 
-        Ok(StatementKind::SymbolDeclare {
-            ident: symbol_id,
-            value,
-        })
-    }
-
-    fn visit_variable<'input>(
-        &mut self,
-        ident: &'input str,
-        span: Span,
-    ) -> VResult<ExpressionKind<'input>> {
-        Ok(if let Some(symbol_id) = self.symbol_names.get(ident) {
-            ExpressionKind::Symbol(*symbol_id)
-        } else {
-            ExpressionKind::Error(
-                CompilerErrorKind::UnknownVariable(ident.to_string()).into_message(span),
-            )
-        })
+                ExpressionKind::BinaryOperation { lhs, operator, rhs }
+            }
+            ExpressionKind::Integer(_)
+            | ExpressionKind::Fix(_)
+            | ExpressionKind::Error(_)
+            | ExpressionKind::Nop
+            | ExpressionKind::Symbol(_) => kind,
+        }
     }
 }
 
@@ -141,7 +158,7 @@ mod test {
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
     use crate::{
-        grammar, grammar_test::ErrorVisitor, lexer::Lexer, tokens::FileId, types::Type,
+        grammar, grammar_test::ErrorCollector, lexer::Lexer, tokens::FileId, types::Type,
         DiagnosticCache,
     };
 
@@ -165,7 +182,7 @@ mod test {
                 }],
             });
 
-            ast.visit(&mut visitor).unwrap();
+            visitor.visit(&mut ast);
 
             assert_ron_snapshot!(ast, {
                 ".**.span" => "[span]",
@@ -192,10 +209,10 @@ mod test {
                 }],
             });
 
-            ast.visit(&mut visitor).unwrap();
+            visitor.visit(&mut ast);
 
-            let mut error_visitor = ErrorVisitor::default();
-            ast.visit(&mut error_visitor).unwrap();
+            let mut error_visitor = ErrorCollector::default();
+            error_visitor.visit(&ast);
 
             let errors = error_visitor.errors;
 

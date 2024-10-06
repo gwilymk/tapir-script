@@ -3,7 +3,7 @@ use std::{fs, iter};
 use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
 use crate::{
-    ast::{ExpressionKind, StatementKind, VResult, Visitable, Visitor},
+    ast::{Expression, ExpressionKind, Statement, StatementKind},
     grammar,
     lexer::Lexer,
     tokens::FileId,
@@ -37,9 +37,9 @@ fn snapshot_failures() {
         let parser = grammar::ScriptParser::new();
 
         let errors = match parser.parse(file_id, lexer) {
-            Ok(mut ast) => {
-                let mut error_visitor = ErrorVisitor::default();
-                ast.visit(&mut error_visitor).unwrap();
+            Ok(ast) => {
+                let mut error_visitor = ErrorCollector::default();
+                error_visitor.visit(&ast);
                 error_visitor.errors
             }
             Err(e) => vec![Message::from_lalrpop(e, file_id)],
@@ -64,21 +64,46 @@ fn snapshot_failures() {
 }
 
 #[derive(Default)]
-pub(crate) struct ErrorVisitor {
+pub(crate) struct ErrorCollector {
     pub errors: Vec<Message>,
 }
 
-impl Visitor<()> for ErrorVisitor {
-    fn visit_statement_error<'input>(&mut self, error: Message) -> VResult<StatementKind<'input>> {
-        self.errors.push(error.clone());
-        Ok(StatementKind::Error(error))
+impl ErrorCollector {
+    pub fn visit(&mut self, ast: &[Statement]) {
+        for statement in ast {
+            self.visit_statement(statement);
+        }
     }
 
-    fn visit_expression_error<'input>(
-        &mut self,
-        error: Message,
-    ) -> VResult<ExpressionKind<'input>> {
-        self.errors.push(error.clone());
-        Ok(ExpressionKind::Error(error))
+    fn visit_statement(&mut self, statement: &Statement) {
+        match &statement.kind {
+            StatementKind::Error(e) => {
+                self.errors.push(e.clone());
+            }
+            StatementKind::VariableDeclaration { value: expr, .. }
+            | StatementKind::Assignment { value: expr, .. }
+            | StatementKind::SymbolDeclare { value: expr, .. }
+            | StatementKind::SymbolAssign { value: expr, .. } => self.visit_expr(expr),
+            StatementKind::Wait | StatementKind::Nop => {}
+        }
+    }
+
+    fn visit_expr(&mut self, expr: &Expression) {
+        match &expr.kind {
+            ExpressionKind::Integer(_)
+            | ExpressionKind::Fix(_)
+            | ExpressionKind::Variable(_)
+            | ExpressionKind::Nop
+            | ExpressionKind::Symbol(_) => {}
+            ExpressionKind::BinaryOperation {
+                lhs,
+                operator: _,
+                rhs,
+            } => {
+                self.visit_expr(lhs);
+                self.visit_expr(rhs);
+            }
+            ExpressionKind::Error(message) => self.errors.push(message.clone()),
+        }
     }
 }

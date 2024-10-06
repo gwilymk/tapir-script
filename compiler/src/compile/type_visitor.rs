@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use crate::{
-    ast::{self, Expression, SymbolId, Visitor},
+    ast::{self, Expression, SymbolId},
     reporting::CompilerErrorKind,
     tokens::Span,
     types::Type,
@@ -166,7 +166,6 @@ impl TypeTable {
 mod test {
     use std::{fs, iter};
 
-    use ast::Visitable;
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
     use crate::{
@@ -199,7 +198,7 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            ast.visit(&mut symtab_visitor).unwrap();
+            symtab_visitor.visit(&mut ast);
 
             let symtab = symtab_visitor.into_symtab();
 
@@ -237,7 +236,7 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            ast.visit(&mut symtab_visitor).unwrap();
+            symtab_visitor.visit(&mut ast);
 
             let symtab = symtab_visitor.into_symtab();
 
