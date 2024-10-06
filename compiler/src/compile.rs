@@ -182,8 +182,8 @@ pub mod opcodes {
         Add,
         Sub,
         Mul,
-        Div,
-        Mod,
+        RShiftConst,
+        LShiftConst,
         RealMod,
         RealDiv,
     }
@@ -205,8 +205,8 @@ pub mod opcodes {
                 BinaryOperator::Add => Add,
                 BinaryOperator::Sub => Sub,
                 BinaryOperator::Mul => Mul,
-                BinaryOperator::Div => Div,
-                BinaryOperator::Mod => Mod,
+                BinaryOperator::Div => panic!("Shouldn't be compiling div binops"),
+                BinaryOperator::Mod => panic!("Shouldn't be compiling mod binops"),
                 BinaryOperator::RealDiv => RealDiv,
                 BinaryOperator::RealMod => RealMod,
             }
