@@ -1,11 +1,54 @@
+use std::io::{self, Write};
+
 use serde::Serialize;
 
 use crate::{
     tokens::{self, FileId, LexicalError, LexicalErrorKind, Span},
     types::Type,
+    DiagnosticCache,
 };
 
 pub(crate) mod format;
+
+#[derive(Debug, Clone)]
+pub struct Diagnostics {
+    messages: Vec<Message>,
+}
+
+impl Diagnostics {
+    pub fn new() -> Self {
+        Self { messages: vec![] }
+    }
+
+    pub fn add_message(&mut self, message: impl Into<Message>) {
+        self.messages.push(message.into());
+    }
+
+    pub fn add_lalrpop(
+        &mut self,
+        value: lalrpop_util::ParseError<usize, tokens::Token<'_>, LexicalError>,
+        file_id: FileId,
+    ) {
+        self.add_message(Message::from_lalrpop(value, file_id));
+    }
+
+    pub fn write<W: Write>(
+        &self,
+        mut output: W,
+        cache: &mut DiagnosticCache,
+        colourful: bool,
+    ) -> io::Result<()> {
+        for message in &self.messages {
+            message.write_diagnostic(&mut output, cache, colourful)?;
+        }
+
+        Ok(())
+    }
+
+    pub fn has_any(&self) -> bool {
+        !self.messages.is_empty()
+    }
+}
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Message {

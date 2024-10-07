@@ -2,7 +2,7 @@ use std::{collections::HashMap, mem};
 
 use crate::{
     ast::{Expression, ExpressionKind, Statement, StatementKind, SymbolId},
-    reporting::CompilerErrorKind,
+    reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
 };
 
@@ -31,13 +31,13 @@ impl SymTabVisitor {
         self.symtab
     }
 
-    pub fn visit(&mut self, ast: &mut [Statement<'_>]) {
+    pub fn visit(&mut self, ast: &mut [Statement<'_>], diagnostics: &mut Diagnostics) {
         for statement in ast {
             let kind = mem::take(&mut statement.kind);
 
             statement.kind = match kind {
                 StatementKind::VariableDeclaration { ident, mut value } => {
-                    self.visit_expr(&mut value);
+                    self.visit_expr(&mut value, diagnostics);
 
                     let symbol_id = self.symtab.new_symbol(ident.to_string(), statement.span);
                     self.symbol_names.insert(ident.to_string(), symbol_id);
@@ -48,7 +48,7 @@ impl SymTabVisitor {
                     }
                 }
                 StatementKind::Assignment { ident, mut value } => {
-                    self.visit_expr(&mut value);
+                    self.visit_expr(&mut value, diagnostics);
 
                     if let Some(symbol_id) = self.symbol_names.get(ident) {
                         StatementKind::SymbolAssign {
@@ -56,13 +56,14 @@ impl SymTabVisitor {
                             value,
                         }
                     } else {
-                        StatementKind::Error(
+                        diagnostics.add_message(
                             CompilerErrorKind::UnknownVariable(ident.to_string())
                                 .into_message(statement.span),
-                        )
+                        );
+                        StatementKind::Error
                     }
                 }
-                StatementKind::Error(_)
+                StatementKind::Error
                 | StatementKind::Wait
                 | StatementKind::Nop
                 | StatementKind::SymbolDeclare { .. }
@@ -71,7 +72,7 @@ impl SymTabVisitor {
         }
     }
 
-    fn visit_expr(&self, expr: &mut Expression<'_>) {
+    fn visit_expr(&self, expr: &mut Expression<'_>, diagnostics: &mut Diagnostics) {
         let kind = mem::take(&mut expr.kind);
 
         expr.kind = match kind {
@@ -79,10 +80,12 @@ impl SymTabVisitor {
                 if let Some(symbol_id) = self.symbol_names.get(ident) {
                     ExpressionKind::Symbol(*symbol_id)
                 } else {
-                    ExpressionKind::Error(
+                    diagnostics.add_message(
                         CompilerErrorKind::UnknownVariable(ident.to_string())
                             .into_message(expr.span),
-                    )
+                    );
+
+                    ExpressionKind::Error
                 }
             }
             ExpressionKind::BinaryOperation {
@@ -90,14 +93,14 @@ impl SymTabVisitor {
                 operator,
                 mut rhs,
             } => {
-                self.visit_expr(&mut lhs);
-                self.visit_expr(&mut rhs);
+                self.visit_expr(&mut lhs, diagnostics);
+                self.visit_expr(&mut rhs, diagnostics);
 
                 ExpressionKind::BinaryOperation { lhs, operator, rhs }
             }
             ExpressionKind::Integer(_)
             | ExpressionKind::Fix(_)
-            | ExpressionKind::Error(_)
+            | ExpressionKind::Error
             | ExpressionKind::Nop
             | ExpressionKind::Symbol(_) => kind,
         }
@@ -157,10 +160,7 @@ mod test {
 
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
-    use crate::{
-        grammar, grammar_test::ErrorCollector, lexer::Lexer, tokens::FileId, types::Type,
-        DiagnosticCache,
-    };
+    use crate::{grammar, lexer::Lexer, tokens::FileId, types::Type, DiagnosticCache};
 
     use super::*;
 
@@ -172,7 +172,11 @@ mod test {
             let lexer = Lexer::new(&input, FileId::new(0));
             let parser = grammar::ScriptParser::new();
 
-            let mut ast = parser.parse(FileId::new(0), lexer).unwrap();
+            let mut diagnostics = Diagnostics::new();
+
+            let mut ast = parser
+                .parse(FileId::new(0), &mut diagnostics, lexer)
+                .unwrap();
 
             let mut visitor = SymTabVisitor::new(&CompileSettings {
                 properties: vec![Property {
@@ -182,7 +186,7 @@ mod test {
                 }],
             });
 
-            visitor.visit(&mut ast);
+            visitor.visit(&mut ast, &mut diagnostics);
 
             assert_ron_snapshot!(ast, {
                 ".**.span" => "[span]",
@@ -199,7 +203,9 @@ mod test {
             let lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
-            let mut ast = parser.parse(file_id, lexer).unwrap();
+            let mut diagnostics = Diagnostics::new();
+
+            let mut ast = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let mut visitor = SymTabVisitor::new(&CompileSettings {
                 properties: vec![Property {
@@ -209,12 +215,7 @@ mod test {
                 }],
             });
 
-            visitor.visit(&mut ast);
-
-            let mut error_visitor = ErrorCollector::default();
-            error_visitor.visit(&ast);
-
-            let errors = error_visitor.errors;
+            visitor.visit(&mut ast, &mut diagnostics);
 
             let mut output = Vec::new();
             let mut diagnostics_cache = DiagnosticCache::new(iter::once((
@@ -222,11 +223,9 @@ mod test {
                 (path.to_string_lossy().to_string(), input.clone()),
             )));
 
-            for error in errors {
-                error
-                    .write_diagnostic(&mut output, &mut diagnostics_cache, false)
-                    .unwrap();
-            }
+            diagnostics
+                .write(&mut output, &mut diagnostics_cache, false)
+                .unwrap();
 
             let error_str = String::from_utf8_lossy(&output);
 

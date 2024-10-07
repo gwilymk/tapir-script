@@ -4,11 +4,12 @@ use crate::{
     },
     ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator, Fix},
     Message,
+    reporting::Diagnostics,
 };
 
 use num_traits::Num;
 
-grammar<'input>(file_id: FileId);
+grammar<'input>(file_id: FileId, diagnostics: &mut Diagnostics);
 
 extern {
     type Location = usize;
@@ -45,7 +46,10 @@ StatementKind: StatementKind<'input> = {
     var <ident: identifier> "=" <value: Expression> ";" => StatementKind::VariableDeclaration { <> },
     <ident: identifier> "=" <value: Expression> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
-    <error: !> ";" => StatementKind::Error(Message::from_lalrpop(<>.error, file_id)),
+    <error: !> ";" => {
+        diagnostics.add_lalrpop(<>.error, file_id);
+        StatementKind::Error
+    }
 }
 
 Expression: Box<Expression<'input>> = {
@@ -78,16 +82,25 @@ Term: Box<Expression<'input>> = {
     "(" <Expression> ")",
     <Num>,
     <start: @L> <ident: identifier> <end: @R> => ExpressionKind::Variable(ident).with_span(file_id, start, end),
-    <start: @L> <error: !> <end: @R> => ExpressionKind::Error(Message::from_lalrpop(error.error, file_id)).with_span(file_id, start, end),
+    <start: @L> <error: !> <end: @R> => {
+        diagnostics.add_message(Message::from_lalrpop(error.error, file_id));
+        ExpressionKind::Error.with_span(file_id, start, end)
+    }
 }
 
 Num: Box<Expression<'input>> = {
     <start: @L> <value: integer> <end: @R> => match value.parse::<i32>() {
         Ok(value) => ExpressionKind::Integer(value).with_span(file_id, start, end),
-        Err(e) => LexicalErrorKind::from(e).with_span(file_id, start, end).into(),
+        Err(e) => {
+            diagnostics.add_message(LexicalErrorKind::from(e).with_span(file_id, start, end));
+            ExpressionKind::Error.with_span(file_id, start, end)
+        }
     },
     <start: @L> <value: fix> <end: @R> => match Fix::from_str_radix(value, 10) {
         Ok(value) => ExpressionKind::Fix(value).with_span(file_id, start, end),
-        Err(e) => LexicalErrorKind::from(e).with_span(file_id, start, end).into(),
+        Err(e) => {
+            diagnostics.add_message(LexicalErrorKind::from(e).with_span(file_id, start, end));
+            ExpressionKind::Error.with_span(file_id, start, end)
+        }
     }
 }

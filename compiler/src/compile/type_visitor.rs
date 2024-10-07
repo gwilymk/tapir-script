@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use crate::{
     ast::{self, Expression, SymbolId},
-    reporting::CompilerErrorKind,
+    reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::Type,
     Message,
@@ -30,22 +30,25 @@ impl TypeVisitor {
         symbol_id: SymbolId,
         ty: Type,
         span: Span,
-    ) -> Result<(), Message> {
+        diagnostics: &mut Diagnostics,
+    ) {
         if self.type_table.len() <= symbol_id.0 {
             self.type_table.resize(symbol_id.0 + 1, None);
         }
 
         if self.type_table[symbol_id.0].is_some_and(|table_type| table_type != ty) {
-            return Err(CompilerErrorKind::TypeError {
-                expected: self.type_table[symbol_id.0].unwrap(),
-                actual: ty,
-            }
-            .into_message(span));
+            diagnostics.add_message(
+                CompilerErrorKind::TypeError {
+                    expected: self.type_table[symbol_id.0].unwrap(),
+                    actual: ty,
+                }
+                .into_message(span),
+            );
+
+            return;
         }
 
         self.type_table[symbol_id.0] = Some(ty);
-
-        Ok(())
     }
 
     pub fn get_type(
@@ -53,20 +56,30 @@ impl TypeVisitor {
         symbol_id: SymbolId,
         span: Span,
         symtab: &SymTab,
-    ) -> Result<Type, Message> {
+        diagnostics: &mut Diagnostics,
+    ) -> Type {
         match self.type_table.get(symbol_id.0) {
-            Some(Some(ty)) => Ok(*ty),
-            _ => Err(
-                CompilerErrorKind::UnknownType(symtab.name_for_symbol(symbol_id))
-                    .into_message(span),
-            ),
+            Some(Some(ty)) => *ty,
+            _ => {
+                diagnostics.add_message(
+                    CompilerErrorKind::UnknownType(symtab.name_for_symbol(symbol_id))
+                        .into_message(span),
+                );
+
+                Type::Error
+            }
         }
     }
 
-    pub fn visit(&mut self, ast: &[ast::Statement<'_>], symtab: &SymTab) -> Result<(), Message> {
+    pub fn visit(
+        &mut self,
+        ast: &[ast::Statement<'_>],
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) {
         for statement in ast {
             match &statement.kind {
-                ast::StatementKind::Error(_) => {}
+                ast::StatementKind::Error => {}
                 ast::StatementKind::VariableDeclaration { .. } => {
                     unreachable!("Should have been removed by symbol resolution")
                 }
@@ -78,21 +91,21 @@ impl TypeVisitor {
                 ast::StatementKind::SymbolDeclare { ident, value } => {
                     self.resolve_type(
                         *ident,
-                        self.type_for_expression(value, symtab)?,
+                        self.type_for_expression(value, symtab, diagnostics),
                         statement.span,
-                    )?;
+                        diagnostics,
+                    );
                 }
                 ast::StatementKind::SymbolAssign { ident, value } => {
                     self.resolve_type(
                         *ident,
-                        self.type_for_expression(value, symtab)?,
+                        self.type_for_expression(value, symtab, diagnostics),
                         statement.span,
-                    )?;
+                        diagnostics,
+                    );
                 }
             }
         }
-
-        Ok(())
     }
 
     pub fn into_type_table(self, symtab: &SymTab) -> Result<TypeTable, Message> {
@@ -115,37 +128,42 @@ impl TypeVisitor {
         &self,
         expression: &Expression<'_>,
         symtab: &SymTab,
-    ) -> Result<Type, Message> {
+        diagnostics: &mut Diagnostics,
+    ) -> Type {
         match &expression.kind {
-            ast::ExpressionKind::Integer(_) => Ok(Type::Int),
-            ast::ExpressionKind::Fix(_) => Ok(Type::Fix),
+            ast::ExpressionKind::Integer(_) => Type::Int,
+            ast::ExpressionKind::Fix(_) => Type::Fix,
             ast::ExpressionKind::Variable(_) => {
                 unreachable!("Should have been removed by symbol resolution")
             }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
-                let lhs_type = self.type_for_expression(lhs, symtab)?;
-                let rhs_type = self.type_for_expression(rhs, symtab)?;
+                let lhs_type = self.type_for_expression(lhs, symtab, diagnostics);
+                let rhs_type = self.type_for_expression(rhs, symtab, diagnostics);
 
                 if lhs_type != rhs_type {
-                    return Err(
+                    diagnostics.add_message(
                         CompilerErrorKind::BinaryOperatorTypeError { lhs_type, rhs_type }
                             .into_message(expression.span),
                     );
+
+                    return Type::Error;
                 }
 
                 if !operator.can_handle_type(lhs_type) {
-                    return Err(CompilerErrorKind::InvalidTypeForBinaryOperator {
-                        type_: lhs_type,
-                    }
-                    .into_message(lhs.span));
+                    diagnostics.add_message(
+                        CompilerErrorKind::InvalidTypeForBinaryOperator { type_: lhs_type }
+                            .into_message(lhs.span),
+                    );
+
+                    return Type::Error;
                 }
 
-                Ok(lhs_type)
+                lhs_type
             }
-            ast::ExpressionKind::Error(_) => Ok(Type::Error),
-            ast::ExpressionKind::Nop => Ok(Type::Error),
+            ast::ExpressionKind::Error => Type::Error,
+            ast::ExpressionKind::Nop => Type::Error,
             ast::ExpressionKind::Symbol(symbol_id) => {
-                self.get_type(*symbol_id, expression.span, symtab)
+                self.get_type(*symbol_id, expression.span, symtab, diagnostics)
             }
         }
     }
@@ -187,7 +205,11 @@ mod test {
             let lexer = Lexer::new(&input, FileId::new(0));
             let parser = grammar::ScriptParser::new();
 
-            let mut ast = parser.parse(FileId::new(0), lexer).unwrap();
+            let mut diagnostics = Diagnostics::new();
+
+            let mut ast = parser
+                .parse(FileId::new(0), &mut diagnostics, lexer)
+                .unwrap();
 
             let settings = CompileSettings {
                 properties: vec![Property {
@@ -198,12 +220,12 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit(&mut ast);
+            symtab_visitor.visit(&mut ast, &mut diagnostics);
 
             let symtab = symtab_visitor.into_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(&ast, &symtab).unwrap();
+            type_visitor.visit(&ast, &symtab, &mut diagnostics);
 
             let type_table = type_visitor.into_type_table(&symtab).unwrap();
 
@@ -225,7 +247,9 @@ mod test {
             let lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
-            let mut ast = parser.parse(file_id, lexer).unwrap();
+            let mut diagnostics = Diagnostics::new();
+
+            let mut ast = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let settings = CompileSettings {
                 properties: vec![Property {
@@ -236,19 +260,20 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit(&mut ast);
+            symtab_visitor.visit(&mut ast, &mut diagnostics);
 
             let symtab = symtab_visitor.into_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            let err = type_visitor.visit(&ast, &symtab).unwrap_err();
+            type_visitor.visit(&ast, &symtab, &mut diagnostics);
 
             let mut err_str = vec![];
             let mut diagnostic_cache = DiagnosticCache::new(iter::once((
                 file_id,
                 (path.to_string_lossy().to_string(), input.clone()),
             )));
-            err.write_diagnostic(&mut err_str, &mut diagnostic_cache, false)
+            diagnostics
+                .write(&mut err_str, &mut diagnostic_cache, false)
                 .unwrap();
 
             let err_str = String::from_utf8_lossy(&err_str);

@@ -2,13 +2,7 @@ use std::{fs, iter};
 
 use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
-use crate::{
-    ast::{Expression, ExpressionKind, Statement, StatementKind},
-    grammar,
-    lexer::Lexer,
-    tokens::FileId,
-    DiagnosticCache, Message,
-};
+use crate::{grammar, lexer::Lexer, reporting::Diagnostics, tokens::FileId, DiagnosticCache};
 
 #[test]
 fn snapshot_success() {
@@ -18,7 +12,13 @@ fn snapshot_success() {
         let lexer = Lexer::new(&input, FileId::new(0));
         let parser = grammar::ScriptParser::new();
 
-        let ast = parser.parse(FileId::new(0), lexer).unwrap();
+        let mut diagnostics = Diagnostics::new();
+
+        let ast = parser
+            .parse(FileId::new(0), &mut diagnostics, lexer)
+            .unwrap();
+
+        assert!(!diagnostics.has_any());
 
         assert_ron_snapshot!(ast, {
             ".**.span" => "[span]",
@@ -36,14 +36,14 @@ fn snapshot_failures() {
         let lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
-        let errors = match parser.parse(file_id, lexer) {
-            Ok(ast) => {
-                let mut error_visitor = ErrorCollector::default();
-                error_visitor.visit(&ast);
-                error_visitor.errors
+        let mut diagnostics = Diagnostics::new();
+
+        match parser.parse(file_id, &mut diagnostics, lexer) {
+            Ok(_) => {}
+            Err(e) => {
+                diagnostics.add_lalrpop(e, file_id);
             }
-            Err(e) => vec![Message::from_lalrpop(e, file_id)],
-        };
+        }
 
         let mut output = Vec::new();
         let mut diagnostics_cache = DiagnosticCache::new(iter::once((
@@ -51,59 +51,12 @@ fn snapshot_failures() {
             (path.to_string_lossy().to_string(), input.clone()),
         )));
 
-        for error in errors {
-            error
-                .write_diagnostic(&mut output, &mut diagnostics_cache, false)
-                .unwrap();
-        }
+        diagnostics
+            .write(&mut output, &mut diagnostics_cache, false)
+            .unwrap();
 
         let error_str = String::from_utf8_lossy(&output);
 
         assert_snapshot!(error_str);
     });
-}
-
-#[derive(Default)]
-pub(crate) struct ErrorCollector {
-    pub errors: Vec<Message>,
-}
-
-impl ErrorCollector {
-    pub fn visit(&mut self, ast: &[Statement]) {
-        for statement in ast {
-            self.visit_statement(statement);
-        }
-    }
-
-    fn visit_statement(&mut self, statement: &Statement) {
-        match &statement.kind {
-            StatementKind::Error(e) => {
-                self.errors.push(e.clone());
-            }
-            StatementKind::VariableDeclaration { value: expr, .. }
-            | StatementKind::Assignment { value: expr, .. }
-            | StatementKind::SymbolDeclare { value: expr, .. }
-            | StatementKind::SymbolAssign { value: expr, .. } => self.visit_expr(expr),
-            StatementKind::Wait | StatementKind::Nop => {}
-        }
-    }
-
-    fn visit_expr(&mut self, expr: &Expression) {
-        match &expr.kind {
-            ExpressionKind::Integer(_)
-            | ExpressionKind::Fix(_)
-            | ExpressionKind::Variable(_)
-            | ExpressionKind::Nop
-            | ExpressionKind::Symbol(_) => {}
-            ExpressionKind::BinaryOperation {
-                lhs,
-                operator: _,
-                rhs,
-            } => {
-                self.visit_expr(lhs);
-                self.visit_expr(rhs);
-            }
-            ExpressionKind::Error(message) => self.errors.push(message.clone()),
-        }
-    }
 }

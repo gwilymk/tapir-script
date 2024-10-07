@@ -1,8 +1,7 @@
 #![deny(clippy::all)]
 use lalrpop_util::lalrpop_mod;
 
-use lexer::Lexer;
-use tokens::FileId;
+use reporting::Diagnostics;
 
 mod ast;
 mod compile;
@@ -20,17 +19,8 @@ pub use compile::{CompileSettings, Property};
 pub use reporting::{format::DiagnosticCache, Message};
 pub use types::Type;
 
-pub fn compile(input: &str, compile_settings: CompileSettings) -> Result<Vec<u16>, Message> {
-    let file_id = FileId::new(0);
-
-    let lexer = Lexer::new(input, file_id);
-    let parser = grammar::ScriptParser::new();
-
-    let ast = parser
-        .parse(file_id, lexer)
-        .map_err(|e| Message::from_lalrpop(e, file_id))?;
-
-    let bytecode = compile::compile(ast, &compile_settings)?;
+pub fn compile(input: &str, compile_settings: CompileSettings) -> Result<Vec<u16>, Diagnostics> {
+    let bytecode = compile::compile(input, &compile_settings)?;
 
     Ok(bytecode.compile())
 }

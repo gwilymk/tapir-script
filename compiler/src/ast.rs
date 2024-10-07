@@ -1,7 +1,6 @@
 use crate::{
-    tokens::{FileId, LexicalError, Span},
+    tokens::{FileId, Span},
     types::Type,
-    Message,
 };
 
 use serde::Serialize;
@@ -19,7 +18,7 @@ pub struct Statement<'input> {
 
 #[derive(Clone, Debug, Default, Serialize)]
 pub enum StatementKind<'input> {
-    Error(Message),
+    Error,
     VariableDeclaration {
         ident: &'input str,
         value: Box<Expression<'input>>,
@@ -58,15 +57,6 @@ pub struct Expression<'input> {
     pub kind: ExpressionKind<'input>,
 }
 
-impl<'input> From<LexicalError> for Box<Expression<'input>> {
-    fn from(value: LexicalError) -> Self {
-        Box::new(Expression {
-            span: value.span,
-            kind: ExpressionKind::Error(Message::from(value)),
-        })
-    }
-}
-
 #[derive(Clone, Default, Debug, Serialize)]
 pub enum ExpressionKind<'input> {
     Integer(i32),
@@ -77,7 +67,7 @@ pub enum ExpressionKind<'input> {
         operator: BinaryOperator,
         rhs: Box<Expression<'input>>,
     },
-    Error(Message),
+    Error,
     #[default]
     Nop,
 

@@ -18,18 +18,7 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visit
           operator: Add,
           rhs: Expression(
             span: "[span]",
-            kind: Error(Message(
-              span: "[span]",
-              error: ParseError(UnrecognizedToken(
-                token: "Semicolon",
-                expected: [
-                  "identifier",
-                  "integer",
-                  "fix",
-                  "\"(\"",
-                ],
-              )),
-            )),
+            kind: Error,
           ),
         ),
       ),

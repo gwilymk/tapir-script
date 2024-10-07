@@ -2,9 +2,12 @@ use symtab_visitor::{SymTab, SymTabVisitor};
 use type_visitor::TypeVisitor;
 
 use crate::{
-    ast::{self, Statement, SymbolId},
+    ast::{self, SymbolId},
+    grammar,
+    lexer::Lexer,
+    reporting::Diagnostics,
+    tokens::FileId,
     types::Type,
-    Message,
 };
 
 mod symtab_visitor;
@@ -23,13 +26,28 @@ pub struct CompileSettings {
     pub properties: Vec<Property>,
 }
 
-pub fn compile(mut ast: Vec<Statement>, settings: &CompileSettings) -> Result<Bytecode, Message> {
+pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diagnostics> {
+    let mut diagnostics = Diagnostics::new();
+
+    let file_id = FileId::new(0);
+
+    let lexer = Lexer::new(input, file_id);
+    let parser = grammar::ScriptParser::new();
+
+    let mut ast = match parser.parse(file_id, &mut diagnostics, lexer) {
+        Ok(ast) => ast,
+        Err(e) => {
+            diagnostics.add_lalrpop(e, file_id);
+            return Err(diagnostics);
+        }
+    };
+
     // build the symbol table
     let symtab = {
         let mut sym_tab_visitor = SymTabVisitor::new(settings);
 
         // resolve all the identifiers
-        sym_tab_visitor.visit(&mut ast);
+        sym_tab_visitor.visit(&mut ast, &mut diagnostics);
 
         sym_tab_visitor.into_symtab()
     };
@@ -37,15 +55,19 @@ pub fn compile(mut ast: Vec<Statement>, settings: &CompileSettings) -> Result<By
     let type_table = {
         let mut type_visitor = TypeVisitor::new(settings);
 
-        type_visitor.visit(&ast, &symtab)?;
+        type_visitor.visit(&ast, &symtab, &mut diagnostics);
 
-        type_visitor.into_type_table(&symtab)?
+        type_visitor.into_type_table(&symtab);
     };
+
+    if diagnostics.has_any() {
+        return Err(diagnostics);
+    }
 
     let mut compiler = Compiler::new();
 
     for statement in ast {
-        compiler.compile_statement(&statement, &symtab)?;
+        compiler.compile_statement(&statement, &symtab);
     }
 
     Ok(compiler.bytecode)
@@ -64,13 +86,9 @@ impl Compiler {
         }
     }
 
-    pub fn compile_statement(
-        &mut self,
-        statement: &ast::Statement,
-        symtab: &SymTab,
-    ) -> Result<(), Message> {
+    pub fn compile_statement(&mut self, statement: &ast::Statement, symtab: &SymTab) {
         match &statement.kind {
-            ast::StatementKind::Error(message) => return Err(message.clone()),
+            ast::StatementKind::Error => panic!("Should never have to compile an error"),
             ast::StatementKind::VariableDeclaration { .. } => {
                 panic!("Should have resolved this in symbol visiting")
             }
@@ -82,12 +100,12 @@ impl Compiler {
             }
             ast::StatementKind::Nop => {}
             ast::StatementKind::SymbolDeclare { ident, value } => {
-                self.compile_expression(value, symtab)?;
+                self.compile_expression(value, symtab);
                 self.stack.pop();
                 self.stack.push(Some(*ident)); // this is now on the stack at this location
             }
             ast::StatementKind::SymbolAssign { ident, value } => {
-                self.compile_expression(value, symtab)?;
+                self.compile_expression(value, symtab);
 
                 if let Some(property) = symtab.get_property(*ident) {
                     self.bytecode
@@ -100,15 +118,9 @@ impl Compiler {
                 }
             }
         }
-
-        Ok(())
     }
 
-    fn compile_expression(
-        &mut self,
-        value: &ast::Expression,
-        symtab: &SymTab,
-    ) -> Result<(), Message> {
+    fn compile_expression(&mut self, value: &ast::Expression, symtab: &SymTab) {
         match &value.kind {
             ast::ExpressionKind::Integer(i) => {
                 self.bytecode.add_opcode(Opcode::Push8(*i as i8));
@@ -119,8 +131,8 @@ impl Compiler {
                 unreachable!("Should have resolved this in symbol visiting")
             }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
-                self.compile_expression(lhs, symtab)?;
-                self.compile_expression(rhs, symtab)?;
+                self.compile_expression(lhs, symtab);
+                self.compile_expression(rhs, symtab);
                 self.stack.pop();
                 self.stack.pop();
                 self.stack.push(None);
@@ -128,7 +140,7 @@ impl Compiler {
                 self.bytecode
                     .add_opcode(Opcode::MathsOp(MathsOp::from(*operator)));
             }
-            ast::ExpressionKind::Error(message) => return Err(message.clone()),
+            ast::ExpressionKind::Error => panic!("Should never have to compile an error"),
             ast::ExpressionKind::Nop => {}
             ast::ExpressionKind::Symbol(symbol_id) => {
                 if let Some(property) = symtab.get_property(*symbol_id) {
@@ -142,8 +154,6 @@ impl Compiler {
                 self.stack.push(Some(*symbol_id));
             }
         }
-
-        Ok(())
     }
 
     fn get_offset(&self, symbol_id: SymbolId) -> usize {
@@ -337,19 +347,12 @@ mod test {
 
     use insta::{assert_ron_snapshot, glob};
 
-    use crate::{grammar, lexer::Lexer, tokens::FileId};
-
     use super::*;
 
     #[test]
     fn compiler_snapshot_tests() {
         glob!("snapshot_tests", "compiler/*.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
-
-            let lexer = Lexer::new(&input, FileId::new(0));
-            let parser = grammar::ScriptParser::new();
-
-            let ast = parser.parse(FileId::new(0), lexer).unwrap();
 
             let compiler_settings = CompileSettings {
                 properties: vec![Property {
@@ -359,7 +362,7 @@ mod test {
                 }],
             };
 
-            let bytecode = compile(ast, &compiler_settings).unwrap();
+            let bytecode = compile(&input, &compiler_settings).unwrap();
 
             assert_ron_snapshot!(bytecode.get_opcodes());
         });
