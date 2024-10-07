@@ -10,14 +10,14 @@ use crate::{
 
 pub(crate) mod format;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Diagnostics {
     messages: Vec<Message>,
 }
 
 impl Diagnostics {
     pub fn new() -> Self {
-        Self { messages: vec![] }
+        Self::default()
     }
 
     pub fn add_message(&mut self, message: impl Into<Message>) {

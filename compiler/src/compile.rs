@@ -52,12 +52,12 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
         sym_tab_visitor.into_symtab()
     };
 
-    let type_table = {
+    let _type_table = {
         let mut type_visitor = TypeVisitor::new(settings);
 
         type_visitor.visit(&ast, &symtab, &mut diagnostics);
 
-        type_visitor.into_type_table(&symtab);
+        type_visitor.into_type_table(&symtab, &mut diagnostics)
     };
 
     if diagnostics.has_any() {

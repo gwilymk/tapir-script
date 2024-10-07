@@ -5,7 +5,6 @@ use crate::{
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::Type,
-    Message,
 };
 
 use super::{symtab_visitor::SymTab, CompileSettings};
@@ -108,20 +107,20 @@ impl TypeVisitor {
         }
     }
 
-    pub fn into_type_table(self, symtab: &SymTab) -> Result<TypeTable, Message> {
+    pub fn into_type_table(self, symtab: &SymTab, diagnostics: &mut Diagnostics) -> TypeTable {
         let mut types = Vec::with_capacity(self.type_table.len());
         for (i, ty) in self.type_table.into_iter().enumerate() {
             if let Some(ty) = ty {
                 types.push(ty);
             } else {
-                return Err(
+                diagnostics.add_message(
                     CompilerErrorKind::UnknownType(symtab.name_for_symbol(SymbolId(i)))
                         .into_message(symtab.span_for_symbol(SymbolId(i))),
                 );
             }
         }
 
-        Ok(TypeTable { types })
+        TypeTable { types }
     }
 
     fn type_for_expression(
@@ -227,7 +226,7 @@ mod test {
             let mut type_visitor = TypeVisitor::new(&settings);
             type_visitor.visit(&ast, &symtab, &mut diagnostics);
 
-            let type_table = type_visitor.into_type_table(&symtab).unwrap();
+            let type_table = type_visitor.into_type_table(&symtab, &mut diagnostics);
 
             let all_types = symtab
                 .all_symbols()
@@ -266,6 +265,8 @@ mod test {
 
             let mut type_visitor = TypeVisitor::new(&settings);
             type_visitor.visit(&ast, &symtab, &mut diagnostics);
+
+            type_visitor.into_type_table(&symtab, &mut diagnostics);
 
             let mut err_str = vec![];
             let mut diagnostic_cache = DiagnosticCache::new(iter::once((
