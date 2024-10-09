@@ -120,8 +120,11 @@ impl<'input> Compiler<'input> {
 
         // if there is no return value, then no return is required to be compiled so we should add one
         if function.return_types.types.is_empty() {
-            self.bytecode
-                .add_opcode(Opcode::Return(function.arguments.len() as u8, 0));
+            self.bytecode.add_opcode(Opcode::Return {
+                args: 0,
+                rets: 0,
+                shift: 0, // can be zero because we will have dropped after the block was compiled
+            });
         }
     }
 
@@ -219,22 +222,11 @@ impl<'input> Compiler<'input> {
 
                 let distance_to_bottom = self.stack.len() - stack_bottom;
 
-                if values.len() == 1 {
-                    self.bytecode.add_opcode(Opcode::Move(
-                        distance_to_bottom.try_into().expect("Too far to move"),
-                    ));
-                } else {
-                    // now move all of these to the bottom of the stack, in reverse order
-                    self.bytecode.add_opcode(Opcode::MoveRange(
-                        values.len().try_into().expect("too much to move"),
-                        (distance_to_bottom - values.len())
-                            .try_into()
-                            .expect("too far to move"),
-                    ));
-                }
-
-                self.bytecode
-                    .add_opcode(Opcode::Return(num_args as u8, values.len() as u8));
+                self.bytecode.add_opcode(Opcode::Return {
+                    args: num_args as u8,
+                    rets: values.len() as u8,
+                    shift: distance_to_bottom.try_into().expect("Too far to shift"),
+                });
 
                 // we should stop compiling this block
                 return ControlFlow::Break(());
@@ -363,12 +355,11 @@ pub mod opcodes {
         SetProp(u8),
         Wait,
         Move(u8),
-        MoveRange(u8, u8),
         MathsOp(MathsOp),
         JumpIfFalse(u16),
         Jump(u16),
         Call(u16),
-        Return(u8, u8),
+        Return { args: u8, rets: u8, shift: u8 },
     }
 
     impl Display for Opcode {
@@ -397,9 +388,8 @@ pub mod opcodes {
                 Opcode::JumpIfFalse(target) => write!(f, "jif\t{target}"),
                 Opcode::Jump(target) => write!(f, "j\t{target}"),
                 Opcode::Call(target) => write!(f, "call\t{target}"),
-                Opcode::Return(args, rets) => write!(f, "ret\targs={args} rets={rets}"),
-                Opcode::MoveRange(size, distance) => {
-                    write!(f, "mover\tsize={size} dist={distance}")
+                Opcode::Return { args, rets, shift } => {
+                    write!(f, "ret\targs={args} rets={rets} shift={shift}")
                 }
             }
         }
@@ -439,8 +429,7 @@ pub mod opcodes {
                 | Self::JumpIfFalse(_)
                 | Self::Jump(_)
                 | Self::Call(_)
-                | Self::Return(_, _)
-                | Self::MoveRange(_, _) => 2,
+                | Self::Return { .. } => 2,
                 _ => 1,
             }
         }
@@ -566,13 +555,9 @@ impl Bytecode {
                     one_arg!(Call, 0);
                     result.push(target);
                 }
-                Opcode::Return(args, rets) => {
+                Opcode::Return { args, rets, shift } => {
                     one_arg!(Return, args);
-                    result.push((rets as u16).to_be());
-                }
-                Opcode::MoveRange(size, dist) => {
-                    one_arg!(MoveRange, size);
-                    result.push((dist as u16).to_be());
+                    result.push(u16::from_be_bytes([rets, shift]));
                 }
             }
         }
