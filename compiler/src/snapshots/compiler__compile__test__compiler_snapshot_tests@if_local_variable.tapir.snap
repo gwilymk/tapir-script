@@ -14,3 +14,4 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/if_local_va
 00000009: j	12
 00000011: drop	1
 00000012: drop	1
+00000013: ret	args=0 rets=0

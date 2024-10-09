@@ -16,3 +16,4 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/if_basic.ta
 00000012: move	2
 00000013: drop	1
 00000014: drop	1
+00000015: ret	args=0 rets=0

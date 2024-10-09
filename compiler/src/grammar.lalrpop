@@ -117,7 +117,7 @@ StatementKind: StatementKind<'input> = {
         condition, true_block, false_block: false_block.unwrap_or_else(|| vec![]),
      },
 
-    <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" => StatementKind::Call { <> },
+    <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Call { <> },
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
 
     <error: !> ";" => {

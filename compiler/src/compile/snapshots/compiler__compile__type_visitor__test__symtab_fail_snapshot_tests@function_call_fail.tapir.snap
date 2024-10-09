@@ -3,13 +3,6 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/function_call_fail.tapir
 ---
-Error: Unexpected token Semicolon, expected one of wait, var, "if", "fn", return, identifier
-    ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/function_call_fail.tapir:1:1]
-    │
- 14 │ baz();
-    │      ┬  
-    │      ╰── Unexpected token
-────╯
 Error: Left hand side has type fix but right hand side has type int
    ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/function_call_fail.tapir:1:1]
    │
@@ -35,6 +28,6 @@ Error: No such function baz
     ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/function_call_fail.tapir:1:1]
     │
  14 │ baz();
-    │ ──┬──  
-    │   ╰──── Unknown function
+    │ ───┬──  
+    │    ╰──── Unknown function
 ────╯

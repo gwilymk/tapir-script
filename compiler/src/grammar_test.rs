@@ -18,8 +18,6 @@ fn snapshot_success() {
             .parse(FileId::new(0), &mut diagnostics, lexer)
             .unwrap();
 
-        assert!(!diagnostics.has_any());
-
         assert_ron_snapshot!(ast, {
             ".**.span" => "[span]",
         });

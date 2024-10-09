@@ -1,0 +1,6 @@
+foo();
+
+fn foo() -> (int, int, bool) {
+    var x = 3;
+    return x + 3, x * 3, true;
+}

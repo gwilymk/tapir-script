@@ -104,6 +104,9 @@ impl State {
                     let target_for_jump = bytecode[self.pc];
                     self.pc = target_for_jump as usize;
                 }
+                bytecode::Instruction::Call => todo!(),
+                bytecode::Instruction::Return => todo!(),
+                bytecode::Instruction::MoveRange => todo!(),
             }
         }
     }

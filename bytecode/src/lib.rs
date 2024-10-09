@@ -17,6 +17,9 @@ pub enum Instruction {
     MathsOp,
     JumpIfFalse,
     Jump,
+    Call,
+    Return,
+    MoveRange,
 }
 
 #[repr(u8)]

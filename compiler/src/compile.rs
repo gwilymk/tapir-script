@@ -1,8 +1,10 @@
+use std::{collections::HashMap, ops::ControlFlow};
+
 use symtab_visitor::{SymTab, SymTabVisitor};
-use type_visitor::TypeVisitor;
+use type_visitor::{TypeTable, TypeVisitor};
 
 use crate::{
-    ast::{self, SymbolId},
+    ast::{self, Function, MaybeResolved, Statement, SymbolId},
     grammar,
     lexer::Lexer,
     reporting::Diagnostics,
@@ -51,7 +53,7 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
         type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
     }
 
-    let _type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);
+    let type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);
 
     if diagnostics.has_any() {
         return Err(diagnostics);
@@ -60,35 +62,99 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
     let mut compiler = Compiler::new();
 
     for function in ast.functions {
-        compiler.compile_block(&function.statements, sym_tab_visitor.get_symtab());
+        compiler.compile_function(&function, sym_tab_visitor.get_symtab(), &type_table);
     }
+
+    compiler.finalise();
 
     Ok(compiler.bytecode)
 }
 
-struct Compiler {
+struct Compiler<'input> {
     stack: Vec<Option<SymbolId>>,
+    function_calls: Vec<(&'input str, Jump)>,
+    function_locations: HashMap<&'input str, Label>,
     bytecode: Bytecode,
 }
 
-impl Compiler {
+impl<'input> Compiler<'input> {
     pub fn new() -> Self {
         Self {
             stack: vec![],
+            function_calls: vec![],
+            function_locations: HashMap::from([("@toplevel", Label(0))]),
             bytecode: Bytecode::new(),
         }
     }
 
-    pub fn compile_block(&mut self, block: &[ast::Statement], symtab: &SymTab) {
+    pub fn compile_function(
+        &mut self,
+        function: &Function<'input>,
+        symtab: &SymTab,
+        types: &TypeTable,
+    ) {
+        if function.name != "@toplevel" {
+            // the stack will be arguments, then the return pointer. However, if we're at toplevel, then
+            // the stack will be empty to start with
+            for argument in &function.arguments {
+                let MaybeResolved::Resolved(symbol_id) = argument.name else {
+                    panic!("Should have been resolved by the symbol visitor");
+                };
+
+                self.stack.push(Some(symbol_id));
+            }
+
+            self.stack.push(None);
+        }
+
+        self.function_locations
+            .insert(function.name, self.bytecode.new_label());
+
+        self.compile_block(
+            &function.statements,
+            symtab,
+            types,
+            self.stack.len(),
+            function.arguments.len(),
+        );
+
+        // if there is no return value, then no return is required to be compiled so we should add one
+        if function.return_types.types.is_empty() {
+            self.bytecode
+                .add_opcode(Opcode::Return(function.arguments.len() as u8, 0));
+        }
+    }
+
+    fn compile_block(
+        &mut self,
+        statements: &[Statement<'input>],
+        symtab: &SymTab,
+        types: &TypeTable,
+        stack_bottom: usize,
+        num_args: usize,
+    ) {
         let previous_stack_size = self.stack.len();
-        for statement in block {
-            self.compile_statement(statement, symtab);
+
+        for statement in statements {
+            if self.compile_statement(statement, symtab, types, stack_bottom, num_args)
+                == ControlFlow::Break(())
+            {
+                break;
+            };
         }
 
         self.compile_drop_to(previous_stack_size);
     }
 
-    fn compile_statement(&mut self, statement: &ast::Statement, symtab: &SymTab) {
+    #[must_use]
+    fn compile_statement(
+        &mut self,
+        statement: &Statement<'input>,
+        symtab: &SymTab,
+        types: &TypeTable,
+        stack_bottom: usize,
+        num_args: usize,
+    ) -> ControlFlow<()> {
         match &statement.kind {
             ast::StatementKind::Error => panic!("Should never have to compile an error"),
             ast::StatementKind::VariableDeclaration { .. } => {
@@ -129,7 +195,7 @@ impl Compiler {
                 self.compile_expression(condition, symtab);
                 let if_false_jump = self.bytecode.new_jump_if_false();
 
-                self.compile_block(true_block, symtab);
+                self.compile_block(true_block, symtab, types, stack_bottom, num_args);
                 self.compile_drop_to(stack_depth_before_if);
 
                 let if_true_jump = self.bytecode.new_jump();
@@ -140,18 +206,62 @@ impl Compiler {
                 // insert a fake additional stack value for the bool that will be left
                 self.stack.push(None);
 
-                self.compile_block(false_block, symtab);
+                self.compile_block(false_block, symtab, types, stack_bottom, num_args);
 
                 self.compile_drop_to(stack_depth_before_if);
                 let end_target = self.bytecode.new_label();
                 self.bytecode.patch_jump(if_true_jump, end_target);
             }
-            ast::StatementKind::Return { values } => todo!("RETURN"),
-            ast::StatementKind::Call { name, arguments } => todo!("CALL"),
+            ast::StatementKind::Return { values } => {
+                for ret_value in values {
+                    self.compile_expression(ret_value, symtab);
+                }
+
+                let distance_to_bottom = self.stack.len() - stack_bottom;
+
+                if values.len() == 1 {
+                    self.bytecode.add_opcode(Opcode::Move(
+                        distance_to_bottom.try_into().expect("Too far to move"),
+                    ));
+                } else {
+                    // now move all of these to the bottom of the stack, in reverse order
+                    self.bytecode.add_opcode(Opcode::MoveRange(
+                        values.len().try_into().expect("too much to move"),
+                        (distance_to_bottom - values.len())
+                            .try_into()
+                            .expect("too far to move"),
+                    ));
+                }
+
+                self.bytecode
+                    .add_opcode(Opcode::Return(num_args as u8, values.len() as u8));
+
+                // we should stop compiling this block
+                return ControlFlow::Break(());
+            }
+            ast::StatementKind::Call { name, arguments } => {
+                let number_of_returns = types.num_function_returns(name);
+                let stack_before_call = self.stack.len();
+
+                for argument in arguments {
+                    self.compile_expression(argument, symtab);
+                }
+
+                let call_jump = self.bytecode.new_call();
+                self.function_calls.push((name, call_jump));
+
+                // fixup the stack after the call instruction
+                self.stack
+                    .resize(self.stack.len() - arguments.len() + number_of_returns, None);
+
+                self.compile_drop_to(stack_before_call);
+            }
         }
+
+        ControlFlow::Continue(())
     }
 
-    fn compile_expression(&mut self, value: &ast::Expression, symtab: &SymTab) {
+    fn compile_expression(&mut self, value: &ast::Expression<'input>, symtab: &SymTab) {
         match &value.kind {
             ast::ExpressionKind::Integer(i) => {
                 self.bytecode.add_opcode(Opcode::Push8(*i as i8));
@@ -177,7 +287,7 @@ impl Compiler {
                     .add_opcode(Opcode::MathsOp(MathsOp::from(*operator)));
             }
             ast::ExpressionKind::Error => panic!("Should never have to compile an error"),
-            ast::ExpressionKind::Nop => {}
+            ast::ExpressionKind::Nop => panic!("NOP expression will cause stack issues"),
             ast::ExpressionKind::Symbol(symbol_id) => {
                 if let Some(property) = symtab.get_property(*symbol_id) {
                     self.bytecode
@@ -189,7 +299,19 @@ impl Compiler {
 
                 self.stack.push(Some(*symbol_id));
             }
-            ast::ExpressionKind::Call { name, arguments } => todo!("CALL"),
+            ast::ExpressionKind::Call { name, arguments } => {
+                let number_of_returns = 1;
+                for argument in arguments {
+                    self.compile_expression(argument, symtab);
+                }
+
+                let call_jump = self.bytecode.new_call();
+                self.function_calls.push((name, call_jump));
+
+                // fixup the stack after the call instruction
+                self.stack
+                    .resize(self.stack.len() - arguments.len() + number_of_returns, None);
+            }
         }
     }
 
@@ -215,6 +337,13 @@ impl Compiler {
                 .rposition(|stack_sym| stack_sym == &Some(symbol_id))
                 .unwrap()
     }
+
+    fn finalise(&mut self) {
+        for (fname, jump) in &self.function_calls {
+            let label = &self.function_locations[fname];
+            self.bytecode.patch_jump(*jump, *label);
+        }
+    }
 }
 
 pub mod opcodes {
@@ -234,9 +363,12 @@ pub mod opcodes {
         SetProp(u8),
         Wait,
         Move(u8),
+        MoveRange(u8, u8),
         MathsOp(MathsOp),
         JumpIfFalse(u16),
         Jump(u16),
+        Call(u16),
+        Return(u8, u8),
     }
 
     impl Display for Opcode {
@@ -264,6 +396,11 @@ pub mod opcodes {
                 ),
                 Opcode::JumpIfFalse(target) => write!(f, "jif\t{target}"),
                 Opcode::Jump(target) => write!(f, "j\t{target}"),
+                Opcode::Call(target) => write!(f, "call\t{target}"),
+                Opcode::Return(args, rets) => write!(f, "ret\targs={args} rets={rets}"),
+                Opcode::MoveRange(size, distance) => {
+                    write!(f, "mover\tsize={size} dist={distance}")
+                }
             }
         }
     }
@@ -298,7 +435,12 @@ pub mod opcodes {
     impl Opcode {
         pub fn size(self) -> usize {
             match self {
-                Self::Push24(_) | Self::JumpIfFalse(_) | Self::Jump(_) => 2,
+                Self::Push24(_)
+                | Self::JumpIfFalse(_)
+                | Self::Jump(_)
+                | Self::Call(_)
+                | Self::Return(_, _)
+                | Self::MoveRange(_, _) => 2,
                 _ => 1,
             }
         }
@@ -358,9 +500,16 @@ impl Bytecode {
         Jump(self.data.len() - 1)
     }
 
+    fn new_call(&mut self) -> Jump {
+        self.add_opcode(Opcode::Call(0));
+        Jump(self.data.len() - 1)
+    }
+
     fn patch_jump(&mut self, jump: Jump, label: Label) {
         match &mut self.data[jump.0] {
-            Opcode::Jump(target) | Opcode::JumpIfFalse(target) => *target = label.0,
+            Opcode::Jump(target) | Opcode::JumpIfFalse(target) | Opcode::Call(target) => {
+                *target = label.0
+            }
             opcode => panic!("Tried to patch {opcode:?} which isn't a jump"),
         }
     }
@@ -413,6 +562,18 @@ impl Bytecode {
                     one_arg!(Jump, 0);
                     result.push(target);
                 }
+                Opcode::Call(target) => {
+                    one_arg!(Call, 0);
+                    result.push(target);
+                }
+                Opcode::Return(args, rets) => {
+                    one_arg!(Return, args);
+                    result.push((rets as u16).to_be());
+                }
+                Opcode::MoveRange(size, dist) => {
+                    one_arg!(MoveRange, size);
+                    result.push((dist as u16).to_be());
+                }
             }
         }
 
@@ -420,7 +581,9 @@ impl Bytecode {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Label(u16);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Jump(usize);
 
 #[cfg(test)]

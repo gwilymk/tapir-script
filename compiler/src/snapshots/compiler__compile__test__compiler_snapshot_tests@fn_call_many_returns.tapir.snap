@@ -1,0 +1,19 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/fn_call_many_returns.tapir
+---
+00000000: call	5
+00000002: drop	3
+00000003: ret	args=0 rets=0
+00000005: push8	3
+00000006: dup	0
+00000007: push8	3
+00000008: add
+00000009: dup	1
+00000010: push8	3
+00000011: mul
+00000012: push8	1
+00000013: mover	size=3 dist=1
+00000015: ret	args=0 rets=3
+00000017: drop	4

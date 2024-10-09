@@ -13,3 +13,4 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/properties.
 00000007: dup	0
 00000008: setprop	0
 00000009: drop	1
+00000010: ret	args=0 rets=0
