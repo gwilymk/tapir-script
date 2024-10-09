@@ -1,0 +1,5 @@
+fn foo() -> fix {
+    return 3.5;
+}
+
+var x = foo() * 3.0;
