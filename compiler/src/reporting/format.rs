@@ -157,5 +157,10 @@ fn compiler_error_report(
         CompilerErrorKind::InvalidTypeForBinaryOperator { type_ } => build_error_report(span)
             .with_label(Label::new(span).with_message("Binary operator cannot handle this type"))
             .with_message(format!("Binary operator cannot items of type {type_}")),
+        CompilerErrorKind::InvalidTypeForIfCondition { got } => build_error_report(span)
+            .with_label(Label::new(span).with_message(format!("This has type {got}")))
+            .with_message(format!(
+                "Condition in if statement must be a bool, but got a {got}"
+            )),
     }
 }

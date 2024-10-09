@@ -103,6 +103,24 @@ impl TypeVisitor {
                         diagnostics,
                     );
                 }
+                ast::StatementKind::If {
+                    condition,
+                    true_block,
+                    false_block,
+                } => {
+                    let condition_type = self.type_for_expression(condition, symtab, diagnostics);
+                    if !matches!(condition_type, Type::Bool | Type::Error) {
+                        diagnostics.add_message(
+                            CompilerErrorKind::InvalidTypeForIfCondition {
+                                got: condition_type,
+                            }
+                            .into_message(condition.span),
+                        );
+                    }
+
+                    self.visit(true_block, symtab, diagnostics);
+                    self.visit(false_block, symtab, diagnostics);
+                }
             }
         }
     }

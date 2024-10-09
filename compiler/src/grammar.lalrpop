@@ -25,6 +25,11 @@ extern {
         true => Token::True,
         false => Token::False,
 
+        "if" => Token::If,
+        "else" => Token::Else,
+
+        "{" => Token::LBrace,
+        "}" => Token::RBrace,
         "(" => Token::LParen,
         ")" => Token::RParen,
         ";" => Token::Semicolon,
@@ -49,11 +54,19 @@ StatementKind: StatementKind<'input> = {
     var <ident: identifier> "=" <value: Expression> ";" => StatementKind::VariableDeclaration { <> },
     <ident: identifier> "=" <value: Expression> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
+
+    "if" <condition: Expression> <true_block: Block> <false_block: ElseBlock?> => StatementKind::If { 
+        condition, true_block, false_block: false_block.unwrap_or_else(|| vec![]),
+     },
+
     <error: !> ";" => {
         diagnostics.add_lalrpop(<>.error, file_id);
         StatementKind::Error
     }
 }
+
+Block: Vec<Statement<'input>> = "{" <Statement*> "}";
+ElseBlock = "else" <Block>;
 
 Expression: Box<Expression<'input>> = {
     #[precedence(level="1")]

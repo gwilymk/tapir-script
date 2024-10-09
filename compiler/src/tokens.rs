@@ -87,6 +87,15 @@ pub enum Token<'input> {
     #[token("false")]
     False,
 
+    #[token("if")]
+    If,
+    #[token("else")]
+    Else,
+
+    #[token("{")]
+    LBrace,
+    #[token("}")]
+    RBrace,
     #[token("(")]
     LParen,
     #[token(")")]

@@ -63,6 +63,10 @@ impl SymTabVisitor {
                         StatementKind::Error
                     }
                 }
+                StatementKind::If { .. } => {
+                    // TODO: block scoping
+                    kind
+                }
                 StatementKind::Error
                 | StatementKind::Wait
                 | StatementKind::Nop

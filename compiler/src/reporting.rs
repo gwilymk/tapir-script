@@ -141,6 +141,7 @@ pub enum CompilerErrorKind {
     UnknownType(String),
     BinaryOperatorTypeError { lhs_type: Type, rhs_type: Type },
     InvalidTypeForBinaryOperator { type_: Type },
+    InvalidTypeForIfCondition { got: Type },
 }
 
 impl CompilerErrorKind {

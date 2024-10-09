@@ -117,6 +117,11 @@ impl Compiler {
                     self.stack.pop();
                 }
             }
+            ast::StatementKind::If {
+                condition,
+                true_block,
+                false_block,
+            } => todo!("If statements"),
         }
     }
 
