@@ -248,7 +248,7 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit(ast, &mut diagnostics);
+            symtab_visitor.visit_block(ast, &mut diagnostics);
 
             let symtab = symtab_visitor.into_symtab();
 
@@ -292,7 +292,7 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit(ast, &mut diagnostics);
+            symtab_visitor.visit_block(ast, &mut diagnostics);
 
             let symtab = symtab_visitor.into_symtab();
 

@@ -26,7 +26,7 @@ impl<'input> SymTabVisitor<'input> {
         self.symtab
     }
 
-    pub fn visit(&mut self, ast: &mut [Statement<'input>], diagnostics: &mut Diagnostics) {
+    pub fn visit_block(&mut self, ast: &mut [Statement<'input>], diagnostics: &mut Diagnostics) {
         self.symbol_names.push_scope();
 
         for statement in ast {
@@ -67,8 +67,8 @@ impl<'input> SymTabVisitor<'input> {
                 } => {
                     self.visit_expr(&mut condition, diagnostics);
 
-                    self.visit(&mut true_block, diagnostics);
-                    self.visit(&mut false_block, diagnostics);
+                    self.visit_block(&mut true_block, diagnostics);
+                    self.visit_block(&mut false_block, diagnostics);
 
                     StatementKind::If {
                         condition,
@@ -256,7 +256,7 @@ mod test {
                 }],
             });
 
-            visitor.visit(ast, &mut diagnostics);
+            visitor.visit_block(ast, &mut diagnostics);
 
             assert_ron_snapshot!(ast, {
                 ".**.span" => "[span]",
@@ -289,7 +289,7 @@ mod test {
                 }],
             });
 
-            visitor.visit(ast, &mut diagnostics);
+            visitor.visit_block(ast, &mut diagnostics);
 
             let mut output = Vec::new();
             let mut diagnostics_cache = DiagnosticCache::new(iter::once((
