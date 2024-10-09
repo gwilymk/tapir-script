@@ -12,3 +12,4 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/variables.t
 00000006: push8	3
 00000007: mul
 00000008: add
+00000009: drop	3

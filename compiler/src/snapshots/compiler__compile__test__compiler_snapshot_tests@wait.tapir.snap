@@ -21,3 +21,4 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/wait.tapir
 00000015: dup	0
 00000016: setprop	0
 00000017: wait
+00000018: drop	1

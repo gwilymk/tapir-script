@@ -65,10 +65,7 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
     }
 
     let mut compiler = Compiler::new();
-
-    for statement in ast {
-        compiler.compile_statement(&statement, &symtab);
-    }
+    compiler.compile_block(&ast, &symtab);
 
     Ok(compiler.bytecode)
 }
@@ -86,7 +83,16 @@ impl Compiler {
         }
     }
 
-    pub fn compile_statement(&mut self, statement: &ast::Statement, symtab: &SymTab) {
+    pub fn compile_block(&mut self, block: &[ast::Statement], symtab: &SymTab) {
+        let previous_stack_size = self.stack.len();
+        for statement in block {
+            self.compile_statement(statement, symtab);
+        }
+
+        self.compile_drop_to(previous_stack_size);
+    }
+
+    fn compile_statement(&mut self, statement: &ast::Statement, symtab: &SymTab) {
         match &statement.kind {
             ast::StatementKind::Error => panic!("Should never have to compile an error"),
             ast::StatementKind::VariableDeclaration { .. } => {
@@ -127,21 +133,18 @@ impl Compiler {
                 self.compile_expression(condition, symtab);
                 let if_false_jump = self.bytecode.new_jump_if_false();
 
-                for statement in true_block {
-                    self.compile_statement(statement, symtab);
-                }
-
+                self.compile_block(true_block, symtab);
                 self.compile_drop_to(stack_depth_before_if);
+
                 let if_true_jump = self.bytecode.new_jump();
 
                 let false_target = self.bytecode.new_label();
-                // insert a fake additional stack value for the bool that will be left
-                self.stack.push(None);
                 self.bytecode.patch_jump(if_false_jump, false_target);
 
-                for statement in false_block {
-                    self.compile_statement(statement, symtab);
-                }
+                // insert a fake additional stack value for the bool that will be left
+                self.stack.push(None);
+
+                self.compile_block(false_block, symtab);
 
                 self.compile_drop_to(stack_depth_before_if);
                 let end_target = self.bytecode.new_label();
