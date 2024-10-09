@@ -103,7 +103,7 @@ impl<'input> TypeVisitor<'input> {
 
     pub fn visit_function(
         &mut self,
-        function: &mut Function<'_>,
+        function: &mut Function<'input>,
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) {
@@ -125,7 +125,7 @@ impl<'input> TypeVisitor<'input> {
 
     fn visit_block(
         &mut self,
-        ast: &[ast::Statement<'_>],
+        ast: &[ast::Statement<'input>],
         symtab: &SymTab,
         expected_return_type: &FunctionReturn,
         diagnostics: &mut Diagnostics,
@@ -142,20 +142,12 @@ impl<'input> TypeVisitor<'input> {
                 ast::StatementKind::Wait => {}
                 ast::StatementKind::Nop => {}
                 ast::StatementKind::SymbolDeclare { ident, value } => {
-                    self.resolve_type(
-                        *ident,
-                        self.type_for_expression(value, symtab, diagnostics),
-                        statement.span,
-                        diagnostics,
-                    );
+                    let expr_type = self.type_for_expression(value, symtab, diagnostics);
+                    self.resolve_type(*ident, expr_type, statement.span, diagnostics);
                 }
                 ast::StatementKind::SymbolAssign { ident, value } => {
-                    self.resolve_type(
-                        *ident,
-                        self.type_for_expression(value, symtab, diagnostics),
-                        statement.span,
-                        diagnostics,
-                    );
+                    let expr_type = self.type_for_expression(value, symtab, diagnostics);
+                    self.resolve_type(*ident, expr_type, statement.span, diagnostics);
                 }
                 ast::StatementKind::If {
                     condition,
@@ -217,7 +209,9 @@ impl<'input> TypeVisitor<'input> {
                         }
                     }
                 }
-                ast::StatementKind::Call { name, arguments } => todo!("CALL"),
+                ast::StatementKind::Call { name, arguments } => {
+                    self.type_for_call(statement.span, name, arguments, symtab, diagnostics);
+                }
             }
         }
     }
@@ -241,8 +235,8 @@ impl<'input> TypeVisitor<'input> {
     }
 
     fn type_for_expression(
-        &self,
-        expression: &Expression<'_>,
+        &mut self,
+        expression: &Expression<'input>,
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Type {
@@ -287,7 +281,75 @@ impl<'input> TypeVisitor<'input> {
             ast::ExpressionKind::Symbol(symbol_id) => {
                 self.get_type(*symbol_id, expression.span, symtab, diagnostics)
             }
-            ast::ExpressionKind::Call { name, arguments } => todo!("CALL"),
+            ast::ExpressionKind::Call { name, arguments } => {
+                let types =
+                    self.type_for_call(expression.span, name, arguments, symtab, diagnostics);
+
+                if types.len() != 1 {
+                    diagnostics.add_message(
+                        CompilerErrorKind::FunctionMustReturnOneValueInThisLocation {
+                            actual: types.len(),
+                        }
+                        .into_message(expression.span),
+                    );
+                    Type::Error
+                } else {
+                    types[0]
+                }
+            }
+        }
+    }
+
+    fn type_for_call(
+        &mut self,
+        span: Span,
+        name: &'input str,
+        arguments: &[Expression<'input>],
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) -> Vec<Type> {
+        let argument_types: Vec<_> = arguments
+            .iter()
+            .map(|arg| (self.type_for_expression(arg, symtab, diagnostics), arg.span))
+            .collect();
+
+        if let Some((function_span, function_type)) = self.functions.get(name) {
+            if argument_types.len() != function_type.args.len() {
+                diagnostics.add_message(
+                    CompilerErrorKind::IncorrectNumberOfArguments {
+                        expected: function_type.args.len(),
+                        actual: argument_types.len(),
+                        function_span: *function_span,
+                        function_name: name.to_string(),
+                    }
+                    .into_message(span),
+                );
+            } else {
+                for ((actual, actual_span), expected) in
+                    argument_types.iter().zip(&function_type.args)
+                {
+                    if actual != expected && *actual != Type::Error && *expected != Type::Error {
+                        diagnostics.add_message(
+                            CompilerErrorKind::TypeError {
+                                expected: *expected,
+                                actual: *actual,
+                            }
+                            .into_message(*actual_span),
+                        );
+                    }
+                }
+            }
+
+            function_type.rets.clone()
+        } else {
+            diagnostics.add_message(
+                CompilerErrorKind::UnknownFunction {
+                    name: name.to_string(),
+                }
+                .into_message(span),
+            );
+
+            vec![Type::Error]
         }
     }
 }

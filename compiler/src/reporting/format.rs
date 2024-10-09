@@ -180,5 +180,15 @@ fn compiler_error_report(
             .with_label(Label::new(*old_function_declaration).with_message("Originally declared here"))
             .with_label(Label::new(*new_function_declaration).with_message("Also declared here"))
             .with_message(format!("Function with name '{function_name}' already exists")),
+        CompilerErrorKind::UnknownFunction { name } => build_error_report(span)
+            .with_label(Label::new(span).with_message("Unknown function"))
+            .with_message(format!("No such function {name}")),
+        CompilerErrorKind::IncorrectNumberOfArguments { expected, actual, function_span, function_name } => build_error_report(span)
+            .with_label(Label::new(span).with_message(format!("Got {actual} arguments")))
+            .with_label(Label::new(*function_span).with_message(format!("Expected {expected} arguments")))
+            .with_message(format!("Incorrect number of argumets for function {function_name}, expected {expected} arguments but got {actual}.")),
+        CompilerErrorKind::FunctionMustReturnOneValueInThisLocation { actual } => build_error_report(span)
+            .with_label(Label::new(span).with_message("Function must return 1 value here"))
+            .with_message(format!("Function call must return exactly 1 value here, but got {actual}")),
     }
 }

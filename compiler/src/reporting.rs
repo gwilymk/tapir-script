@@ -174,6 +174,18 @@ pub enum CompilerErrorKind {
         old_function_declaration: Span,
         new_function_declaration: Span,
     },
+    UnknownFunction {
+        name: String,
+    },
+    IncorrectNumberOfArguments {
+        function_name: String,
+        expected: usize,
+        actual: usize,
+        function_span: Span,
+    },
+    FunctionMustReturnOneValueInThisLocation {
+        actual: usize,
+    },
 }
 
 impl CompilerErrorKind {
