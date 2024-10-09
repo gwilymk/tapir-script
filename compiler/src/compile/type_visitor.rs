@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use crate::{
-    ast::{self, Expression, Function, FunctionReturn, SymbolId},
+    ast::{self, Expression, Function, FunctionReturn, MaybeResolved, SymbolId},
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::Type,
@@ -76,6 +76,14 @@ impl TypeVisitor {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) {
+        for argument in &function.arguments {
+            let MaybeResolved::Resolved(symbol_id) = argument.name else {
+                panic!("Should've resolved the symbol by now")
+            };
+
+            self.resolve_type(symbol_id, argument.t.t, argument.span, diagnostics);
+        }
+
         self.visit_block(
             &function.statements,
             symtab,

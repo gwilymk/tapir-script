@@ -72,7 +72,7 @@ FunctionDefinition: Function<'input> =
 
 FunctionArguments: Vec<FunctionArgument<'input>> = CommaSeparated<FunctionArgument>;
 FunctionArgument: FunctionArgument<'input> = 
-    <start: @L> <name: identifier> ":" <t: Type> <end: @R> => FunctionArgument {
+    <start: @L> <name: identifier> <end: @R> ":" <t: Type> => FunctionArgument {
         span: Span::new(file_id, start, end),
         t,
         name: MaybeResolved::Unresolved(name),
