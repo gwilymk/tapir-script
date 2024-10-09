@@ -158,6 +158,11 @@ impl TypeVisitor {
                 let lhs_type = self.type_for_expression(lhs, symtab, diagnostics);
                 let rhs_type = self.type_for_expression(rhs, symtab, diagnostics);
 
+                if lhs_type == Type::Error || rhs_type == Type::Error {
+                    // we don't need to report the same error multiple times
+                    return Type::Error;
+                }
+
                 if lhs_type != rhs_type {
                     diagnostics.add_message(
                         CompilerErrorKind::BinaryOperatorTypeError { lhs_type, rhs_type }
