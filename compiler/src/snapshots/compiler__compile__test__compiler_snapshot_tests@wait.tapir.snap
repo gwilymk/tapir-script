@@ -1,25 +1,23 @@
 ---
 source: crates/tapir-script/compiler/src/compile.rs
-expression: bytecode.get_opcodes()
+expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/wait.tapir
 ---
-[
-  Push8(5),
-  Push8(3),
-  SetProp(0),
-  Wait,
-  Dup(0),
-  Push8(1),
-  MathsOp(Add),
-  Move(1),
-  Dup(0),
-  SetProp(0),
-  Wait,
-  Dup(0),
-  Push8(1),
-  MathsOp(Add),
-  Move(1),
-  Dup(0),
-  SetProp(0),
-  Wait,
-]
+00000000: push8	5
+00000001: push8	3
+00000002: setprop	0
+00000003: wait
+00000004: dup	0
+00000005: push8	1
+00000006: add
+00000007: move	1
+00000008: dup	0
+00000009: setprop	0
+00000010: wait
+00000011: dup	0
+00000012: push8	1
+00000013: add
+00000014: move	1
+00000015: dup	0
+00000016: setprop	0
+00000017: wait

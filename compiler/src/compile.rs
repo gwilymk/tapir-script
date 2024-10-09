@@ -121,7 +121,32 @@ impl Compiler {
                 condition,
                 true_block,
                 false_block,
-            } => todo!("If statements"),
+            } => {
+                let stack_depth_before_if = self.stack.len();
+
+                self.compile_expression(condition, symtab);
+                let if_false_jump = self.bytecode.new_jump_if_false();
+
+                for statement in true_block {
+                    self.compile_statement(statement, symtab);
+                }
+
+                self.compile_drop_to(stack_depth_before_if);
+                let if_true_jump = self.bytecode.new_jump();
+
+                let false_target = self.bytecode.new_label();
+                // insert a fake additional stack value for the bool that will be left
+                self.stack.push(None);
+                self.bytecode.patch_jump(if_false_jump, false_target);
+
+                for statement in false_block {
+                    self.compile_statement(statement, symtab);
+                }
+
+                self.compile_drop_to(stack_depth_before_if);
+                let end_target = self.bytecode.new_label();
+                self.bytecode.patch_jump(if_true_jump, end_target);
+            }
         }
     }
 
@@ -166,6 +191,20 @@ impl Compiler {
         }
     }
 
+    fn compile_drop_to(&mut self, desired_stack_size: usize) {
+        match self.stack.len().cmp(&desired_stack_size) {
+            std::cmp::Ordering::Less => {
+                panic!("Trying to drop the stack to a size bigger than the current")
+            }
+            std::cmp::Ordering::Equal => {}
+            std::cmp::Ordering::Greater => {
+                self.bytecode
+                    .add_opcode(Opcode::Drop((self.stack.len() - desired_stack_size) as u8));
+                self.stack.truncate(desired_stack_size);
+            }
+        }
+    }
+
     fn get_offset(&self, symbol_id: SymbolId) -> usize {
         self.stack.len()
             - self
@@ -177,6 +216,8 @@ impl Compiler {
 }
 
 pub mod opcodes {
+    use std::fmt::Display;
+
     use serde::Serialize;
 
     use crate::ast::BinaryOperator;
@@ -195,6 +236,36 @@ pub mod opcodes {
         MathsOp(MathsOp),
         JumpIfFalse(u16),
         Jump(u16),
+    }
+
+    impl Display for Opcode {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                Opcode::Push8(v) => write!(f, "push8\t{v}"),
+                Opcode::Push24(v) => write!(f, "push24\t{v}"),
+                Opcode::Dup(v) => write!(f, "dup\t{v}"),
+                Opcode::Drop(v) => write!(f, "drop\t{v}"),
+                Opcode::GetProp(i) => write!(f, "getprop\t{i}"),
+                Opcode::SetProp(i) => write!(f, "setprop\t{i}"),
+                Opcode::Nop => write!(f, "nop"),
+                Opcode::Wait => write!(f, "wait"),
+                Opcode::Move(i) => write!(f, "move\t{i}"),
+                Opcode::MathsOp(maths_op) => write!(
+                    f,
+                    "{}",
+                    match maths_op {
+                        MathsOp::Add => "add",
+                        MathsOp::Sub => "sub",
+                        MathsOp::Mul => "mul",
+                        MathsOp::RealMod => "realmod",
+                        MathsOp::RealDiv => "realdiv",
+                        MathsOp::EqEq => "==",
+                    }
+                ),
+                Opcode::JumpIfFalse(target) => write!(f, "jif\t{target}"),
+                Opcode::Jump(target) => write!(f, "j\t{target}"),
+            }
+        }
     }
 
     #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize)]
@@ -279,7 +350,12 @@ impl Bytecode {
 
     fn new_jump(&mut self) -> Jump {
         self.add_opcode(Opcode::Jump(0));
-        Jump(self.length - 1)
+        Jump(self.data.len() - 1)
+    }
+
+    fn new_jump_if_false(&mut self) -> Jump {
+        self.add_opcode(Opcode::JumpIfFalse(0));
+        Jump(self.data.len() - 1)
     }
 
     fn patch_jump(&mut self, jump: Jump, label: Label) {
@@ -287,10 +363,6 @@ impl Bytecode {
             Opcode::Jump(target) | Opcode::JumpIfFalse(target) => *target = label.0,
             opcode => panic!("Tried to patch {opcode:?} which isn't a jump"),
         }
-    }
-
-    pub fn get_opcodes(&self) -> &[Opcode] {
-        &self.data
     }
 
     pub fn compile(&self) -> Vec<u16> {
@@ -356,9 +428,9 @@ struct Jump(usize);
 
 #[cfg(test)]
 mod test {
-    use std::fs;
+    use std::{fmt::Write, fs};
 
-    use insta::{assert_ron_snapshot, glob};
+    use insta::{assert_snapshot, glob};
 
     use super::*;
 
@@ -376,8 +448,21 @@ mod test {
             };
 
             let bytecode = compile(&input, &compiler_settings).unwrap();
+            let decompiled = print_opcodes(&bytecode.data);
 
-            assert_ron_snapshot!(bytecode.get_opcodes());
+            assert_snapshot!(decompiled);
         });
+    }
+
+    fn print_opcodes(opcodes: &[Opcode]) -> String {
+        let mut result = String::new();
+
+        let mut current_pos = 0;
+        for opcode in opcodes {
+            writeln!(&mut result, "{current_pos:08}: {opcode}").unwrap();
+            current_pos += opcode.size();
+        }
+
+        result
     }
 }
