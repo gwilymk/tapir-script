@@ -147,6 +147,7 @@ impl Compiler {
                 self.bytecode.patch_jump(if_true_jump, end_target);
             }
             ast::StatementKind::Return { values } => todo!("RETURN"),
+            ast::StatementKind::Call { name, arguments } => todo!("CALL"),
         }
     }
 
@@ -188,6 +189,7 @@ impl Compiler {
 
                 self.stack.push(Some(*symbol_id));
             }
+            ast::ExpressionKind::Call { name, arguments } => todo!("CALL"),
         }
     }
 

@@ -186,6 +186,7 @@ impl TypeVisitor {
                         }
                     }
                 }
+                ast::StatementKind::Call { name, arguments } => todo!("CALL"),
             }
         }
     }
@@ -255,6 +256,7 @@ impl TypeVisitor {
             ast::ExpressionKind::Symbol(symbol_id) => {
                 self.get_type(*symbol_id, expression.span, symtab, diagnostics)
             }
+            ast::ExpressionKind::Call { name, arguments } => todo!("CALL"),
         }
     }
 }

@@ -117,6 +117,7 @@ StatementKind: StatementKind<'input> = {
         condition, true_block, false_block: false_block.unwrap_or_else(|| vec![]),
      },
 
+    <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" => StatementKind::Call { <> },
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
 
     <error: !> ";" => {
@@ -173,7 +174,13 @@ Term: Expression<'input> = {
     <start: @L> <error: !> <end: @R> => {
         diagnostics.add_message(Message::from_lalrpop(error.error, file_id));
         ExpressionKind::Error.with_span(file_id, start, end)
-    }
+    },
+
+    <start: @L> <ident: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> => 
+        ExpressionKind::Call {
+            name: ident,
+            arguments,
+        }.with_span(file_id, start, end),
 }
 
 Num: Expression<'input> = {

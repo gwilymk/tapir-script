@@ -113,6 +113,16 @@ impl<'input> SymTabVisitor<'input> {
 
                     StatementKind::Return { values }
                 }
+                StatementKind::Call {
+                    name,
+                    mut arguments,
+                } => {
+                    for argument in &mut arguments {
+                        self.visit_expr(argument, diagnostics);
+                    }
+
+                    StatementKind::Call { name, arguments }
+                }
             };
         }
 
@@ -144,6 +154,16 @@ impl<'input> SymTabVisitor<'input> {
                 self.visit_expr(&mut rhs, diagnostics);
 
                 ExpressionKind::BinaryOperation { lhs, operator, rhs }
+            }
+            ExpressionKind::Call {
+                name,
+                mut arguments,
+            } => {
+                for argument in &mut arguments {
+                    self.visit_expr(argument, diagnostics);
+                }
+
+                ExpressionKind::Call { name, arguments }
             }
             ExpressionKind::Integer(_)
             | ExpressionKind::Fix(_)
