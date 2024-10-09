@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/if_local_variable.tapir
+---
+00000000: push8	3
+00000001: push8	1
+00000002: jif	10
+00000004: push8	5
+00000005: dup	0
+00000006: move	3
+00000007: drop	2
+00000008: j	11
+00000010: drop	1
