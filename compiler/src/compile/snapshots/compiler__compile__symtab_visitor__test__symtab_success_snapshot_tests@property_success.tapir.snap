@@ -1,37 +1,46 @@
 ---
 source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
-expression: ast
+expression: script
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/property_success.tapir
 ---
-[
-  Statement(
-    span: "[span]",
-    kind: SymbolDeclare(
-      ident: SymbolId(1),
-      value: Expression(
-        span: "[span]",
-        kind: BinaryOperation(
-          lhs: Expression(
-            span: "[span]",
-            kind: Symbol(SymbolId(0)),
-          ),
-          operator: Add,
-          rhs: Expression(
-            span: "[span]",
-            kind: Integer(2),
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: SymbolDeclare(
+            ident: SymbolId(1),
+            value: Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Symbol(SymbolId(0)),
+                ),
+                operator: Add,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Integer(2),
+                ),
+              ),
+            ),
           ),
         ),
-      ),
+        Statement(
+          span: "[span]",
+          kind: SymbolAssign(
+            ident: SymbolId(0),
+            value: Expression(
+              span: "[span]",
+              kind: Integer(3),
+            ),
+          ),
+        ),
+      ],
+      arguments: [],
+      return_types: [],
     ),
-  ),
-  Statement(
-    span: "[span]",
-    kind: SymbolAssign(
-      ident: SymbolId(0),
-      value: Expression(
-        span: "[span]",
-        kind: Integer(3),
-      ),
-    ),
-  ),
-]
+  ],
+)

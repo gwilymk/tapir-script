@@ -1,7 +1,9 @@
 use std::{borrow::Cow, collections::HashMap, mem};
 
 use crate::{
-    ast::{Expression, ExpressionKind, Function, Statement, StatementKind, SymbolId},
+    ast::{
+        Expression, ExpressionKind, Function, MaybeResolved, Statement, StatementKind, SymbolId,
+    },
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
 };
@@ -31,7 +33,22 @@ impl<'input> SymTabVisitor<'input> {
         function: &mut Function<'input>,
         diagnostics: &mut Diagnostics,
     ) {
+        self.symbol_names.push_scope();
+
+        for argument in &mut function.arguments {
+            let MaybeResolved::Unresolved(name) = argument.name else {
+                panic!("Should not have resolved arguments yet");
+            };
+
+            let symbol_id = self.symtab.new_symbol(name, argument.span);
+            self.symbol_names.insert(name, symbol_id);
+
+            argument.name = MaybeResolved::Resolved(symbol_id);
+        }
+
         self.visit_block(&mut function.statements, diagnostics);
+
+        self.symbol_names.pop_scope();
     }
 
     fn visit_block(&mut self, ast: &mut [Statement<'input>], diagnostics: &mut Diagnostics) {
@@ -247,14 +264,11 @@ mod test {
 
             let lexer = Lexer::new(&input, FileId::new(0));
             let parser = grammar::ScriptParser::new();
+            let file_id = FileId::new(0);
 
             let mut diagnostics = Diagnostics::new();
 
-            let ast = &mut parser
-                .parse(FileId::new(0), &mut diagnostics, lexer)
-                .unwrap()
-                .functions[0]
-                .statements;
+            let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let mut visitor = SymTabVisitor::new(&CompileSettings {
                 properties: vec![Property {
@@ -264,9 +278,11 @@ mod test {
                 }],
             });
 
-            visitor.visit_block(ast, &mut diagnostics);
+            for function in &mut script.functions {
+                visitor.visit_function(function, &mut diagnostics);
+            }
 
-            assert_ron_snapshot!(ast, {
+            assert_ron_snapshot!(script, {
                 ".**.span" => "[span]",
             });
         });
@@ -283,11 +299,9 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let ast = &mut parser
+            let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
-                .unwrap()
-                .functions[0]
-                .statements;
+                .unwrap();
 
             let mut visitor = SymTabVisitor::new(&CompileSettings {
                 properties: vec![Property {
@@ -297,7 +311,9 @@ mod test {
                 }],
             });
 
-            visitor.visit_block(ast, &mut diagnostics);
+            for function in &mut script.functions {
+                visitor.visit_function(function, &mut diagnostics);
+            }
 
             let mut output = Vec::new();
             let mut diagnostics_cache = DiagnosticCache::new(iter::once((

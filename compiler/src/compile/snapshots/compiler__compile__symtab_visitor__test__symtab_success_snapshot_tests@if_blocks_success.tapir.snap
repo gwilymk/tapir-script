@@ -1,90 +1,99 @@
 ---
 source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
-expression: ast
+expression: script
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/if_blocks_success.tapir
 ---
-[
-  Statement(
-    span: "[span]",
-    kind: SymbolDeclare(
-      ident: SymbolId(1),
-      value: Expression(
-        span: "[span]",
-        kind: Integer(3),
-      ),
-    ),
-  ),
-  Statement(
-    span: "[span]",
-    kind: SymbolDeclare(
-      ident: SymbolId(2),
-      value: Expression(
-        span: "[span]",
-        kind: Integer(14),
-      ),
-    ),
-  ),
-  Statement(
-    span: "[span]",
-    kind: If(
-      condition: Expression(
-        span: "[span]",
-        kind: Bool(true),
-      ),
-      true_block: [
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      statements: [
         Statement(
           span: "[span]",
           kind: SymbolDeclare(
-            ident: SymbolId(3),
+            ident: SymbolId(1),
             value: Expression(
               span: "[span]",
-              kind: Fix,
+              kind: Integer(3),
             ),
+          ),
+        ),
+        Statement(
+          span: "[span]",
+          kind: SymbolDeclare(
+            ident: SymbolId(2),
+            value: Expression(
+              span: "[span]",
+              kind: Integer(14),
+            ),
+          ),
+        ),
+        Statement(
+          span: "[span]",
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: Bool(true),
+            ),
+            true_block: [
+              Statement(
+                span: "[span]",
+                kind: SymbolDeclare(
+                  ident: SymbolId(3),
+                  value: Expression(
+                    span: "[span]",
+                    kind: Fix,
+                  ),
+                ),
+              ),
+              Statement(
+                span: "[span]",
+                kind: SymbolAssign(
+                  ident: SymbolId(2),
+                  value: Expression(
+                    span: "[span]",
+                    kind: Integer(112),
+                  ),
+                ),
+              ),
+            ],
+            false_block: [
+              Statement(
+                span: "[span]",
+                kind: SymbolDeclare(
+                  ident: SymbolId(4),
+                  value: Expression(
+                    span: "[span]",
+                    kind: Integer(82),
+                  ),
+                ),
+              ),
+              Statement(
+                span: "[span]",
+                kind: SymbolAssign(
+                  ident: SymbolId(2),
+                  value: Expression(
+                    span: "[span]",
+                    kind: Symbol(SymbolId(4)),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         Statement(
           span: "[span]",
           kind: SymbolAssign(
-            ident: SymbolId(2),
+            ident: SymbolId(1),
             value: Expression(
               span: "[span]",
-              kind: Integer(112),
+              kind: Integer(12),
             ),
           ),
         ),
       ],
-      false_block: [
-        Statement(
-          span: "[span]",
-          kind: SymbolDeclare(
-            ident: SymbolId(4),
-            value: Expression(
-              span: "[span]",
-              kind: Integer(82),
-            ),
-          ),
-        ),
-        Statement(
-          span: "[span]",
-          kind: SymbolAssign(
-            ident: SymbolId(2),
-            value: Expression(
-              span: "[span]",
-              kind: Symbol(SymbolId(4)),
-            ),
-          ),
-        ),
-      ],
+      arguments: [],
+      return_types: [],
     ),
-  ),
-  Statement(
-    span: "[span]",
-    kind: SymbolAssign(
-      ident: SymbolId(1),
-      value: Expression(
-        span: "[span]",
-        kind: Integer(12),
-      ),
-    ),
-  ),
-]
+  ],
+)
