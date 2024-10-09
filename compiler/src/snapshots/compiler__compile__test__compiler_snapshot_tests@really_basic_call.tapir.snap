@@ -1,0 +1,13 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/really_basic_call.tapir
+---
+00000000: call	6
+00000002: wait
+00000003: drop	1
+00000004: ret	args=0 rets=0 shift=0
+00000006: wait
+00000007: push8	3
+00000008: ret	args=0 rets=1 shift=1
+00000010: drop	1

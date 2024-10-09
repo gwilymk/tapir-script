@@ -1,0 +1,41 @@
+---
+source: crates/tapir-script/vm/src/lib.rs
+expression: stack_at_waits
+input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call.tapir
+---
+[
+  ([
+    [
+      7,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [
+      7,
+      4,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [
+      7,
+      33,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [
+      7,
+      121,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([], PropObj(
+    int_prop: 5,
+  )),
+]

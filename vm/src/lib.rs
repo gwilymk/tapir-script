@@ -122,13 +122,14 @@ impl State {
                         return VmState::Finished;
                     }
 
-                    let new_pc = self.stack[self.stack.len() - shift];
+                    let new_pc = self.stack[self.stack.len() - shift - 1];
                     // extra -1 to cover the new program counter
                     let copy_range = (self.stack.len() - rets)..;
-                    let copy_dest = self.stack.len() - args - shift - rets - 1;
+                    let copy_dest = self.stack.len() - args - shift - 1;
 
                     self.stack.copy_within(copy_range, copy_dest);
-                    self.stack.truncate(self.stack.len() - args - shift - 1);
+                    self.stack
+                        .truncate(self.stack.len() - args - shift + rets - 1);
 
                     self.pc = new_pc as usize;
                 }
@@ -163,7 +164,8 @@ mod test {
 
     #[test]
     fn stack_snapshot_tests() {
-        glob!("snapshot_tests", "stack/*.tapir", |path| {
+        glob!("snapshot_tests", "stack/**/*.tapir", |path| {
+            println!("{}", path.display());
             let input = fs::read_to_string(path).unwrap();
 
             let compiler_settings = CompileSettings {

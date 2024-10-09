@@ -1,0 +1,7 @@
+fn foo() -> int {
+    wait;
+    return 3;
+}
+
+var x = foo();
+wait;
