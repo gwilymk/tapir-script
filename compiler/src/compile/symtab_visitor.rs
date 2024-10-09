@@ -1,4 +1,4 @@
-use std::{collections::HashMap, mem};
+use std::{borrow::Cow, collections::HashMap, mem};
 
 use crate::{
     ast::{Expression, ExpressionKind, Statement, StatementKind, SymbolId},
@@ -8,13 +8,13 @@ use crate::{
 
 use super::{CompileSettings, Property};
 
-pub struct SymTabVisitor {
-    symtab: SymTab,
+pub struct SymTabVisitor<'input> {
+    symtab: SymTab<'input>,
 
-    symbol_names: NameTable,
+    symbol_names: NameTable<'input>,
 }
 
-impl SymTabVisitor {
+impl<'input> SymTabVisitor<'input> {
     pub fn new(settings: &CompileSettings) -> Self {
         Self {
             symtab: SymTab::new(settings),
@@ -22,11 +22,11 @@ impl SymTabVisitor {
         }
     }
 
-    pub fn into_symtab(self) -> SymTab {
+    pub fn into_symtab(self) -> SymTab<'input> {
         self.symtab
     }
 
-    pub fn visit(&mut self, ast: &mut [Statement<'_>], diagnostics: &mut Diagnostics) {
+    pub fn visit(&mut self, ast: &mut [Statement<'input>], diagnostics: &mut Diagnostics) {
         self.symbol_names.push_scope();
 
         for statement in ast {
@@ -36,8 +36,8 @@ impl SymTabVisitor {
                 StatementKind::VariableDeclaration { ident, mut value } => {
                     self.visit_expr(&mut value, diagnostics);
 
-                    let symbol_id = self.symtab.new_symbol(ident.to_string(), statement.span);
-                    self.symbol_names.insert(ident.to_string(), symbol_id);
+                    let symbol_id = self.symtab.new_symbol(ident, statement.span);
+                    self.symbol_names.insert(ident, symbol_id);
 
                     StatementKind::SymbolDeclare {
                         ident: symbol_id,
@@ -123,17 +123,17 @@ impl SymTabVisitor {
     }
 }
 
-struct NameTable {
-    names: Vec<HashMap<String, SymbolId>>,
+struct NameTable<'input> {
+    names: Vec<HashMap<Cow<'input, str>, SymbolId>>,
 }
 
-impl NameTable {
+impl<'input> NameTable<'input> {
     pub fn new(settings: &CompileSettings) -> Self {
         let property_symbols = settings
             .properties
             .iter()
             .enumerate()
-            .map(|(i, prop)| (prop.name.clone(), SymbolId(i)))
+            .map(|(i, prop)| (Cow::Owned(prop.name.clone()), SymbolId(i)))
             .collect();
 
         Self {
@@ -141,8 +141,11 @@ impl NameTable {
         }
     }
 
-    pub fn insert(&mut self, name: String, id: SymbolId) {
-        self.names.last_mut().unwrap().insert(name, id);
+    pub fn insert(&mut self, name: &'input str, id: SymbolId) {
+        self.names
+            .last_mut()
+            .unwrap()
+            .insert(Cow::Borrowed(name), id);
     }
 
     pub fn get(&self, name: &str) -> Option<SymbolId> {
@@ -165,18 +168,18 @@ impl NameTable {
     }
 }
 
-pub struct SymTab {
+pub struct SymTab<'input> {
     properties: Vec<Property>,
 
-    symbol_names: Vec<(String, Option<Span>)>,
+    symbol_names: Vec<(Cow<'input, str>, Option<Span>)>,
 }
 
-impl SymTab {
+impl<'input> SymTab<'input> {
     fn new(settings: &CompileSettings) -> Self {
         let properties = settings.properties.clone();
         let symbol_names = properties
             .iter()
-            .map(|prop| (prop.name.clone(), None))
+            .map(|prop| (Cow::Owned(prop.name.clone()), None))
             .collect();
 
         Self {
@@ -185,12 +188,12 @@ impl SymTab {
         }
     }
 
-    fn new_symbol(&mut self, ident: String, span: Span) -> SymbolId {
-        self.symbol_names.push((ident, Some(span)));
+    fn new_symbol(&mut self, ident: &'input str, span: Span) -> SymbolId {
+        self.symbol_names.push((Cow::Borrowed(ident), Some(span)));
         SymbolId(self.symbol_names.len() - 1)
     }
 
-    pub(crate) fn name_for_symbol(&self, symbol_id: SymbolId) -> String {
+    pub(crate) fn name_for_symbol(&self, symbol_id: SymbolId) -> Cow<'input, str> {
         self.symbol_names[symbol_id.0].0.clone()
     }
 

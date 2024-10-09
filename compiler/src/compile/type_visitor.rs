@@ -61,7 +61,7 @@ impl TypeVisitor {
             Some(Some(ty)) => *ty,
             _ => {
                 diagnostics.add_message(
-                    CompilerErrorKind::UnknownType(symtab.name_for_symbol(symbol_id))
+                    CompilerErrorKind::UnknownType(symtab.name_for_symbol(symbol_id).into_owned())
                         .into_message(span),
                 );
 
@@ -132,8 +132,10 @@ impl TypeVisitor {
                 types.push(ty);
             } else {
                 diagnostics.add_message(
-                    CompilerErrorKind::UnknownType(symtab.name_for_symbol(SymbolId(i)))
-                        .into_message(symtab.span_for_symbol(SymbolId(i))),
+                    CompilerErrorKind::UnknownType(
+                        symtab.name_for_symbol(SymbolId(i)).into_owned(),
+                    )
+                    .into_message(symtab.span_for_symbol(SymbolId(i))),
                 );
             }
         }
