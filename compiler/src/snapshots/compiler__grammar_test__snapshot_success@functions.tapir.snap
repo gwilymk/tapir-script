@@ -7,6 +7,7 @@ Script(
   functions: [
     Function(
       name: "@toplevel",
+      span: "[span]",
       statements: [
         Statement(
           span: "[span]",
@@ -27,6 +28,7 @@ Script(
     ),
     Function(
       name: "my_function_with_no_args_or_return",
+      span: "[span]",
       statements: [],
       arguments: [],
       return_types: FunctionReturn(
@@ -36,6 +38,7 @@ Script(
     ),
     Function(
       name: "my_function_with_an_arg_no_return",
+      span: "[span]",
       statements: [],
       arguments: [
         FunctionArgument(
@@ -54,6 +57,7 @@ Script(
     ),
     Function(
       name: "my_function_with_no_args_one_return",
+      span: "[span]",
       statements: [],
       arguments: [],
       return_types: FunctionReturn(
@@ -68,6 +72,7 @@ Script(
     ),
     Function(
       name: "my_function_with_no_args_multiple_returns",
+      span: "[span]",
       statements: [],
       arguments: [],
       return_types: FunctionReturn(
@@ -86,6 +91,7 @@ Script(
     ),
     Function(
       name: "my_function_with_args_and_mulitple_returns",
+      span: "[span]",
       statements: [],
       arguments: [
         FunctionArgument(
@@ -121,6 +127,7 @@ Script(
     ),
     Function(
       name: "my_function_trailing_comma_in_args",
+      span: "[span]",
       statements: [],
       arguments: [
         FunctionArgument(
@@ -147,6 +154,7 @@ Script(
     ),
     Function(
       name: "my_function_trailing_comma_in_return",
+      span: "[span]",
       statements: [],
       arguments: [],
       return_types: FunctionReturn(
@@ -165,6 +173,7 @@ Script(
     ),
     Function(
       name: "my_function_single_return_in_brackets",
+      span: "[span]",
       statements: [],
       arguments: [],
       return_types: FunctionReturn(

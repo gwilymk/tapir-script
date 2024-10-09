@@ -7,6 +7,7 @@ Script(
   functions: [
     Function(
       name: "@toplevel",
+      span: "[span]",
       statements: [],
       arguments: [],
       return_types: FunctionReturn(
@@ -16,6 +17,7 @@ Script(
     ),
     Function(
       name: "my_function",
+      span: "[span]",
       statements: [
         Statement(
           span: "[span]",
@@ -32,6 +34,7 @@ Script(
     ),
     Function(
       name: "my_second_function",
+      span: "[span]",
       statements: [
         Statement(
           span: "[span]",
@@ -57,6 +60,7 @@ Script(
     ),
     Function(
       name: "my_third_function",
+      span: "[span]",
       statements: [
         Statement(
           span: "[span]",
@@ -78,6 +82,7 @@ Script(
     ),
     Function(
       name: "my_fourth_function",
+      span: "[span]",
       statements: [
         Statement(
           span: "[span]",

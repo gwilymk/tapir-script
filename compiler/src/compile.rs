@@ -43,7 +43,7 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
     };
 
     let mut sym_tab_visitor = SymTabVisitor::new(settings);
-    let mut type_visitor = TypeVisitor::new(settings);
+    let mut type_visitor = TypeVisitor::new(settings, &ast.functions, &mut diagnostics);
 
     for function in &mut ast.functions {
         sym_tab_visitor.visit_function(function, &mut diagnostics);

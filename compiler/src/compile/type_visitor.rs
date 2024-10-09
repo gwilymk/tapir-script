@@ -1,26 +1,57 @@
+use std::collections::HashMap;
+
 use serde::Serialize;
 
 use crate::{
     ast::{self, Expression, Function, FunctionReturn, MaybeResolved, SymbolId},
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
-    types::Type,
+    types::{FunctionType, Type},
 };
 
 use super::{symtab_visitor::SymTab, CompileSettings};
 
-pub struct TypeVisitor {
+pub struct TypeVisitor<'input> {
     type_table: Vec<Option<Type>>,
+    functions: HashMap<&'input str, (Span, FunctionType)>,
 }
 
-impl TypeVisitor {
-    pub fn new(settings: &CompileSettings) -> Self {
+impl<'input> TypeVisitor<'input> {
+    pub fn new(
+        settings: &CompileSettings,
+        functions: &[Function<'input>],
+        diagnostics: &mut Diagnostics,
+    ) -> Self {
+        let mut resolved_functions = HashMap::new();
+
+        for function in functions {
+            let function_type = FunctionType {
+                args: function.arguments.iter().map(|t| t.t.t).collect(),
+                rets: function.return_types.types.iter().map(|t| t.t).collect(),
+            };
+
+            if let Some((already_resolved_span, _)) =
+                resolved_functions.insert(function.name, (function.span, function_type))
+            {
+                diagnostics.add_message(
+                    CompilerErrorKind::FunctionAlreadyDeclared {
+                        function_name: function.name.to_string(),
+                        old_function_declaration: already_resolved_span,
+                        new_function_declaration: function.span,
+                    }
+                    .into_message(function.span),
+                );
+            }
+        }
+
         Self {
             type_table: settings
                 .properties
                 .iter()
                 .map(|prop| Some(prop.ty))
                 .collect(),
+
+            functions: resolved_functions,
         }
     }
 
@@ -312,7 +343,7 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            let mut type_visitor = TypeVisitor::new(&settings);
+            let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);
 
             for function in &mut script.functions {
                 symtab_visitor.visit_function(function, &mut diagnostics);
@@ -357,7 +388,7 @@ mod test {
                 }],
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
-            let mut type_visitor = TypeVisitor::new(&settings);
+            let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);
 
             for function in &mut script.functions {
                 symtab_visitor.visit_function(function, &mut diagnostics);

@@ -7,6 +7,7 @@ Script(
   functions: [
     Function(
       name: "@toplevel",
+      span: "[span]",
       statements: [
         Statement(
           span: "[span]",

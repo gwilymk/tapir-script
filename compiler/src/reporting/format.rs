@@ -176,5 +176,9 @@ fn compiler_error_report(
             .with_label(Label::new(*actual_location).with_message(format!("This has type {actual}")))
             .with_label(Label::new(*expected_location).with_message(format!("This has type {expected}")))
             .with_message(format!("Function is declared to return type {expected} but got {actual}")),
+        CompilerErrorKind::FunctionAlreadyDeclared { function_name, old_function_declaration, new_function_declaration } => build_error_report(span)
+            .with_label(Label::new(*old_function_declaration).with_message("Originally declared here"))
+            .with_label(Label::new(*new_function_declaration).with_message("Also declared here"))
+            .with_message(format!("Function with name '{function_name}' already exists")),
     }
 }

@@ -169,6 +169,11 @@ pub enum CompilerErrorKind {
         expected_location: Span,
         actual_location: Span,
     },
+    FunctionAlreadyDeclared {
+        function_name: String,
+        old_function_declaration: Span,
+        new_function_declaration: Span,
+    },
 }
 
 impl CompilerErrorKind {

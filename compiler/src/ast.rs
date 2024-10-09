@@ -35,6 +35,7 @@ impl<'input> Script<'input> {
 
         let top_level_function = Function {
             name: "@toplevel",
+            span: Span::new(file_id, 0, 0),
             statements: top_level_function_statements,
             arguments: vec![],
             return_types: FunctionReturn {
@@ -52,6 +53,7 @@ impl<'input> Script<'input> {
 #[derive(Clone, Debug, Serialize)]
 pub struct Function<'input> {
     pub name: &'input str,
+    pub span: Span,
     pub statements: Vec<Statement<'input>>,
     pub arguments: Vec<FunctionArgument<'input>>,
     pub return_types: FunctionReturn,
