@@ -25,6 +25,7 @@ extern {
         t_integer => Token::KeywordInt,
         t_fix => Token::KeywordFix,
         t_bool => Token::KeywordBool,
+        return => Token::KeywordReturn,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -112,6 +113,8 @@ StatementKind: StatementKind<'input> = {
     "if" <condition: Expression> <true_block: Block> <false_block: ElseBlock?> => StatementKind::If { 
         condition, true_block, false_block: false_block.unwrap_or_else(|| vec![]),
      },
+
+    return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
 
     <error: !> ";" => {
         diagnostics.add_lalrpop(<>.error, file_id);

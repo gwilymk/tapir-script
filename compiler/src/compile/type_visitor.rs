@@ -121,6 +121,7 @@ impl TypeVisitor {
                     self.visit(true_block, symtab, diagnostics);
                     self.visit(false_block, symtab, diagnostics);
                 }
+                ast::StatementKind::Return { values } => todo!("RETURN"),
             }
         }
     }

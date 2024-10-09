@@ -81,6 +81,13 @@ impl<'input> SymTabVisitor<'input> {
                 | StatementKind::Nop
                 | StatementKind::SymbolDeclare { .. }
                 | StatementKind::SymbolAssign { .. } => kind,
+                StatementKind::Return { mut values } => {
+                    for expr in &mut values {
+                        self.visit_expr(expr, diagnostics);
+                    }
+
+                    StatementKind::Return { values }
+                }
             };
         }
 

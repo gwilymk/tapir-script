@@ -86,6 +86,8 @@ pub enum Token<'input> {
     KeywordFix,
     #[token("bool")]
     KeywordBool,
+    #[token("return")]
+    KeywordReturn,
 
     #[token("true")]
     True,

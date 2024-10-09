@@ -107,6 +107,10 @@ pub enum StatementKind<'input> {
         ident: SymbolId,
         value: Expression<'input>,
     },
+
+    Return {
+        values: Vec<Expression<'input>>,
+    },
 }
 
 impl<'input> StatementKind<'input> {

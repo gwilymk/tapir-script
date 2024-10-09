@@ -1,0 +1,120 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: ast
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/functions_return.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      statements: [],
+      arguments: [],
+      return_types: [],
+    ),
+    Function(
+      name: "my_function",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [],
+          ),
+        ),
+      ],
+      arguments: [],
+      return_types: [],
+    ),
+    Function(
+      name: "my_second_function",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(5),
+              ),
+            ],
+          ),
+        ),
+      ],
+      arguments: [],
+      return_types: [],
+    ),
+    Function(
+      name: "my_third_function",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(4),
+              ),
+            ],
+          ),
+        ),
+      ],
+      arguments: [],
+      return_types: [],
+    ),
+    Function(
+      name: "my_fourth_function",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "x",
+            value: Expression(
+              span: "[span]",
+              kind: Integer(4),
+            ),
+          ),
+        ),
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(5),
+                  ),
+                  operator: Mul,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("x"),
+                  ),
+                ),
+              ),
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(5),
+                  ),
+                  operator: Sub,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("x"),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      arguments: [],
+      return_types: [],
+    ),
+  ],
+)

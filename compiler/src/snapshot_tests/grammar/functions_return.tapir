@@ -1,0 +1,16 @@
+fn my_function() {
+    return;
+}
+
+fn my_second_function() {
+    return 3, 5;
+}
+
+fn my_third_function() {
+    return 4;
+}
+
+fn my_fourth_function() {
+    var x = 4;
+    return 5 * x, 5 - x;
+}

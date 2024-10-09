@@ -158,6 +158,7 @@ impl Compiler {
                 let end_target = self.bytecode.new_label();
                 self.bytecode.patch_jump(if_true_jump, end_target);
             }
+            ast::StatementKind::Return { values } => todo!("RETURN"),
         }
     }
 
