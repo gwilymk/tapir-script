@@ -31,7 +31,7 @@ impl<'input> Script<'input> {
         }
 
         let top_level_function = Function {
-            name: MaybeResolved::Unresolved("@toplevel"),
+            name: "@toplevel",
             statements: top_level_function_statements,
             arguments: vec![],
             return_types: vec![],
@@ -45,7 +45,7 @@ impl<'input> Script<'input> {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Function<'input> {
-    pub name: MaybeResolved<'input>,
+    pub name: &'input str,
     pub statements: Vec<Statement<'input>>,
     pub arguments: Vec<FunctionArgument<'input>>,
     pub return_types: Vec<Type>,

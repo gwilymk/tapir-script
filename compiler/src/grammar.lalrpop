@@ -67,12 +67,7 @@ TopLevelStatement: TopLevelStatement<'input> = {
 
 FunctionDefinition: Function<'input> =
     "fn" <name: identifier> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> "{" <statements: Statement*> "}" =>
-        Function {
-            name: MaybeResolved::Unresolved(name),
-            statements,
-            arguments,
-            return_types,
-        };
+        Function { <> };
 
 FunctionArguments: Vec<FunctionArgument<'input>> = CommaSeparated<FunctionArgument>;
 FunctionArgument: FunctionArgument<'input> = 
