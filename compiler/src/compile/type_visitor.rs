@@ -240,7 +240,11 @@ impl<'input> TypeVisitor<'input> {
         BlockAnalysisResult::ContainsNonReturningBranch
     }
 
-    pub fn into_type_table(self, symtab: &SymTab, diagnostics: &mut Diagnostics) -> TypeTable {
+    pub fn into_type_table(
+        self,
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) -> TypeTable<'input> {
         let mut types = Vec::with_capacity(self.type_table.len());
         for (i, ty) in self.type_table.into_iter().enumerate() {
             if let Some(ty) = ty {
@@ -255,7 +259,14 @@ impl<'input> TypeVisitor<'input> {
             }
         }
 
-        TypeTable { types }
+        TypeTable {
+            types,
+            num_function_returns: self
+                .functions
+                .iter()
+                .map(|(name, function)| (*name, function.1.rets.len()))
+                .collect(),
+        }
     }
 
     fn type_for_expression(
@@ -385,13 +396,18 @@ enum BlockAnalysisResult {
 }
 
 #[derive(Clone, Serialize)]
-pub struct TypeTable {
+pub struct TypeTable<'input> {
     types: Vec<Type>,
+    num_function_returns: HashMap<&'input str, usize>,
 }
 
-impl TypeTable {
+impl<'input> TypeTable<'input> {
     pub fn type_for_symbol(&self, symbol_id: SymbolId) -> Type {
         self.types[symbol_id.0]
+    }
+
+    pub fn num_function_returns(&self, fn_name: &str) -> usize {
+        self.num_function_returns[fn_name]
     }
 }
 
