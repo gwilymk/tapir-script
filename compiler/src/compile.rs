@@ -230,7 +230,6 @@ pub mod opcodes {
         Drop(u8),
         GetProp(u8),
         SetProp(u8),
-        Nop,
         Wait,
         Move(u8),
         MathsOp(MathsOp),
@@ -247,7 +246,6 @@ pub mod opcodes {
                 Opcode::Drop(v) => write!(f, "drop\t{v}"),
                 Opcode::GetProp(i) => write!(f, "getprop\t{i}"),
                 Opcode::SetProp(i) => write!(f, "setprop\t{i}"),
-                Opcode::Nop => write!(f, "nop"),
                 Opcode::Wait => write!(f, "wait"),
                 Opcode::Move(i) => write!(f, "move\t{i}"),
                 Opcode::MathsOp(maths_op) => write!(
@@ -395,9 +393,6 @@ impl Bytecode {
                 }
                 Opcode::SetProp(index) => {
                     one_arg!(SetProp, index);
-                }
-                Opcode::Nop => {
-                    one_arg!(Nop, 0);
                 }
                 Opcode::Wait => {
                     one_arg!(Wait, 0);
