@@ -1,0 +1,7 @@
+fn my_function() -> (int, fix) {
+    return 3;
+}
+
+fn my_other_function() -> (bool, int) {
+    return false, 4, 8.3;
+}

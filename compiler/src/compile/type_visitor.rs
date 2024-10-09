@@ -315,10 +315,7 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let top_level = &mut parser
-                .parse(file_id, &mut diagnostics, lexer)
-                .unwrap()
-                .functions[0];
+            let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let settings = CompileSettings {
                 properties: vec![Property {
@@ -328,15 +325,15 @@ mod test {
                 }],
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
-
-            symtab_visitor.visit_function(top_level, &mut diagnostics);
-
-            let symtab = symtab_visitor.get_symtab();
-
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit_function(top_level, symtab, &mut diagnostics);
 
-            type_visitor.into_type_table(symtab, &mut diagnostics);
+            for function in &mut script.functions {
+                symtab_visitor.visit_function(function, &mut diagnostics);
+                let symtab = symtab_visitor.get_symtab();
+                type_visitor.visit_function(function, symtab, &mut diagnostics);
+            }
+
+            type_visitor.into_type_table(symtab_visitor.get_symtab(), &mut diagnostics);
 
             let mut err_str = vec![];
             let mut diagnostic_cache = DiagnosticCache::new(iter::once((

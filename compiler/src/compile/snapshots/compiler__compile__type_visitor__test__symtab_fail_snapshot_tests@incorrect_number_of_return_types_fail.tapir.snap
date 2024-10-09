@@ -1,0 +1,23 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_number_of_return_types_fail.tapir
+---
+Error: Function should be returning 2 return values, but you are actually returning 1.
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_number_of_return_types_fail.tapir:1:1]
+   │
+ 2 │     return 3;
+   │     ────┬────  
+   │         ╰────── This has 1 return values
+   │ 
+   │ Note: Functions must return a fixed number of values
+───╯
+Error: Function should be returning 2 return values, but you are actually returning 3.
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_number_of_return_types_fail.tapir:1:1]
+   │
+ 6 │     return false, 4, 8.3;
+   │     ──────────┬──────────  
+   │               ╰──────────── This has 3 return values
+   │ 
+   │ Note: Functions must return a fixed number of values
+───╯
