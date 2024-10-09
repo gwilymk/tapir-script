@@ -69,21 +69,21 @@ StatementKind: StatementKind<'input> = {
 Block: Vec<Statement<'input>> = "{" <Statement*> "}";
 ElseBlock = "else" <Block>;
 
-Expression: Box<Expression<'input>> = {
+Expression: Expression<'input> = {
     #[precedence(level="1")]
     <Term>,
 
     #[precedence(level="2")]
     #[assoc(side="left")]
-    <start: @L> <lhs: Expression> <operator: MulDiv> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs, operator, rhs }.with_span(file_id, start, end),
+    <start: @L> <lhs: Expression> <operator: MulDiv> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
     #[precedence(level="3")]
     #[assoc(side="left")]
-    <start: @L> <lhs: Expression> <operator: AddSub> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs, operator, rhs }.with_span(file_id, start, end),
+    <start: @L> <lhs: Expression> <operator: AddSub> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
     #[precedence(level="4")]
     #[assoc(side="none")]
-    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs, operator, rhs }.with_span(file_id, start, end),
+    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 }
 
 MulDiv: BinaryOperator = {
@@ -103,7 +103,7 @@ ComparisonOp: BinaryOperator = {
     "==" => BinaryOperator::EqEq,
 }
 
-Term: Box<Expression<'input>> = {
+Term: Expression<'input> = {
     "(" <Expression> ")",
     <Num>,
     <start: @L> <ident: identifier> <end: @R> => ExpressionKind::Variable(ident).with_span(file_id, start, end),
@@ -114,7 +114,7 @@ Term: Box<Expression<'input>> = {
     }
 }
 
-Num: Box<Expression<'input>> = {
+Num: Expression<'input> = {
     <start: @L> <value: integer> <end: @R> => match value.parse::<i32>() {
         Ok(value) => ExpressionKind::Integer(value).with_span(file_id, start, end),
         Err(e) => {
