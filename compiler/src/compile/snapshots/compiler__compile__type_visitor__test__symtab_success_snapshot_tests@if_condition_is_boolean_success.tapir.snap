@@ -1,0 +1,9 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/if_condition_is_boolean_success.tapir
+---
+[
+  ("int_prop", Int),
+  ("x", Bool),
+]

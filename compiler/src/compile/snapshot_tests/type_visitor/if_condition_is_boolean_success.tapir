@@ -1,0 +1,6 @@
+if true {}
+
+if false {}
+
+var x = true;
+if x {} else {}
