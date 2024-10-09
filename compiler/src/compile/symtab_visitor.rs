@@ -11,19 +11,14 @@ use super::{CompileSettings, Property};
 pub struct SymTabVisitor {
     symtab: SymTab,
 
-    symbol_names: HashMap<String, SymbolId>,
+    symbol_names: NameTable,
 }
 
 impl SymTabVisitor {
     pub fn new(settings: &CompileSettings) -> Self {
         Self {
             symtab: SymTab::new(settings),
-            symbol_names: settings
-                .properties
-                .iter()
-                .enumerate()
-                .map(|(i, prop)| (prop.name.clone(), SymbolId(i)))
-                .collect(),
+            symbol_names: NameTable::new(settings),
         }
     }
 
@@ -32,6 +27,8 @@ impl SymTabVisitor {
     }
 
     pub fn visit(&mut self, ast: &mut [Statement<'_>], diagnostics: &mut Diagnostics) {
+        self.symbol_names.push_scope();
+
         for statement in ast {
             let kind = mem::take(&mut statement.kind);
 
@@ -52,7 +49,7 @@ impl SymTabVisitor {
 
                     if let Some(symbol_id) = self.symbol_names.get(ident) {
                         StatementKind::SymbolAssign {
-                            ident: *symbol_id,
+                            ident: symbol_id,
                             value,
                         }
                     } else {
@@ -63,9 +60,21 @@ impl SymTabVisitor {
                         StatementKind::Error
                     }
                 }
-                StatementKind::If { .. } => {
-                    // TODO: block scoping
-                    kind
+                StatementKind::If {
+                    mut condition,
+                    mut true_block,
+                    mut false_block,
+                } => {
+                    self.visit_expr(&mut condition, diagnostics);
+
+                    self.visit(&mut true_block, diagnostics);
+                    self.visit(&mut false_block, diagnostics);
+
+                    StatementKind::If {
+                        condition,
+                        true_block,
+                        false_block,
+                    }
                 }
                 StatementKind::Error
                 | StatementKind::Wait
@@ -74,6 +83,8 @@ impl SymTabVisitor {
                 | StatementKind::SymbolAssign { .. } => kind,
             };
         }
+
+        self.symbol_names.pop_scope();
     }
 
     fn visit_expr(&self, expr: &mut Expression<'_>, diagnostics: &mut Diagnostics) {
@@ -82,7 +93,7 @@ impl SymTabVisitor {
         expr.kind = match kind {
             ExpressionKind::Variable(ident) => {
                 if let Some(symbol_id) = self.symbol_names.get(ident) {
-                    ExpressionKind::Symbol(*symbol_id)
+                    ExpressionKind::Symbol(symbol_id)
                 } else {
                     diagnostics.add_message(
                         CompilerErrorKind::UnknownVariable(ident.to_string())
@@ -109,6 +120,48 @@ impl SymTabVisitor {
             | ExpressionKind::Symbol(_)
             | ExpressionKind::Bool(_) => kind,
         }
+    }
+}
+
+struct NameTable {
+    names: Vec<HashMap<String, SymbolId>>,
+}
+
+impl NameTable {
+    pub fn new(settings: &CompileSettings) -> Self {
+        let property_symbols = settings
+            .properties
+            .iter()
+            .enumerate()
+            .map(|(i, prop)| (prop.name.clone(), SymbolId(i)))
+            .collect();
+
+        Self {
+            names: vec![property_symbols],
+        }
+    }
+
+    pub fn insert(&mut self, name: String, id: SymbolId) {
+        self.names.last_mut().unwrap().insert(name, id);
+    }
+
+    pub fn get(&self, name: &str) -> Option<SymbolId> {
+        for nametab in self.names.iter().rev() {
+            if let Some(id) = nametab.get(name) {
+                return Some(*id);
+            }
+        }
+
+        None
+    }
+
+    pub fn push_scope(&mut self) {
+        self.names.push(HashMap::new())
+    }
+
+    pub fn pop_scope(&mut self) {
+        self.names.pop();
+        assert!(!self.names.is_empty());
     }
 }
 

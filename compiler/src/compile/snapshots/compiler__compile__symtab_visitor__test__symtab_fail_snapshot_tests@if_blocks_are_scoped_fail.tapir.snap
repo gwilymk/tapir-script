@@ -1,0 +1,12 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: error_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/if_blocks_are_scoped_fail.tapir
+---
+Error: Unknown variable 'y'
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/if_blocks_are_scoped_fail.tapir:1:1]
+   │
+ 5 │ y = 4;
+   │ ───┬──  
+   │    ╰──── Unknown variable
+───╯

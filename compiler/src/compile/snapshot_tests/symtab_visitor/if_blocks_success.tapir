@@ -1,0 +1,12 @@
+var x = 3;
+var y = 14;
+
+if true {
+    var x = 3.5;
+    y = 112;
+} else {
+    var z = 82;
+    y = z;
+}
+
+x = 12;
