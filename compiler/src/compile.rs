@@ -127,6 +127,11 @@ impl Compiler {
                 self.stack.push(None);
             }
             ast::ExpressionKind::Fix(_) => todo!("Fixnum compilation"),
+            ast::ExpressionKind::Bool(value) => {
+                self.bytecode
+                    .add_opcode(Opcode::Push8(if *value { 1 } else { 0 }));
+                self.stack.push(None);
+            }
             ast::ExpressionKind::Variable(_) => {
                 unreachable!("Should have resolved this in symbol visiting")
             }

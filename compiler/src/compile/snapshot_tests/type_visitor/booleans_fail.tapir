@@ -1,0 +1,5 @@
+var x = true;
+x = 4;
+
+var y = false;
+y = 8;

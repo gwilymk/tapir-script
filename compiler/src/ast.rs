@@ -61,6 +61,7 @@ pub struct Expression<'input> {
 pub enum ExpressionKind<'input> {
     Integer(i32),
     Fix(#[serde(skip)] Fix),
+    Bool(bool),
     Variable(&'input str),
     BinaryOperation {
         lhs: Box<Expression<'input>>,

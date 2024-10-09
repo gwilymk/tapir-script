@@ -132,6 +132,7 @@ impl TypeVisitor {
         match &expression.kind {
             ast::ExpressionKind::Integer(_) => Type::Int,
             ast::ExpressionKind::Fix(_) => Type::Fix,
+            ast::ExpressionKind::Bool(_) => Type::Bool,
             ast::ExpressionKind::Variable(_) => {
                 unreachable!("Should have been removed by symbol resolution")
             }

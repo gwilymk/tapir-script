@@ -22,6 +22,9 @@ extern {
         integer => Token::Integer(<&'input str>),
         fix => Token::Fix(<&'input str>),
 
+        true => Token::True,
+        false => Token::False,
+
         "(" => Token::LParen,
         ")" => Token::RParen,
         ";" => Token::Semicolon,
@@ -82,6 +85,7 @@ Term: Box<Expression<'input>> = {
     "(" <Expression> ")",
     <Num>,
     <start: @L> <ident: identifier> <end: @R> => ExpressionKind::Variable(ident).with_span(file_id, start, end),
+    <start: @L> <b: Bool> <end: @R> => ExpressionKind::Bool(b).with_span(file_id, start, end),
     <start: @L> <error: !> <end: @R> => {
         diagnostics.add_message(Message::from_lalrpop(error.error, file_id));
         ExpressionKind::Error.with_span(file_id, start, end)
@@ -103,4 +107,9 @@ Num: Box<Expression<'input>> = {
             ExpressionKind::Error.with_span(file_id, start, end)
         }
     }
+}
+
+Bool: bool = {
+    true => true,
+    false => false,
 }

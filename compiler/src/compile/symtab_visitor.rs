@@ -102,7 +102,8 @@ impl SymTabVisitor {
             | ExpressionKind::Fix(_)
             | ExpressionKind::Error
             | ExpressionKind::Nop
-            | ExpressionKind::Symbol(_) => kind,
+            | ExpressionKind::Symbol(_)
+            | ExpressionKind::Bool(_) => kind,
         }
     }
 }
