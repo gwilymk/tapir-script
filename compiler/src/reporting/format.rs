@@ -103,7 +103,9 @@ fn parse_error_report(parse_error: &ParseError, span: Span) -> ariadne::ReportBu
             .with_message(format!("Unexpected extra token {token}")),
         ParseError::UnknownType { token } => build_error_report(span)
             .with_label(Label::new(span).with_message("Unknown type"))
-            .with_message("Type must be one of fix, bool or int"),
+            .with_message(format!(
+                "'{token}' is not a valid type, must be one of fix, bool or int"
+            )),
     }
 }
 

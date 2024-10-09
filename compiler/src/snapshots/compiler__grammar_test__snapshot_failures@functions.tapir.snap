@@ -17,7 +17,7 @@ Error: Unexpected token RParen, expected one of ":"
    │                                    ┬  
    │                                    ╰── Unexpected token
 ───╯
-Error: Type must be one of fix, bool or int
+Error: 'not_real' is not a valid type, must be one of fix, bool or int
    ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/functions.tapir:1:1]
    │
  7 │ fn not_a_real_type(x: not_real) {}
