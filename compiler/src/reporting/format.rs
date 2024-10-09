@@ -172,5 +172,9 @@ fn compiler_error_report(
             .with_label(Label::new(*function_return_location).with_message(format!("Function returns {expected} values")))
             .with_message(format!("Function should be returning {expected} return values, but you are actually returning {actual}."))
             .with_note("Functions must return a fixed number of values"),
+        CompilerErrorKind::MismatchingReturnTypes { expected, actual, expected_location, actual_location } => build_error_report(span)
+            .with_label(Label::new(*actual_location).with_message(format!("This has type {actual}")))
+            .with_label(Label::new(*expected_location).with_message(format!("This has type {expected}")))
+            .with_message(format!("Function is declared to return type {expected} but got {actual}")),
     }
 }

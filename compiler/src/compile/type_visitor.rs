@@ -164,6 +164,27 @@ impl TypeVisitor {
                             .into_message(statement.span),
                         );
                     }
+
+                    for (i, (actual, expected)) in actual_return_types
+                        .iter()
+                        .zip(&expected_return_type.types)
+                        .enumerate()
+                    {
+                        if *actual != expected.t
+                            && *actual != Type::Error
+                            && expected.t != Type::Error
+                        {
+                            diagnostics.add_message(
+                                CompilerErrorKind::MismatchingReturnTypes {
+                                    expected: expected.t,
+                                    actual: *actual,
+                                    expected_location: expected.span,
+                                    actual_location: values[i].span,
+                                }
+                                .into_message(statement.span),
+                            );
+                        }
+                    }
                 }
             }
         }

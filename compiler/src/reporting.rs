@@ -163,6 +163,12 @@ pub enum CompilerErrorKind {
         actual: usize,
         function_return_location: Span,
     },
+    MismatchingReturnTypes {
+        expected: Type,
+        actual: Type,
+        expected_location: Span,
+        actual_location: Span,
+    },
 }
 
 impl CompilerErrorKind {

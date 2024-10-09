@@ -1,0 +1,8 @@
+fn foo() -> (int, bool) {
+    return 3.5, 7;
+}
+
+# should not produce an incorrect type failure, but only complain about boool
+fn foo2() -> (int, boool) {
+    return 3, false;
+}
