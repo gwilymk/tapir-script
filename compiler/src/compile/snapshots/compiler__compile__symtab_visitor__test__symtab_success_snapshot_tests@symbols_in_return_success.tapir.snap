@@ -1,0 +1,81 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/symbols_in_return_success.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      statements: [],
+      arguments: [],
+      return_types: [],
+    ),
+    Function(
+      name: "my_function",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: SymbolDeclare(
+            ident: SymbolId(3),
+            value: Expression(
+              span: "[span]",
+              kind: Integer(5),
+            ),
+          ),
+        ),
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Symbol(SymbolId(3)),
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Symbol(SymbolId(1)),
+                  ),
+                ),
+              ),
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Symbol(SymbolId(2)),
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(3),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      arguments: [
+        FunctionArgument(
+          span: "[span]",
+          t: Int,
+          name: Resolved(SymbolId(1)),
+        ),
+        FunctionArgument(
+          span: "[span]",
+          t: Fix,
+          name: Resolved(SymbolId(2)),
+        ),
+      ],
+      return_types: [
+        Int,
+        Fix,
+      ],
+    ),
+  ],
+)
