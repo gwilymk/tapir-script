@@ -1,6 +1,8 @@
 if true {}
 
-if false {}
+if true == false {}
+
+if 3.5 == 7.3 {}
 
 var x = true;
 if x {} else {}
