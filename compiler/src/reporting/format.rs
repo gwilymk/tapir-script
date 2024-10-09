@@ -167,5 +167,9 @@ fn compiler_error_report(
             .with_message(format!(
                 "Condition in if statement must be a bool, but got a {got}"
             )),
+        CompilerErrorKind::IncorrectNumberOfReturnTypes { expected, actual } => build_error_report(span)
+            .with_label(Label::new(span).with_message(format!("This has {actual} return values")))
+            .with_message(format!("Function should be returning {expected} return values, but you are actually returning {actual}."))
+            .with_note("Functions must return a fixed number of values"),
     }
 }

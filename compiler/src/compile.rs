@@ -43,20 +43,15 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
     };
 
     let mut sym_tab_visitor = SymTabVisitor::new(settings);
+    let mut type_visitor = TypeVisitor::new(settings);
 
     for function in &mut ast.functions {
         sym_tab_visitor.visit_function(function, &mut diagnostics);
 
-        let _type_table = {
-            let mut type_visitor = TypeVisitor::new(settings);
-
-            let symtab = sym_tab_visitor.get_symtab();
-
-            type_visitor.visit_function(function, symtab, &mut diagnostics);
-
-            type_visitor.into_type_table(symtab, &mut diagnostics)
-        };
+        type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
     }
+
+    let _type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);
 
     if diagnostics.has_any() {
         return Err(diagnostics);

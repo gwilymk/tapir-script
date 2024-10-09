@@ -148,6 +148,7 @@ pub enum CompilerErrorKind {
     BinaryOperatorTypeError { lhs_type: Type, rhs_type: Type },
     InvalidTypeForBinaryOperator { type_: Type },
     InvalidTypeForIfCondition { got: Type },
+    IncorrectNumberOfReturnTypes { expected: usize, actual: usize },
 }
 
 impl CompilerErrorKind {

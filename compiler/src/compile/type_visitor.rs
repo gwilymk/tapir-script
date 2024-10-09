@@ -76,13 +76,19 @@ impl TypeVisitor {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) {
-        self.visit_block(&function.statements, symtab, diagnostics);
+        self.visit_block(
+            &function.statements,
+            symtab,
+            &function.return_types,
+            diagnostics,
+        );
     }
 
     fn visit_block(
         &mut self,
         ast: &[ast::Statement<'_>],
         symtab: &SymTab,
+        expected_return_type: &[Type],
         diagnostics: &mut Diagnostics,
     ) {
         for statement in ast {
@@ -127,10 +133,29 @@ impl TypeVisitor {
                         );
                     }
 
-                    self.visit_block(true_block, symtab, diagnostics);
-                    self.visit_block(false_block, symtab, diagnostics);
+                    self.visit_block(true_block, symtab, expected_return_type, diagnostics);
+                    self.visit_block(false_block, symtab, expected_return_type, diagnostics);
                 }
-                ast::StatementKind::Return { values } => todo!("RETURN"),
+                ast::StatementKind::Return { values } => {
+                    let mut actual_return_types = Vec::with_capacity(values.len());
+                    for value in values {
+                        actual_return_types.push(self.type_for_expression(
+                            value,
+                            symtab,
+                            diagnostics,
+                        ));
+                    }
+
+                    if actual_return_types.len() != expected_return_type.len() {
+                        diagnostics.add_message(
+                            CompilerErrorKind::IncorrectNumberOfReturnTypes {
+                                expected: expected_return_type.len(),
+                                actual: actual_return_types.len(),
+                            }
+                            .into_message(statement.span),
+                        );
+                    }
+                }
             }
         }
     }
@@ -242,10 +267,9 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let top_level = &mut parser
+            let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
-                .unwrap()
-                .functions[0];
+                .unwrap();
 
             let settings = CompileSettings {
                 properties: vec![Property {
@@ -256,13 +280,19 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit_function(top_level, &mut diagnostics);
+            let mut type_visitor = TypeVisitor::new(&settings);
+
+            for function in &mut script.functions {
+                symtab_visitor.visit_function(function, &mut diagnostics);
+
+                type_visitor.visit_function(
+                    function,
+                    symtab_visitor.get_symtab(),
+                    &mut diagnostics,
+                );
+            }
 
             let symtab = symtab_visitor.get_symtab();
-
-            let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit_block(&top_level.statements, symtab, &mut diagnostics);
-
             let type_table = type_visitor.into_type_table(symtab, &mut diagnostics);
 
             let all_types = symtab
@@ -304,7 +334,7 @@ mod test {
             let symtab = symtab_visitor.get_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit_block(&top_level.statements, symtab, &mut diagnostics);
+            type_visitor.visit_function(top_level, symtab, &mut diagnostics);
 
             type_visitor.into_type_table(symtab, &mut diagnostics);
 
