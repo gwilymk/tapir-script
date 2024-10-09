@@ -100,10 +100,12 @@ pub enum BinaryOperator {
     Mod,
     RealDiv,
     RealMod,
+
+    EqEq,
 }
 
 impl BinaryOperator {
-    pub fn can_handle_type(&self, lhs_type: Type) -> bool {
+    pub fn can_handle_type(self, lhs_type: Type) -> bool {
         match self {
             BinaryOperator::Add
             | BinaryOperator::Sub
@@ -112,6 +114,22 @@ impl BinaryOperator {
             | BinaryOperator::Mod
             | BinaryOperator::RealDiv
             | BinaryOperator::RealMod => matches!(lhs_type, Type::Fix | Type::Int),
+
+            BinaryOperator::EqEq => !matches!(lhs_type, Type::Error), // can handle bools with ==
+        }
+    }
+
+    pub fn resulting_type(self, lhs_type: Type) -> Type {
+        match self {
+            BinaryOperator::Add
+            | BinaryOperator::Sub
+            | BinaryOperator::Mul
+            | BinaryOperator::Div
+            | BinaryOperator::Mod
+            | BinaryOperator::RealDiv
+            | BinaryOperator::RealMod => lhs_type,
+
+            BinaryOperator::EqEq => Type::Bool,
         }
     }
 }

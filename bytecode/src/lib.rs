@@ -27,4 +27,6 @@ pub enum MathsOp {
     Mul,
     RealMod,
     RealDiv,
+
+    EqEq,
 }

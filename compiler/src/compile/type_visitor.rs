@@ -181,7 +181,7 @@ impl TypeVisitor {
                     return Type::Error;
                 }
 
-                lhs_type
+                operator.resulting_type(lhs_type)
             }
             ast::ExpressionKind::Error => Type::Error,
             ast::ExpressionKind::Nop => Type::Error,

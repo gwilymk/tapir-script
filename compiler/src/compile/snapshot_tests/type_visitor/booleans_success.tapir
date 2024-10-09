@@ -1,2 +1,7 @@
 var x = true;
 x = false;
+
+var y = 3;
+var z = y == 3;
+
+z = false;

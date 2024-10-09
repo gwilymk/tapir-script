@@ -22,8 +22,3 @@ impl Display for Type {
         }
     }
 }
-
-pub struct FunctionType {
-    pub args: Vec<Type>,
-    pub rets: Vec<Type>,
-}

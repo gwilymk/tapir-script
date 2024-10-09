@@ -42,6 +42,7 @@ extern {
         "%" => Token::OperatorMod,
         "//" => Token::OperatorRealDiv,
         "%%" => Token::OperatorRealMod,
+        "==" => Token::OperatorEqEq,
     }
 }
 
@@ -79,6 +80,10 @@ Expression: Box<Expression<'input>> = {
     #[precedence(level="3")]
     #[assoc(side="left")]
     <start: @L> <lhs: Expression> <operator: AddSub> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs, operator, rhs }.with_span(file_id, start, end),
+
+    #[precedence(level="4")]
+    #[assoc(side="none")]
+    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs, operator, rhs }.with_span(file_id, start, end),
 }
 
 MulDiv: BinaryOperator = {
@@ -92,6 +97,10 @@ MulDiv: BinaryOperator = {
 AddSub: BinaryOperator = {
     "+" => BinaryOperator::Add,
     "-" => BinaryOperator::Sub,
+}
+
+ComparisonOp: BinaryOperator = {
+    "==" => BinaryOperator::EqEq,
 }
 
 Term: Box<Expression<'input>> = {

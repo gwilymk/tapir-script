@@ -119,4 +119,6 @@ pub enum Token<'input> {
     OperatorRealDiv,
     #[token("%%")]
     OperatorRealMod,
+    #[token("==")]
+    OperatorEqEq,
 }

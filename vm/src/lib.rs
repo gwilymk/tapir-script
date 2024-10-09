@@ -84,6 +84,7 @@ impl State {
                         bytecode::MathsOp::Mul => lhs * rhs,
                         bytecode::MathsOp::RealMod => lhs.rem_euclid(rhs),
                         bytecode::MathsOp::RealDiv => lhs / rhs,
+                        bytecode::MathsOp::EqEq => (lhs == rhs).into(),
                     };
 
                     self.stack.push(result);

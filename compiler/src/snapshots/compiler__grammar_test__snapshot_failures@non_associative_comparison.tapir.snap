@@ -1,0 +1,12 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: error_str
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/non_associative_comparison.tapir
+---
+Error: Unexpected token OperatorEqEq, expected one of ";", "+", "-"
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/non_associative_comparison.tapir:1:1]
+   │
+ 1 │ var x = 3 == 5 == true;
+   │                ─┬  
+   │                 ╰── Unexpected token
+───╯

@@ -204,6 +204,8 @@ pub mod opcodes {
         Mul,
         RealMod,
         RealDiv,
+
+        EqEq,
     }
 
     impl From<MathsOp> for bytecode::MathsOp {
@@ -218,7 +220,7 @@ pub mod opcodes {
                 };
             }
 
-            arm!(Add, Sub, Mul, RealMod, RealDiv)
+            arm!(Add, Sub, Mul, RealMod, RealDiv, EqEq)
         }
     }
 
@@ -243,6 +245,7 @@ pub mod opcodes {
                 BinaryOperator::Mod => panic!("Shouldn't be compiling mod binops"),
                 BinaryOperator::RealDiv => RealDiv,
                 BinaryOperator::RealMod => RealMod,
+                BinaryOperator::EqEq => EqEq,
             }
         }
     }
