@@ -74,6 +74,15 @@ pub enum Token<'input> {
     KeywordWait,
     #[token("var")]
     KeywordVar,
+    #[token("if")]
+    KeywordIf,
+    #[token("else")]
+    KeywordElse,
+
+    #[token("true")]
+    True,
+    #[token("false")]
+    False,
 
     #[regex("[_a-zA-Z][_0-9a-zA-Z]*", |lex| lex.slice())]
     Identifier(&'input str),
@@ -81,16 +90,6 @@ pub enum Token<'input> {
     Integer(&'input str),
     #[regex("-?[0-9]+\\.[0-9]*", |lex| lex.slice())]
     Fix(&'input str),
-
-    #[token("true")]
-    True,
-    #[token("false")]
-    False,
-
-    #[token("if")]
-    If,
-    #[token("else")]
-    Else,
 
     #[token("{")]
     LBrace,

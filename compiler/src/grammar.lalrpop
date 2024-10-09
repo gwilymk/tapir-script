@@ -18,15 +18,15 @@ extern {
     enum Token<'input> {
         wait => Token::KeywordWait,
         var => Token::KeywordVar,
+        "if" => Token::KeywordIf,
+        "else" => Token::KeywordElse,
+
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
         fix => Token::Fix(<&'input str>),
 
         true => Token::True,
         false => Token::False,
-
-        "if" => Token::If,
-        "else" => Token::Else,
 
         "{" => Token::LBrace,
         "}" => Token::RBrace,
