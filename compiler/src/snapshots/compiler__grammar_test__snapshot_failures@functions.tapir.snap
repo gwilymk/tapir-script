@@ -1,0 +1,26 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: error_str
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/functions.tapir
+---
+Error: Unexpected token KeywordInt, expected one of "{", "->"
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/functions.tapir:1:1]
+   │
+ 1 │ fn my_function_without_arrow() int {
+   │                                ─┬─  
+   │                                 ╰─── Unexpected token
+───╯
+Error: Unexpected token RParen, expected one of ":"
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/functions.tapir:1:1]
+   │
+ 5 │ fn my_function_with_types_for_arg(x) {}
+   │                                    ┬  
+   │                                    ╰── Unexpected token
+───╯
+Error: Type must be one of fix, bool or int
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/functions.tapir:1:1]
+   │
+ 7 │ fn not_a_real_type(x: not_real) {}
+   │                       ────┬───  
+   │                           ╰───── Unknown type
+───╯

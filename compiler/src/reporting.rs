@@ -101,6 +101,15 @@ pub enum ParseError {
     ExtraToken {
         token: String,
     },
+    UnknownType {
+        token: String,
+    },
+}
+
+impl ParseError {
+    pub fn with_span(self, file_id: FileId, start: usize, end: usize) -> Message {
+        MessageKind::ParseError(self).with_span(file_id, start, end)
+    }
 }
 
 impl Message {
@@ -113,22 +122,19 @@ impl Message {
                 .with_span(file_id, location, location)
                 .into(),
             lalrpop_util::ParseError::UnrecognizedEof { location, expected } => {
-                MessageKind::ParseError(ParseError::UnrecognizedEof { expected })
-                    .with_span(file_id, location, location)
+                ParseError::UnrecognizedEof { expected }.with_span(file_id, location, location)
             }
             lalrpop_util::ParseError::UnrecognizedToken { token, expected } => {
-                MessageKind::ParseError(ParseError::UnrecognizedToken {
+                ParseError::UnrecognizedToken {
                     token: format!("{:?}", token.1),
                     expected,
-                })
+                }
                 .with_span(file_id, token.0, token.2)
             }
-            lalrpop_util::ParseError::ExtraToken { token } => {
-                MessageKind::ParseError(ParseError::ExtraToken {
-                    token: format!("{:?}", token.1),
-                })
-                .with_span(file_id, token.0, token.2)
+            lalrpop_util::ParseError::ExtraToken { token } => ParseError::ExtraToken {
+                token: format!("{:?}", token.1),
             }
+            .with_span(file_id, token.0, token.2),
             lalrpop_util::ParseError::User { error } => error.into(),
         }
     }

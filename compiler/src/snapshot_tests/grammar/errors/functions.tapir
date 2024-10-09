@@ -1,0 +1,7 @@
+fn my_function_without_arrow() int {
+
+}
+
+fn my_function_with_types_for_arg(x) {}
+
+fn not_a_real_type(x: not_real) {}

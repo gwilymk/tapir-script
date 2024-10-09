@@ -26,6 +26,7 @@ impl<'input> Script<'input> {
                     top_level_function_statements.push(statement)
                 }
                 TopLevelStatement::FunctionDefinition(function) => functions.push(function),
+                TopLevelStatement::Error => {}
             }
         }
 
@@ -67,6 +68,7 @@ pub enum MaybeResolved<'input> {
 pub enum TopLevelStatement<'input> {
     Statement(Statement<'input>),
     FunctionDefinition(Function<'input>),
+    Error,
 }
 
 #[derive(Clone, Debug, Serialize)]

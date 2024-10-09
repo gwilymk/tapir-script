@@ -4,7 +4,7 @@ use crate::{
     },
     ast::*,
     Message,
-    reporting::Diagnostics,
+    reporting::{Diagnostics, ParseError},
     types::Type,
 };
 
@@ -59,6 +59,10 @@ pub Script: Script<'input> = <TopLevelStatement*> => Script::from_top_level(<>);
 TopLevelStatement: TopLevelStatement<'input> = {
     <Statement> => TopLevelStatement::Statement(<>),
     <FunctionDefinition> => TopLevelStatement::FunctionDefinition(<>),
+    <error: !> => {
+        diagnostics.add_lalrpop(<>.error, file_id);
+        TopLevelStatement::Error
+    },
 }
 
 FunctionDefinition: Function<'input> =
@@ -96,6 +100,10 @@ Type: Type = {
     t_integer => Type::Int,
     t_bool => Type::Bool,
     t_fix => Type::Fix,
+    <start: @L> <ident: identifier> <end: @R> => {
+        diagnostics.add_message(ParseError::UnknownType { token: ident.to_string() }.with_span(file_id, start, end));
+        Type::Error
+    },
 }
 
 Statement: Statement<'input> =
