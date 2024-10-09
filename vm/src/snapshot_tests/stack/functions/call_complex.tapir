@@ -1,0 +1,13 @@
+fn foo1(x: int) -> int {
+    var y = 12;
+    wait;
+    return foo2(x, y);
+}
+
+fn foo2(x: int, y: int) -> int {
+    wait;
+    return x + y;
+}
+
+var x = foo1(55) + 44;
+wait;
