@@ -104,8 +104,34 @@ impl State {
                     let target_for_jump = bytecode[self.pc];
                     self.pc = target_for_jump as usize;
                 }
-                bytecode::Instruction::Call => todo!(),
-                bytecode::Instruction::Return => todo!(),
+                bytecode::Instruction::Call => {
+                    let target_for_jump = bytecode[self.pc];
+                    self.stack.push((self.pc + 1) as i32);
+
+                    self.pc = target_for_jump as usize;
+                }
+                bytecode::Instruction::Return => {
+                    let args = arg;
+                    let [rets, shift] = bytecode[self.pc].to_be_bytes();
+
+                    let args = args as usize;
+                    let rets = rets as usize;
+                    let shift = shift as usize;
+
+                    if self.stack.len() == shift {
+                        return VmState::Finished;
+                    }
+
+                    let new_pc = self.stack[self.stack.len() - shift];
+                    // extra -1 to cover the new program counter
+                    let copy_range = (self.stack.len() - rets)..;
+                    let copy_dest = self.stack.len() - args - shift - rets - 1;
+
+                    self.stack.copy_within(copy_range, copy_dest);
+                    self.stack.truncate(self.stack.len() - args - shift - 1);
+
+                    self.pc = new_pc as usize;
+                }
             }
         }
     }
