@@ -143,12 +143,26 @@ impl Message {
 #[derive(Clone, Debug, Serialize)]
 pub enum CompilerErrorKind {
     UnknownVariable(String),
-    TypeError { expected: Type, actual: Type },
+    TypeError {
+        expected: Type,
+        actual: Type,
+    },
     UnknownType(String),
-    BinaryOperatorTypeError { lhs_type: Type, rhs_type: Type },
-    InvalidTypeForBinaryOperator { type_: Type },
-    InvalidTypeForIfCondition { got: Type },
-    IncorrectNumberOfReturnTypes { expected: usize, actual: usize },
+    BinaryOperatorTypeError {
+        lhs_type: Type,
+        rhs_type: Type,
+    },
+    InvalidTypeForBinaryOperator {
+        type_: Type,
+    },
+    InvalidTypeForIfCondition {
+        got: Type,
+    },
+    IncorrectNumberOfReturnTypes {
+        expected: usize,
+        actual: usize,
+        function_return_location: Span,
+    },
 }
 
 impl CompilerErrorKind {

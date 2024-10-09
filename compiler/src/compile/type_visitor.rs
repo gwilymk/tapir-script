@@ -151,6 +151,7 @@ impl TypeVisitor {
                             CompilerErrorKind::IncorrectNumberOfReturnTypes {
                                 expected: expected_return_type.types.len(),
                                 actual: actual_return_types.len(),
+                                function_return_location: expected_return_type.span,
                             }
                             .into_message(statement.span),
                         );

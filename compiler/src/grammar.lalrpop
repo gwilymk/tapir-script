@@ -77,12 +77,10 @@ FunctionArgument: FunctionArgument<'input> =
         t,
         name: MaybeResolved::Unresolved(name),
     };
-FunctionReturn: FunctionReturn =
-    <start: @L> <types: FunctionReturnWithoutLocation> <end: @R> => FunctionReturn { types, span: Span::new(file_id, start, end) };
-FunctionReturnWithoutLocation: Vec<TypeWithLocation> = {
-    () => vec![],
-    "->" <Type> => vec![<>],
-    "->" "(" <CommaSeparated<Type>> ")",
+FunctionReturn: FunctionReturn = {
+    <start: @L> <end: @R> => FunctionReturn { types: vec![], span: Span::new(file_id, start, end) },
+    "->" <start: @L> <t: Type> <end: @R> => FunctionReturn { types: vec![t], span: Span::new(file_id, start, end) },
+    "->" "(" <start: @L> <types: CommaSeparated<Type>> <end: @R> ")" => FunctionReturn { types, span: Span::new(file_id, start, end) },
 }
 
 CommaSeparated<T>: Vec<T> =
