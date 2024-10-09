@@ -19,7 +19,6 @@ pub enum Instruction {
     Jump,
     Call,
     Return,
-    MoveRange,
 }
 
 #[repr(u8)]

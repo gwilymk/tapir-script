@@ -106,7 +106,6 @@ impl State {
                 }
                 bytecode::Instruction::Call => todo!(),
                 bytecode::Instruction::Return => todo!(),
-                bytecode::Instruction::MoveRange => todo!(),
             }
         }
     }
