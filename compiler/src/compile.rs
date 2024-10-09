@@ -52,7 +52,7 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
 
             let symtab = sym_tab_visitor.get_symtab();
 
-            type_visitor.visit(&function.statements, symtab, &mut diagnostics);
+            type_visitor.visit_function(function, symtab, &mut diagnostics);
 
             type_visitor.into_type_table(symtab, &mut diagnostics)
         };

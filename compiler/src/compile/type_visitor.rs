@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use crate::{
-    ast::{self, Expression, SymbolId},
+    ast::{self, Expression, Function, SymbolId},
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::Type,
@@ -70,7 +70,16 @@ impl TypeVisitor {
         }
     }
 
-    pub fn visit(
+    pub fn visit_function(
+        &mut self,
+        function: &mut Function<'_>,
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) {
+        self.visit_block(&function.statements, symtab, diagnostics);
+    }
+
+    fn visit_block(
         &mut self,
         ast: &[ast::Statement<'_>],
         symtab: &SymTab,
@@ -118,8 +127,8 @@ impl TypeVisitor {
                         );
                     }
 
-                    self.visit(true_block, symtab, diagnostics);
-                    self.visit(false_block, symtab, diagnostics);
+                    self.visit_block(true_block, symtab, diagnostics);
+                    self.visit_block(false_block, symtab, diagnostics);
                 }
                 ast::StatementKind::Return { values } => todo!("RETURN"),
             }
@@ -252,7 +261,7 @@ mod test {
             let symtab = symtab_visitor.get_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(&top_level.statements, symtab, &mut diagnostics);
+            type_visitor.visit_block(&top_level.statements, symtab, &mut diagnostics);
 
             let type_table = type_visitor.into_type_table(symtab, &mut diagnostics);
 
@@ -295,7 +304,7 @@ mod test {
             let symtab = symtab_visitor.get_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(&top_level.statements, symtab, &mut diagnostics);
+            type_visitor.visit_block(&top_level.statements, symtab, &mut diagnostics);
 
             type_visitor.into_type_table(symtab, &mut diagnostics);
 
