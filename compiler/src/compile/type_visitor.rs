@@ -249,12 +249,12 @@ mod test {
 
             symtab_visitor.visit_function(top_level, &mut diagnostics);
 
-            let symtab = symtab_visitor.into_symtab();
+            let symtab = symtab_visitor.get_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(&top_level.statements, &symtab, &mut diagnostics);
+            type_visitor.visit(&top_level.statements, symtab, &mut diagnostics);
 
-            let type_table = type_visitor.into_type_table(&symtab, &mut diagnostics);
+            let type_table = type_visitor.into_type_table(symtab, &mut diagnostics);
 
             let all_types = symtab
                 .all_symbols()
@@ -292,12 +292,12 @@ mod test {
 
             symtab_visitor.visit_function(top_level, &mut diagnostics);
 
-            let symtab = symtab_visitor.into_symtab();
+            let symtab = symtab_visitor.get_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(&top_level.statements, &symtab, &mut diagnostics);
+            type_visitor.visit(&top_level.statements, symtab, &mut diagnostics);
 
-            type_visitor.into_type_table(&symtab, &mut diagnostics);
+            type_visitor.into_type_table(symtab, &mut diagnostics);
 
             let mut err_str = vec![];
             let mut diagnostic_cache = DiagnosticCache::new(iter::once((

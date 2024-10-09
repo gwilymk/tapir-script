@@ -42,27 +42,20 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
         }
     };
 
-    let mut symtabs = Vec::with_capacity(ast.functions.len());
+    let mut sym_tab_visitor = SymTabVisitor::new(settings);
+
     for function in &mut ast.functions {
-        // build the symbol table
-        let symtab = {
-            let mut sym_tab_visitor = SymTabVisitor::new(settings);
-
-            // resolve all the identifiers
-            sym_tab_visitor.visit_function(function, &mut diagnostics);
-
-            sym_tab_visitor.into_symtab()
-        };
+        sym_tab_visitor.visit_function(function, &mut diagnostics);
 
         let _type_table = {
             let mut type_visitor = TypeVisitor::new(settings);
 
-            type_visitor.visit(&function.statements, &symtab, &mut diagnostics);
+            let symtab = sym_tab_visitor.get_symtab();
 
-            type_visitor.into_type_table(&symtab, &mut diagnostics)
+            type_visitor.visit(&function.statements, symtab, &mut diagnostics);
+
+            type_visitor.into_type_table(symtab, &mut diagnostics)
         };
-
-        symtabs.push(symtab);
     }
 
     if diagnostics.has_any() {
@@ -71,8 +64,8 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
 
     let mut compiler = Compiler::new();
 
-    for (function, symtab) in ast.functions.iter().zip(symtabs) {
-        compiler.compile_block(&function.statements, &symtab);
+    for function in ast.functions {
+        compiler.compile_block(&function.statements, sym_tab_visitor.get_symtab());
     }
 
     Ok(compiler.bytecode)

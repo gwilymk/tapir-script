@@ -24,8 +24,8 @@ impl<'input> SymTabVisitor<'input> {
         }
     }
 
-    pub fn into_symtab(self) -> SymTab<'input> {
-        self.symtab
+    pub fn get_symtab(&self) -> &SymTab<'input> {
+        &self.symtab
     }
 
     pub fn visit_function(
