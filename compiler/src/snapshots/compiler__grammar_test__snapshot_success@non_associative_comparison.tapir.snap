@@ -6,6 +6,7 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/non_associat
 Script(
   functions: [
     Function(
+      name: Unresolved("@toplevel"),
       statements: [
         Statement(
           span: "[span]",
@@ -38,6 +39,8 @@ Script(
           ),
         ),
       ],
+      arguments: [],
+      return_types: [],
     ),
   ],
 )

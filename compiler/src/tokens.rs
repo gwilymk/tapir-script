@@ -78,6 +78,14 @@ pub enum Token<'input> {
     KeywordIf,
     #[token("else")]
     KeywordElse,
+    #[token("fn")]
+    KeywordFn,
+    #[token("int")]
+    KeywordInt,
+    #[token("fix")]
+    KeywordFix,
+    #[token("bool")]
+    KeywordBool,
 
     #[token("true")]
     True,
@@ -103,6 +111,12 @@ pub enum Token<'input> {
     Assign,
     #[token(";")]
     Semicolon,
+    #[token(":")]
+    Colon,
+    #[token("->")]
+    Arrow,
+    #[token(",")]
+    Comma,
 
     #[token("+")]
     OperatorAdd,

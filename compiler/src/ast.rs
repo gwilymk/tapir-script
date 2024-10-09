@@ -18,33 +18,55 @@ pub struct Script<'input> {
 impl<'input> Script<'input> {
     pub fn from_top_level(top_level: impl IntoIterator<Item = TopLevelStatement<'input>>) -> Self {
         let mut top_level_function_statements = vec![];
+        let mut functions = vec![];
 
         for top_level_statement in top_level.into_iter() {
             match top_level_statement {
                 TopLevelStatement::Statement(statement) => {
                     top_level_function_statements.push(statement)
                 }
+                TopLevelStatement::FunctionDefinition(function) => functions.push(function),
             }
         }
 
         let top_level_function = Function {
+            name: MaybeResolved::Unresolved("@toplevel"),
             statements: top_level_function_statements,
+            arguments: vec![],
+            return_types: vec![],
         };
 
-        Self {
-            functions: vec![top_level_function],
-        }
+        functions.insert(0, top_level_function);
+
+        Self { functions }
     }
 }
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Function<'input> {
+    pub name: MaybeResolved<'input>,
     pub statements: Vec<Statement<'input>>,
+    pub arguments: Vec<FunctionArgument<'input>>,
+    pub return_types: Vec<Type>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct FunctionArgument<'input> {
+    pub span: Span,
+    pub t: Type,
+    pub name: MaybeResolved<'input>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub enum MaybeResolved<'input> {
+    Unresolved(&'input str),
+    Resolved(SymbolId),
 }
 
 #[derive(Clone, Debug, Serialize)]
 pub enum TopLevelStatement<'input> {
     Statement(Statement<'input>),
+    FunctionDefinition(Function<'input>),
 }
 
 #[derive(Clone, Debug, Serialize)]

@@ -1,10 +1,11 @@
 use crate::{
     tokens::{
-        FileId, LexicalError, LexicalErrorKind, Token
+        FileId, LexicalError, LexicalErrorKind, Token, Span,
     },
-    ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator, Fix, Script, TopLevelStatement},
+    ast::*,
     Message,
     reporting::Diagnostics,
+    types::Type,
 };
 
 use num_traits::Num;
@@ -20,6 +21,10 @@ extern {
         var => Token::KeywordVar,
         "if" => Token::KeywordIf,
         "else" => Token::KeywordElse,
+        "fn" => Token::KeywordFn,
+        t_integer => Token::KeywordInt,
+        t_fix => Token::KeywordFix,
+        t_bool => Token::KeywordBool,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -34,6 +39,9 @@ extern {
         ")" => Token::RParen,
         ";" => Token::Semicolon,
         "=" => Token::Assign,
+        ":" => Token::Colon,
+        "->" => Token::Arrow,
+        "," => Token::Comma,
 
         "+" => Token::OperatorAdd,
         "-" => Token::OperatorSub,
@@ -48,8 +56,47 @@ extern {
 
 pub Script: Script<'input> = <TopLevelStatement*> => Script::from_top_level(<>);
 
-TopLevelStatement: TopLevelStatement<'input> =
-    <Statement> => TopLevelStatement::Statement(<>);
+TopLevelStatement: TopLevelStatement<'input> = {
+    <Statement> => TopLevelStatement::Statement(<>),
+    <FunctionDefinition> => TopLevelStatement::FunctionDefinition(<>),
+}
+
+FunctionDefinition: Function<'input> =
+    "fn" <name: identifier> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> "{" <statements: Statement*> "}" =>
+        Function {
+            name: MaybeResolved::Unresolved(name),
+            statements,
+            arguments,
+            return_types,
+        };
+
+FunctionArguments: Vec<FunctionArgument<'input>> = CommaSeparated<FunctionArgument>;
+FunctionArgument: FunctionArgument<'input> = 
+    <start: @L> <name: identifier> ":" <t: Type> <end: @R> => FunctionArgument {
+        span: Span::new(file_id, start, end),
+        t,
+        name: MaybeResolved::Unresolved(name),
+    };
+FunctionReturn: Vec<Type> = {
+    () => vec![],
+    <Type> => vec![<>],
+    "(" <CommaSeparated<Type>> ")",
+}
+
+CommaSeparated<T>: Vec<T> =
+    <mut v:(<T> ",")*> <e:T?> => match e {
+        None => v,
+        Some(e) => {
+            v.push(e);
+            v
+        },
+    };
+
+Type: Type = {
+    t_integer => Type::Int,
+    t_bool => Type::Bool,
+    t_fix => Type::Fix,
+}
 
 Statement: Statement<'input> =
     <start: @L> <kind: StatementKind> <end: @R> => kind.with_span(file_id, start, end);
