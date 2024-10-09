@@ -186,6 +186,10 @@ pub enum CompilerErrorKind {
     FunctionMustReturnOneValueInThisLocation {
         actual: usize,
     },
+    FunctionDoesNotHaveReturn {
+        name: String,
+        return_location: Span,
+    },
 }
 
 impl CompilerErrorKind {

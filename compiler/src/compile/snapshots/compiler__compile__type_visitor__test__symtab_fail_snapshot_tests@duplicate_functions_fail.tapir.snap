@@ -14,3 +14,17 @@ Error: Function with name 'my_function' already exists
    │    ─────┬─────  
    │         ╰─────── Also declared here
 ───╯
+Error: Function my_function should return results, but not all branches return.
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/duplicate_functions_fail.tapir:1:1]
+   │
+ 1 │ fn my_function(x: int) -> int {
+   │                           ─┬─  
+   │                            ╰─── Function returns results
+───╯
+Error: Function my_function should return results, but not all branches return.
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/duplicate_functions_fail.tapir:1:1]
+   │
+ 5 │ fn my_function(x: int) -> fix {
+   │                           ─┬─  
+   │                            ╰─── Function returns results
+───╯

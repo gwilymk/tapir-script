@@ -190,5 +190,8 @@ fn compiler_error_report(
         CompilerErrorKind::FunctionMustReturnOneValueInThisLocation { actual } => build_error_report(span)
             .with_label(Label::new(span).with_message("Function must return 1 value here"))
             .with_message(format!("Function call must return exactly 1 value here, but got {actual}")),
+        CompilerErrorKind::FunctionDoesNotHaveReturn { name, return_location } => build_error_report(span)
+            .with_label(Label::new(*return_location).with_message("Function returns results"))
+            .with_message(format!("Function {name} should return results, but not all branches return.")),
     }
 }

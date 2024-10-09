@@ -1,0 +1,7 @@
+fn foo() -> fix {}
+
+fn bar() -> int {
+    if true {
+        return 3;
+    }
+}

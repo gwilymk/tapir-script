@@ -55,7 +55,7 @@ impl<'input> TypeVisitor<'input> {
         }
     }
 
-    pub fn resolve_type(
+    fn resolve_type(
         &mut self,
         symbol_id: SymbolId,
         ty: Type,
@@ -115,12 +115,24 @@ impl<'input> TypeVisitor<'input> {
             self.resolve_type(symbol_id, argument.t.t, argument.span, diagnostics);
         }
 
-        self.visit_block(
+        let block_analysis_result = self.visit_block(
             &function.statements,
             symtab,
             &function.return_types,
             diagnostics,
         );
+
+        if !function.return_types.types.is_empty()
+            && block_analysis_result != BlockAnalysisResult::AllBranchesReturn
+        {
+            diagnostics.add_message(
+                CompilerErrorKind::FunctionDoesNotHaveReturn {
+                    name: function.name.to_string(),
+                    return_location: function.return_types.span,
+                }
+                .into_message(function.span),
+            );
+        }
     }
 
     fn visit_block(
@@ -129,7 +141,7 @@ impl<'input> TypeVisitor<'input> {
         symtab: &SymTab,
         expected_return_type: &FunctionReturn,
         diagnostics: &mut Diagnostics,
-    ) {
+    ) -> BlockAnalysisResult {
         for statement in ast {
             match &statement.kind {
                 ast::StatementKind::Error => {}
@@ -164,8 +176,16 @@ impl<'input> TypeVisitor<'input> {
                         );
                     }
 
-                    self.visit_block(true_block, symtab, expected_return_type, diagnostics);
-                    self.visit_block(false_block, symtab, expected_return_type, diagnostics);
+                    let lhs_analysis_result =
+                        self.visit_block(true_block, symtab, expected_return_type, diagnostics);
+                    let rhs_analysis_result =
+                        self.visit_block(false_block, symtab, expected_return_type, diagnostics);
+
+                    if lhs_analysis_result == BlockAnalysisResult::AllBranchesReturn
+                        && rhs_analysis_result == BlockAnalysisResult::AllBranchesReturn
+                    {
+                        return BlockAnalysisResult::AllBranchesReturn;
+                    }
                 }
                 ast::StatementKind::Return { values } => {
                     let mut actual_return_types = Vec::with_capacity(values.len());
@@ -208,12 +228,16 @@ impl<'input> TypeVisitor<'input> {
                             );
                         }
                     }
+
+                    return BlockAnalysisResult::AllBranchesReturn;
                 }
                 ast::StatementKind::Call { name, arguments } => {
                     self.type_for_call(statement.span, name, arguments, symtab, diagnostics);
                 }
             }
         }
+
+        BlockAnalysisResult::ContainsNonReturningBranch
     }
 
     pub fn into_type_table(self, symtab: &SymTab, diagnostics: &mut Diagnostics) -> TypeTable {
@@ -352,6 +376,12 @@ impl<'input> TypeVisitor<'input> {
             vec![Type::Error]
         }
     }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum BlockAnalysisResult {
+    AllBranchesReturn,
+    ContainsNonReturningBranch,
 }
 
 #[derive(Clone, Serialize)]
