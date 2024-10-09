@@ -49,7 +49,7 @@ pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diag
             let mut sym_tab_visitor = SymTabVisitor::new(settings);
 
             // resolve all the identifiers
-            sym_tab_visitor.visit(&mut function.statements, &mut diagnostics);
+            sym_tab_visitor.visit_function(function, &mut diagnostics);
 
             sym_tab_visitor.into_symtab()
         };

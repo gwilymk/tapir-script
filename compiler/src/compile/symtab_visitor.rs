@@ -1,7 +1,7 @@
 use std::{borrow::Cow, collections::HashMap, mem};
 
 use crate::{
-    ast::{Expression, ExpressionKind, Statement, StatementKind, SymbolId},
+    ast::{Expression, ExpressionKind, Function, Statement, StatementKind, SymbolId},
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
 };
@@ -26,7 +26,15 @@ impl<'input> SymTabVisitor<'input> {
         self.symtab
     }
 
-    pub fn visit_block(&mut self, ast: &mut [Statement<'input>], diagnostics: &mut Diagnostics) {
+    pub fn visit_function(
+        &mut self,
+        function: &mut Function<'input>,
+        diagnostics: &mut Diagnostics,
+    ) {
+        self.visit_block(&mut function.statements, diagnostics);
+    }
+
+    fn visit_block(&mut self, ast: &mut [Statement<'input>], diagnostics: &mut Diagnostics) {
         self.symbol_names.push_scope();
 
         for statement in ast {

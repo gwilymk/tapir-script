@@ -233,11 +233,10 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let ast = &mut parser
+            let top_level = &mut parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
                 .unwrap()
-                .functions[0]
-                .statements;
+                .functions[0];
 
             let settings = CompileSettings {
                 properties: vec![Property {
@@ -248,12 +247,12 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit_block(ast, &mut diagnostics);
+            symtab_visitor.visit_function(top_level, &mut diagnostics);
 
             let symtab = symtab_visitor.into_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(ast, &symtab, &mut diagnostics);
+            type_visitor.visit(&top_level.statements, &symtab, &mut diagnostics);
 
             let type_table = type_visitor.into_type_table(&symtab, &mut diagnostics);
 
@@ -277,11 +276,10 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let ast = &mut parser
+            let top_level = &mut parser
                 .parse(file_id, &mut diagnostics, lexer)
                 .unwrap()
-                .functions[0]
-                .statements;
+                .functions[0];
 
             let settings = CompileSettings {
                 properties: vec![Property {
@@ -292,12 +290,12 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit_block(ast, &mut diagnostics);
+            symtab_visitor.visit_function(top_level, &mut diagnostics);
 
             let symtab = symtab_visitor.into_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(ast, &symtab, &mut diagnostics);
+            type_visitor.visit(&top_level.statements, &symtab, &mut diagnostics);
 
             type_visitor.into_type_table(&symtab, &mut diagnostics);
 
