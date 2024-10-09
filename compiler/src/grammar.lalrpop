@@ -79,8 +79,8 @@ FunctionArgument: FunctionArgument<'input> =
     };
 FunctionReturn: Vec<Type> = {
     () => vec![],
-    <Type> => vec![<>],
-    "(" <CommaSeparated<Type>> ")",
+    "->" <Type> => vec![<>],
+    "->" "(" <CommaSeparated<Type>> ")",
 }
 
 CommaSeparated<T>: Vec<T> =

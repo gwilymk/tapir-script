@@ -1,0 +1,10 @@
+var x = 3;
+
+fn my_function_with_no_args_or_return() {}
+fn my_function_with_an_arg_no_return(x: int) {}
+fn my_function_with_no_args_one_return() -> int {}
+fn my_function_with_no_args_multiple_returns() -> (int, fix) {}
+fn my_function_with_args_and_mulitple_returns(x: int, y: fix) -> (int, fix) {}
+fn my_function_trailing_comma_in_args(x: int, y: fix,) {}
+fn my_function_trailing_comma_in_return() -> (int, fix,) {}
+fn my_function_single_return_in_brackets() -> (int) {}

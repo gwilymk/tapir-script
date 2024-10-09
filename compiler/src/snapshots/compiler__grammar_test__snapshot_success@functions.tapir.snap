@@ -1,0 +1,115 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: ast
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/functions.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: Unresolved("@toplevel"),
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "x",
+            value: Expression(
+              span: "[span]",
+              kind: Integer(3),
+            ),
+          ),
+        ),
+      ],
+      arguments: [],
+      return_types: [],
+    ),
+    Function(
+      name: Unresolved("my_function_with_no_args_or_return"),
+      statements: [],
+      arguments: [],
+      return_types: [],
+    ),
+    Function(
+      name: Unresolved("my_function_with_an_arg_no_return"),
+      statements: [],
+      arguments: [
+        FunctionArgument(
+          span: "[span]",
+          t: Int,
+          name: Unresolved("x"),
+        ),
+      ],
+      return_types: [],
+    ),
+    Function(
+      name: Unresolved("my_function_with_no_args_one_return"),
+      statements: [],
+      arguments: [],
+      return_types: [
+        Int,
+      ],
+    ),
+    Function(
+      name: Unresolved("my_function_with_no_args_multiple_returns"),
+      statements: [],
+      arguments: [],
+      return_types: [
+        Int,
+        Fix,
+      ],
+    ),
+    Function(
+      name: Unresolved("my_function_with_args_and_mulitple_returns"),
+      statements: [],
+      arguments: [
+        FunctionArgument(
+          span: "[span]",
+          t: Int,
+          name: Unresolved("x"),
+        ),
+        FunctionArgument(
+          span: "[span]",
+          t: Fix,
+          name: Unresolved("y"),
+        ),
+      ],
+      return_types: [
+        Int,
+        Fix,
+      ],
+    ),
+    Function(
+      name: Unresolved("my_function_trailing_comma_in_args"),
+      statements: [],
+      arguments: [
+        FunctionArgument(
+          span: "[span]",
+          t: Int,
+          name: Unresolved("x"),
+        ),
+        FunctionArgument(
+          span: "[span]",
+          t: Fix,
+          name: Unresolved("y"),
+        ),
+      ],
+      return_types: [],
+    ),
+    Function(
+      name: Unresolved("my_function_trailing_comma_in_return"),
+      statements: [],
+      arguments: [],
+      return_types: [
+        Int,
+        Fix,
+      ],
+    ),
+    Function(
+      name: Unresolved("my_function_single_return_in_brackets"),
+      statements: [],
+      arguments: [],
+      return_types: [
+        Int,
+      ],
+    ),
+  ],
+)
