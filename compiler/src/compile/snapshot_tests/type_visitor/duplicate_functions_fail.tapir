@@ -1,0 +1,7 @@
+fn my_function(x: int) -> int {
+
+}
+
+fn my_function(x: int) -> fix {
+    
+}

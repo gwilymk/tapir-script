@@ -1,0 +1,16 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/duplicate_functions_fail.tapir
+---
+Error: Function with name 'my_function' already exists
+   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/duplicate_functions_fail.tapir:1:1]
+   │
+ 1 │ fn my_function(x: int) -> int {
+   │    ─────┬─────  
+   │         ╰─────── Originally declared here
+   │ 
+ 5 │ fn my_function(x: int) -> fix {
+   │    ─────┬─────  
+   │         ╰─────── Also declared here
+───╯
