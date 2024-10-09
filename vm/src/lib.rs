@@ -58,7 +58,10 @@ impl State {
                     self.stack
                         .push(self.stack[self.stack.len() - arg as usize - 1]);
                 }
-                bytecode::Instruction::Drop => todo!(),
+                bytecode::Instruction::Drop => {
+                    let desired_size = self.stack.len() - arg as usize;
+                    self.stack.truncate(desired_size);
+                }
                 bytecode::Instruction::GetProp => {
                     self.stack.push(properties.get_prop(arg as u8));
                 }
@@ -89,8 +92,18 @@ impl State {
 
                     self.stack.push(result);
                 }
-                bytecode::Instruction::JumpIfFalse => todo!(),
-                bytecode::Instruction::Jump => todo!(),
+                bytecode::Instruction::JumpIfFalse => {
+                    let target_for_jump = bytecode[self.pc];
+                    self.pc += 1;
+
+                    if *self.stack.last().expect("Stack underflow") == 0 {
+                        self.pc = target_for_jump as usize;
+                    }
+                }
+                bytecode::Instruction::Jump => {
+                    let target_for_jump = bytecode[self.pc];
+                    self.pc = target_for_jump as usize;
+                }
             }
         }
     }

@@ -1,0 +1,11 @@
+var x = 5;
+
+if x == 3 {
+    var y = 15;
+    wait;
+
+    x = y;
+    wait;
+}
+
+wait;
