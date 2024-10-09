@@ -20,13 +20,19 @@ Script(
         ),
       ],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function_with_no_args_or_return",
       statements: [],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function_with_an_arg_no_return",
@@ -34,28 +40,49 @@ Script(
       arguments: [
         FunctionArgument(
           span: "[span]",
-          t: Int,
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
           name: Unresolved("x"),
         ),
       ],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function_with_no_args_one_return",
       statements: [],
       arguments: [],
-      return_types: [
-        Int,
-      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function_with_no_args_multiple_returns",
       statements: [],
       arguments: [],
-      return_types: [
-        Int,
-        Fix,
-      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function_with_args_and_mulitple_returns",
@@ -63,19 +90,34 @@ Script(
       arguments: [
         FunctionArgument(
           span: "[span]",
-          t: Int,
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
           name: Unresolved("x"),
         ),
         FunctionArgument(
           span: "[span]",
-          t: Fix,
+          t: TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
           name: Unresolved("y"),
         ),
       ],
-      return_types: [
-        Int,
-        Fix,
-      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function_trailing_comma_in_args",
@@ -83,33 +125,57 @@ Script(
       arguments: [
         FunctionArgument(
           span: "[span]",
-          t: Int,
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
           name: Unresolved("x"),
         ),
         FunctionArgument(
           span: "[span]",
-          t: Fix,
+          t: TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
           name: Unresolved("y"),
         ),
       ],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function_trailing_comma_in_return",
       statements: [],
       arguments: [],
-      return_types: [
-        Int,
-        Fix,
-      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function_single_return_in_brackets",
       statements: [],
       arguments: [],
-      return_types: [
-        Int,
-      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
     ),
   ],
 )

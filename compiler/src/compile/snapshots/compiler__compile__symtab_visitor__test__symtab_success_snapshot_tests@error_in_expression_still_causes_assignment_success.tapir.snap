@@ -50,7 +50,10 @@ Script(
         ),
       ],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
   ],
 )

@@ -16,7 +16,10 @@ pub struct Script<'input> {
 }
 
 impl<'input> Script<'input> {
-    pub fn from_top_level(top_level: impl IntoIterator<Item = TopLevelStatement<'input>>) -> Self {
+    pub fn from_top_level(
+        top_level: impl IntoIterator<Item = TopLevelStatement<'input>>,
+        file_id: FileId,
+    ) -> Self {
         let mut top_level_function_statements = vec![];
         let mut functions = vec![];
 
@@ -34,7 +37,10 @@ impl<'input> Script<'input> {
             name: "@toplevel",
             statements: top_level_function_statements,
             arguments: vec![],
-            return_types: vec![],
+            return_types: FunctionReturn {
+                types: vec![],
+                span: Span::new(file_id, 0, 0),
+            },
         };
 
         functions.insert(0, top_level_function);
@@ -48,13 +54,25 @@ pub struct Function<'input> {
     pub name: &'input str,
     pub statements: Vec<Statement<'input>>,
     pub arguments: Vec<FunctionArgument<'input>>,
-    pub return_types: Vec<Type>,
+    pub return_types: FunctionReturn,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct FunctionReturn {
+    pub types: Vec<TypeWithLocation>,
+    pub span: Span,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct TypeWithLocation {
+    pub t: Type,
+    pub span: Span,
 }
 
 #[derive(Clone, Debug, Serialize)]
 pub struct FunctionArgument<'input> {
     pub span: Span,
-    pub t: Type,
+    pub t: TypeWithLocation,
     pub name: MaybeResolved<'input>,
 }
 

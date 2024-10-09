@@ -9,7 +9,10 @@ Script(
       name: "@toplevel",
       statements: [],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function",
@@ -63,19 +66,34 @@ Script(
       arguments: [
         FunctionArgument(
           span: "[span]",
-          t: Int,
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
           name: Resolved(SymbolId(1)),
         ),
         FunctionArgument(
           span: "[span]",
-          t: Fix,
+          t: TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
           name: Resolved(SymbolId(2)),
         ),
       ],
-      return_types: [
-        Int,
-        Fix,
-      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
     ),
   ],
 )

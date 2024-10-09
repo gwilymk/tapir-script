@@ -9,7 +9,10 @@ Script(
       name: "@toplevel",
       statements: [],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_function",
@@ -22,7 +25,10 @@ Script(
         ),
       ],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_second_function",
@@ -44,7 +50,10 @@ Script(
         ),
       ],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_third_function",
@@ -62,7 +71,10 @@ Script(
         ),
       ],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
     Function(
       name: "my_fourth_function",
@@ -114,7 +126,10 @@ Script(
         ),
       ],
       arguments: [],
-      return_types: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
     ),
   ],
 )

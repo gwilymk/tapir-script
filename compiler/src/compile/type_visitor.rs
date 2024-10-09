@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 use crate::{
-    ast::{self, Expression, Function, SymbolId},
+    ast::{self, Expression, Function, FunctionReturn, SymbolId},
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::Type,
@@ -88,7 +88,7 @@ impl TypeVisitor {
         &mut self,
         ast: &[ast::Statement<'_>],
         symtab: &SymTab,
-        expected_return_type: &[Type],
+        expected_return_type: &FunctionReturn,
         diagnostics: &mut Diagnostics,
     ) {
         for statement in ast {
@@ -146,10 +146,10 @@ impl TypeVisitor {
                         ));
                     }
 
-                    if actual_return_types.len() != expected_return_type.len() {
+                    if actual_return_types.len() != expected_return_type.types.len() {
                         diagnostics.add_message(
                             CompilerErrorKind::IncorrectNumberOfReturnTypes {
-                                expected: expected_return_type.len(),
+                                expected: expected_return_type.types.len(),
                                 actual: actual_return_types.len(),
                             }
                             .into_message(statement.span),
