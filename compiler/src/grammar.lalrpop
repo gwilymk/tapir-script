@@ -75,15 +75,18 @@ Expression: Expression<'input> = {
 
     #[precedence(level="2")]
     #[assoc(side="left")]
-    <start: @L> <lhs: Expression> <operator: MulDiv> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+    <start: @L> <lhs: Expression> <operator: MulDiv> <rhs: Expression> <end: @R> => 
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
     #[precedence(level="3")]
     #[assoc(side="left")]
-    <start: @L> <lhs: Expression> <operator: AddSub> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+    <start: @L> <lhs: Expression> <operator: AddSub> <rhs: Expression> <end: @R> => 
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
     #[precedence(level="4")]
     #[assoc(side="none")]
-    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> => ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> => 
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 }
 
 MulDiv: BinaryOperator = {
