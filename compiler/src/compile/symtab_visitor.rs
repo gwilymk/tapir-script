@@ -235,9 +235,11 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let mut ast = parser
+            let ast = &mut parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
-                .unwrap();
+                .unwrap()
+                .functions[0]
+                .statements;
 
             let mut visitor = SymTabVisitor::new(&CompileSettings {
                 properties: vec![Property {
@@ -247,7 +249,7 @@ mod test {
                 }],
             });
 
-            visitor.visit(&mut ast, &mut diagnostics);
+            visitor.visit(ast, &mut diagnostics);
 
             assert_ron_snapshot!(ast, {
                 ".**.span" => "[span]",
@@ -266,7 +268,11 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let mut ast = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+            let ast = &mut parser
+                .parse(FileId::new(0), &mut diagnostics, lexer)
+                .unwrap()
+                .functions[0]
+                .statements;
 
             let mut visitor = SymTabVisitor::new(&CompileSettings {
                 properties: vec![Property {
@@ -276,7 +282,7 @@ mod test {
                 }],
             });
 
-            visitor.visit(&mut ast, &mut diagnostics);
+            visitor.visit(ast, &mut diagnostics);
 
             let mut output = Vec::new();
             let mut diagnostics_cache = DiagnosticCache::new(iter::once((

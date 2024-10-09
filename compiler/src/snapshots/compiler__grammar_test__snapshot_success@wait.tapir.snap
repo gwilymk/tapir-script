@@ -3,29 +3,35 @@ source: crates/tapir-script/compiler/src/grammar_test.rs
 expression: ast
 input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/wait.tapir
 ---
-[
-  Statement(
-    span: "[span]",
-    kind: Assignment(
-      ident: "my_property",
-      value: Expression(
-        span: "[span]",
-        kind: Integer(4),
-      ),
+Script(
+  functions: [
+    Function(
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            ident: "my_property",
+            value: Expression(
+              span: "[span]",
+              kind: Integer(4),
+            ),
+          ),
+        ),
+        Statement(
+          span: "[span]",
+          kind: Wait,
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            ident: "my_property",
+            value: Expression(
+              span: "[span]",
+              kind: Integer(7),
+            ),
+          ),
+        ),
+      ],
     ),
-  ),
-  Statement(
-    span: "[span]",
-    kind: Wait,
-  ),
-  Statement(
-    span: "[span]",
-    kind: Assignment(
-      ident: "my_property",
-      value: Expression(
-        span: "[span]",
-        kind: Integer(7),
-      ),
-    ),
-  ),
-]
+  ],
+)

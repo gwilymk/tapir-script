@@ -232,9 +232,11 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let mut ast = parser
+            let ast = &mut parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
-                .unwrap();
+                .unwrap()
+                .functions[0]
+                .statements;
 
             let settings = CompileSettings {
                 properties: vec![Property {
@@ -245,12 +247,12 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit(&mut ast, &mut diagnostics);
+            symtab_visitor.visit(ast, &mut diagnostics);
 
             let symtab = symtab_visitor.into_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(&ast, &symtab, &mut diagnostics);
+            type_visitor.visit(ast, &symtab, &mut diagnostics);
 
             let type_table = type_visitor.into_type_table(&symtab, &mut diagnostics);
 
@@ -274,7 +276,11 @@ mod test {
 
             let mut diagnostics = Diagnostics::new();
 
-            let mut ast = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+            let ast = &mut parser
+                .parse(file_id, &mut diagnostics, lexer)
+                .unwrap()
+                .functions[0]
+                .statements;
 
             let settings = CompileSettings {
                 properties: vec![Property {
@@ -285,12 +291,12 @@ mod test {
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
-            symtab_visitor.visit(&mut ast, &mut diagnostics);
+            symtab_visitor.visit(ast, &mut diagnostics);
 
             let symtab = symtab_visitor.into_symtab();
 
             let mut type_visitor = TypeVisitor::new(&settings);
-            type_visitor.visit(&ast, &symtab, &mut diagnostics);
+            type_visitor.visit(ast, &symtab, &mut diagnostics);
 
             type_visitor.into_type_table(&symtab, &mut diagnostics);
 

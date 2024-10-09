@@ -3,57 +3,63 @@ source: crates/tapir-script/compiler/src/grammar_test.rs
 expression: ast
 input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/if.tapir
 ---
-[
-  Statement(
-    span: "[span]",
-    kind: If(
-      condition: Expression(
-        span: "[span]",
-        kind: BinaryOperation(
-          lhs: Expression(
-            span: "[span]",
-            kind: Integer(3),
-          ),
-          operator: EqEq,
-          rhs: Expression(
-            span: "[span]",
-            kind: Integer(5),
+Script(
+  functions: [
+    Function(
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Integer(3),
+                ),
+                operator: EqEq,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Integer(5),
+                ),
+              ),
+            ),
+            true_block: [
+              Statement(
+                span: "[span]",
+                kind: VariableDeclaration(
+                  ident: "x",
+                  value: Expression(
+                    span: "[span]",
+                    kind: Integer(4),
+                  ),
+                ),
+              ),
+            ],
+            false_block: [],
           ),
         ),
-      ),
-      true_block: [
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "x",
+            ident: "y",
             value: Expression(
               span: "[span]",
-              kind: Integer(4),
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Fix,
+                ),
+                operator: EqEq,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Fix,
+                ),
+              ),
             ),
           ),
         ),
       ],
-      false_block: [],
     ),
-  ),
-  Statement(
-    span: "[span]",
-    kind: VariableDeclaration(
-      ident: "y",
-      value: Expression(
-        span: "[span]",
-        kind: BinaryOperation(
-          lhs: Expression(
-            span: "[span]",
-            kind: Fix,
-          ),
-          operator: EqEq,
-          rhs: Expression(
-            span: "[span]",
-            kind: Fix,
-          ),
-        ),
-      ),
-    ),
-  ),
-]
+  ],
+)

@@ -3,35 +3,41 @@ source: crates/tapir-script/compiler/src/grammar_test.rs
 expression: ast
 input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/non_associative_comparison.tapir
 ---
-[
-  Statement(
-    span: "[span]",
-    kind: VariableDeclaration(
-      ident: "x",
-      value: Expression(
-        span: "[span]",
-        kind: BinaryOperation(
-          lhs: Expression(
-            span: "[span]",
-            kind: BinaryOperation(
-              lhs: Expression(
-                span: "[span]",
-                kind: Integer(3),
-              ),
-              operator: EqEq,
-              rhs: Expression(
-                span: "[span]",
-                kind: Integer(5),
+Script(
+  functions: [
+    Function(
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "x",
+            value: Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: BinaryOperation(
+                    lhs: Expression(
+                      span: "[span]",
+                      kind: Integer(3),
+                    ),
+                    operator: EqEq,
+                    rhs: Expression(
+                      span: "[span]",
+                      kind: Integer(5),
+                    ),
+                  ),
+                ),
+                operator: EqEq,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Bool(true),
+                ),
               ),
             ),
           ),
-          operator: EqEq,
-          rhs: Expression(
-            span: "[span]",
-            kind: Bool(true),
-          ),
         ),
-      ),
+      ],
     ),
-  ),
-]
+  ],
+)

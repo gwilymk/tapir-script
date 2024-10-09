@@ -11,6 +11,43 @@ pub struct SymbolId(pub usize);
 pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]
+pub struct Script<'input> {
+    pub functions: Vec<Function<'input>>,
+}
+
+impl<'input> Script<'input> {
+    pub fn from_top_level(top_level: impl IntoIterator<Item = TopLevelStatement<'input>>) -> Self {
+        let mut top_level_function_statements = vec![];
+
+        for top_level_statement in top_level.into_iter() {
+            match top_level_statement {
+                TopLevelStatement::Statement(statement) => {
+                    top_level_function_statements.push(statement)
+                }
+            }
+        }
+
+        let top_level_function = Function {
+            statements: top_level_function_statements,
+        };
+
+        Self {
+            functions: vec![top_level_function],
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct Function<'input> {
+    pub statements: Vec<Statement<'input>>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub enum TopLevelStatement<'input> {
+    Statement(Statement<'input>),
+}
+
+#[derive(Clone, Debug, Serialize)]
 pub struct Statement<'input> {
     pub span: Span,
     pub kind: StatementKind<'input>,

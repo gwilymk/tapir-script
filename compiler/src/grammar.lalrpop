@@ -2,7 +2,7 @@ use crate::{
     tokens::{
         FileId, LexicalError, LexicalErrorKind, Token
     },
-    ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator, Fix},
+    ast::{Statement, StatementKind, Expression, ExpressionKind, BinaryOperator, Fix, Script, TopLevelStatement},
     Message,
     reporting::Diagnostics,
 };
@@ -46,7 +46,10 @@ extern {
     }
 }
 
-pub Script: Vec<Statement<'input>> = <Statement*>;
+pub Script: Script<'input> = <TopLevelStatement*> => Script::from_top_level(<>);
+
+TopLevelStatement: TopLevelStatement<'input> =
+    <Statement> => TopLevelStatement::Statement(<>);
 
 Statement: Statement<'input> =
     <start: @L> <kind: StatementKind> <end: @R> => kind.with_span(file_id, start, end);
