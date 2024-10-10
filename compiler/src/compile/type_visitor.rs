@@ -401,7 +401,7 @@ pub struct TypeTable<'input> {
     num_function_returns: HashMap<&'input str, usize>,
 }
 
-impl<'input> TypeTable<'input> {
+impl TypeTable<'_> {
     pub fn type_for_symbol(&self, symbol_id: SymbolId) -> Type {
         self.types[symbol_id.0]
     }

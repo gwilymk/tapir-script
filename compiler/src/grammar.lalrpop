@@ -114,7 +114,7 @@ StatementKind: StatementKind<'input> = {
     wait ";" => StatementKind::Wait,
 
     "if" <condition: Expression> <true_block: Block> <false_block: ElseBlock?> => StatementKind::If { 
-        condition, true_block, false_block: false_block.unwrap_or_else(|| vec![]),
+        condition, true_block, false_block: false_block.unwrap_or_else(Vec::new),
      },
 
     <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Call { <> },

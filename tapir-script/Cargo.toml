@@ -1,0 +1,9 @@
+[package]
+name = "tapir-script"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+tapir-script-macros = { path = "../tapir-script-macros" }
+vm = { path = "../vm" }
