@@ -175,7 +175,7 @@ mod test {
                 }],
             };
 
-            let bytecode = compiler::compile(&input, compiler_settings).unwrap();
+            let bytecode = compiler::compile("internal", &input, compiler_settings).unwrap();
 
             let mut vm = Vm::new(&bytecode);
             let mut prop_object = PropObj { int_prop: 5 };
@@ -219,7 +219,7 @@ mod test {
                             }],
                         };
 
-                        let bytecode = compiler::compile(concat!("prop = ", $code, ";"), compile_settings).unwrap();
+                        let bytecode = compiler::compile("internal", concat!("prop = ", $code, ";"), compile_settings).unwrap();
 
                         let mut vm = Vm::new(&bytecode);
                         let mut prop_object = PropObj {

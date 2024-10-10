@@ -1,4 +1,6 @@
 #![deny(clippy::all)]
+use std::path::Path;
+
 use lalrpop_util::lalrpop_mod;
 
 use reporting::Diagnostics;
@@ -19,7 +21,11 @@ pub use compile::{CompileSettings, Property};
 pub use reporting::{format::DiagnosticCache, Message};
 pub use types::Type;
 
-pub fn compile(input: &str, compile_settings: CompileSettings) -> Result<Vec<u16>, Diagnostics> {
+pub fn compile(
+    filename: impl AsRef<Path>,
+    input: &str,
+    compile_settings: CompileSettings,
+) -> Result<Vec<u16>, Diagnostics> {
     let bytecode = compile::compile(input, &compile_settings)?;
 
     Ok(bytecode.compile())
