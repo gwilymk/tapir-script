@@ -436,7 +436,7 @@ mod test {
             let lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
-            let mut diagnostics = Diagnostics::new(file_id, path, &input);
+            let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
             let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
@@ -484,7 +484,7 @@ mod test {
             let lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
-            let mut diagnostics = Diagnostics::new(file_id, path, &input);
+            let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 

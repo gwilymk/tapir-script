@@ -4,14 +4,14 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/booleans_fail.tapir
 ---
 Error: Incorrect type, expected bool but got int
-   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/booleans_fail.tapir:1:1]
+   ╭─[booleans_fail.tapir:1:1]
    │
  2 │ x = 4;
    │ ───┬──  
    │    ╰──── Incorrect type
 ───╯
 Error: Incorrect type, expected bool but got int
-   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/booleans_fail.tapir:1:1]
+   ╭─[booleans_fail.tapir:1:1]
    │
  5 │ y = 8;
    │ ───┬──  

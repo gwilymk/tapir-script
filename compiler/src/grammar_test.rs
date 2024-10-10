@@ -13,7 +13,7 @@ fn snapshot_success() {
         let lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
-        let mut diagnostics = Diagnostics::new(file_id, path, &input);
+        let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
         let ast = parser
             .parse(FileId::new(0), &mut diagnostics, lexer)
@@ -35,7 +35,7 @@ fn snapshot_failures() {
         let lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
-        let mut diagnostics = Diagnostics::new(file_id, path, &input);
+        let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
         match parser.parse(file_id, &mut diagnostics, lexer) {
             Ok(_) => {}

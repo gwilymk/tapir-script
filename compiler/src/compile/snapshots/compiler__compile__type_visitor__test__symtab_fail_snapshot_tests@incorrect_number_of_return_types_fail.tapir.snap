@@ -4,7 +4,7 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_number_of_return_types_fail.tapir
 ---
 Error: Function should be returning 2 return values, but you are actually returning 1.
-   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_number_of_return_types_fail.tapir:1:1]
+   ╭─[incorrect_number_of_return_types_fail.tapir:1:1]
    │
  1 │ fn my_function() -> (int, fix) {
    │                      ────┬───  
@@ -16,7 +16,7 @@ Error: Function should be returning 2 return values, but you are actually return
    │ Note: Functions must return a fixed number of values
 ───╯
 Error: Function should be returning 2 return values, but you are actually returning 3.
-   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_number_of_return_types_fail.tapir:1:1]
+   ╭─[incorrect_number_of_return_types_fail.tapir:1:1]
    │
  5 │ fn my_other_function() -> (bool, int) {
    │                            ────┬────  

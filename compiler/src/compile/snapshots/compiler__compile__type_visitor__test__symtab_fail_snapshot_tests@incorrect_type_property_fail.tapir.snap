@@ -4,7 +4,7 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_type_property_fail.tapir
 ---
 Error: Incorrect type, expected int but got fix
-   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_type_property_fail.tapir:1:1]
+   ╭─[incorrect_type_property_fail.tapir:1:1]
    │
  1 │ int_prop = 3.5;
    │ ───────┬───────  

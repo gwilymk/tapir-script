@@ -4,14 +4,14 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/missing_return_fail.tapir
 ---
 Error: Function foo should return results, but not all branches return.
-   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/missing_return_fail.tapir:1:1]
+   ╭─[missing_return_fail.tapir:1:1]
    │
  1 │ fn foo() -> fix {}
    │             ─┬─  
    │              ╰─── Function returns results
 ───╯
 Error: Function bar should return results, but not all branches return.
-   ╭─[/home/gwilym/Projects/tapir-game-tools/crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/missing_return_fail.tapir:1:1]
+   ╭─[missing_return_fail.tapir:1:1]
    │
  3 │ fn bar() -> int {
    │             ─┬─  
