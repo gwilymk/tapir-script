@@ -206,14 +206,14 @@ mod test {
     }
 
     macro_rules! binop_test {
-        ($($name:ident: ($code:tt, $expected:expr),)*) => {
+        ($($type: ident, $name:ident: ($code:tt, $expected:expr),)*) => {
             $(
                 paste::paste! {
                     #[test]
                     fn [< binop_test_ $name >]() {
                         let compile_settings = CompileSettings {
                             properties: vec![Property {
-                                ty: Type::Int,
+                                ty: Type::$type,
                                 index: 0,
                                 name: "prop".to_string(),
                             }],
@@ -222,7 +222,9 @@ mod test {
                         let bytecode = compiler::compile(concat!("prop = ", $code, ";"), compile_settings).unwrap();
 
                         let mut vm = Vm::new(&bytecode);
-                        let mut prop_object = PropObj { int_prop: 5 };
+                        let mut prop_object = PropObj {
+                            int_prop: if Type::$type == Type::Int { 5 } else { 1 },
+                        };
 
                         while !vm.states.is_empty() {
                             vm.step(&mut prop_object);
@@ -236,18 +238,25 @@ mod test {
     }
 
     binop_test!(
-        addition: ("prop + 1", 6),
-        addition2: ("1 + prop", 6),
-        multiplication: ("prop * 2", 10),
-        multiplication2: ("2 * prop", 10),
-        subtraction: ("prop - 1", 4),
-        subtraction2: ("1 - prop", -4),
-        division: ("prop // 3", 1),
-        division2: ("15 // prop", 3),
-        modulo: ("15 %% prop", 0),
-        modulo2: ("16 %% prop", 1),
-        modulo3: ("prop %% 2", 1),
-        modulo4: ("prop %% (0 - 2)", 1),
+        Int, addition: ("prop + 1", 6),
+        Int, addition2: ("1 + prop", 6),
+        Int, multiplication: ("prop * 2", 10),
+        Int, multiplication2: ("2 * prop", 10),
+        Int, subtraction: ("prop - 1", 4),
+        Int, subtraction2: ("1 - prop", -4),
+        Int, division: ("prop // 3", 1),
+        Int, division2: ("15 // prop", 3),
+        Int, modulo: ("15 %% prop", 0),
+        Int, modulo2: ("16 %% prop", 1),
+        Int, modulo3: ("prop %% 2", 1),
+        Int, modulo4: ("prop %% (0 - 2)", 1),
+
+        Bool, eqeq: ("prop == true", 1),
+        Bool, eqeq2: ("prop == false", 0),
+        Bool, eqeq3: ("prop == prop", 1),
+        Bool, eqeq4: ("false == prop", 0),
+        Bool, eqeq5: ("true == prop", 1),
+        Bool, eqeq6: ("5 == 5", 1),
     );
 
     #[derive(Serialize, Clone, Debug)]
