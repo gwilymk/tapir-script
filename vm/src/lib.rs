@@ -78,8 +78,8 @@ impl State {
                 }
                 bytecode::Instruction::MathsOp => {
                     let op = bytecode::MathsOp::n(arg as u8).expect("Invalid maths op");
-                    let lhs = self.stack.pop().expect("Stack underflow");
                     let rhs = self.stack.pop().expect("Stack underflow");
+                    let lhs = self.stack.pop().expect("Stack underflow");
 
                     let result = match op {
                         bytecode::MathsOp::Add => lhs + rhs,
@@ -165,7 +165,6 @@ mod test {
     #[test]
     fn stack_snapshot_tests() {
         glob!("snapshot_tests", "stack/**/*.tapir", |path| {
-            println!("{}", path.display());
             let input = fs::read_to_string(path).unwrap();
 
             let compiler_settings = CompileSettings {
@@ -183,7 +182,9 @@ mod test {
 
             let mut stack_at_waits = vec![];
 
-            while !vm.states.is_empty() {
+            let mut max_iterations = 1000;
+
+            while !vm.states.is_empty() && max_iterations >= 0 {
                 vm.step(&mut prop_object);
                 stack_at_waits.push((
                     vm.states
@@ -192,13 +193,64 @@ mod test {
                         .collect::<Vec<_>>(),
                     prop_object.clone(),
                 ));
+
+                max_iterations -= 1;
+            }
+
+            if max_iterations == 0 {
+                panic!("ran for over 1000 waits, something seems to have gone wrong...");
             }
 
             assert_ron_snapshot!(stack_at_waits);
         });
     }
 
-    #[derive(Serialize, Clone)]
+    macro_rules! binop_test {
+        ($($name:ident: ($code:tt, $expected:expr),)*) => {
+            $(
+                paste::paste! {
+                    #[test]
+                    fn [< binop_test_ $name >]() {
+                        let compile_settings = CompileSettings {
+                            properties: vec![Property {
+                                ty: Type::Int,
+                                index: 0,
+                                name: "prop".to_string(),
+                            }],
+                        };
+
+                        let bytecode = compiler::compile(concat!("prop = ", $code, ";"), compile_settings).unwrap();
+
+                        let mut vm = Vm::new(&bytecode);
+                        let mut prop_object = PropObj { int_prop: 5 };
+
+                        while !vm.states.is_empty() {
+                            vm.step(&mut prop_object);
+                        }
+
+                        assert_eq!(prop_object.int_prop, $expected);
+                    }
+                }
+            )*
+        };
+    }
+
+    binop_test!(
+        addition: ("prop + 1", 6),
+        addition2: ("1 + prop", 6),
+        multiplication: ("prop * 2", 10),
+        multiplication2: ("2 * prop", 10),
+        subtraction: ("prop - 1", 4),
+        subtraction2: ("1 - prop", -4),
+        division: ("prop // 3", 1),
+        division2: ("15 // prop", 3),
+        modulo: ("15 %% prop", 0),
+        modulo2: ("16 %% prop", 1),
+        modulo3: ("prop %% 2", 1),
+        modulo4: ("prop %% (0 - 2)", 1),
+    );
+
+    #[derive(Serialize, Clone, Debug)]
     struct PropObj {
         int_prop: i32,
     }
