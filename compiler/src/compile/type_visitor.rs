@@ -413,7 +413,7 @@ impl TypeTable<'_> {
 
 #[cfg(test)]
 mod test {
-    use std::{fs, iter};
+    use std::fs;
 
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
@@ -423,7 +423,6 @@ mod test {
         lexer::Lexer,
         tokens::FileId,
         types::Type,
-        DiagnosticCache,
     };
 
     use super::*;
@@ -433,10 +432,11 @@ mod test {
         glob!("snapshot_tests", "type_visitor/*_success.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
-            let lexer = Lexer::new(&input, FileId::new(0));
+            let file_id = FileId::new(0);
+            let lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
-            let mut diagnostics = Diagnostics::new();
+            let mut diagnostics = Diagnostics::new(file_id, path, &input);
 
             let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
@@ -484,7 +484,7 @@ mod test {
             let lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
-            let mut diagnostics = Diagnostics::new();
+            let mut diagnostics = Diagnostics::new(file_id, path, &input);
 
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
@@ -506,16 +506,7 @@ mod test {
 
             type_visitor.into_type_table(symtab_visitor.get_symtab(), &mut diagnostics);
 
-            let mut err_str = vec![];
-            let mut diagnostic_cache = DiagnosticCache::new(iter::once((
-                file_id,
-                (path.to_string_lossy().to_string(), input.clone()),
-            )));
-            diagnostics
-                .write(&mut err_str, &mut diagnostic_cache, false)
-                .unwrap();
-
-            let err_str = String::from_utf8_lossy(&err_str);
+            let err_str = diagnostics.pretty_string(false);
 
             assert_snapshot!(err_str);
         });

@@ -1,6 +1,9 @@
 use std::{
     collections::HashMap,
+    fmt,
     io::{self, Write},
+    iter,
+    path::Path,
 };
 
 use ariadne::{Label, Source};
@@ -33,16 +36,35 @@ impl Message {
     }
 }
 
+#[derive(Clone)]
 pub struct DiagnosticCache {
     map: HashMap<FileId, (String, ariadne::Source<String>)>,
 }
 
+impl fmt::Debug for DiagnosticCache {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (file_id, (filename, _)) in &self.map {
+            write!(f, "({file_id:?} -> {filename})")?;
+        }
+
+        Ok(())
+    }
+}
+
 impl DiagnosticCache {
-    pub fn new(files: impl Iterator<Item = (FileId, (String, String))>) -> Self {
-        let map = files
-            .into_iter()
-            .map(|(id, (name, content))| (id, (name, Source::from(content))))
-            .collect();
+    pub fn new(
+        toplevel_file_id: FileId,
+        toplevel_filename: impl AsRef<Path>,
+        toplevel_content: &str,
+    ) -> Self {
+        let map = HashMap::from_iter(iter::once((
+            toplevel_file_id,
+            (
+                toplevel_filename.as_ref().to_string_lossy().into_owned(),
+                Source::from(toplevel_content.to_string()),
+            ),
+        )));
+
         Self { map }
     }
 }
@@ -50,17 +72,14 @@ impl DiagnosticCache {
 impl ariadne::Cache<FileId> for DiagnosticCache {
     type Storage = String;
 
-    fn fetch(
-        &mut self,
-        id: &FileId,
-    ) -> Result<&Source<Self::Storage>, Box<dyn std::fmt::Debug + '_>> {
+    fn fetch(&mut self, id: &FileId) -> Result<&Source<Self::Storage>, Box<dyn fmt::Debug + '_>> {
         match self.map.get(id) {
             Some((_, data)) => Ok(data),
             None => Err(Box::new(format!("Failed to find file with ID {id:?}"))),
         }
     }
 
-    fn display<'a>(&self, id: &'a FileId) -> Option<Box<dyn std::fmt::Display + 'a>> {
+    fn display<'a>(&self, id: &'a FileId) -> Option<Box<dyn fmt::Display + 'a>> {
         let (filename, _) = self.map.get(id)?;
         Some(Box::new(filename.clone()))
     }

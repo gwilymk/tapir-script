@@ -1,4 +1,4 @@
-use std::{collections::HashMap, ops::ControlFlow};
+use std::{collections::HashMap, ops::ControlFlow, path::Path};
 
 use symtab_visitor::{SymTab, SymTabVisitor};
 use type_visitor::{TypeTable, TypeVisitor};
@@ -28,10 +28,14 @@ pub struct CompileSettings {
     pub properties: Vec<Property>,
 }
 
-pub fn compile(input: &str, settings: &CompileSettings) -> Result<Bytecode, Diagnostics> {
-    let mut diagnostics = Diagnostics::new();
-
+pub fn compile(
+    filename: impl AsRef<Path>,
+    input: &str,
+    settings: &CompileSettings,
+) -> Result<Bytecode, Diagnostics> {
     let file_id = FileId::new(0);
+
+    let mut diagnostics = Diagnostics::new(file_id, filename, input);
 
     let lexer = Lexer::new(input, file_id);
     let parser = grammar::ScriptParser::new();
@@ -592,7 +596,7 @@ mod test {
                 }],
             };
 
-            let bytecode = compile(&input, &compiler_settings).unwrap();
+            let bytecode = compile(path, &input, &compiler_settings).unwrap();
             let decompiled = print_opcodes(&bytecode.data);
 
             assert_snapshot!(decompiled);

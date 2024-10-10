@@ -26,7 +26,7 @@ pub fn compile(
     input: &str,
     compile_settings: CompileSettings,
 ) -> Result<Vec<u16>, Diagnostics> {
-    let bytecode = compile::compile(input, &compile_settings)?;
+    let bytecode = compile::compile(filename, input, &compile_settings)?;
 
     Ok(bytecode.compile())
 }

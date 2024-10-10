@@ -1,18 +1,19 @@
-use std::{fs, iter};
+use std::fs;
 
 use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
-use crate::{grammar, lexer::Lexer, reporting::Diagnostics, tokens::FileId, DiagnosticCache};
+use crate::{grammar, lexer::Lexer, reporting::Diagnostics, tokens::FileId};
 
 #[test]
 fn snapshot_success() {
     glob!("snapshot_tests", "grammar/*.tapir", |path| {
         let input = fs::read_to_string(path).unwrap();
 
-        let lexer = Lexer::new(&input, FileId::new(0));
+        let file_id = FileId::new(0);
+        let lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
-        let mut diagnostics = Diagnostics::new();
+        let mut diagnostics = Diagnostics::new(file_id, path, &input);
 
         let ast = parser
             .parse(FileId::new(0), &mut diagnostics, lexer)
@@ -34,7 +35,7 @@ fn snapshot_failures() {
         let lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
-        let mut diagnostics = Diagnostics::new();
+        let mut diagnostics = Diagnostics::new(file_id, path, &input);
 
         match parser.parse(file_id, &mut diagnostics, lexer) {
             Ok(_) => {}
@@ -43,18 +44,6 @@ fn snapshot_failures() {
             }
         }
 
-        let mut output = Vec::new();
-        let mut diagnostics_cache = DiagnosticCache::new(iter::once((
-            file_id,
-            (path.to_string_lossy().to_string(), input.clone()),
-        )));
-
-        diagnostics
-            .write(&mut output, &mut diagnostics_cache, false)
-            .unwrap();
-
-        let error_str = String::from_utf8_lossy(&output);
-
-        assert_snapshot!(error_str);
+        assert_snapshot!(diagnostics.pretty_string(false));
     });
 }

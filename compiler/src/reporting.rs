@@ -1,4 +1,4 @@
-use std::io::{self, Write};
+use std::path::Path;
 
 use serde::Serialize;
 
@@ -10,14 +10,18 @@ use crate::{
 
 pub(crate) mod format;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Diagnostics {
     messages: Vec<Message>,
+    cache: DiagnosticCache,
 }
 
 impl Diagnostics {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(file_id: FileId, filename: impl AsRef<Path>, content: &str) -> Self {
+        Self {
+            messages: vec![],
+            cache: DiagnosticCache::new(file_id, filename, content),
+        }
     }
 
     pub fn add_message(&mut self, message: impl Into<Message>) {
@@ -32,17 +36,20 @@ impl Diagnostics {
         self.add_message(Message::from_lalrpop(value, file_id));
     }
 
-    pub fn write<W: Write>(
-        &self,
-        mut output: W,
-        cache: &mut DiagnosticCache,
-        colourful: bool,
-    ) -> io::Result<()> {
+    pub fn pretty_string(&mut self, colourful: bool) -> String {
+        self.string_with_optional_colour(colourful)
+    }
+
+    fn string_with_optional_colour(&mut self, colourful: bool) -> String {
+        let mut output = Vec::new();
+
         for message in &self.messages {
-            message.write_diagnostic(&mut output, cache, colourful)?;
+            message
+                .write_diagnostic(&mut output, &mut self.cache, colourful)
+                .unwrap();
         }
 
-        Ok(())
+        String::from_utf8_lossy(&output).into_owned()
     }
 
     pub fn has_any(&self) -> bool {

@@ -269,11 +269,11 @@ impl<'input> SymTab<'input> {
 
 #[cfg(test)]
 mod test {
-    use std::{fs, iter};
+    use std::fs;
 
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
-    use crate::{grammar, lexer::Lexer, tokens::FileId, types::Type, DiagnosticCache};
+    use crate::{grammar, lexer::Lexer, tokens::FileId, types::Type};
 
     use super::*;
 
@@ -286,7 +286,7 @@ mod test {
             let parser = grammar::ScriptParser::new();
             let file_id = FileId::new(0);
 
-            let mut diagnostics = Diagnostics::new();
+            let mut diagnostics = Diagnostics::new(file_id, path, &input);
 
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
@@ -317,7 +317,7 @@ mod test {
             let lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
-            let mut diagnostics = Diagnostics::new();
+            let mut diagnostics = Diagnostics::new(file_id, path, &input);
 
             let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
@@ -335,19 +335,7 @@ mod test {
                 visitor.visit_function(function, &mut diagnostics);
             }
 
-            let mut output = Vec::new();
-            let mut diagnostics_cache = DiagnosticCache::new(iter::once((
-                file_id,
-                (path.to_string_lossy().to_string(), input.clone()),
-            )));
-
-            diagnostics
-                .write(&mut output, &mut diagnostics_cache, false)
-                .unwrap();
-
-            let error_str = String::from_utf8_lossy(&output);
-
-            assert_snapshot!(error_str);
+            assert_snapshot!(diagnostics.pretty_string(false));
         });
     }
 }
