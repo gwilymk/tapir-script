@@ -7,4 +7,4 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-compiler = { path = "../compiler" }
+tapir-script-macros-core = { path = "../tapir-script-macros-core" }
