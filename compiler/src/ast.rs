@@ -207,13 +207,21 @@ impl BinaryOperator {
     pub fn can_handle_type(self, lhs_type: Type) -> bool {
         use BinaryOperator as B;
         match self {
-            B::Add | B::Sub | B::Mul | B::Div | B::Mod | B::RealDiv | B::RealMod => {
+            B::Add
+            | B::Sub
+            | B::Mul
+            | B::Div
+            | B::Mod
+            | B::RealDiv
+            | B::RealMod
+            | B::Gt
+            | B::GtEq
+            | B::Lt
+            | B::LtEq => {
                 matches!(lhs_type, Type::Fix | Type::Int)
             }
 
-            B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq => {
-                !matches!(lhs_type, Type::Error)
-            }
+            B::EqEq | B::NeEq => !matches!(lhs_type, Type::Error),
         }
     }
 
