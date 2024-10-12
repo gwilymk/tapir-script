@@ -10,5 +10,5 @@ Error: Unexpected end of file
    │          │ 
    │          ╰─ End of file not expected here
    │ 
-   │ Note: Expected one of tokens ";", "+", "-", "*", "/", "%", "//", "%%", "=="
+   │ Note: Expected one of tokens ";", "+", "-", "*", "/", "%", "//", "%%", "==", "!=", ">", ">=", "<", "<="
 ───╯
