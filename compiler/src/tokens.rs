@@ -136,4 +136,14 @@ pub enum Token<'input> {
     OperatorRealMod,
     #[token("==")]
     OperatorEqEq,
+    #[token("!=")]
+    OperatorNeEq,
+    #[token(">")]
+    OperatorGt,
+    #[token(">=")]
+    OperatorGtEq,
+    #[token("<")]
+    OperatorLt,
+    #[token("<=")]
+    OperatorLtEq,
 }

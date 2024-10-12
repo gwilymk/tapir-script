@@ -52,6 +52,11 @@ extern {
         "//" => Token::OperatorRealDiv,
         "%%" => Token::OperatorRealMod,
         "==" => Token::OperatorEqEq,
+        "!=" => Token::OperatorNeEq,
+        ">" =>  Token::OperatorGt,
+        ">=" => Token::OperatorGtEq,
+        "<" =>  Token::OperatorLt,
+        "<=" => Token::OperatorLtEq,
     }
 }
 
@@ -164,6 +169,11 @@ AddSub: BinaryOperator = {
 
 ComparisonOp: BinaryOperator = {
     "==" => BinaryOperator::EqEq,
+    "!=" => BinaryOperator::NeEq,
+    ">" => BinaryOperator::Gt,
+    ">=" => BinaryOperator::GtEq,
+    "<" => BinaryOperator::Lt,
+    "<=" => BinaryOperator::LtEq,
 }
 
 Term: Expression<'input> = {

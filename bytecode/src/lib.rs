@@ -31,4 +31,9 @@ pub enum MathsOp {
     RealDiv,
 
     EqEq,
+    NeEq,
+    Gt,
+    GtEq,
+    Lt,
+    LtEq,
 }

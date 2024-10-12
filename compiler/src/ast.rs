@@ -196,34 +196,34 @@ pub enum BinaryOperator {
     RealMod,
 
     EqEq,
+    NeEq,
+    Gt,
+    GtEq,
+    Lt,
+    LtEq,
 }
 
 impl BinaryOperator {
     pub fn can_handle_type(self, lhs_type: Type) -> bool {
+        use BinaryOperator as B;
         match self {
-            BinaryOperator::Add
-            | BinaryOperator::Sub
-            | BinaryOperator::Mul
-            | BinaryOperator::Div
-            | BinaryOperator::Mod
-            | BinaryOperator::RealDiv
-            | BinaryOperator::RealMod => matches!(lhs_type, Type::Fix | Type::Int),
+            B::Add | B::Sub | B::Mul | B::Div | B::Mod | B::RealDiv | B::RealMod => {
+                matches!(lhs_type, Type::Fix | Type::Int)
+            }
 
-            BinaryOperator::EqEq => !matches!(lhs_type, Type::Error), // can handle bools with ==
+            B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq => {
+                !matches!(lhs_type, Type::Error)
+            }
         }
     }
 
     pub fn resulting_type(self, lhs_type: Type) -> Type {
-        match self {
-            BinaryOperator::Add
-            | BinaryOperator::Sub
-            | BinaryOperator::Mul
-            | BinaryOperator::Div
-            | BinaryOperator::Mod
-            | BinaryOperator::RealDiv
-            | BinaryOperator::RealMod => lhs_type,
+        use BinaryOperator as B;
 
-            BinaryOperator::EqEq => Type::Bool,
+        match self {
+            B::Add | B::Sub | B::Mul | B::Div | B::Mod | B::RealDiv | B::RealMod => lhs_type,
+
+            B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq => Type::Bool,
         }
     }
 }

@@ -387,6 +387,11 @@ pub mod opcodes {
                         MathsOp::RealMod => "realmod",
                         MathsOp::RealDiv => "realdiv",
                         MathsOp::EqEq => "==",
+                        MathsOp::NeEq => "!=",
+                        MathsOp::Gt => ">",
+                        MathsOp::GtEq => ">=",
+                        MathsOp::Lt => "<",
+                        MathsOp::LtEq => "<=",
                     }
                 ),
                 Opcode::JumpIfFalse(target) => write!(f, "jif\t{target}"),
@@ -408,6 +413,11 @@ pub mod opcodes {
         RealDiv,
 
         EqEq,
+        NeEq,
+        Gt,
+        GtEq,
+        Lt,
+        LtEq,
     }
 
     impl From<MathsOp> for bytecode::MathsOp {
@@ -422,7 +432,7 @@ pub mod opcodes {
                 };
             }
 
-            arm!(Add, Sub, Mul, RealMod, RealDiv, EqEq)
+            arm!(Add, Sub, Mul, RealMod, RealDiv, EqEq, NeEq, Gt, GtEq, Lt, LtEq)
         }
     }
 
@@ -452,6 +462,11 @@ pub mod opcodes {
                 BinaryOperator::RealDiv => RealDiv,
                 BinaryOperator::RealMod => RealMod,
                 BinaryOperator::EqEq => EqEq,
+                BinaryOperator::NeEq => NeEq,
+                BinaryOperator::Gt => Gt,
+                BinaryOperator::GtEq => GtEq,
+                BinaryOperator::Lt => Lt,
+                BinaryOperator::LtEq => LtEq,
             }
         }
     }
