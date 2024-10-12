@@ -1,10 +1,5 @@
 fn factorial(x: int) -> int {
-    if x == 0 {
-        return 1;
-    }
-
-    # logical or not implemented at time of writing this test
-    if x == 1 {
+    if x <= 1 {
         return 1;
     }
 
