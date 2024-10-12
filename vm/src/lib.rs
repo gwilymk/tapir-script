@@ -267,6 +267,25 @@ mod test {
         Bool, eqeq4: ("false == prop", 0),
         Bool, eqeq5: ("true == prop", 1),
         Bool, eqeq6: ("5 == 5", 1),
+
+        Bool, neeq: ("true != true", 0),
+        Bool, neeq2: ("true != false", 1),
+
+        Bool, gt: ("10 > 10", 0),
+        Bool, gt2: ("5 > 10", 0),
+        Bool, gt3: ("15 > 10", 1),
+
+        Bool, gteq: ("10 >= 10", 1),
+        Bool, gteq2: ("5 >= 10", 0),
+        Bool, gteq3: ("15 >= 10", 1),
+
+        Bool, lt: ("10 < 10", 0),
+        Bool, lt2: ("5 < 10", 1),
+        Bool, lt3: ("15 < 10", 0),
+
+        Bool, lteq: ("10 <= 10", 1),
+        Bool, lteq2: ("5 <= 10", 1),
+        Bool, lteq3: ("15 <= 10", 0),
     );
 
     #[derive(Serialize, Clone, Debug)]
