@@ -1,0 +1,17 @@
+var a = 5;
+var b = 6;
+
+if b > a {
+    var c = 15;
+    wait;
+}
+
+if b < a {
+    var c = 20;
+    wait;
+}
+
+if a != b {
+    var c = 30;
+    wait;
+}

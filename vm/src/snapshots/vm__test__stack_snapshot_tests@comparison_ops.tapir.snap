@@ -1,0 +1,30 @@
+---
+source: crates/tapir-script/vm/src/lib.rs
+expression: stack_at_waits
+input_file: crates/tapir-script/vm/src/snapshot_tests/stack/comparison_ops.tapir
+---
+[
+  ([
+    [
+      5,
+      6,
+      1,
+      15,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [
+      5,
+      6,
+      1,
+      30,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([], PropObj(
+    int_prop: 5,
+  )),
+]
