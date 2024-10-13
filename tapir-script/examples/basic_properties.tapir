@@ -1,0 +1,6 @@
+int_prop = 1;
+wait;
+int_prop = 2;
+wait;
+int_prop = 3;
+wait;
