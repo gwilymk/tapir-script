@@ -22,8 +22,8 @@ struct SomeProperties {
 fn main() {
     let mut script = SomeProperties { int_prop: 5 }.script();
 
-    loop {
-        println!("{:?}", script.properties);
+    while script.will_calling_run_do_anything() {
         script.run();
+        println!("{:?}", script.properties);
     }
 }

@@ -104,6 +104,10 @@ impl<T: TapirScript> Script<T> {
         object_safe_props.events
     }
 
+    pub fn will_calling_run_do_anything(&self) -> bool {
+        self.vm.states.is_empty()
+    }
+
     #[doc(hidden)]
     pub unsafe fn __private_trigger_event(&mut self, mut initial_stack: Vec<i32>, pc: usize) {
         initial_stack.push(0);
