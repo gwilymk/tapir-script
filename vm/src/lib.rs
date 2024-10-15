@@ -100,6 +100,16 @@ impl<T: TapirScript> Script<T> {
 
         corwin_struct.events
     }
+
+    #[doc(hidden)]
+    pub unsafe fn __private_trigger_event(&mut self, mut initial_stack: Vec<i32>, pc: usize) {
+        initial_stack.push(0);
+
+        self.vm.states.push(State {
+            pc,
+            stack: initial_stack,
+        });
+    }
 }
 
 impl State {

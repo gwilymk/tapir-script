@@ -1,11 +1,21 @@
 // use tapir_script::TapirScript;
 
-use vm::TapirScript;
+use tapir_script::TapirScript;
 
-// #[derive(TapirScript)]
-// #[tapir("examples/basic_properties.tapir")]
+#[derive(TapirScript)]
+#[tapir("examples/basic_properties.tapir")]
 struct SomeProperties {
     int_prop: i32,
+}
+
+trait SomePropertiesEvents {
+    fn on_blah(&mut self, a: i32);
+}
+
+impl SomePropertiesEvents for vm::Script<SomeProperties> {
+    fn on_blah(&mut self, a: i32) {
+        unsafe { self.__private_trigger_event(vec![a], 0) }
+    }
 }
 
 impl TapirScript for SomeProperties {
@@ -24,6 +34,16 @@ impl TapirScript for SomeProperties {
     type EventType = ();
 
     fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType {}
+}
+
+mod foo {
+    use vm::Script;
+
+    use crate::{SomeProperties, SomePropertiesEvents};
+
+    fn blah(t: &mut Script<SomeProperties>) {
+        t.on_blah(1);
+    }
 }
 
 fn main() {}
