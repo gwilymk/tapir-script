@@ -527,7 +527,7 @@ impl Bytecode {
 
         macro_rules! one_arg {
             ($kind:ident, $value:expr) => {
-                result.push(((bytecode::Instruction::$kind as u16) << 8) | $value as u16);
+                result.push(((bytecode::Instruction::$kind as u16) << 8) | (($value as u8) as u16));
             };
         }
 
