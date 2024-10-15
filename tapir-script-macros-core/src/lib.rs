@@ -21,42 +21,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         .unwrap_or_else(|e| panic!("Failed to read file {}: {e}", reduced_filename.display()));
 
     let properties = if let syn::Fields::Named(named) = &data.fields {
-        named
-            .named
-            .iter()
-            .enumerate()
-            .map(|(i, field)| {
-                let prop_name = field.ident.as_ref().unwrap().to_string();
-
-                let ty = field
-                    .attrs
-                    .iter()
-                    .find(|attr| attr.meta.path().is_ident("tapir"))
-                    .map(|attr| {
-                        attr.parse_args::<syn::Ident>()
-                            .unwrap_or_else(|_| {
-                                panic!("tapir attribute on property {prop_name} is invalid",)
-                            })
-                            .to_string()
-                    });
-
-                let ty = match ty.as_deref() {
-                    None => {
-                        panic!("Must specify the type for every property, missing on {prop_name}")
-                    }
-                    Some("int") => Type::Int,
-                    Some("bool") => Type::Bool,
-                    Some("fix") => Type::Fix,
-                    Some(unknown) => panic!("Unknown type {unknown} on property {prop_name}"),
-                };
-
-                Property {
-                    ty,
-                    index: i,
-                    name: prop_name,
-                }
-            })
-            .collect()
+        extract_properties(named)
     } else {
         vec![]
     };
@@ -64,7 +29,12 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let compiled_content = match compiler::compile(
         &reduced_filename,
         &file_content,
-        CompileSettings { properties },
+        CompileSettings {
+            properties: properties
+                .iter()
+                .map(|property| property.property.clone())
+                .collect(),
+        },
     ) {
         Ok(content) => content,
         Err(mut diagnostics) => {
@@ -73,26 +43,11 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         }
     };
 
+    let setters = properties.iter().map(|property| &property.setter);
+    let getters = properties.iter().map(|property| &property.getter);
+
     let struct_name = ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
-
-    let (setters, getters): (Vec<_>, Vec<_>) = data
-        .fields
-        .members()
-        .enumerate()
-        .map(|(i, member)| {
-            let i = i as u8;
-
-            (
-                quote! {
-                    #i => { self.#member = value; }
-                },
-                quote! {
-                    #i => self.#member
-                },
-            )
-        })
-        .unzip();
 
     quote! {
         unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
@@ -154,4 +109,63 @@ fn get_script_path(ast: &DeriveInput) -> PathBuf {
         filename
     };
     reduced_filename
+}
+
+struct DeriveProperty {
+    property: Property,
+    getter: TokenStream,
+    setter: TokenStream,
+}
+
+fn extract_properties(named: &syn::FieldsNamed) -> Vec<DeriveProperty> {
+    named
+        .named
+        .iter()
+        .enumerate()
+        .flat_map(|(i, field)| {
+            let field_ident = field.ident.as_ref().unwrap();
+            let prop_name = field_ident.to_string();
+
+            let ty = field
+                .attrs
+                .iter()
+                .find(|attr| attr.meta.path().is_ident("tapir"))
+                .map(|attr| {
+                    attr.parse_args::<syn::Ident>()
+                        .unwrap_or_else(|_| {
+                            panic!("tapir attribute on property {prop_name} is invalid",)
+                        })
+                        .to_string()
+                });
+
+            let ty = match ty.as_deref() {
+                None => {
+                    panic!("Must specify the type for every property, missing on {prop_name}")
+                }
+                Some("int") => Type::Int,
+                Some("bool") => Type::Bool,
+                Some("fix") => Type::Fix,
+                Some("skip") => {
+                    return None;
+                }
+                Some(unknown) => panic!("Unknown type {unknown} on property {prop_name}"),
+            };
+
+            let i_u8 = i as u8;
+
+            Some(DeriveProperty {
+                property: Property {
+                    ty,
+                    index: i,
+                    name: prop_name,
+                },
+                setter: quote! {
+                    #i_u8 => { self.#field_ident = value; }
+                },
+                getter: quote! {
+                    #i_u8 => self.#field_ident
+                },
+            })
+        })
+        .collect()
 }
