@@ -21,9 +21,11 @@ impl<'a> Vm<'a> {
         }
     }
 
-    fn step(&mut self, properties: &mut dyn ObjectSafeProperties) {
+    fn run_until_wait(&mut self, properties: &mut dyn ObjectSafeProperties) {
         for state_index in (0..self.states.len()).rev() {
-            if self.states[state_index].step(self.bytecode, properties) == VmState::Finished {
+            if self.states[state_index].run_until_wait(self.bytecode, properties)
+                == VmState::Finished
+            {
                 self.states.swap_remove(state_index);
             }
         }
@@ -94,14 +96,18 @@ impl<T: TapirScript> Script<T> {
             events: vec![],
         };
 
-        self.vm.step(&mut corwin_struct);
+        self.vm.run_until_wait(&mut corwin_struct);
 
         corwin_struct.events
     }
 }
 
 impl State {
-    fn step(&mut self, bytecode: &[u16], properties: &mut dyn ObjectSafeProperties) -> VmState {
+    fn run_until_wait(
+        &mut self,
+        bytecode: &[u16],
+        properties: &mut dyn ObjectSafeProperties,
+    ) -> VmState {
         loop {
             let Some(instr) = bytecode.get(self.pc) else {
                 return VmState::Finished;
@@ -261,7 +267,7 @@ mod test {
                     events: vec![],
                 };
 
-                vm.step(&mut corwin_struct);
+                vm.run_until_wait(&mut corwin_struct);
                 stack_at_waits.push((
                     vm.states
                         .iter()
@@ -312,7 +318,7 @@ mod test {
                                 events: vec![],
                             };
 
-                            vm.step(&mut corwin_struct);
+                            vm.run_until_wait(&mut corwin_struct);
                         }
 
                         assert_eq!(prop_object.int_prop, $expected);
