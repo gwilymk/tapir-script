@@ -3,7 +3,7 @@ extern crate alloc;
 
 use alloc::vec;
 
-pub struct Vm<'a> {
+struct Vm<'a> {
     bytecode: &'a [u16],
     states: Vec<State>,
 }
@@ -32,6 +32,41 @@ impl<'a> Vm<'a> {
                 self.states.swap_remove(state_index);
             }
         }
+    }
+}
+
+pub trait TapirScript: Sized {
+    fn script(self) -> Script<Self>;
+
+    fn set_prop(&mut self, index: u8, value: i32);
+    fn get_prop(&self, index: u8) -> i32;
+}
+
+impl<T: TapirScript> VmProperties for T {
+    fn set_prop(&mut self, index: u8, value: i32) {
+        self.set_prop(index, value);
+    }
+
+    fn get_prop(&self, index: u8) -> i32 {
+        self.get_prop(index)
+    }
+}
+
+pub struct Script<T: VmProperties> {
+    vm: Vm<'static>,
+    pub properties: T,
+}
+
+impl<T: VmProperties> Script<T> {
+    pub fn new(properties: T, bytecode: &'static [u16]) -> Self {
+        Self {
+            vm: Vm::new(bytecode),
+            properties,
+        }
+    }
+
+    pub fn run(&mut self) {
+        self.vm.step(&mut self.properties);
     }
 }
 
