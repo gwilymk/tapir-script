@@ -20,6 +20,10 @@ impl TapirScript for SomeProperties {
     fn get_prop(&self, _index: u8) -> i32 {
         self.int_prop
     }
+
+    type EventType = ();
+
+    fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType {}
 }
 
 fn main() {}

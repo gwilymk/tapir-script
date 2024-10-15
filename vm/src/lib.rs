@@ -8,11 +8,6 @@ struct Vm<'a> {
     states: Vec<State>,
 }
 
-pub trait VmProperties {
-    fn set_prop(&mut self, index: u8, value: i32);
-    fn get_prop(&self, index: u8) -> i32;
-}
-
 struct State {
     pc: usize,
     stack: Vec<i32>,
@@ -26,7 +21,7 @@ impl<'a> Vm<'a> {
         }
     }
 
-    pub fn step(&mut self, properties: &mut dyn VmProperties) {
+    fn step(&mut self, properties: &mut dyn ObjectSafeProperties) {
         for state_index in (0..self.states.len()).rev() {
             if self.states[state_index].step(self.bytecode, properties) == VmState::Finished {
                 self.states.swap_remove(state_index);
@@ -35,29 +30,57 @@ impl<'a> Vm<'a> {
     }
 }
 
-pub trait TapirScript: Sized {
-    fn script(self) -> Script<Self>;
+pub trait TapirScript {
+    type EventType;
+
+    fn script(self) -> Script<Self>
+    where
+        Self: Sized;
 
     fn set_prop(&mut self, index: u8, value: i32);
     fn get_prop(&self, index: u8) -> i32;
+
+    fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType;
 }
 
-impl<T: TapirScript> VmProperties for T {
+trait ObjectSafeProperties {
+    fn set_prop(&mut self, index: u8, value: i32);
+    fn get_prop(&self, index: u8) -> i32;
+
+    fn add_event(&mut self, index: u8, stack: &mut Vec<i32>);
+}
+
+struct ObjectSafePropertiesImpl<'a, T, U>
+where
+    T: TapirScript<EventType = U>,
+{
+    properties: &'a mut T,
+    events: Vec<U>,
+}
+
+impl<'a, T, U> ObjectSafeProperties for ObjectSafePropertiesImpl<'a, T, U>
+where
+    T: TapirScript<EventType = U>,
+{
     fn set_prop(&mut self, index: u8, value: i32) {
-        self.set_prop(index, value);
+        self.properties.set_prop(index, value);
     }
 
     fn get_prop(&self, index: u8) -> i32 {
-        self.get_prop(index)
+        self.properties.get_prop(index)
+    }
+
+    fn add_event(&mut self, index: u8, stack: &mut Vec<i32>) {
+        self.events.push(self.properties.create_event(index, stack));
     }
 }
 
-pub struct Script<T: VmProperties> {
+pub struct Script<T: TapirScript> {
     vm: Vm<'static>,
     pub properties: T,
 }
 
-impl<T: VmProperties> Script<T> {
+impl<T: TapirScript> Script<T> {
     pub fn new(properties: T, bytecode: &'static [u16]) -> Self {
         Self {
             vm: Vm::new(bytecode),
@@ -65,13 +88,20 @@ impl<T: VmProperties> Script<T> {
         }
     }
 
-    pub fn run(&mut self) {
-        self.vm.step(&mut self.properties);
+    pub fn run(&mut self) -> Vec<T::EventType> {
+        let mut corwin_struct = ObjectSafePropertiesImpl {
+            properties: &mut self.properties,
+            events: vec![],
+        };
+
+        self.vm.step(&mut corwin_struct);
+
+        corwin_struct.events
     }
 }
 
 impl State {
-    fn step(&mut self, bytecode: &[u16], properties: &mut dyn VmProperties) -> VmState {
+    fn step(&mut self, bytecode: &[u16], properties: &mut dyn ObjectSafeProperties) -> VmState {
         loop {
             let Some(instr) = bytecode.get(self.pc) else {
                 return VmState::Finished;
@@ -200,7 +230,7 @@ mod test {
     use insta::{assert_ron_snapshot, glob};
     use serde::Serialize;
 
-    use crate::VmProperties;
+    use crate::TapirScript;
 
     #[test]
     fn stack_snapshot_tests() {
@@ -226,7 +256,12 @@ mod test {
             let mut max_iterations = 1000;
 
             while !vm.states.is_empty() && max_iterations >= 0 {
-                vm.step(&mut prop_object);
+                let mut corwin_struct = ObjectSafePropertiesImpl {
+                    properties: &mut prop_object,
+                    events: vec![],
+                };
+
+                vm.step(&mut corwin_struct);
                 stack_at_waits.push((
                     vm.states
                         .iter()
@@ -272,7 +307,12 @@ mod test {
                         };
 
                         while !vm.states.is_empty() {
-                            vm.step(&mut prop_object);
+                            let mut corwin_struct = ObjectSafePropertiesImpl {
+                                properties: &mut prop_object,
+                                events: vec![],
+                            };
+
+                            vm.step(&mut corwin_struct);
                         }
 
                         assert_eq!(prop_object.int_prop, $expected);
@@ -328,7 +368,7 @@ mod test {
         int_prop: i32,
     }
 
-    impl VmProperties for PropObj {
+    impl TapirScript for PropObj {
         fn set_prop(&mut self, index: u8, value: i32) {
             if index != 0 {
                 panic!("Invalid index {index}");
@@ -344,5 +384,13 @@ mod test {
 
             self.int_prop
         }
+
+        type EventType = ();
+
+        fn script(self) -> Script<Self> {
+            unimplemented!("Shouldn't create the script this way in the tests")
+        }
+
+        fn create_event(&self, _index: u8, _stack: &mut Vec<i32>) -> Self::EventType {}
     }
 }
