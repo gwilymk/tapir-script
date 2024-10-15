@@ -275,7 +275,7 @@ mod test {
             let mut max_iterations = 1000;
 
             while !vm.states.is_empty() && max_iterations >= 0 {
-                let object_safe_props = ObjectSafePropertiesImpl {
+                let mut object_safe_props = ObjectSafePropertiesImpl {
                     properties: &mut prop_object,
                     events: vec![],
                 };
@@ -387,7 +387,7 @@ mod test {
         int_prop: i32,
     }
 
-    impl TapirScript for PropObj {
+    unsafe impl TapirScript for PropObj {
         fn set_prop(&mut self, index: u8, value: i32) {
             if index != 0 {
                 panic!("Invalid index {index}");
