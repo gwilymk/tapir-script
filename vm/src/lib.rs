@@ -105,7 +105,7 @@ impl<T: TapirScript> Script<T> {
     }
 
     pub fn will_calling_run_do_anything(&self) -> bool {
-        self.vm.states.is_empty()
+        !self.vm.states.is_empty()
     }
 
     #[doc(hidden)]

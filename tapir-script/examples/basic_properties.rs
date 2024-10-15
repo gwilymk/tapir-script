@@ -23,7 +23,7 @@ fn main() {
     let mut script = SomeProperties { int_prop: 5 }.script();
 
     while script.will_calling_run_do_anything() {
-        script.run();
         println!("{:?}", script.properties);
+        script.run();
     }
 }
