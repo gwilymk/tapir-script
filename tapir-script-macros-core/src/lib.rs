@@ -11,40 +11,11 @@ use syn::{parse2, DeriveInput, LitStr};
 pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let ast: DeriveInput = parse2(struct_def).unwrap();
 
-    let syn::Data::Struct(data) = ast.data else {
+    let syn::Data::Struct(data) = &ast.data else {
         panic!("Can only be defined on structs");
     };
 
-    let Some(top_level_tapir_attribute) = ast
-        .attrs
-        .iter()
-        .find(|attr| attr.meta.path().is_ident("tapir"))
-    else {
-        panic!(
-            r#"Must have a #[tapir("path/to/my/script.tapir")] attribute before the struct definition"#
-        );
-    };
-
-    let filename = &top_level_tapir_attribute.parse_args::<LitStr>().unwrap_or_else(|_| {
-            panic!(r#"tapir must take exactly 1 argument which is a path to the script, so be of the format #[tapir("path/to/my/script.tapir")]"#)
-    });
-
-    let filename = filename.value();
-
-    let root = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".into());
-    let filename = Path::new(&root).join(&filename);
-
-    let current_working_directory =
-        env::current_dir().expect("Could not calculate current working directory");
-
-    let reduced_filename = if filename.starts_with(&current_working_directory) {
-        filename
-            .components()
-            .skip(current_working_directory.components().count())
-            .collect::<PathBuf>()
-    } else {
-        filename
-    };
+    let reduced_filename = get_script_path(&ast);
 
     let file_content = fs::read_to_string(&reduced_filename)
         .unwrap_or_else(|e| panic!("Failed to read file {}: {e}", reduced_filename.display()));
@@ -149,4 +120,38 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
             }
         }
     }
+}
+
+fn get_script_path(ast: &DeriveInput) -> PathBuf {
+    let Some(top_level_tapir_attribute) = ast
+        .attrs
+        .iter()
+        .find(|attr| attr.meta.path().is_ident("tapir"))
+    else {
+        panic!(
+            r#"Must have a #[tapir("path/to/my/script.tapir")] attribute before the struct definition"#
+        );
+    };
+
+    let filename = &top_level_tapir_attribute.parse_args::<LitStr>().unwrap_or_else(|_| {
+            panic!(r#"tapir must take exactly 1 argument which is a path to the script, so be of the format #[tapir("path/to/my/script.tapir")]"#)
+    });
+
+    let filename = filename.value();
+
+    let root = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".into());
+    let filename = Path::new(&root).join(&filename);
+
+    let current_working_directory =
+        env::current_dir().expect("Could not calculate current working directory");
+
+    let reduced_filename = if filename.starts_with(&current_working_directory) {
+        filename
+            .components()
+            .skip(current_working_directory.components().count())
+            .collect::<PathBuf>()
+    } else {
+        filename
+    };
+    reduced_filename
 }
