@@ -32,7 +32,10 @@ impl<'a> Vm<'a> {
     }
 }
 
-pub trait TapirScript {
+/// # Safety
+///
+/// You should never implement this directly, and instead go through the derive macro
+pub unsafe trait TapirScript {
     type EventType;
 
     fn script(self) -> Script<Self>
@@ -91,14 +94,14 @@ impl<T: TapirScript> Script<T> {
     }
 
     pub fn run(&mut self) -> Vec<T::EventType> {
-        let mut corwin_struct = ObjectSafePropertiesImpl {
+        let mut object_safe_props = ObjectSafePropertiesImpl {
             properties: &mut self.properties,
             events: vec![],
         };
 
-        self.vm.run_until_wait(&mut corwin_struct);
+        self.vm.run_until_wait(&mut object_safe_props);
 
-        corwin_struct.events
+        object_safe_props.events
     }
 
     #[doc(hidden)]
@@ -272,12 +275,12 @@ mod test {
             let mut max_iterations = 1000;
 
             while !vm.states.is_empty() && max_iterations >= 0 {
-                let mut corwin_struct = ObjectSafePropertiesImpl {
+                let object_safe_props = ObjectSafePropertiesImpl {
                     properties: &mut prop_object,
                     events: vec![],
                 };
 
-                vm.run_until_wait(&mut corwin_struct);
+                vm.run_until_wait(&mut object_safe_props);
                 stack_at_waits.push((
                     vm.states
                         .iter()
@@ -323,12 +326,12 @@ mod test {
                         };
 
                         while !vm.states.is_empty() {
-                            let mut corwin_struct = ObjectSafePropertiesImpl {
+                            let mut object_safe_props = ObjectSafePropertiesImpl {
                                 properties: &mut prop_object,
                                 events: vec![],
                             };
 
-                            vm.run_until_wait(&mut corwin_struct);
+                            vm.run_until_wait(&mut object_safe_props);
                         }
 
                         assert_eq!(prop_object.int_prop, $expected);
