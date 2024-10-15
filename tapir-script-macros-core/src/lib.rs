@@ -49,7 +49,11 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let struct_name = ast.ident;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
+    let reduced_filename = reduced_filename.canonicalize().unwrap();
+    let reduced_filename = reduced_filename.to_string_lossy();
+
     quote! {
+        #[automatically_derived]
         unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
             fn script(self) -> vm::Script<Self> {
                 static BYTECODE: &[u16] = &[#(#compiled_content),*];
@@ -74,6 +78,8 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 }
             }
         }
+
+        const _: &[u8] = include_bytes!(#reduced_filename);
     }
 }
 
