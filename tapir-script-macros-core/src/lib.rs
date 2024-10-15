@@ -3,8 +3,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use compiler::CompileSettings;
+use compiler::{CompileSettings, Property, Type};
 use proc_macro2::TokenStream;
+use quote::quote;
 use syn::{parse2, DeriveInput, LitStr};
 
 pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
@@ -24,14 +25,9 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         );
     };
 
-    let filename = match &top_level_tapir_attribute.meta {
-        syn::Meta::List(meta_list) => meta_list.parse_args::<LitStr>().unwrap_or_else(|_| {
-            panic!("tapir must take exactly 1 argument which is a path to the script")
-        }),
-        _ => panic!(
-            r#"#[tapir] macro of incorrect format. Should be #[tapir("path/to/my/script.tapir")]"#
-        ),
-    };
+    let filename = &top_level_tapir_attribute.parse_args::<LitStr>().unwrap_or_else(|_| {
+            panic!(r#"tapir must take exactly 1 argument which is a path to the script, so be of the format #[tapir("path/to/my/script.tapir")]"#)
+    });
 
     let filename = filename.value();
 
@@ -53,10 +49,51 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let file_content = fs::read_to_string(&reduced_filename)
         .unwrap_or_else(|e| panic!("Failed to read file {}: {e}", reduced_filename.display()));
 
+    let properties = if let syn::Fields::Named(named) = &data.fields {
+        named
+            .named
+            .iter()
+            .enumerate()
+            .map(|(i, field)| {
+                let prop_name = field.ident.as_ref().unwrap().to_string();
+
+                let ty = field
+                    .attrs
+                    .iter()
+                    .find(|attr| attr.meta.path().is_ident("tapir"))
+                    .map(|attr| {
+                        attr.parse_args::<syn::Ident>()
+                            .unwrap_or_else(|_| {
+                                panic!("tapir attribute on property {prop_name} is invalid",)
+                            })
+                            .to_string()
+                    });
+
+                let ty = match ty.as_deref() {
+                    None => {
+                        panic!("Must specify the type for every property, missing on {prop_name}")
+                    }
+                    Some("int") => Type::Int,
+                    Some("bool") => Type::Bool,
+                    Some("fix") => Type::Fix,
+                    Some(unknown) => panic!("Unknown type {unknown} on property {prop_name}"),
+                };
+
+                Property {
+                    ty,
+                    index: i,
+                    name: prop_name,
+                }
+            })
+            .collect()
+    } else {
+        vec![]
+    };
+
     let compiled_content = match compiler::compile(
         &reduced_filename,
         &file_content,
-        CompileSettings { properties: vec![] },
+        CompileSettings { properties },
     ) {
         Ok(content) => content,
         Err(mut diagnostics) => {
@@ -65,5 +102,51 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         }
     };
 
-    todo!("Failed!")
+    let struct_name = ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+
+    let (setters, getters): (Vec<_>, Vec<_>) = data
+        .fields
+        .members()
+        .enumerate()
+        .map(|(i, member)| {
+            let i = i as u8;
+
+            (
+                quote! {
+                    #i => { self.#member = value; }
+                },
+                quote! {
+                    #i => self.#member
+                },
+            )
+        })
+        .unzip();
+
+    quote! {
+        unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
+            fn script(self) -> vm::Script<Self> {
+                static BYTECODE: &[u16] = &[#(#compiled_content),*];
+
+                vm::Script::new(self, BYTECODE)
+            }
+
+            type EventType = ();
+            fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType {}
+
+            fn set_prop(&mut self, index: u8, value: i32) {
+                match index {
+                    #(#setters)*
+                    _ => unreachable!("Invalid index {index}"),
+                };
+            }
+
+            fn get_prop(&self, index: u8) -> i32 {
+                match index {
+                    #(#getters),*,
+                    _ => unreachable!("Invalid index {index}"),
+                }
+            }
+        }
+    }
 }
