@@ -255,6 +255,7 @@ impl<'input> SymTab<'input> {
             .expect("Symbol should have a span")
     }
 
+    #[cfg(test)]
     pub fn all_symbols(&self) -> impl Iterator<Item = (&'_ str, SymbolId)> + '_ {
         self.symbol_names
             .iter()

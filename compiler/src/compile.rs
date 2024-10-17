@@ -352,7 +352,6 @@ pub mod opcodes {
     #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize)]
     pub enum Opcode {
         Push8(i8),
-        Push24(u32),
         Dup(u8),
         Drop(u8),
         GetProp(u8),
@@ -370,7 +369,6 @@ pub mod opcodes {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             match self {
                 Opcode::Push8(v) => write!(f, "push8\t{v}"),
-                Opcode::Push24(v) => write!(f, "push24\t{v}"),
                 Opcode::Dup(v) => write!(f, "dup\t{v}"),
                 Opcode::Drop(v) => write!(f, "drop\t{v}"),
                 Opcode::GetProp(i) => write!(f, "getprop\t{i}"),
@@ -439,11 +437,7 @@ pub mod opcodes {
     impl Opcode {
         pub fn size(self) -> usize {
             match self {
-                Self::Push24(_)
-                | Self::JumpIfFalse(_)
-                | Self::Jump(_)
-                | Self::Call(_)
-                | Self::Return { .. } => 2,
+                Self::JumpIfFalse(_) | Self::Jump(_) | Self::Call(_) | Self::Return { .. } => 2,
                 _ => 1,
             }
         }
@@ -535,11 +529,6 @@ impl Bytecode {
             match *opcode {
                 Opcode::Push8(value) => {
                     one_arg!(Push8, value);
-                }
-                Opcode::Push24(value) => {
-                    let bytes = value.to_be_bytes();
-                    one_arg!(Push24, bytes[1]);
-                    result.push(u16::from_be_bytes(bytes[2..].try_into().unwrap()));
                 }
                 Opcode::Dup(amount) => {
                     one_arg!(Dup, amount);
