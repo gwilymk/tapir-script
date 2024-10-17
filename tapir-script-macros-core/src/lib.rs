@@ -55,10 +55,10 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     quote! {
         #[automatically_derived]
         unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
-            fn script(self) -> vm::Script<Self> {
+            fn script(self) -> ::tapir_script::Script<Self> {
                 static BYTECODE: &[u16] = &[#(#compiled_content),*];
 
-                vm::Script::new(self, BYTECODE)
+                ::tapir_script::Script::new(self, BYTECODE)
             }
 
             type EventType = ();
