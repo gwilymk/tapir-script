@@ -66,14 +66,14 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
 
             fn set_prop(&mut self, index: u8, value: i32) {
                 match index {
-                    #(#setters)*
+                    #(#setters,)*
                     _ => unreachable!("Invalid index {index}"),
                 };
             }
 
             fn get_prop(&self, index: u8) -> i32 {
                 match index {
-                    #(#getters),*,
+                    #(#getters,)*
                     _ => unreachable!("Invalid index {index}"),
                 }
             }
@@ -166,10 +166,10 @@ fn extract_properties(named: &syn::FieldsNamed) -> Vec<DeriveProperty> {
                     name: prop_name,
                 },
                 setter: quote! {
-                    #i_u8 => { self.#field_ident = value; }
+                    #i_u8 => { ::tapir_script::TapirProperty::set_from_i32(&mut self.#field_ident, value); }
                 },
                 getter: quote! {
-                    #i_u8 => self.#field_ident
+                    #i_u8 => ::tapir_script::TapirProperty::to_i32(&self.#field_ident)
                 },
             })
         })
