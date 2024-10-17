@@ -128,7 +128,7 @@ fn extract_properties(named: &syn::FieldsNamed) -> Vec<DeriveProperty> {
         .named
         .iter()
         .enumerate()
-        .flat_map(|(i, field)| {
+        .filter_map(|(i, field)| {
             let field_ident = field.ident.as_ref().unwrap();
             let prop_name = field_ident.to_string();
 
