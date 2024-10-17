@@ -1,0 +1,9 @@
+fn factorial(input: int) -> int {
+    if input <= 1 {
+        return 1;
+    }
+
+    return input * factorial(input - 1);
+}
+
+io = factorial(io);
