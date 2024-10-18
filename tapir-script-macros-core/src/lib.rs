@@ -1,3 +1,4 @@
+#![deny(clippy::all)]
 use std::{
     env, fs,
     path::{Path, PathBuf},

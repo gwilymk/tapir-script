@@ -1,3 +1,4 @@
+#![deny(clippy::all)]
 #![no_std]
 
 pub use tapir_script_macros::TapirScript;

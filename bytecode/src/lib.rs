@@ -1,4 +1,5 @@
 #![no_std]
+#![deny(clippy::all)]
 
 use enumn::N;
 

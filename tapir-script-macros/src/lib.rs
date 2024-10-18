@@ -1,3 +1,4 @@
+#![deny(clippy::all)]
 use proc_macro::TokenStream;
 
 #[proc_macro_derive(TapirScript, attributes(tapir))]
