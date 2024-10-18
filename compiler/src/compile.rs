@@ -270,8 +270,12 @@ impl<'input> Compiler<'input> {
     fn compile_expression(&mut self, value: &ast::Expression<'input>, symtab: &SymTab) {
         match &value.kind {
             ast::ExpressionKind::Integer(i) => {
-                self.bytecode.add_opcode(Opcode::Push8(*i as i8));
-                self.stack.push(None);
+                if let Ok(as_i8) = i8::try_from(*i) {
+                    self.bytecode.add_opcode(Opcode::Push8(as_i8));
+                    self.stack.push(None);
+                } else {
+                    todo!("Numbers greater than a byte")
+                }
             }
             ast::ExpressionKind::Fix(_) => todo!("Fixnum compilation"),
             ast::ExpressionKind::Bool(value) => {
