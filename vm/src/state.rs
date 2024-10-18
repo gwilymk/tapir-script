@@ -1,5 +1,7 @@
 use crate::{TapirScript, VmState};
 
+use alloc::vec::Vec;
+
 pub(crate) struct State {
     pc: usize,
     stack: Vec<i32>,

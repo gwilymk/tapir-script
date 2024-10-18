@@ -1,10 +1,10 @@
 #![deny(clippy::all)]
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 extern crate alloc;
 
 mod state;
 
-use alloc::vec;
+use alloc::{vec, vec::Vec};
 use state::{ObjectSafeProperties, ObjectSafePropertiesImpl, State};
 
 struct Vm<'a> {
@@ -91,10 +91,13 @@ enum VmState {
 
 #[cfg(test)]
 mod test {
+    extern crate std;
+
     use super::*;
 
     use std::fs;
 
+    use alloc::string::ToString;
     use compiler::{CompileSettings, Property, Type};
     use insta::{assert_ron_snapshot, glob};
     use serde::Serialize;
