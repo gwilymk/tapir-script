@@ -116,7 +116,7 @@ impl<'input> TypeVisitor<'input> {
         }
 
         let block_analysis_result = self.visit_block(
-            &function.statements,
+            &mut function.statements,
             symtab,
             &function.return_types,
             diagnostics,
@@ -137,13 +137,13 @@ impl<'input> TypeVisitor<'input> {
 
     fn visit_block(
         &mut self,
-        ast: &[ast::Statement<'input>],
+        ast: &mut [ast::Statement<'input>],
         symtab: &SymTab,
         expected_return_type: &FunctionReturn,
         diagnostics: &mut Diagnostics,
     ) -> BlockAnalysisResult {
-        for statement in ast {
-            match &statement.kind {
+        for statement in ast.iter_mut() {
+            match &mut statement.kind {
                 ast::StatementKind::Error => {}
                 ast::StatementKind::VariableDeclaration { .. } => {
                     unreachable!("Should have been removed by symbol resolution")
@@ -189,7 +189,7 @@ impl<'input> TypeVisitor<'input> {
                 }
                 ast::StatementKind::Return { values } => {
                     let mut actual_return_types = Vec::with_capacity(values.len());
-                    for value in values {
+                    for value in values.iter_mut() {
                         actual_return_types.push(self.type_for_expression(
                             value,
                             symtab,
@@ -274,11 +274,11 @@ impl<'input> TypeVisitor<'input> {
 
     fn type_for_expression(
         &mut self,
-        expression: &Expression<'input>,
+        expression: &mut Expression<'input>,
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Type {
-        match &expression.kind {
+        match &mut expression.kind {
             ast::ExpressionKind::Integer(_) => Type::Int,
             ast::ExpressionKind::Fix(_) => Type::Fix,
             ast::ExpressionKind::Bool(_) => Type::Bool,
@@ -342,12 +342,12 @@ impl<'input> TypeVisitor<'input> {
         &mut self,
         span: Span,
         name: &'input str,
-        arguments: &[Expression<'input>],
+        arguments: &mut [Expression<'input>],
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Vec<Type> {
         let argument_types: Vec<_> = arguments
-            .iter()
+            .iter_mut()
             .map(|arg| (self.type_for_expression(arg, symtab, diagnostics), arg.span))
             .collect();
 
