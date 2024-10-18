@@ -125,7 +125,7 @@ impl<'input> Compiler<'input> {
         // if there is no return value, then no return is required to be compiled so we should add one
         if function.return_types.types.is_empty() {
             self.bytecode.add_opcode(Opcode::Return {
-                args: 0,
+                args: function.arguments.len() as u8,
                 rets: 0,
                 shift: 0, // can be zero because we will have dropped after the block was compiled
             });

@@ -1,0 +1,10 @@
+---
+source: crates/tapir-script/vm/src/lib.rs
+expression: stack_at_waits
+input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/void_function.tapir
+---
+[
+  ([], PropObj(
+    int_prop: 3628800,
+  )),
+]

@@ -1,0 +1,11 @@
+fn void_factorial(iteration: int) {
+    if iteration <= 1 {
+        return;
+    }
+
+    int_prop = int_prop * iteration;
+    void_factorial(iteration - 1);
+}
+
+int_prop = 1;
+void_factorial(10);
