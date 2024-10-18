@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 bytecode = { path = "../bytecode" }
+agb_fixnum = "0.21.1"
 
 [dev-dependencies]
 compiler = { path = "../compiler" }

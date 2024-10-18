@@ -38,4 +38,7 @@ pub enum MathsOp {
     GtEq,
     Lt,
     LtEq,
+
+    FixMul,
+    FixDiv,
 }

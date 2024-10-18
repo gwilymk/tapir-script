@@ -1,5 +1,6 @@
 use crate::TapirScript;
 
+use agb_fixnum::Num;
 use alloc::{boxed::Box, vec::Vec};
 
 #[derive(Debug)]
@@ -87,6 +88,12 @@ impl State {
                         bytecode::MathsOp::GtEq => (lhs >= rhs).into(),
                         bytecode::MathsOp::Lt => (lhs < rhs).into(),
                         bytecode::MathsOp::LtEq => (lhs <= rhs).into(),
+                        bytecode::MathsOp::FixMul => {
+                            (Num::<i32, 8>::from_raw(lhs) * Num::<i32, 8>::from_raw(rhs)).to_raw()
+                        }
+                        bytecode::MathsOp::FixDiv => {
+                            (Num::<i32, 8>::from_raw(lhs) / Num::<i32, 8>::from_raw(rhs)).to_raw()
+                        }
                     };
 
                     self.stack.push(result);

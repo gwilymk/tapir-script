@@ -199,6 +199,9 @@ pub enum BinaryOperator {
     RealDiv,
     RealMod,
 
+    FixMul,
+    FixDiv,
+
     EqEq,
     NeEq,
     Gt,
@@ -208,6 +211,15 @@ pub enum BinaryOperator {
 }
 
 impl BinaryOperator {
+    pub fn update_type_with_lhs(&mut self, lhs_type: Type) {
+        use BinaryOperator as B;
+        match (*self, lhs_type) {
+            (B::Mul, Type::Fix) => *self = B::FixMul,
+            (B::Div, Type::Fix) => *self = B::FixDiv,
+            _ => {}
+        }
+    }
+
     pub fn can_handle_type(self, lhs_type: Type) -> bool {
         use BinaryOperator as B;
         match self {
@@ -225,6 +237,8 @@ impl BinaryOperator {
                 matches!(lhs_type, Type::Fix | Type::Int)
             }
 
+            B::FixMul | B::FixDiv => matches!(lhs_type, Type::Fix),
+
             B::EqEq | B::NeEq => !matches!(lhs_type, Type::Error),
         }
     }
@@ -233,7 +247,15 @@ impl BinaryOperator {
         use BinaryOperator as B;
 
         match self {
-            B::Add | B::Sub | B::Mul | B::Div | B::Mod | B::RealDiv | B::RealMod => lhs_type,
+            B::Add
+            | B::Sub
+            | B::Mul
+            | B::Div
+            | B::Mod
+            | B::RealDiv
+            | B::RealMod
+            | B::FixMul
+            | B::FixDiv => lhs_type,
 
             B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq => Type::Bool,
         }

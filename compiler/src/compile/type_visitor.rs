@@ -312,6 +312,8 @@ impl<'input> TypeVisitor<'input> {
                     return Type::Error;
                 }
 
+                operator.update_type_with_lhs(lhs_type);
+
                 operator.resulting_type(lhs_type)
             }
             ast::ExpressionKind::Error => Type::Error,

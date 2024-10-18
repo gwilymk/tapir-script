@@ -405,6 +405,8 @@ pub mod opcodes {
                         MathsOp::GtEq => ">=",
                         MathsOp::Lt => "<",
                         MathsOp::LtEq => "<=",
+                        MathsOp::FixMul => "fmul",
+                        MathsOp::FixDiv => "fdiv",
                     }
                 ),
                 Opcode::JumpIfFalse(target) => write!(f, "jif\t{target}"),
@@ -432,6 +434,8 @@ pub mod opcodes {
         GtEq,
         Lt,
         LtEq,
+        FixMul,
+        FixDiv,
     }
 
     impl From<MathsOp> for bytecode::MathsOp {
@@ -446,7 +450,7 @@ pub mod opcodes {
                 };
             }
 
-            arm!(Add, Sub, Mul, RealMod, RealDiv, EqEq, NeEq, Gt, GtEq, Lt, LtEq)
+            arm!(Add, Sub, Mul, RealMod, RealDiv, EqEq, NeEq, Gt, GtEq, Lt, LtEq, FixMul, FixDiv)
         }
     }
 
@@ -481,6 +485,8 @@ pub mod opcodes {
                 BinaryOperator::GtEq => GtEq,
                 BinaryOperator::Lt => Lt,
                 BinaryOperator::LtEq => LtEq,
+                BinaryOperator::FixMul => FixMul,
+                BinaryOperator::FixDiv => FixDiv,
             }
         }
     }
