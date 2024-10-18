@@ -88,6 +88,8 @@ pub enum Token<'input> {
     KeywordBool,
     #[token("return")]
     KeywordReturn,
+    #[token("spawn")]
+    KeywordSpawn,
 
     #[token("true")]
     True,

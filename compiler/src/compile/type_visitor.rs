@@ -234,6 +234,9 @@ impl<'input> TypeVisitor<'input> {
                 ast::StatementKind::Call { name, arguments } => {
                     self.type_for_call(statement.span, name, arguments, symtab, diagnostics);
                 }
+                ast::StatementKind::Spawn { name, arguments } => {
+                    self.type_for_call(statement.span, name, arguments, symtab, diagnostics);
+                }
             }
         }
 

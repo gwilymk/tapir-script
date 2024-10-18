@@ -1,10 +1,19 @@
-use crate::{TapirScript, VmState};
+use crate::TapirScript;
 
-use alloc::vec::Vec;
+use alloc::{boxed::Box, vec::Vec};
 
+#[derive(Debug)]
 pub(crate) struct State {
     pc: usize,
     stack: Vec<i32>,
+}
+
+const SPAWN_FINISHED: i32 = u16::MAX as i32;
+
+pub(crate) enum RunResult {
+    Waiting,
+    Finished,
+    Spawn(Box<State>),
 }
 
 impl State {
@@ -21,10 +30,10 @@ impl State {
         &mut self,
         bytecode: &[u16],
         properties: &mut dyn ObjectSafeProperties,
-    ) -> VmState {
+    ) -> RunResult {
         loop {
             let Some(instr) = bytecode.get(self.pc) else {
-                return VmState::Finished;
+                return RunResult::Finished;
             };
 
             let parsed =
@@ -55,7 +64,7 @@ impl State {
                 }
                 bytecode::Instruction::Nop => {}
                 bytecode::Instruction::Wait => {
-                    return VmState::Waiting;
+                    return RunResult::Waiting;
                 }
                 bytecode::Instruction::Move => {
                     let move_location = self.stack.len() - arg as usize - 1;
@@ -100,6 +109,18 @@ impl State {
 
                     self.pc = target_for_jump as usize;
                 }
+                bytecode::Instruction::Spawn => {
+                    let target_for_spawn = bytecode[self.pc];
+                    self.pc += 1;
+
+                    let mut new_stack = self.stack.split_off(self.stack.len() - arg as usize);
+                    new_stack.push(SPAWN_FINISHED);
+
+                    return RunResult::Spawn(Box::new(Self::new(
+                        target_for_spawn as usize,
+                        new_stack,
+                    )));
+                }
                 bytecode::Instruction::Return => {
                     let args = arg;
                     let [rets, shift] = bytecode[self.pc].to_be_bytes();
@@ -109,10 +130,16 @@ impl State {
                     let shift = shift as usize;
 
                     if self.stack.len() == shift {
-                        return VmState::Finished;
+                        return RunResult::Finished;
                     }
 
                     let new_pc = self.stack[self.stack.len() - shift - 1];
+
+                    if new_pc == SPAWN_FINISHED {
+                        // this is the end of a spawned function or event
+                        return RunResult::Finished;
+                    }
+
                     // extra -1 to cover the new program counter
                     let copy_range = (self.stack.len() - rets)..;
                     let copy_dest = self.stack.len() - args - shift - 1;

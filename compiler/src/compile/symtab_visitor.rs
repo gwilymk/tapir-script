@@ -123,6 +123,16 @@ impl<'input> SymTabVisitor<'input> {
 
                     StatementKind::Call { name, arguments }
                 }
+                StatementKind::Spawn {
+                    name,
+                    mut arguments,
+                } => {
+                    for argument in &mut arguments {
+                        self.visit_expr(argument, diagnostics);
+                    }
+
+                    StatementKind::Spawn { name, arguments }
+                }
             };
         }
 

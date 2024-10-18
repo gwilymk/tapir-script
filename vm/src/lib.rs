@@ -21,11 +21,20 @@ impl<'a> Vm<'a> {
     }
 
     fn run_until_wait(&mut self, properties: &mut dyn ObjectSafeProperties) {
-        for state_index in (0..self.states.len()).rev() {
-            if self.states[state_index].run_until_wait(self.bytecode, properties)
-                == VmState::Finished
-            {
-                self.states.swap_remove(state_index);
+        let mut state_index = 0;
+        while state_index < self.states.len() {
+            match self.states[state_index].run_until_wait(self.bytecode, properties) {
+                state::RunResult::Waiting => {
+                    state_index += 1;
+                }
+                state::RunResult::Finished => {
+                    self.states.swap_remove(state_index);
+                }
+                state::RunResult::Spawn(state) => {
+                    self.states.push(*state);
+                    // intentionally not increasing state_index to ensure that the spawning
+                    // state continues to run.
+                }
             }
         }
     }
@@ -81,12 +90,6 @@ impl<T: TapirScript> Script<T> {
 
         self.vm.states.push(State::new(pc, initial_stack));
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum VmState {
-    Waiting,
-    Finished,
 }
 
 #[cfg(test)]

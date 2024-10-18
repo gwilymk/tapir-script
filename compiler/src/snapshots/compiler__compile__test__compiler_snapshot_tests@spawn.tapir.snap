@@ -1,0 +1,17 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/spawn.tapir
+---
+00000000: push8	3
+00000001: push8	0
+00000002: spawn	2 11
+00000004: wait
+00000005: push8	7
+00000006: push8	1
+00000007: spawn	2 11
+00000009: ret	args=0 rets=0 shift=0
+00000011: dup	2
+00000012: setprop	0
+00000013: wait
+00000014: ret	args=2 rets=0 shift=0

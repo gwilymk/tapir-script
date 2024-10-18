@@ -26,6 +26,7 @@ extern {
         t_fix => Token::KeywordFix,
         t_bool => Token::KeywordBool,
         return => Token::KeywordReturn,
+        spawn => Token::KeywordSpawn,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -124,6 +125,8 @@ StatementKind: StatementKind<'input> = {
 
     <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Call { <> },
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
+
+    spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Spawn { <> },
 
     <error: !> ";" => {
         diagnostics.add_lalrpop(<>.error, file_id);

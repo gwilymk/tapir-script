@@ -1,0 +1,8 @@
+fn foo(i: int, b: bool) {
+    int_prop = i;
+    wait;
+}
+
+spawn foo(3, false);
+wait;
+spawn foo(7, true);

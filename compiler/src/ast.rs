@@ -132,6 +132,10 @@ pub enum StatementKind<'input> {
         name: &'input str,
         arguments: Vec<Expression<'input>>,
     },
+    Spawn {
+        name: &'input str,
+        arguments: Vec<Expression<'input>>,
+    },
     Return {
         values: Vec<Expression<'input>>,
     },

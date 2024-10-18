@@ -1,0 +1,17 @@
+spawn foo(true, 2);
+spawn foo(false, 7);
+wait;
+wait;
+wait;
+int_prop = 4;
+
+fn foo(should_wait: bool, value: int) {
+    wait;
+
+    if should_wait {
+        wait;
+    }
+
+    int_prop = value;
+    wait;
+}

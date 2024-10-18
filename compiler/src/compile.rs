@@ -252,6 +252,16 @@ impl<'input> Compiler<'input> {
 
                 self.compile_drop_to(stack_before_call);
             }
+            ast::StatementKind::Spawn { name, arguments } => {
+                for argument in arguments {
+                    self.compile_expression(argument, symtab);
+                }
+
+                let spawn_jump = self.bytecode.new_spawn(arguments.len() as u8);
+                self.function_calls.push((name, spawn_jump));
+
+                self.stack.truncate(self.stack.len() - arguments.len());
+            }
         }
 
         ControlFlow::Continue(())
@@ -362,6 +372,7 @@ pub mod opcodes {
         JumpIfFalse(u16),
         Jump(u16),
         Call(u16),
+        Spawn { args: u8, target: u16 },
         Return { args: u8, rets: u8, shift: u8 },
     }
 
@@ -398,6 +409,7 @@ pub mod opcodes {
                 Opcode::Return { args, rets, shift } => {
                     write!(f, "ret\targs={args} rets={rets} shift={shift}")
                 }
+                Opcode::Spawn { args, target } => write!(f, "spawn\t{args} {target}"),
             }
         }
     }
@@ -437,7 +449,11 @@ pub mod opcodes {
     impl Opcode {
         pub fn size(self) -> usize {
             match self {
-                Self::JumpIfFalse(_) | Self::Jump(_) | Self::Call(_) | Self::Return { .. } => 2,
+                Self::JumpIfFalse(_)
+                | Self::Jump(_)
+                | Self::Call(_)
+                | Self::Return { .. }
+                | Self::Spawn { .. } => 2,
                 _ => 1,
             }
         }
@@ -507,11 +523,17 @@ impl Bytecode {
         Jump(self.data.len() - 1)
     }
 
+    fn new_spawn(&mut self, args: u8) -> Jump {
+        self.add_opcode(Opcode::Spawn { args, target: 0 });
+        Jump(self.data.len() - 1)
+    }
+
     fn patch_jump(&mut self, jump: Jump, label: Label) {
         match &mut self.data[jump.0] {
-            Opcode::Jump(target) | Opcode::JumpIfFalse(target) | Opcode::Call(target) => {
-                *target = label.0
-            }
+            Opcode::Jump(target)
+            | Opcode::JumpIfFalse(target)
+            | Opcode::Call(target)
+            | Opcode::Spawn { target, .. } => *target = label.0,
             opcode => panic!("Tried to patch {opcode:?} which isn't a jump"),
         }
     }
@@ -561,6 +583,10 @@ impl Bytecode {
                 }
                 Opcode::Call(target) => {
                     one_arg!(Call, 0);
+                    result.push(target);
+                }
+                Opcode::Spawn { args, target } => {
+                    one_arg!(Spawn, args);
                     result.push(target);
                 }
                 Opcode::Return { args, rets, shift } => {

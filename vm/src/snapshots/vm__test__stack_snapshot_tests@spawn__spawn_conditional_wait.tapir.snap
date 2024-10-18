@@ -1,0 +1,51 @@
+---
+source: crates/tapir-script/vm/src/lib.rs
+expression: stack_at_waits
+input_file: crates/tapir-script/vm/src/snapshot_tests/stack/spawn/spawn_conditional_wait.tapir
+---
+[
+  ([
+    [],
+    [
+      1,
+      2,
+      65535,
+    ],
+    [
+      0,
+      7,
+      65535,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [],
+    [
+      1,
+      2,
+      65535,
+      1,
+    ],
+    [
+      0,
+      7,
+      65535,
+    ],
+  ], PropObj(
+    int_prop: 7,
+  )),
+  ([
+    [],
+    [
+      1,
+      2,
+      65535,
+    ],
+  ], PropObj(
+    int_prop: 2,
+  )),
+  ([], PropObj(
+    int_prop: 4,
+  )),
+]

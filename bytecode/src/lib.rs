@@ -20,6 +20,7 @@ pub enum Instruction {
     Jump,
     Call,
     Return,
+    Spawn,
 }
 
 #[repr(u8)]
