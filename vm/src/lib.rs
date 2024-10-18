@@ -4,7 +4,7 @@ extern crate alloc;
 mod state;
 
 use alloc::vec;
-use state::State;
+use state::{ObjectSafeProperties, ObjectSafePropertiesImpl, State};
 
 struct Vm<'a> {
     bytecode: &'a [u16],
@@ -44,38 +44,6 @@ pub unsafe trait TapirScript {
     fn get_prop(&self, index: u8) -> i32;
 
     fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType;
-}
-
-trait ObjectSafeProperties {
-    fn set_prop(&mut self, index: u8, value: i32);
-    fn get_prop(&self, index: u8) -> i32;
-
-    fn add_event(&mut self, index: u8, stack: &mut Vec<i32>);
-}
-
-struct ObjectSafePropertiesImpl<'a, T, U>
-where
-    T: TapirScript<EventType = U>,
-{
-    properties: &'a mut T,
-    events: Vec<U>,
-}
-
-impl<'a, T, U> ObjectSafeProperties for ObjectSafePropertiesImpl<'a, T, U>
-where
-    T: TapirScript<EventType = U>,
-{
-    fn set_prop(&mut self, index: u8, value: i32) {
-        self.properties.set_prop(index, value);
-    }
-
-    fn get_prop(&self, index: u8) -> i32 {
-        self.properties.get_prop(index)
-    }
-
-    fn add_event(&mut self, index: u8, stack: &mut Vec<i32>) {
-        self.events.push(self.properties.create_event(index, stack));
-    }
 }
 
 pub struct Script<T: TapirScript> {

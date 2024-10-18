@@ -1,4 +1,4 @@
-use crate::{ObjectSafeProperties, VmState};
+use crate::{TapirScript, VmState};
 
 pub(crate) struct State {
     pc: usize,
@@ -123,5 +123,37 @@ impl State {
                 }
             }
         }
+    }
+}
+
+pub(crate) trait ObjectSafeProperties {
+    fn set_prop(&mut self, index: u8, value: i32);
+    fn get_prop(&self, index: u8) -> i32;
+
+    fn add_event(&mut self, index: u8, stack: &mut Vec<i32>);
+}
+
+pub(crate) struct ObjectSafePropertiesImpl<'a, T, U>
+where
+    T: TapirScript<EventType = U>,
+{
+    pub properties: &'a mut T,
+    pub events: Vec<U>,
+}
+
+impl<'a, T, U> ObjectSafeProperties for ObjectSafePropertiesImpl<'a, T, U>
+where
+    T: TapirScript<EventType = U>,
+{
+    fn set_prop(&mut self, index: u8, value: i32) {
+        self.properties.set_prop(index, value);
+    }
+
+    fn get_prop(&self, index: u8) -> i32 {
+        self.properties.get_prop(index)
+    }
+
+    fn add_event(&mut self, index: u8, stack: &mut Vec<i32>) {
+        self.events.push(self.properties.create_event(index, stack));
     }
 }
