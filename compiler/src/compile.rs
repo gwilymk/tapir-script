@@ -277,7 +277,16 @@ impl<'input> Compiler<'input> {
                     todo!("Numbers greater than a byte")
                 }
             }
-            ast::ExpressionKind::Fix(_) => todo!("Fixnum compilation"),
+            ast::ExpressionKind::Fix(fix) => {
+                let raw = fix.to_raw();
+                if let Ok(as_i8) = i8::try_from(raw) {
+                    self.bytecode.add_opcode(Opcode::Push8(as_i8));
+                    self.stack.push(None);
+                } else {
+                    // not representable as a byte :(
+                    todo!("Fixnums greater than a byte")
+                }
+            }
             ast::ExpressionKind::Bool(value) => {
                 self.bytecode
                     .add_opcode(Opcode::Push8(if *value { 1 } else { 0 }));
