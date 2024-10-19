@@ -2,7 +2,7 @@ use std::ops::{BitOr, BitOrAssign};
 
 use constant_propagation_map::ConstantPropagationMap;
 
-use crate::ast::{Expression, ExpressionKind, Function, Statement, StatementKind, SymbolId};
+use crate::ast::{Expression, ExpressionKind, Function, Statement, StatementKind};
 
 use super::CompileSettings;
 
