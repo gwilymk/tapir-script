@@ -76,15 +76,26 @@ pub fn compile(
 
 struct Compiler<'input> {
     stack: Vec<Option<SymbolId>>,
+    loops: Vec<LoopCompliationState>,
+
     function_calls: Vec<(&'input str, Jump)>,
     function_locations: HashMap<&'input str, Label>,
     bytecode: Bytecode,
+}
+
+struct LoopCompliationState {
+    loop_start: Label,
+    forward_jumps: Vec<Jump>,
+
+    stack_length: usize,
 }
 
 impl<'input> Compiler<'input> {
     pub fn new() -> Self {
         Self {
             stack: vec![],
+            loops: vec![],
+
             function_calls: vec![],
             function_locations: HashMap::from([("@toplevel", Label(0))]),
             bytecode: Bytecode::new(),
@@ -262,9 +273,59 @@ impl<'input> Compiler<'input> {
 
                 self.stack.truncate(self.stack.len() - arguments.len());
             }
-            ast::StatementKind::Continue => todo!(),
-            ast::StatementKind::Break => todo!(),
-            ast::StatementKind::Loop { block } => todo!(),
+            ast::StatementKind::Continue => {
+                let loop_state = self
+                    .loops
+                    .last()
+                    .expect("Should've worked out that there wasn't a loop for this break yet");
+                let stack_size_to_return_to = loop_state.stack_length;
+                let loop_start = loop_state.loop_start;
+
+                self.bytecode.add_opcode(Opcode::Drop(
+                    (self.stack.len() - stack_size_to_return_to) as u8,
+                ));
+
+                let jump = self.bytecode.new_jump();
+                self.bytecode.patch_jump(jump, loop_start);
+            }
+            ast::StatementKind::Break => {
+                let loop_state = self
+                    .loops
+                    .last()
+                    .expect("Should've worked out that there wasn't a loop for this break yet");
+                let stack_size_to_return_to = loop_state.stack_length;
+
+                self.bytecode.add_opcode(Opcode::Drop(
+                    (self.stack.len() - stack_size_to_return_to) as u8,
+                ));
+
+                let jump = self.bytecode.new_jump();
+                let loop_state = self.loops.last_mut().unwrap();
+                loop_state.forward_jumps.push(jump);
+
+                // we should stop compiling this block
+                return ControlFlow::Break(());
+            }
+            ast::StatementKind::Loop { block } => {
+                let loop_start = self.bytecode.new_label();
+                self.loops.push(LoopCompliationState {
+                    loop_start,
+                    forward_jumps: vec![],
+                    stack_length: self.stack.len(),
+                });
+
+                self.compile_block(block, symtab, types, stack_bottom, num_args);
+
+                let jump = self.bytecode.new_jump();
+                self.bytecode.patch_jump(jump, loop_start);
+
+                let loop_end = self.bytecode.new_label();
+                let loop_compilation_state = self.loops.pop().expect("There should be a loop here");
+
+                for forward_jump in loop_compilation_state.forward_jumps {
+                    self.bytecode.patch_jump(forward_jump, loop_end);
+                }
+            }
         }
 
         ControlFlow::Continue(())

@@ -1,0 +1,24 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/loop_break1.tapir
+---
+00000000: push8	0
+00000001: dup	0
+00000002: setprop	0
+00000003: dup	0
+00000004: push8	5
+00000005: >
+00000006: jif	14
+00000008: drop	1
+00000009: j	21
+00000011: drop	1
+00000012: j	15
+00000014: drop	1
+00000015: dup	0
+00000016: push8	1
+00000017: add
+00000018: move	1
+00000019: j	1
+00000021: drop	1
+00000022: ret	args=0 rets=0 shift=0
