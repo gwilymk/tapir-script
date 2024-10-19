@@ -95,7 +95,8 @@ fn constant_propagation_block(
             }
             StatementKind::Assignment { value, .. }
             | StatementKind::VariableDeclaration { value, .. } => {
-                let did_propagate = constant_propagation_expr(value, constant_symbols);
+                let did_propagate =
+                    constant_propagation_expr(value, constant_symbols, compile_settings);
 
                 let symbol_id = statement.meta.get().unwrap();
                 constant_symbols.set(*symbol_id, &value.kind);
@@ -107,7 +108,8 @@ fn constant_propagation_block(
                 true_block,
                 false_block,
             } => {
-                let mut did_propagate = constant_propagation_expr(condition, constant_symbols);
+                let mut did_propagate =
+                    constant_propagation_expr(condition, constant_symbols, compile_settings);
                 let mut true_block_symbols = constant_symbols.snapshot();
                 did_propagate |= constant_propagation_block(
                     true_block,
@@ -126,10 +128,30 @@ fn constant_propagation_block(
 
                 did_propagate
             }
-            StatementKind::Loop { block } => {}
-            StatementKind::Call { name, arguments } => todo!(),
-            StatementKind::Spawn { name, arguments } => todo!(),
-            StatementKind::Return { values } => todo!(),
+            StatementKind::Loop { block } => {
+                let mut loop_block_symbols = ConstantPropagationMap::default();
+                let did_propagate =
+                    constant_propagation_block(block, &mut loop_block_symbols, compile_settings);
+                constant_symbols.apply_poisons(&loop_block_symbols);
+                did_propagate
+            }
+            StatementKind::Call { arguments, .. } => {
+                let did_propagate = arguments
+                    .iter_mut()
+                    .map(|expr| constant_propagation_expr(expr, constant_symbols, compile_settings))
+                    .reduce(BitOr::bitor)
+                    .unwrap_or(ConstantPropagationResult::DidNothing);
+                constant_symbols.poison_properties(compile_settings);
+                did_propagate
+            }
+            StatementKind::Spawn {
+                arguments: values, ..
+            }
+            | StatementKind::Return { values } => values
+                .iter_mut()
+                .map(|expr| constant_propagation_expr(expr, constant_symbols, compile_settings))
+                .reduce(BitOr::bitor)
+                .unwrap_or(ConstantPropagationResult::DidNothing),
         })
         .reduce(BitOr::bitor)
         .unwrap_or(ConstantPropagationResult::DidNothing)
@@ -137,7 +159,8 @@ fn constant_propagation_block(
 
 fn constant_propagation_expr(
     expression: &mut Expression,
-    constant_symbols: &ConstantPropagationMap,
+    constant_symbols: &mut ConstantPropagationMap,
+    compile_settings: &CompileSettings,
 ) -> ConstantPropagationResult {
     match &mut expression.kind {
         ExpressionKind::Integer(_)
@@ -150,14 +173,18 @@ fn constant_propagation_expr(
             ref mut rhs,
             ..
         } => {
-            constant_propagation_expr(lhs, constant_symbols)
-                | constant_propagation_expr(rhs, constant_symbols)
+            constant_propagation_expr(lhs, constant_symbols, compile_settings)
+                | constant_propagation_expr(rhs, constant_symbols, compile_settings)
         }
-        ExpressionKind::Call { arguments, .. } => arguments
-            .iter_mut()
-            .map(|expr| constant_propagation_expr(expr, constant_symbols))
-            .reduce(BitOr::bitor)
-            .unwrap_or(ConstantPropagationResult::DidNothing),
+        ExpressionKind::Call { arguments, .. } => {
+            let did_propagate = arguments
+                .iter_mut()
+                .map(|expr| constant_propagation_expr(expr, constant_symbols, compile_settings))
+                .reduce(BitOr::bitor)
+                .unwrap_or(ConstantPropagationResult::DidNothing);
+            constant_symbols.poison_properties(compile_settings);
+            did_propagate
+        }
         ExpressionKind::Variable(_) => {
             let symbol = expression.meta.get().expect("Variable should have symbol");
             if let Some(constant) = constant_symbols.get(*symbol) {

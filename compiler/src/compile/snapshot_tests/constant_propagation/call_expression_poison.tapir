@@ -1,0 +1,8 @@
+int_prop = 4;
+
+var x = int_prop + foo() + int_prop;
+
+fn foo() -> int {
+    wait;
+    return 4;
+}

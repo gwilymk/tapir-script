@@ -1,0 +1,13 @@
+var x = 4;
+var y = 0;
+
+loop {
+    if y == 3 {
+        break;
+    }
+
+    y = x;
+    x = 3;
+}
+
+var z = y;
