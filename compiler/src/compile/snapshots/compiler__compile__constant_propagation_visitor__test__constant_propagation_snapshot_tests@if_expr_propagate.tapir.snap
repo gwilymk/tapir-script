@@ -1,0 +1,58 @@
+---
+source: crates/tapir-script/compiler/src/compile/constant_propagation_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/constant_propagation/if_expr_propagate.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "x",
+            value: Expression(
+              span: "[span]",
+              kind: Bool(true),
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: Bool(true),
+              meta: "[meta]",
+            ),
+            true_block: [
+              Statement(
+                span: "[span]",
+                kind: VariableDeclaration(
+                  ident: "y",
+                  value: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: "[meta]",
+                  ),
+                ),
+                meta: "[meta]",
+              ),
+            ],
+            false_block: [],
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+  ],
+)

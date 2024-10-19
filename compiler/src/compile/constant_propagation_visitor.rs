@@ -126,7 +126,7 @@ fn constant_propagation_block(
 
                 did_propagate
             }
-            StatementKind::Loop { block } => todo!(),
+            StatementKind::Loop { block } => {}
             StatementKind::Call { name, arguments } => todo!(),
             StatementKind::Spawn { name, arguments } => todo!(),
             StatementKind::Return { values } => todo!(),
