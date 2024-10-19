@@ -9,7 +9,7 @@ use crate::{
     types::{FunctionType, Type},
 };
 
-use super::{symtab_visitor::SymTab, CompileSettings};
+use super::{loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab, CompileSettings};
 
 pub struct TypeVisitor<'input> {
     type_table: Vec<Option<Type>>,
@@ -252,7 +252,11 @@ impl<'input> TypeVisitor<'input> {
                         BlockAnalysisResult::AllBranchesReturn => {
                             return BlockAnalysisResult::AllBranchesReturn
                         }
-                        BlockAnalysisResult::ContainsNonReturningBranch => {}
+                        BlockAnalysisResult::ContainsNonReturningBranch => {
+                            if statement.meta.get::<LoopContainsNoBreak>().is_some() {
+                                return BlockAnalysisResult::AllBranchesReturn;
+                            }
+                        }
                     }
                 }
             }
@@ -442,7 +446,7 @@ mod test {
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
     use crate::{
-        compile::{symtab_visitor::SymTabVisitor, Property},
+        compile::{loop_visitor, symtab_visitor::SymTabVisitor, Property},
         grammar,
         lexer::Lexer,
         tokens::FileId,
@@ -478,6 +482,7 @@ mod test {
             let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);
 
             for function in &mut script.functions {
+                loop_visitor::visit_loop_check(function, &mut diagnostics);
                 symtab_visitor.visit_function(function, &mut diagnostics);
 
                 type_visitor.visit_function(
@@ -486,6 +491,8 @@ mod test {
                     &mut diagnostics,
                 );
             }
+
+            assert!(!diagnostics.has_any(), "{} failed", path.display());
 
             let symtab = symtab_visitor.get_symtab();
             let type_table = type_visitor.into_type_table(symtab, &mut diagnostics);
@@ -523,6 +530,7 @@ mod test {
             let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);
 
             for function in &mut script.functions {
+                loop_visitor::visit_loop_check(function, &mut diagnostics);
                 symtab_visitor.visit_function(function, &mut diagnostics);
                 let symtab = symtab_visitor.get_symtab();
                 type_visitor.visit_function(function, symtab, &mut diagnostics);

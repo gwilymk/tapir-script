@@ -1,0 +1,11 @@
+fn foo() -> int {
+    loop {}
+}
+
+fn bar() -> int {
+    loop {
+        if true {
+            return 3;
+        }
+    }
+}

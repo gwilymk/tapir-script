@@ -10,8 +10,6 @@ fn divide(n: int, d: int) -> int {
         r = r - d;
         q = q + 1;
     }
-
-    return 0;
 }
 
 int_prop = divide(100, int_prop);
