@@ -30,8 +30,18 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
 
     use BinaryOperator as B;
     use ExpressionKind as E;
+    
+    macro_rules! replace_op {
+        ($lhs:expr, $op:ident, $rhs:expr) => {{
+            lhs.kind = $lhs;
+            rhs.kind = $rhs;
+            *operator = B::$op;
 
-    exp.kind = match (mem::take(&mut lhs.kind), operator, mem::take(&mut rhs.kind)) {
+            return ConstantOptimisationResult::DidSomething;
+        }};
+    }
+
+    exp.kind = match (mem::take(&mut lhs.kind), *operator, mem::take(&mut rhs.kind)) {
         // ========================
         // Integer maths operations
         // ========================
@@ -101,11 +111,18 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
             E::Error
         }
 
+        // ==========================
+        // Fix multiply by an integer
+        // ==========================
+        (any, B::FixMul, E::Fix(n)) |
+        (E::Fix(n), B::FixMul, any) 
+            if n.frac() == 0 => replace_op!(any, Mul, E::Integer(n.floor())),
+
+
         // Put it back the way it was
         (lhs_kind, _, rhs_kind) => {
             lhs.kind = lhs_kind;
             rhs.kind = rhs_kind;
-
             return did_something;
         }
     };
@@ -147,11 +164,23 @@ mod test {
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let compile_settings = CompileSettings {
-                properties: vec![Property {
-                    ty: Type::Int,
-                    index: 0,
-                    name: "int_prop".to_owned(),
-                }],
+                properties: vec![
+                    Property {
+                        ty: Type::Int,
+                        index: 0,
+                        name: "int_prop".to_owned(),
+                    },
+                    Property {
+                        ty: Type::Fix,
+                        index: 1,
+                        name: "fix_prop".to_owned(),
+                    },
+                    Property {
+                        ty: Type::Bool,
+                        index: 2,
+                        name: "bool_prop".to_owned(),
+                    },
+                ],
             };
 
             let mut symtab_visitor = SymTabVisitor::new(&compile_settings);
