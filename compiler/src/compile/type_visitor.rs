@@ -67,6 +67,11 @@ impl<'input> TypeVisitor<'input> {
         }
 
         if self.type_table[symbol_id.0].is_some_and(|table_type| table_type != ty) {
+            if ty == Type::Error {
+                // the error should already be reported
+                return;
+            }
+
             diagnostics.add_message(
                 CompilerErrorKind::TypeError {
                     expected: self.type_table[symbol_id.0].unwrap(),

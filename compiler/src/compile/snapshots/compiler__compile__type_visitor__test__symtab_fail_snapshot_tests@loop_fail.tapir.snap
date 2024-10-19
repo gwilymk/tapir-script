@@ -10,10 +10,3 @@ Error: Left hand side has type bool but right hand side has type int
    │         ──┬──  
    │           ╰──── Mismatching types on binary operator
 ───╯
-Error: Incorrect type, expected bool but got unknown
-   ╭─[loop_fail.tapir:1:1]
-   │
- 4 │     i = i + 1;
-   │     ─────┬────  
-   │          ╰────── Incorrect type
-───╯
