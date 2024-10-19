@@ -101,6 +101,7 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
             E::Error
         }
 
+        // Put it back the way it was
         (lhs_kind, _, rhs_kind) => {
             lhs.kind = lhs_kind;
             rhs.kind = rhs_kind;
