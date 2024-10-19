@@ -42,14 +42,18 @@ Script(
                 kind: BinaryOperation(
                   lhs: Expression(
                     span: "[span]",
-                    kind: Symbol(SymbolId(3)),
-                    meta: {},
+                    kind: Variable("x"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(3)",
+                    },
                   ),
                   operator: Add,
                   rhs: Expression(
                     span: "[span]",
-                    kind: Symbol(SymbolId(1)),
-                    meta: {},
+                    kind: Variable("a"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(1)",
+                    },
                   ),
                 ),
                 meta: {},
@@ -59,8 +63,10 @@ Script(
                 kind: BinaryOperation(
                   lhs: Expression(
                     span: "[span]",
-                    kind: Symbol(SymbolId(2)),
-                    meta: {},
+                    kind: Variable("b"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(2)",
+                    },
                   ),
                   operator: Add,
                   rhs: Expression(

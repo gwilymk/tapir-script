@@ -358,7 +358,20 @@ impl<'input> Compiler<'input> {
                 self.stack.push(None);
             }
             ast::ExpressionKind::Variable(_) => {
-                unreachable!("Should have resolved this in symbol visiting")
+                let symbol_id: &SymbolId = value
+                    .meta
+                    .get()
+                    .expect("Should have a symbol id from symbol resolution");
+
+                if let Some(property) = symtab.get_property(*symbol_id) {
+                    self.bytecode
+                        .add_opcode(Opcode::GetProp(property.index as u8));
+                } else {
+                    let offset = self.get_offset(*symbol_id);
+                    self.bytecode.add_opcode(Opcode::Dup(offset as u8 - 1));
+                }
+
+                self.stack.push(Some(*symbol_id));
             }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
                 self.compile_expression(lhs, symtab);
@@ -372,17 +385,6 @@ impl<'input> Compiler<'input> {
             }
             ast::ExpressionKind::Error => panic!("Should never have to compile an error"),
             ast::ExpressionKind::Nop => panic!("NOP expression will cause stack issues"),
-            ast::ExpressionKind::Symbol(symbol_id) => {
-                if let Some(property) = symtab.get_property(*symbol_id) {
-                    self.bytecode
-                        .add_opcode(Opcode::GetProp(property.index as u8));
-                } else {
-                    let offset = self.get_offset(*symbol_id);
-                    self.bytecode.add_opcode(Opcode::Dup(offset as u8 - 1));
-                }
-
-                self.stack.push(Some(*symbol_id));
-            }
             ast::ExpressionKind::Call { name, arguments } => {
                 let number_of_returns = 1;
                 for argument in arguments {

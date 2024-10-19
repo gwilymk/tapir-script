@@ -1,4 +1,4 @@
-use std::{borrow::Cow, collections::HashMap, mem};
+use std::{borrow::Cow, collections::HashMap};
 
 use crate::{
     ast::{
@@ -122,47 +122,37 @@ impl<'input> SymTabVisitor<'input> {
     }
 
     fn visit_expr(&self, expr: &mut Expression<'_>, diagnostics: &mut Diagnostics) {
-        let kind = mem::take(&mut expr.kind);
-
-        expr.kind = match kind {
+        match &mut expr.kind {
             ExpressionKind::Variable(ident) => {
                 if let Some(symbol_id) = self.symbol_names.get(ident) {
-                    ExpressionKind::Symbol(symbol_id)
+                    expr.meta.set(symbol_id);
                 } else {
                     diagnostics.add_message(
                         CompilerErrorKind::UnknownVariable(ident.to_string())
                             .into_message(expr.span),
                     );
-
-                    ExpressionKind::Error
                 }
             }
             ExpressionKind::BinaryOperation {
-                mut lhs,
-                operator,
-                mut rhs,
+                ref mut lhs,
+                ref mut rhs,
+                ..
             } => {
-                self.visit_expr(&mut lhs, diagnostics);
-                self.visit_expr(&mut rhs, diagnostics);
-
-                ExpressionKind::BinaryOperation { lhs, operator, rhs }
+                self.visit_expr(lhs, diagnostics);
+                self.visit_expr(rhs, diagnostics);
             }
             ExpressionKind::Call {
-                name,
-                mut arguments,
+                ref mut arguments, ..
             } => {
-                for argument in &mut arguments {
+                for argument in arguments {
                     self.visit_expr(argument, diagnostics);
                 }
-
-                ExpressionKind::Call { name, arguments }
             }
             ExpressionKind::Integer(_)
             | ExpressionKind::Fix(_)
             | ExpressionKind::Error
             | ExpressionKind::Nop
-            | ExpressionKind::Symbol(_)
-            | ExpressionKind::Bool(_) => kind,
+            | ExpressionKind::Bool(_) => {}
         }
     }
 }

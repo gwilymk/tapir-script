@@ -96,8 +96,10 @@ Script(
                   ident: "y",
                   value: Expression(
                     span: "[span]",
-                    kind: Symbol(SymbolId(4)),
-                    meta: {},
+                    kind: Variable("z"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(4)",
+                    },
                   ),
                 ),
                 meta: {

@@ -18,8 +18,10 @@ Script(
               kind: BinaryOperation(
                 lhs: Expression(
                   span: "[span]",
-                  kind: Symbol(SymbolId(0)),
-                  meta: {},
+                  kind: Variable("int_prop"),
+                  meta: {
+                    "compiler::ast::SymbolId": "SymbolId(0)",
+                  },
                 ),
                 operator: Add,
                 rhs: Expression(

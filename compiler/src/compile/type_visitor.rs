@@ -305,7 +305,11 @@ impl<'input> TypeVisitor<'input> {
             ast::ExpressionKind::Fix(_) => Type::Fix,
             ast::ExpressionKind::Bool(_) => Type::Bool,
             ast::ExpressionKind::Variable(_) => {
-                unreachable!("Should have been removed by symbol resolution")
+                let symbol_id: &SymbolId = expression
+                    .meta
+                    .get()
+                    .expect("Should have a symbol id from symbol resolution");
+                self.get_type(*symbol_id, expression.span, symtab, diagnostics)
             }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
                 let lhs_type = self.type_for_expression(lhs, symtab, diagnostics);
@@ -340,9 +344,6 @@ impl<'input> TypeVisitor<'input> {
             }
             ast::ExpressionKind::Error => Type::Error,
             ast::ExpressionKind::Nop => Type::Error,
-            ast::ExpressionKind::Symbol(symbol_id) => {
-                self.get_type(*symbol_id, expression.span, symtab, diagnostics)
-            }
             ast::ExpressionKind::Call { name, arguments } => {
                 let types =
                     self.type_for_call(expression.span, name, arguments, symtab, diagnostics);
