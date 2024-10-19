@@ -1,0 +1,5 @@
+var i = false;
+
+loop {
+    i = i + 1;
+}
