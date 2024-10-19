@@ -87,7 +87,11 @@ fn constant_propagation_block(
             | StatementKind::Continue
             | StatementKind::Break
             | StatementKind::Nop => ConstantPropagationResult::DidNothing,
-            StatementKind::Wait => ConstantPropagationResult::DidNothing,
+            StatementKind::Wait => {
+                constant_symbols.retain(|&symbol_id, _| !compile_settings.is_property(symbol_id));
+
+                ConstantPropagationResult::DidNothing
+            }
             StatementKind::Assignment { value, .. } => {
                 let did_propagate = constant_propagation_expr(value, constant_symbols);
 
