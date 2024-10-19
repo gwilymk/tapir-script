@@ -8,6 +8,7 @@ use enumn::N;
 pub enum Instruction {
     Push8,
     Push24,
+    Push32,
     Dup,
     Drop,
     GetProp,

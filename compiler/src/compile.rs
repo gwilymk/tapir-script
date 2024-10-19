@@ -277,7 +277,8 @@ impl<'input> Compiler<'input> {
                     self.bytecode.add_opcode(Opcode::Push8(as_i8));
                     self.stack.push(None);
                 } else {
-                    todo!("Numbers greater than a byte")
+                    self.bytecode.add_opcode(Opcode::Push32(*i));
+                    self.stack.push(None);
                 }
             }
             ast::ExpressionKind::Fix(fix) => {
@@ -286,8 +287,8 @@ impl<'input> Compiler<'input> {
                     self.bytecode.add_opcode(Opcode::Push8(as_i8));
                     self.stack.push(None);
                 } else {
-                    // not representable as a byte :(
-                    todo!("Fixnums greater than a byte")
+                    self.bytecode.add_opcode(Opcode::Push32(raw));
+                    self.stack.push(None);
                 }
             }
             ast::ExpressionKind::Bool(value) => {
@@ -378,6 +379,7 @@ pub mod opcodes {
     #[derive(Clone, Copy, PartialEq, Eq, Debug, Serialize)]
     pub enum Opcode {
         Push8(i8),
+        Push32(i32),
         Dup(u8),
         Drop(u8),
         GetProp(u8),
@@ -396,6 +398,7 @@ pub mod opcodes {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             match self {
                 Opcode::Push8(v) => write!(f, "push8\t{v}"),
+                Opcode::Push32(v) => write!(f, "push32\t{v}"),
                 Opcode::Dup(v) => write!(f, "dup\t{v}"),
                 Opcode::Drop(v) => write!(f, "drop\t{v}"),
                 Opcode::GetProp(i) => write!(f, "getprop\t{i}"),
@@ -573,6 +576,12 @@ impl Bytecode {
             match *opcode {
                 Opcode::Push8(value) => {
                     one_arg!(Push8, value);
+                }
+                Opcode::Push32(value) => {
+                    one_arg!(Push32, 0);
+                    let bytes = value.to_le_bytes();
+                    result.push(u16::from_le_bytes([bytes[0], bytes[1]]));
+                    result.push(u16::from_le_bytes([bytes[2], bytes[3]]));
                 }
                 Opcode::Dup(amount) => {
                     one_arg!(Dup, amount);
