@@ -5,6 +5,8 @@ use std::{
 
 use crate::ast::{Expression, ExpressionKind, Function, Statement, StatementKind, SymbolId};
 
+use super::CompileSettings;
+
 #[derive(Clone, Copy, Debug)]
 enum Constant {
     Int(i32),
@@ -61,14 +63,22 @@ impl BitOr for ConstantPropagationResult {
     }
 }
 
-fn constant_propagation(function: &mut Function) -> ConstantPropagationResult {
+fn constant_propagation(
+    function: &mut Function,
+    compile_settings: &CompileSettings,
+) -> ConstantPropagationResult {
     let mut constant_symbol = HashMap::new();
-    constant_propagation_block(&mut function.statements, &mut constant_symbol)
+    constant_propagation_block(
+        &mut function.statements,
+        &mut constant_symbol,
+        compile_settings,
+    )
 }
 
 fn constant_propagation_block(
     block: &mut [Statement],
     constant_symbols: &mut HashMap<SymbolId, Constant>,
+    compile_settings: &CompileSettings,
 ) -> ConstantPropagationResult {
     block
         .iter_mut()
@@ -83,6 +93,10 @@ fn constant_propagation_block(
 
                 let symbol_id = statement.meta.get().unwrap();
                 constant_symbols.remove(symbol_id);
+
+                if let Ok(constant) = Constant::try_from(&value.kind) {
+                    constant_symbols.insert(*symbol_id, constant);
+                }
 
                 did_propagate
             }
@@ -160,7 +174,7 @@ mod test {
         lexer::Lexer,
         reporting::Diagnostics,
         tokens::FileId,
-        CompileSettings,
+        CompileSettings, Property, Type,
     };
 
     use super::*;
@@ -178,7 +192,13 @@ mod test {
 
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
-            let compile_settings = CompileSettings { properties: vec![] };
+            let compile_settings = CompileSettings {
+                properties: vec![Property {
+                    ty: Type::Int,
+                    index: 0,
+                    name: "int_prop".to_owned(),
+                }],
+            };
 
             let mut symtab_visitor = SymTabVisitor::new(&compile_settings);
             let mut type_visitor =
@@ -193,7 +213,7 @@ mod test {
                     &mut diagnostics,
                 );
 
-                constant_propagation(function);
+                constant_propagation(function, &compile_settings);
             }
 
             assert_ron_snapshot!(script, {

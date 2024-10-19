@@ -30,6 +30,12 @@ pub struct CompileSettings {
     pub properties: Vec<Property>,
 }
 
+impl CompileSettings {
+    pub(crate) fn is_property(&self, symbol_id: SymbolId) -> bool {
+        symbol_id.0 < self.properties.len()
+    }
+}
+
 pub fn compile(
     filename: impl AsRef<Path>,
     input: &str,
