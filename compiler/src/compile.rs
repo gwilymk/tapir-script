@@ -12,6 +12,7 @@ use crate::{
     types::Type,
 };
 
+mod loop_visitor;
 mod symtab_visitor;
 mod type_visitor;
 
@@ -53,6 +54,7 @@ pub fn compile(
 
     for function in &mut ast.functions {
         sym_tab_visitor.visit_function(function, &mut diagnostics);
+        loop_visitor::visit_loop_check(function, &mut diagnostics);
 
         type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
     }

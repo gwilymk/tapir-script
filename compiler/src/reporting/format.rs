@@ -212,5 +212,8 @@ fn compiler_error_report(
         CompilerErrorKind::FunctionDoesNotHaveReturn { name, return_location } => build_error_report(span)
             .with_label(Label::new(*return_location).with_message("Function returns results"))
             .with_message(format!("Function {name} should return results, but not all branches return.")),
+        CompilerErrorKind::BreakOrContinueOutsideOfLoop => build_error_report(span)
+            .with_label(Label::new(span).with_message("This statement"))
+            .with_message("`break` or `continue` must be within a loop"),
     }
 }

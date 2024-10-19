@@ -1,0 +1,7 @@
+loop {
+    loop {
+        break;
+    }
+
+    continue;
+}

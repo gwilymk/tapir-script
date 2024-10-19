@@ -1,0 +1,47 @@
+---
+source: crates/tapir-script/compiler/src/compile/loop_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/loop_visitor/has_break_if_statement_success.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Loop(
+            block: [
+              Statement(
+                span: "[span]",
+                kind: If(
+                  condition: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                  true_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: Break,
+                      meta: {},
+                    ),
+                  ],
+                  false_block: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+  ],
+)

@@ -1,0 +1,7 @@
+loop {
+    if true {
+        continue;
+    } else {
+        return;
+    }
+}

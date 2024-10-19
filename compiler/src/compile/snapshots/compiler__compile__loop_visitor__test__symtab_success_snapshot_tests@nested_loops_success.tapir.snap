@@ -1,0 +1,48 @@
+---
+source: crates/tapir-script/compiler/src/compile/loop_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/loop_visitor/nested_loops_success.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Loop(
+            block: [
+              Statement(
+                span: "[span]",
+                kind: Loop(
+                  block: [
+                    Statement(
+                      span: "[span]",
+                      kind: Break,
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+              Statement(
+                span: "[span]",
+                kind: Continue,
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "compiler::compile::loop_visitor::LoopContainsNoBreak": "LoopContainsNoBreak",
+          },
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+  ],
+)

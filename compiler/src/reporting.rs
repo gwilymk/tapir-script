@@ -197,6 +197,7 @@ pub enum CompilerErrorKind {
         name: String,
         return_location: Span,
     },
+    BreakOrContinueOutsideOfLoop,
 }
 
 impl CompilerErrorKind {
