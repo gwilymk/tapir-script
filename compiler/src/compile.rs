@@ -12,6 +12,7 @@ use crate::{
     types::Type,
 };
 
+mod constant_propagation_visitor;
 mod loop_visitor;
 mod symtab_visitor;
 mod type_visitor;

@@ -1,0 +1,44 @@
+---
+source: crates/tapir-script/compiler/src/compile/constant_propagation_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/constant_propagation/simple_case_fix.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "x",
+            value: Expression(
+              span: "[span]",
+              kind: Fix,
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "y",
+            value: Expression(
+              span: "[span]",
+              kind: Fix,
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+  ],
+)
