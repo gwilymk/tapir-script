@@ -20,11 +20,7 @@ pub fn optimise(
 ) {
     while constant_propagation(function, compile_settings) | constant_fold(function, diagnostics)
         == ConstantOptimisationResult::DidSomething
-    {
-        if diagnostics.has_any() {
-            break;
-        }
-    }
+    {}
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
