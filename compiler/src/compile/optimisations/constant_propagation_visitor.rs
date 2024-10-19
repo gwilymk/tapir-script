@@ -7,7 +7,7 @@ use crate::{
     CompileSettings,
 };
 
-use super::ConstantPropagationResult;
+use super::ConstantOptimisationResult;
 
 mod constant_propagation_map;
 
@@ -44,7 +44,7 @@ impl TryFrom<&ExpressionKind<'_>> for Constant {
 pub fn constant_propagation(
     function: &mut Function,
     compile_settings: &CompileSettings,
-) -> ConstantPropagationResult {
+) -> ConstantOptimisationResult {
     let mut constant_symbol = ConstantPropagationMap::default();
     constant_propagation_block(
         &mut function.statements,
@@ -57,18 +57,18 @@ fn constant_propagation_block(
     block: &mut [Statement],
     constant_symbols: &mut ConstantPropagationMap,
     compile_settings: &CompileSettings,
-) -> ConstantPropagationResult {
+) -> ConstantOptimisationResult {
     block
         .iter_mut()
         .map(|statement| match &mut statement.kind {
             StatementKind::Error
             | StatementKind::Continue
             | StatementKind::Break
-            | StatementKind::Nop => ConstantPropagationResult::DidNothing,
+            | StatementKind::Nop => ConstantOptimisationResult::DidNothing,
             StatementKind::Wait => {
                 constant_symbols.poison_properties(compile_settings);
 
-                ConstantPropagationResult::DidNothing
+                ConstantOptimisationResult::DidNothing
             }
             StatementKind::Assignment { value, .. }
             | StatementKind::VariableDeclaration { value, .. } => {
@@ -117,7 +117,7 @@ fn constant_propagation_block(
                     .iter_mut()
                     .map(|expr| constant_propagation_expr(expr, constant_symbols, compile_settings))
                     .reduce(BitOr::bitor)
-                    .unwrap_or(ConstantPropagationResult::DidNothing);
+                    .unwrap_or(ConstantOptimisationResult::DidNothing);
                 constant_symbols.poison_properties(compile_settings);
                 did_propagate
             }
@@ -128,23 +128,23 @@ fn constant_propagation_block(
                 .iter_mut()
                 .map(|expr| constant_propagation_expr(expr, constant_symbols, compile_settings))
                 .reduce(BitOr::bitor)
-                .unwrap_or(ConstantPropagationResult::DidNothing),
+                .unwrap_or(ConstantOptimisationResult::DidNothing),
         })
         .reduce(BitOr::bitor)
-        .unwrap_or(ConstantPropagationResult::DidNothing)
+        .unwrap_or(ConstantOptimisationResult::DidNothing)
 }
 
 fn constant_propagation_expr(
     expression: &mut Expression,
     constant_symbols: &mut ConstantPropagationMap,
     compile_settings: &CompileSettings,
-) -> ConstantPropagationResult {
+) -> ConstantOptimisationResult {
     match &mut expression.kind {
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)
         | ExpressionKind::Error
-        | ExpressionKind::Nop => ConstantPropagationResult::DidNothing,
+        | ExpressionKind::Nop => ConstantOptimisationResult::DidNothing,
         ExpressionKind::BinaryOperation {
             ref mut lhs,
             ref mut rhs,
@@ -158,7 +158,7 @@ fn constant_propagation_expr(
                 .iter_mut()
                 .map(|expr| constant_propagation_expr(expr, constant_symbols, compile_settings))
                 .reduce(BitOr::bitor)
-                .unwrap_or(ConstantPropagationResult::DidNothing);
+                .unwrap_or(ConstantOptimisationResult::DidNothing);
             constant_symbols.poison_properties(compile_settings);
             did_propagate
         }
@@ -166,9 +166,9 @@ fn constant_propagation_expr(
             let symbol = expression.meta.get().expect("Variable should have symbol");
             if let Some(constant) = constant_symbols.get(*symbol) {
                 expression.kind = constant.into();
-                ConstantPropagationResult::DidSomething
+                ConstantOptimisationResult::DidSomething
             } else {
-                ConstantPropagationResult::DidNothing
+                ConstantOptimisationResult::DidNothing
             }
         }
     }

@@ -1,3 +1,4 @@
+mod constant_folding_visitor;
 mod constant_propagation_visitor;
 
 use std::ops::{BitOr, BitOrAssign};
@@ -5,27 +6,27 @@ use std::ops::{BitOr, BitOrAssign};
 pub use constant_propagation_visitor::constant_propagation;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub enum ConstantPropagationResult {
+pub enum ConstantOptimisationResult {
     DidSomething,
     DidNothing,
 }
 
-impl BitOrAssign for ConstantPropagationResult {
+impl BitOrAssign for ConstantOptimisationResult {
     fn bitor_assign(&mut self, rhs: Self) {
         *self = *self | rhs;
     }
 }
 
-impl BitOr for ConstantPropagationResult {
-    type Output = ConstantPropagationResult;
+impl BitOr for ConstantOptimisationResult {
+    type Output = ConstantOptimisationResult;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        if self == ConstantPropagationResult::DidSomething
-            || rhs == ConstantPropagationResult::DidSomething
+        if self == ConstantOptimisationResult::DidSomething
+            || rhs == ConstantOptimisationResult::DidSomething
         {
-            ConstantPropagationResult::DidSomething
+            ConstantOptimisationResult::DidSomething
         } else {
-            ConstantPropagationResult::DidNothing
+            ConstantOptimisationResult::DidNothing
         }
     }
 }
