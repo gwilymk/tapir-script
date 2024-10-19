@@ -262,6 +262,9 @@ impl<'input> Compiler<'input> {
 
                 self.stack.truncate(self.stack.len() - arguments.len());
             }
+            ast::StatementKind::Continue => todo!(),
+            ast::StatementKind::Break => todo!(),
+            ast::StatementKind::Loop { block } => todo!(),
         }
 
         ControlFlow::Continue(())

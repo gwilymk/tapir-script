@@ -105,7 +105,9 @@ impl<'input> SymTabVisitor<'input> {
                 | StatementKind::Wait
                 | StatementKind::Nop
                 | StatementKind::SymbolDeclare { .. }
-                | StatementKind::SymbolAssign { .. } => kind,
+                | StatementKind::SymbolAssign { .. }
+                | StatementKind::Continue
+                | StatementKind::Break => kind,
                 StatementKind::Return { mut values } => {
                     for expr in &mut values {
                         self.visit_expr(expr, diagnostics);
@@ -132,6 +134,10 @@ impl<'input> SymTabVisitor<'input> {
                     }
 
                     StatementKind::Spawn { name, arguments }
+                }
+                StatementKind::Loop { mut block } => {
+                    self.visit_block(&mut block, diagnostics);
+                    StatementKind::Loop { block }
                 }
             };
         }

@@ -27,6 +27,9 @@ extern {
         t_bool => Token::KeywordBool,
         return => Token::KeywordReturn,
         spawn => Token::KeywordSpawn,
+        loop => Token::KeywordLoop,
+        break => Token::KeywordBreak,
+        continue => Token::KeywordContinue,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -118,10 +121,13 @@ StatementKind: StatementKind<'input> = {
     var <ident: identifier> "=" <value: Expression> ";" => StatementKind::VariableDeclaration { <> },
     <ident: identifier> "=" <value: Expression> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
+    break ";" => StatementKind::Break,
+    continue ";" => StatementKind::Continue,
 
     "if" <condition: Expression> <true_block: Block> <false_block: ElseBlock?> => StatementKind::If { 
         condition, true_block, false_block: false_block.unwrap_or_else(Vec::new),
-     },
+    },
+    loop <block: Block> => StatementKind::Loop { <> },
 
     <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Call { <> },
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },

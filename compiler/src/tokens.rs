@@ -90,6 +90,12 @@ pub enum Token<'input> {
     KeywordReturn,
     #[token("spawn")]
     KeywordSpawn,
+    #[token("loop")]
+    KeywordLoop,
+    #[token("break")]
+    KeywordBreak,
+    #[token("continue")]
+    KeywordContinue,
 
     #[token("true")]
     True,

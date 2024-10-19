@@ -1,0 +1,97 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: ast
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/loops.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "i",
+            value: Expression(
+              span: "[span]",
+              kind: Integer(0),
+            ),
+          ),
+        ),
+        Statement(
+          span: "[span]",
+          kind: Loop(
+            block: [
+              Statement(
+                span: "[span]",
+                kind: VariableDeclaration(
+                  ident: "x",
+                  value: Expression(
+                    span: "[span]",
+                    kind: Integer(3),
+                  ),
+                ),
+              ),
+              Statement(
+                span: "[span]",
+                kind: If(
+                  condition: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Variable("i"),
+                      ),
+                      operator: Gt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(4),
+                      ),
+                    ),
+                  ),
+                  true_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: Break,
+                    ),
+                  ],
+                  false_block: [],
+                ),
+              ),
+              Statement(
+                span: "[span]",
+                kind: Assignment(
+                  ident: "i",
+                  value: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Variable("i"),
+                      ),
+                      operator: Add,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(1),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Statement(
+                span: "[span]",
+                kind: Continue,
+              ),
+            ],
+          ),
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+  ],
+)

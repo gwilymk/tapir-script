@@ -144,15 +144,17 @@ impl<'input> TypeVisitor<'input> {
     ) -> BlockAnalysisResult {
         for statement in ast.iter_mut() {
             match &mut statement.kind {
-                ast::StatementKind::Error => {}
+                ast::StatementKind::Wait
+                | ast::StatementKind::Break
+                | ast::StatementKind::Continue
+                | ast::StatementKind::Nop
+                | ast::StatementKind::Error => {}
                 ast::StatementKind::VariableDeclaration { .. } => {
                     unreachable!("Should have been removed by symbol resolution")
                 }
                 ast::StatementKind::Assignment { .. } => {
                     unreachable!("Should have been removed by symbol resolution")
                 }
-                ast::StatementKind::Wait => {}
-                ast::StatementKind::Nop => {}
                 ast::StatementKind::SymbolDeclare { ident, value } => {
                     let expr_type = self.type_for_expression(value, symtab, diagnostics);
                     self.resolve_type(*ident, expr_type, statement.span, diagnostics);
@@ -236,6 +238,14 @@ impl<'input> TypeVisitor<'input> {
                 }
                 ast::StatementKind::Spawn { name, arguments } => {
                     self.type_for_call(statement.span, name, arguments, symtab, diagnostics);
+                }
+                ast::StatementKind::Loop { block } => {
+                    match self.visit_block(block, symtab, expected_return_type, diagnostics) {
+                        BlockAnalysisResult::AllBranchesReturn => {
+                            return BlockAnalysisResult::AllBranchesReturn
+                        }
+                        BlockAnalysisResult::ContainsNonReturningBranch => {}
+                    }
                 }
             }
         }
