@@ -88,7 +88,7 @@ impl State {
                         bytecode::MathsOp::Sub => lhs - rhs,
                         bytecode::MathsOp::Mul => lhs * rhs,
                         bytecode::MathsOp::RealMod => lhs.rem_euclid(rhs),
-                        bytecode::MathsOp::RealDiv => lhs / rhs,
+                        bytecode::MathsOp::RealDiv => lhs / rhs, // FIXME: div_floor
                         bytecode::MathsOp::EqEq => (lhs == rhs).into(),
                         bytecode::MathsOp::NeEq => (lhs != rhs).into(),
                         bytecode::MathsOp::Gt => (lhs > rhs).into(),

@@ -3,12 +3,32 @@ mod constant_propagation_visitor;
 
 use std::ops::{BitOr, BitOrAssign};
 
-pub use constant_propagation_visitor::constant_propagation;
+use constant_folding_visitor::constant_fold;
+use constant_propagation_visitor::constant_propagation;
 
-use crate::ast::ExpressionKind;
+use crate::{
+    ast::{ExpressionKind, Function},
+    reporting::Diagnostics,
+};
+
+use super::CompileSettings;
+
+pub fn optimise(
+    function: &mut Function,
+    compile_settings: &CompileSettings,
+    diagnostics: &mut Diagnostics,
+) {
+    while constant_propagation(function, compile_settings) | constant_fold(function, diagnostics)
+        == ConstantOptimisationResult::DidSomething
+    {
+        if diagnostics.has_any() {
+            break;
+        }
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub enum ConstantOptimisationResult {
+enum ConstantOptimisationResult {
     DidSomething,
     DidNothing,
 }

@@ -4,16 +4,14 @@ expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/if_basic.tapir
 ---
 00000000: push8	3
-00000001: push8	3
-00000002: push8	3
-00000003: ==
-00000004: jif	11
-00000006: push8	7
-00000007: move	2
-00000008: drop	1
-00000009: j	14
-00000011: push8	8
-00000012: move	2
-00000013: drop	1
-00000014: drop	1
-00000015: ret	args=0 rets=0 shift=0
+00000001: push8	1
+00000002: jif	9
+00000004: push8	7
+00000005: move	2
+00000006: drop	1
+00000007: j	12
+00000009: push8	8
+00000010: move	2
+00000011: drop	1
+00000012: drop	1
+00000013: ret	args=0 rets=0 shift=0

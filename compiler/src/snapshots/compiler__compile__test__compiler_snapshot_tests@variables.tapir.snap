@@ -4,13 +4,7 @@ expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/variables.tapir
 ---
 00000000: push8	3
-00000001: push8	3
-00000002: push8	2
-00000003: add
-00000004: push8	3
-00000005: dup	1
-00000006: push8	3
-00000007: mul
-00000008: add
-00000009: drop	3
-00000010: ret	args=0 rets=0 shift=0
+00000001: push8	5
+00000002: push8	18
+00000003: drop	3
+00000004: ret	args=0 rets=0 shift=0

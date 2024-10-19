@@ -1,2 +1,2 @@
-var x = 0.02;
-var y = x * 0.05;
+var x = 0.5;
+var y = x * 3.0;

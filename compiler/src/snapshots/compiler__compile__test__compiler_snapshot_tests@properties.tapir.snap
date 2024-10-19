@@ -5,12 +5,8 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/properties.
 ---
 00000000: push8	3
 00000001: setprop	0
-00000002: push8	3
-00000003: push8	5
-00000004: mul
-00000005: push8	2
-00000006: add
-00000007: dup	0
-00000008: setprop	0
-00000009: drop	1
-00000010: ret	args=0 rets=0 shift=0
+00000002: push8	17
+00000003: push8	17
+00000004: setprop	0
+00000005: drop	1
+00000006: ret	args=0 rets=0 shift=0

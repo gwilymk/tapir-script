@@ -198,6 +198,7 @@ pub enum CompilerErrorKind {
         return_location: Span,
     },
     BreakOrContinueOutsideOfLoop,
+    DivideByZero,
 }
 
 impl CompilerErrorKind {

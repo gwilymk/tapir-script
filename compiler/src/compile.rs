@@ -69,7 +69,7 @@ pub fn compile(
 
         type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
 
-        optimisations::constant_propagation(function, settings);
+        optimisations::optimise(function, settings, &mut diagnostics);
     }
 
     let type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);

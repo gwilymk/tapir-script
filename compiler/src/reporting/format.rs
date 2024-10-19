@@ -215,5 +215,8 @@ fn compiler_error_report(
         CompilerErrorKind::BreakOrContinueOutsideOfLoop => build_error_report(span)
             .with_label(Label::new(span).with_message("This statement"))
             .with_message("`break` or `continue` must be within a loop"),
+        CompilerErrorKind::DivideByZero => build_error_report(span)
+            .with_label(Label::new(span).with_message("This reduces to 0"))
+            .with_message("Divide by zero not allowed"),
     }
 }
