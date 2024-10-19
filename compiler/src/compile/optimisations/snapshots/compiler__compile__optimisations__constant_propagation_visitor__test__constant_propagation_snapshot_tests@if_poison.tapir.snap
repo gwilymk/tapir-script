@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/constant_propagation_visitor.rs
+source: crates/tapir-script/compiler/src/compile/optimisations/constant_propagation_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/constant_propagation/assignment_loop.tapir
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_propagation/if_poison.tapir
 ---
 Script(
   functions: [
@@ -15,7 +15,7 @@ Script(
             ident: "x",
             value: Expression(
               span: "[span]",
-              kind: Integer(4),
+              kind: Integer(5),
               meta: "[meta]",
             ),
           ),
@@ -24,10 +24,10 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "y",
+            ident: "p",
             value: Expression(
               span: "[span]",
-              kind: Integer(0),
+              kind: Integer(9),
               meta: "[meta]",
             ),
           ),
@@ -35,46 +35,20 @@ Script(
         ),
         Statement(
           span: "[span]",
-          kind: Loop(
-            block: [
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: Bool(true),
+              meta: "[meta]",
+            ),
+            true_block: [
               Statement(
                 span: "[span]",
-                kind: If(
-                  condition: Expression(
-                    span: "[span]",
-                    kind: BinaryOperation(
-                      lhs: Expression(
-                        span: "[span]",
-                        kind: Variable("y"),
-                        meta: "[meta]",
-                      ),
-                      operator: EqEq,
-                      rhs: Expression(
-                        span: "[span]",
-                        kind: Integer(3),
-                        meta: "[meta]",
-                      ),
-                    ),
-                    meta: "[meta]",
-                  ),
-                  true_block: [
-                    Statement(
-                      span: "[span]",
-                      kind: Break,
-                      meta: "[meta]",
-                    ),
-                  ],
-                  false_block: [],
-                ),
-                meta: "[meta]",
-              ),
-              Statement(
-                span: "[span]",
-                kind: Assignment(
+                kind: VariableDeclaration(
                   ident: "y",
                   value: Expression(
                     span: "[span]",
-                    kind: Variable("x"),
+                    kind: Integer(5),
                     meta: "[meta]",
                   ),
                 ),
@@ -83,7 +57,21 @@ Script(
               Statement(
                 span: "[span]",
                 kind: Assignment(
-                  ident: "x",
+                  ident: "p",
+                  value: Expression(
+                    span: "[span]",
+                    kind: Integer(5),
+                    meta: "[meta]",
+                  ),
+                ),
+                meta: "[meta]",
+              ),
+            ],
+            false_block: [
+              Statement(
+                span: "[span]",
+                kind: Assignment(
+                  ident: "p",
                   value: Expression(
                     span: "[span]",
                     kind: Integer(3),
@@ -102,7 +90,19 @@ Script(
             ident: "z",
             value: Expression(
               span: "[span]",
-              kind: Variable("y"),
+              kind: Variable("p"),
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "w",
+            value: Expression(
+              span: "[span]",
+              kind: Integer(5),
               meta: "[meta]",
             ),
           ),

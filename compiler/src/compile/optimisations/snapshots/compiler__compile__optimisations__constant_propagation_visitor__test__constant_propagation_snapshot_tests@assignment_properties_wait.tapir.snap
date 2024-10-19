@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/constant_propagation_visitor.rs
+source: crates/tapir-script/compiler/src/compile/optimisations/constant_propagation_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/constant_propagation/assignment_properties_wait.tapir
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_propagation/assignment_properties_wait.tapir
 ---
 Script(
   functions: [

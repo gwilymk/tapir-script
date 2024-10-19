@@ -1,10 +1,13 @@
-use std::ops::{BitOr, BitOrAssign};
+use std::ops::BitOr;
 
 use constant_propagation_map::ConstantPropagationMap;
 
-use crate::ast::{Expression, ExpressionKind, Function, Statement, StatementKind};
+use crate::{
+    ast::{Expression, ExpressionKind, Function, Statement, StatementKind},
+    CompileSettings,
+};
 
-use super::CompileSettings;
+use super::ConstantPropagationResult;
 
 mod constant_propagation_map;
 
@@ -35,32 +38,6 @@ impl TryFrom<&ExpressionKind<'_>> for Constant {
             ExpressionKind::Bool(b) => Constant::Bool(*b),
             _ => return Err(()),
         })
-    }
-}
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-pub enum ConstantPropagationResult {
-    DidSomething,
-    DidNothing,
-}
-
-impl BitOrAssign for ConstantPropagationResult {
-    fn bitor_assign(&mut self, rhs: Self) {
-        *self = *self | rhs;
-    }
-}
-
-impl BitOr for ConstantPropagationResult {
-    type Output = ConstantPropagationResult;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        if self == ConstantPropagationResult::DidSomething
-            || rhs == ConstantPropagationResult::DidSomething
-        {
-            ConstantPropagationResult::DidSomething
-        } else {
-            ConstantPropagationResult::DidNothing
-        }
     }
 }
 

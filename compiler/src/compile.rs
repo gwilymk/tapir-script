@@ -12,8 +12,8 @@ use crate::{
     types::Type,
 };
 
-mod constant_propagation_visitor;
 mod loop_visitor;
+mod optimisations;
 mod symtab_visitor;
 mod type_visitor;
 
@@ -69,7 +69,7 @@ pub fn compile(
 
         type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
 
-        constant_propagation_visitor::constant_propagation(function, settings);
+        optimisations::constant_propagation(function, settings);
     }
 
     let type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);
