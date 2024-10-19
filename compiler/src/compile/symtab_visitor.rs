@@ -55,89 +55,65 @@ impl<'input> SymTabVisitor<'input> {
         self.symbol_names.push_scope();
 
         for statement in ast {
-            let kind = mem::take(&mut statement.kind);
-
-            statement.kind = match kind {
-                StatementKind::VariableDeclaration { ident, mut value } => {
-                    self.visit_expr(&mut value, diagnostics);
+            match &mut statement.kind {
+                StatementKind::VariableDeclaration {
+                    ident,
+                    ref mut value,
+                } => {
+                    self.visit_expr(value, diagnostics);
 
                     let symbol_id = self.symtab.new_symbol(ident, statement.span);
                     self.symbol_names.insert(ident, symbol_id);
 
-                    StatementKind::SymbolDeclare {
-                        ident: symbol_id,
-                        value,
-                    }
+                    statement.meta.set(symbol_id);
                 }
-                StatementKind::Assignment { ident, mut value } => {
-                    self.visit_expr(&mut value, diagnostics);
+                StatementKind::Assignment {
+                    ident,
+                    ref mut value,
+                } => {
+                    self.visit_expr(value, diagnostics);
 
                     if let Some(symbol_id) = self.symbol_names.get(ident) {
-                        StatementKind::SymbolAssign {
-                            ident: symbol_id,
-                            value,
-                        }
+                        statement.meta.set(symbol_id);
                     } else {
                         diagnostics.add_message(
                             CompilerErrorKind::UnknownVariable(ident.to_string())
                                 .into_message(statement.span),
                         );
-                        StatementKind::Error
                     }
                 }
                 StatementKind::If {
-                    mut condition,
-                    mut true_block,
-                    mut false_block,
+                    ref mut condition,
+                    ref mut true_block,
+                    ref mut false_block,
                 } => {
-                    self.visit_expr(&mut condition, diagnostics);
+                    self.visit_expr(condition, diagnostics);
 
-                    self.visit_block(&mut true_block, diagnostics);
-                    self.visit_block(&mut false_block, diagnostics);
-
-                    StatementKind::If {
-                        condition,
-                        true_block,
-                        false_block,
-                    }
+                    self.visit_block(true_block, diagnostics);
+                    self.visit_block(false_block, diagnostics);
                 }
                 StatementKind::Error
                 | StatementKind::Wait
                 | StatementKind::Nop
-                | StatementKind::SymbolDeclare { .. }
-                | StatementKind::SymbolAssign { .. }
                 | StatementKind::Continue
-                | StatementKind::Break => kind,
-                StatementKind::Return { mut values } => {
-                    for expr in &mut values {
+                | StatementKind::Break => {}
+                StatementKind::Return { ref mut values } => {
+                    for expr in values {
                         self.visit_expr(expr, diagnostics);
                     }
-
-                    StatementKind::Return { values }
                 }
                 StatementKind::Call {
-                    name,
-                    mut arguments,
+                    ref mut arguments, ..
+                }
+                | StatementKind::Spawn {
+                    ref mut arguments, ..
                 } => {
-                    for argument in &mut arguments {
+                    for argument in arguments {
                         self.visit_expr(argument, diagnostics);
                     }
-
-                    StatementKind::Call { name, arguments }
                 }
-                StatementKind::Spawn {
-                    name,
-                    mut arguments,
-                } => {
-                    for argument in &mut arguments {
-                        self.visit_expr(argument, diagnostics);
-                    }
-
-                    StatementKind::Spawn { name, arguments }
-                }
-                StatementKind::Loop { mut block } => {
-                    self.visit_block(&mut block, diagnostics);
-                    StatementKind::Loop { block }
+                StatementKind::Loop { ref mut block } => {
+                    self.visit_block(block, diagnostics);
                 }
             };
         }

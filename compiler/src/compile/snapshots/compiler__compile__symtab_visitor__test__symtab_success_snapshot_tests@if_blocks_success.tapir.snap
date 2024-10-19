@@ -11,23 +11,31 @@ Script(
       statements: [
         Statement(
           span: "[span]",
-          kind: SymbolDeclare(
-            ident: SymbolId(1),
+          kind: VariableDeclaration(
+            ident: "x",
             value: Expression(
               span: "[span]",
               kind: Integer(3),
+              meta: {},
             ),
           ),
+          meta: {
+            "compiler::ast::SymbolId": "SymbolId(1)",
+          },
         ),
         Statement(
           span: "[span]",
-          kind: SymbolDeclare(
-            ident: SymbolId(2),
+          kind: VariableDeclaration(
+            ident: "y",
             value: Expression(
               span: "[span]",
               kind: Integer(14),
+              meta: {},
             ),
           ),
+          meta: {
+            "compiler::ast::SymbolId": "SymbolId(2)",
+          },
         ),
         Statement(
           span: "[span]",
@@ -35,62 +43,84 @@ Script(
             condition: Expression(
               span: "[span]",
               kind: Bool(true),
+              meta: {},
             ),
             true_block: [
               Statement(
                 span: "[span]",
-                kind: SymbolDeclare(
-                  ident: SymbolId(3),
+                kind: VariableDeclaration(
+                  ident: "x",
                   value: Expression(
                     span: "[span]",
                     kind: Fix,
+                    meta: {},
                   ),
                 ),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(3)",
+                },
               ),
               Statement(
                 span: "[span]",
-                kind: SymbolAssign(
-                  ident: SymbolId(2),
+                kind: Assignment(
+                  ident: "y",
                   value: Expression(
                     span: "[span]",
                     kind: Integer(112),
+                    meta: {},
                   ),
                 ),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(2)",
+                },
               ),
             ],
             false_block: [
               Statement(
                 span: "[span]",
-                kind: SymbolDeclare(
-                  ident: SymbolId(4),
+                kind: VariableDeclaration(
+                  ident: "z",
                   value: Expression(
                     span: "[span]",
                     kind: Integer(82),
+                    meta: {},
                   ),
                 ),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(4)",
+                },
               ),
               Statement(
                 span: "[span]",
-                kind: SymbolAssign(
-                  ident: SymbolId(2),
+                kind: Assignment(
+                  ident: "y",
                   value: Expression(
                     span: "[span]",
                     kind: Symbol(SymbolId(4)),
+                    meta: {},
                   ),
                 ),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(2)",
+                },
               ),
             ],
           ),
+          meta: {},
         ),
         Statement(
           span: "[span]",
-          kind: SymbolAssign(
-            ident: SymbolId(1),
+          kind: Assignment(
+            ident: "x",
             value: Expression(
               span: "[span]",
               kind: Integer(12),
+              meta: {},
             ),
           ),
+          meta: {
+            "compiler::ast::SymbolId": "SymbolId(1)",
+          },
         ),
       ],
       arguments: [],

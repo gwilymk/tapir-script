@@ -16,8 +16,10 @@ Script(
             value: Expression(
               span: "[span]",
               kind: Integer(0),
+              meta: {},
             ),
           ),
+          meta: {},
         ),
         Statement(
           span: "[span]",
@@ -30,8 +32,10 @@ Script(
                   value: Expression(
                     span: "[span]",
                     kind: Integer(3),
+                    meta: {},
                   ),
                 ),
+                meta: {},
               ),
               Statement(
                 span: "[span]",
@@ -42,22 +46,27 @@ Script(
                       lhs: Expression(
                         span: "[span]",
                         kind: Variable("i"),
+                        meta: {},
                       ),
                       operator: Gt,
                       rhs: Expression(
                         span: "[span]",
                         kind: Integer(4),
+                        meta: {},
                       ),
                     ),
+                    meta: {},
                   ),
                   true_block: [
                     Statement(
                       span: "[span]",
                       kind: Break,
+                      meta: {},
                     ),
                   ],
                   false_block: [],
                 ),
+                meta: {},
               ),
               Statement(
                 span: "[span]",
@@ -69,22 +78,28 @@ Script(
                       lhs: Expression(
                         span: "[span]",
                         kind: Variable("i"),
+                        meta: {},
                       ),
                       operator: Add,
                       rhs: Expression(
                         span: "[span]",
                         kind: Integer(1),
+                        meta: {},
                       ),
                     ),
+                    meta: {},
                   ),
                 ),
+                meta: {},
               ),
               Statement(
                 span: "[span]",
                 kind: Continue,
+                meta: {},
               ),
             ],
           ),
+          meta: {},
         ),
       ],
       arguments: [],

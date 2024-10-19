@@ -18,13 +18,16 @@ Script(
                 lhs: Expression(
                   span: "[span]",
                   kind: Integer(3),
+                  meta: {},
                 ),
                 operator: EqEq,
                 rhs: Expression(
                   span: "[span]",
                   kind: Integer(5),
+                  meta: {},
                 ),
               ),
+              meta: {},
             ),
             true_block: [
               Statement(
@@ -34,12 +37,15 @@ Script(
                   value: Expression(
                     span: "[span]",
                     kind: Integer(4),
+                    meta: {},
                   ),
                 ),
+                meta: {},
               ),
             ],
             false_block: [],
           ),
+          meta: {},
         ),
         Statement(
           span: "[span]",
@@ -51,15 +57,19 @@ Script(
                 lhs: Expression(
                   span: "[span]",
                   kind: Fix,
+                  meta: {},
                 ),
                 operator: EqEq,
                 rhs: Expression(
                   span: "[span]",
                   kind: Fix,
+                  meta: {},
                 ),
               ),
+              meta: {},
             ),
           ),
+          meta: {},
         ),
       ],
       arguments: [],

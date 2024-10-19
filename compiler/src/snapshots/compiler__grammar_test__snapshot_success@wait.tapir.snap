@@ -16,12 +16,15 @@ Script(
             value: Expression(
               span: "[span]",
               kind: Integer(4),
+              meta: {},
             ),
           ),
+          meta: {},
         ),
         Statement(
           span: "[span]",
           kind: Wait,
+          meta: {},
         ),
         Statement(
           span: "[span]",
@@ -30,8 +33,10 @@ Script(
             value: Expression(
               span: "[span]",
               kind: Integer(7),
+              meta: {},
             ),
           ),
+          meta: {},
         ),
       ],
       arguments: [],

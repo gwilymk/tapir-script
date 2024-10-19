@@ -20,13 +20,16 @@ Script(
                   lhs: Expression(
                     span: "[span]",
                     kind: Integer(3),
+                    meta: {},
                   ),
                   operator: Add,
                   rhs: Expression(
                     span: "[span]",
                     kind: Integer(5),
+                    meta: {},
                   ),
                 ),
+                meta: {},
               ),
               Expression(
                 span: "[span]",
@@ -34,16 +37,20 @@ Script(
                   lhs: Expression(
                     span: "[span]",
                     kind: Integer(8),
+                    meta: {},
                   ),
                   operator: Sub,
                   rhs: Expression(
                     span: "[span]",
                     kind: Integer(3),
+                    meta: {},
                   ),
                 ),
+                meta: {},
               ),
             ],
           ),
+          meta: {},
         ),
       ],
       arguments: [],
@@ -59,6 +66,7 @@ Script(
         Statement(
           span: "[span]",
           kind: Wait,
+          meta: {},
         ),
       ],
       arguments: [

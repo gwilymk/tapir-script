@@ -154,17 +154,20 @@ impl<'input> TypeVisitor<'input> {
                 | ast::StatementKind::Continue
                 | ast::StatementKind::Nop
                 | ast::StatementKind::Error => {}
-                ast::StatementKind::VariableDeclaration { .. } => {
-                    unreachable!("Should have been removed by symbol resolution")
-                }
-                ast::StatementKind::Assignment { .. } => {
-                    unreachable!("Should have been removed by symbol resolution")
-                }
-                ast::StatementKind::SymbolDeclare { ident, value } => {
+                ast::StatementKind::VariableDeclaration { value, .. } => {
+                    let ident: &SymbolId = statement
+                        .meta
+                        .get()
+                        .expect("Should've been resolved by symbol resolution");
                     let expr_type = self.type_for_expression(value, symtab, diagnostics);
                     self.resolve_type(*ident, expr_type, statement.span, diagnostics);
                 }
-                ast::StatementKind::SymbolAssign { ident, value } => {
+                ast::StatementKind::Assignment { value, .. } => {
+                    let ident: &SymbolId = statement
+                        .meta
+                        .get()
+                        .expect("Should've been resolved by symbol resolution");
+
                     let expr_type = self.type_for_expression(value, symtab, diagnostics);
                     self.resolve_type(*ident, expr_type, statement.span, diagnostics);
                 }

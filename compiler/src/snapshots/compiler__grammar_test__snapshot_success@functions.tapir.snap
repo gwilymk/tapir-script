@@ -16,8 +16,10 @@ Script(
             value: Expression(
               span: "[span]",
               kind: Integer(3),
+              meta: {},
             ),
           ),
+          meta: {},
         ),
       ],
       arguments: [],

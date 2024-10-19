@@ -11,33 +11,43 @@ Script(
       statements: [
         Statement(
           span: "[span]",
-          kind: SymbolDeclare(
-            ident: SymbolId(1),
+          kind: VariableDeclaration(
+            ident: "x",
             value: Expression(
               span: "[span]",
               kind: BinaryOperation(
                 lhs: Expression(
                   span: "[span]",
                   kind: Symbol(SymbolId(0)),
+                  meta: {},
                 ),
                 operator: Add,
                 rhs: Expression(
                   span: "[span]",
                   kind: Integer(2),
+                  meta: {},
                 ),
               ),
+              meta: {},
             ),
           ),
+          meta: {
+            "compiler::ast::SymbolId": "SymbolId(1)",
+          },
         ),
         Statement(
           span: "[span]",
-          kind: SymbolAssign(
-            ident: SymbolId(0),
+          kind: Assignment(
+            ident: "int_prop",
             value: Expression(
               span: "[span]",
               kind: Integer(3),
+              meta: {},
             ),
           ),
+          meta: {
+            "compiler::ast::SymbolId": "SymbolId(0)",
+          },
         ),
       ],
       arguments: [],

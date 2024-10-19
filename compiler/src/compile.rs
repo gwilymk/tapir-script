@@ -175,22 +175,16 @@ impl<'input> Compiler<'input> {
     ) -> ControlFlow<()> {
         match &statement.kind {
             ast::StatementKind::Error => panic!("Should never have to compile an error"),
-            ast::StatementKind::VariableDeclaration { .. } => {
-                panic!("Should have resolved this in symbol visiting")
-            }
-            ast::StatementKind::Assignment { .. } => {
-                panic!("Should have resolved this in symbol visiting")
-            }
-            ast::StatementKind::Wait => {
-                self.bytecode.add_opcode(Opcode::Wait);
-            }
-            ast::StatementKind::Nop => {}
-            ast::StatementKind::SymbolDeclare { ident, value } => {
+            ast::StatementKind::VariableDeclaration { value, .. } => {
+                let ident: &SymbolId = statement.meta.get().expect("Should've resolved variable");
+
                 self.compile_expression(value, symtab);
                 self.stack.pop();
                 self.stack.push(Some(*ident)); // this is now on the stack at this location
             }
-            ast::StatementKind::SymbolAssign { ident, value } => {
+            ast::StatementKind::Assignment { value, .. } => {
+                let ident: &SymbolId = statement.meta.get().expect("Should've resolved variable");
+
                 self.compile_expression(value, symtab);
 
                 if let Some(property) = symtab.get_property(*ident) {
@@ -203,6 +197,10 @@ impl<'input> Compiler<'input> {
                     self.stack.pop();
                 }
             }
+            ast::StatementKind::Wait => {
+                self.bytecode.add_opcode(Opcode::Wait);
+            }
+            ast::StatementKind::Nop => {}
             ast::StatementKind::If {
                 condition,
                 true_block,

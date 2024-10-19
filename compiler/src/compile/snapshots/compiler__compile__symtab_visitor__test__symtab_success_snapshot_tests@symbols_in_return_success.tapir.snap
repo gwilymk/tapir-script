@@ -21,13 +21,17 @@ Script(
       statements: [
         Statement(
           span: "[span]",
-          kind: SymbolDeclare(
-            ident: SymbolId(3),
+          kind: VariableDeclaration(
+            ident: "x",
             value: Expression(
               span: "[span]",
               kind: Integer(5),
+              meta: {},
             ),
           ),
+          meta: {
+            "compiler::ast::SymbolId": "SymbolId(3)",
+          },
         ),
         Statement(
           span: "[span]",
@@ -39,13 +43,16 @@ Script(
                   lhs: Expression(
                     span: "[span]",
                     kind: Symbol(SymbolId(3)),
+                    meta: {},
                   ),
                   operator: Add,
                   rhs: Expression(
                     span: "[span]",
                     kind: Symbol(SymbolId(1)),
+                    meta: {},
                   ),
                 ),
+                meta: {},
               ),
               Expression(
                 span: "[span]",
@@ -53,16 +60,20 @@ Script(
                   lhs: Expression(
                     span: "[span]",
                     kind: Symbol(SymbolId(2)),
+                    meta: {},
                   ),
                   operator: Add,
                   rhs: Expression(
                     span: "[span]",
                     kind: Integer(3),
+                    meta: {},
                   ),
                 ),
+                meta: {},
               ),
             ],
           ),
+          meta: {},
         ),
       ],
       arguments: [
