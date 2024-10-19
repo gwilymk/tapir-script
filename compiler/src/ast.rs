@@ -166,6 +166,8 @@ impl<'input> StatementKind<'input> {
 pub struct Expression<'input> {
     pub span: Span,
     pub kind: ExpressionKind<'input>,
+
+    pub meta: Metadata,
 }
 
 #[derive(Clone, Default, Debug, Serialize)]
@@ -197,6 +199,8 @@ impl<'input> ExpressionKind<'input> {
         Expression {
             kind: self,
             span: Span::new(file_id, start, end),
+
+            meta: Metadata::new(),
         }
     }
 }
