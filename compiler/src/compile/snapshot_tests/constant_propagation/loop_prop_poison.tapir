@@ -1,0 +1,9 @@
+
+int_prop = 5;
+
+loop {
+    wait;
+    break;
+}
+
+var y = int_prop;

@@ -34,6 +34,10 @@ impl CompileSettings {
     pub(crate) fn is_property(&self, symbol_id: SymbolId) -> bool {
         symbol_id.0 < self.properties.len()
     }
+
+    pub(crate) fn property_symbols(&self) -> impl Iterator<Item = SymbolId> {
+        (0..self.properties.len()).map(SymbolId)
+    }
 }
 
 pub fn compile(

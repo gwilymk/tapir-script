@@ -35,14 +35,10 @@ impl ConstantPropagationMap {
     }
 
     pub fn poison_properties(&mut self, compile_settings: &CompileSettings) {
-        self.map.retain(|&symbol_id, _| {
-            if compile_settings.is_property(symbol_id) {
-                self.poisoned.insert(symbol_id);
-                false
-            } else {
-                true
-            }
-        });
+        self.map
+            .retain(|&symbol_id, _| !compile_settings.is_property(symbol_id));
+
+        self.poisoned.extend(compile_settings.property_symbols());
     }
 
     pub fn snapshot(&self) -> Self {
