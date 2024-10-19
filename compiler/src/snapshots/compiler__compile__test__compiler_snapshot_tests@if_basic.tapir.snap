@@ -4,7 +4,7 @@ expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/if_basic.tapir
 ---
 00000000: push8	3
-00000001: dup	0
+00000001: push8	3
 00000002: push8	3
 00000003: ==
 00000004: jif	11

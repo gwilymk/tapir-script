@@ -4,7 +4,7 @@ expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/fn_call_one_return.tapir
 ---
 00000000: push8	3
-00000001: dup	0
+00000001: push8	3
 00000002: call	7
 00000004: drop	2
 00000005: ret	args=0 rets=0 shift=0

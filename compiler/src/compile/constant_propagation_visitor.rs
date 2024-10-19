@@ -39,7 +39,7 @@ impl TryFrom<&ExpressionKind<'_>> for Constant {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum ConstantPropagationResult {
+pub enum ConstantPropagationResult {
     DidSomething,
     DidNothing,
 }
@@ -64,7 +64,7 @@ impl BitOr for ConstantPropagationResult {
     }
 }
 
-fn constant_propagation(
+pub fn constant_propagation(
     function: &mut Function,
     compile_settings: &CompileSettings,
 ) -> ConstantPropagationResult {

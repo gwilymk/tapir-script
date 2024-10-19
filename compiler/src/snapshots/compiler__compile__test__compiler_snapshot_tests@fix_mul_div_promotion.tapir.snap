@@ -4,7 +4,7 @@ expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/fix_mul_div_promotion.tapir
 ---
 00000000: push8	5
-00000001: dup	0
+00000001: push8	5
 00000002: push8	12
 00000003: fmul
 00000004: drop	2

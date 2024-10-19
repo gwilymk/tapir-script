@@ -5,7 +5,7 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/properties.
 ---
 00000000: push8	3
 00000001: setprop	0
-00000002: getprop	0
+00000002: push8	3
 00000003: push8	5
 00000004: mul
 00000005: push8	2
