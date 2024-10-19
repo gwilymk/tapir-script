@@ -3,7 +3,11 @@ use crate::{
     types::Type,
 };
 
+use metadata::Metadata;
+
 use serde::Serialize;
+
+mod metadata;
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize)]
 pub struct SymbolId(pub usize);
@@ -95,6 +99,8 @@ pub enum TopLevelStatement<'input> {
 pub struct Statement<'input> {
     pub span: Span,
     pub kind: StatementKind<'input>,
+
+    pub meta: Metadata,
 }
 
 #[derive(Clone, Debug, Default, Serialize)]
@@ -151,6 +157,7 @@ impl<'input> StatementKind<'input> {
         Statement {
             span: Span::new(file_id, start, end),
             kind: self,
+            meta: Metadata::new(),
         }
     }
 }
