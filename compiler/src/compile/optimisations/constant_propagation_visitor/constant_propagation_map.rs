@@ -5,7 +5,7 @@ use crate::{
     CompileSettings,
 };
 
-use super::Constant;
+use crate::compile::optimisations::Constant;
 
 #[derive(Debug, Default)]
 pub(crate) struct ConstantPropagationMap {

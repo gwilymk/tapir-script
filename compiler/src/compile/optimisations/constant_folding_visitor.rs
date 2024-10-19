@@ -1,9 +1,43 @@
-use crate::ast::Function;
+use std::{mem, ops::BitOr};
+
+use crate::ast::{BinaryOperator, Expression, ExpressionKind, Function};
 
 use super::ConstantOptimisationResult;
 
-pub fn constant_fold(funciton: &mut Function) -> ConstantOptimisationResult {
-    ConstantOptimisationResult::DidNothing
+pub fn constant_fold(function: &mut Function) -> ConstantOptimisationResult {
+    function
+        .statements
+        .iter_mut()
+        .flat_map(|statement| statement.expressions_mut())
+        .map(fold)
+        .reduce(BitOr::bitor)
+        .unwrap_or(ConstantOptimisationResult::DidNothing)
+}
+
+fn fold(exp: &mut Expression) -> ConstantOptimisationResult {
+    let ExpressionKind::BinaryOperation { lhs, operator, rhs } = &mut exp.kind else {
+        return ConstantOptimisationResult::DidNothing;
+    };
+
+    let did_something = fold(lhs) | fold(rhs);
+
+    use BinaryOperator as B;
+    use ExpressionKind as E;
+
+    exp.kind = match (mem::take(&mut lhs.kind), operator, mem::take(&mut rhs.kind)) {
+        (E::Integer(lhs), B::Add, E::Integer(rhs)) => E::Integer(lhs + rhs),
+        (any, B::Add | B::Sub, E::Integer(0)) => any,
+        (_, B::Mul, E::Integer(0)) => E::Integer(0),
+
+        (lhs_kind, _, rhs_kind) => {
+            lhs.kind = lhs_kind;
+            rhs.kind = rhs_kind;
+
+            return did_something;
+        }
+    };
+
+    ConstantOptimisationResult::DidSomething
 }
 
 #[cfg(test)]

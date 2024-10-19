@@ -1,0 +1,3 @@
+var x = 3 + 5;
+var y = 8 + 0;
+var z = int_prop + 0;

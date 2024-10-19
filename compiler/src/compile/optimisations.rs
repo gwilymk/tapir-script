@@ -5,6 +5,8 @@ use std::ops::{BitOr, BitOrAssign};
 
 pub use constant_propagation_visitor::constant_propagation;
 
+use crate::ast::ExpressionKind;
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum ConstantOptimisationResult {
     DidSomething,
@@ -28,5 +30,35 @@ impl BitOr for ConstantOptimisationResult {
         } else {
             ConstantOptimisationResult::DidNothing
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+enum Constant {
+    Int(i32),
+    Fix(agb_fixnum::Num<i32, 8>),
+    Bool(bool),
+}
+
+impl From<Constant> for ExpressionKind<'_> {
+    fn from(value: Constant) -> Self {
+        match value {
+            Constant::Int(i) => ExpressionKind::Integer(i),
+            Constant::Fix(num) => ExpressionKind::Fix(num),
+            Constant::Bool(b) => ExpressionKind::Bool(b),
+        }
+    }
+}
+
+impl TryFrom<&ExpressionKind<'_>> for Constant {
+    type Error = ();
+
+    fn try_from(value: &ExpressionKind<'_>) -> Result<Self, Self::Error> {
+        Ok(match value {
+            ExpressionKind::Integer(i) => Constant::Int(*i),
+            ExpressionKind::Fix(num) => Constant::Fix(*num),
+            ExpressionKind::Bool(b) => Constant::Bool(*b),
+            _ => return Err(()),
+        })
     }
 }

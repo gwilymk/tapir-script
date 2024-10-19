@@ -11,36 +11,6 @@ use super::ConstantOptimisationResult;
 
 mod constant_propagation_map;
 
-#[derive(Clone, Copy, Debug)]
-enum Constant {
-    Int(i32),
-    Fix(agb_fixnum::Num<i32, 8>),
-    Bool(bool),
-}
-
-impl From<Constant> for ExpressionKind<'_> {
-    fn from(value: Constant) -> Self {
-        match value {
-            Constant::Int(i) => ExpressionKind::Integer(i),
-            Constant::Fix(num) => ExpressionKind::Fix(num),
-            Constant::Bool(b) => ExpressionKind::Bool(b),
-        }
-    }
-}
-
-impl TryFrom<&ExpressionKind<'_>> for Constant {
-    type Error = ();
-
-    fn try_from(value: &ExpressionKind<'_>) -> Result<Self, Self::Error> {
-        Ok(match value {
-            ExpressionKind::Integer(i) => Constant::Int(*i),
-            ExpressionKind::Fix(num) => Constant::Fix(*num),
-            ExpressionKind::Bool(b) => Constant::Bool(*b),
-            _ => return Err(()),
-        })
-    }
-}
-
 pub fn constant_propagation(
     function: &mut Function,
     compile_settings: &CompileSettings,

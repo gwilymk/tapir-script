@@ -1,3 +1,5 @@
+use std::iter;
+
 use crate::{
     tokens::{FileId, Span},
     types::Type,
@@ -101,6 +103,37 @@ pub struct Statement<'input> {
     pub kind: StatementKind<'input>,
 
     pub meta: Metadata,
+}
+
+impl<'input> Statement<'input> {
+    pub(crate) fn expressions_mut(
+        &mut self,
+    ) -> Box<dyn Iterator<Item = &mut Expression<'input>> + '_> {
+        match &mut self.kind {
+            StatementKind::Error
+            | StatementKind::Wait
+            | StatementKind::Continue
+            | StatementKind::Break
+            | StatementKind::Nop => Box::new(iter::empty()),
+            StatementKind::VariableDeclaration { value, .. }
+            | StatementKind::Assignment { value, .. } => Box::new(iter::once(value)),
+            StatementKind::If {
+                condition,
+                true_block,
+                false_block,
+            } => Box::new(
+                iter::once(condition)
+                    .chain(true_block.iter_mut().flat_map(Statement::expressions_mut))
+                    .chain(false_block.iter_mut().flat_map(Statement::expressions_mut)),
+            ),
+            StatementKind::Loop { block } => {
+                Box::new(block.iter_mut().flat_map(Statement::expressions_mut))
+            }
+            StatementKind::Call { arguments, .. }
+            | StatementKind::Return { values: arguments }
+            | StatementKind::Spawn { arguments, .. } => Box::new(arguments.iter_mut()),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Default, Serialize)]
