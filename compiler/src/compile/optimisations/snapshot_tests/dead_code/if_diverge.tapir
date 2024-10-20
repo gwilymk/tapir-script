@@ -1,0 +1,10 @@
+var x = 5;
+var y = 4;
+
+if true {
+    y = x;
+} else {
+    y = 3;
+}
+
+int_prop = y;

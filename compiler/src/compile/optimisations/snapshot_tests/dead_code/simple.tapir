@@ -1,0 +1,7 @@
+var x = 5;
+var a = x;
+var b = a;
+var c = b;
+var y = 5;
+
+int_prop = 5;
