@@ -1,7 +1,7 @@
 ---
 source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimination_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/if_diverge.tapir
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/loop.tapir
 ---
 Script(
   functions: [
@@ -24,7 +24,7 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "y",
+            ident: "z",
             value: Expression(
               span: "[span]",
               kind: Integer(0),
@@ -35,36 +35,72 @@ Script(
         ),
         Statement(
           span: "[span]",
-          kind: If(
-            condition: Expression(
-              span: "[span]",
-              kind: Bool(true),
-              meta: "[meta]",
-            ),
-            true_block: [
+          kind: Loop(
+            block: [
               Statement(
                 span: "[span]",
                 kind: Assignment(
-                  ident: "y",
+                  ident: "z",
                   value: Expression(
                     span: "[span]",
-                    kind: Variable("x"),
+                    kind: Integer(2),
                     meta: "[meta]",
                   ),
                 ),
                 meta: "[meta]",
               ),
-            ],
-            false_block: [
               Statement(
                 span: "[span]",
                 kind: Assignment(
-                  ident: "y",
+                  ident: "x",
                   value: Expression(
                     span: "[span]",
-                    kind: Integer(3),
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Variable("x"),
+                        meta: "[meta]",
+                      ),
+                      operator: Add,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(1),
+                        meta: "[meta]",
+                      ),
+                    ),
                     meta: "[meta]",
                   ),
+                ),
+                meta: "[meta]",
+              ),
+              Statement(
+                span: "[span]",
+                kind: If(
+                  condition: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Variable("x"),
+                        meta: "[meta]",
+                      ),
+                      operator: Gt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(10),
+                        meta: "[meta]",
+                      ),
+                    ),
+                    meta: "[meta]",
+                  ),
+                  true_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: Break,
+                      meta: "[meta]",
+                    ),
+                  ],
+                  false_block: [],
                 ),
                 meta: "[meta]",
               ),
@@ -78,7 +114,7 @@ Script(
             ident: "int_prop",
             value: Expression(
               span: "[span]",
-              kind: Variable("y"),
+              kind: Variable("z"),
               meta: "[meta]",
             ),
           ),
