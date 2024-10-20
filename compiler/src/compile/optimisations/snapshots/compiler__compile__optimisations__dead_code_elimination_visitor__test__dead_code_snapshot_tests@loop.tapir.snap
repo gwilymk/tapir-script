@@ -39,6 +39,13 @@ Script(
             block: [
               Statement(
                 span: "[span]",
+                kind: Block(
+                  block: [],
+                ),
+                meta: "[meta]",
+              ),
+              Statement(
+                span: "[span]",
                 kind: Assignment(
                   ident: "z",
                   value: Expression(

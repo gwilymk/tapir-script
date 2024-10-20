@@ -11,17 +11,25 @@ Script(
       statements: [
         Statement(
           span: "[span]",
-          kind: Call(
-            name: "add",
-            arguments: [
-              Expression(
+          kind: Block(
+            block: [
+              Statement(
                 span: "[span]",
-                kind: Integer(2),
-                meta: "[meta]",
-              ),
-              Expression(
-                span: "[span]",
-                kind: Integer(5),
+                kind: Call(
+                  name: "add",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(2),
+                      meta: "[meta]",
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(5),
+                      meta: "[meta]",
+                    ),
+                  ],
+                ),
                 meta: "[meta]",
               ),
             ],

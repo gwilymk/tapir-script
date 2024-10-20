@@ -35,13 +35,8 @@ Script(
         ),
         Statement(
           span: "[span]",
-          kind: If(
-            condition: Expression(
-              span: "[span]",
-              kind: Bool(true),
-              meta: "[meta]",
-            ),
-            true_block: [
+          kind: Block(
+            block: [
               Statement(
                 span: "[span]",
                 kind: Assignment(
@@ -49,20 +44,6 @@ Script(
                   value: Expression(
                     span: "[span]",
                     kind: Variable("x"),
-                    meta: "[meta]",
-                  ),
-                ),
-                meta: "[meta]",
-              ),
-            ],
-            false_block: [
-              Statement(
-                span: "[span]",
-                kind: Assignment(
-                  ident: "y",
-                  value: Expression(
-                    span: "[span]",
-                    kind: Integer(3),
                     meta: "[meta]",
                   ),
                 ),
