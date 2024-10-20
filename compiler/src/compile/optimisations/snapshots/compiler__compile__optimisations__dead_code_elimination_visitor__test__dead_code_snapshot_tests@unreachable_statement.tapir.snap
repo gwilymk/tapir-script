@@ -1,0 +1,50 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimination_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/unreachable_statement.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Loop(
+            block: [
+              Statement(
+                span: "[span]",
+                kind: Assignment(
+                  ident: "int_prop",
+                  value: Expression(
+                    span: "[span]",
+                    kind: Integer(3),
+                    meta: "[meta]",
+                  ),
+                ),
+                meta: "[meta]",
+              ),
+              Statement(
+                span: "[span]",
+                kind: Wait,
+                meta: "[meta]",
+              ),
+              Statement(
+                span: "[span]",
+                kind: Break,
+                meta: "[meta]",
+              ),
+            ],
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+  ],
+)

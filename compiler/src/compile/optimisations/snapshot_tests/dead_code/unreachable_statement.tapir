@@ -1,0 +1,8 @@
+loop {
+    int_prop = 3;
+    wait;
+    break;
+
+    int_prop = 5;
+    wait;
+}
