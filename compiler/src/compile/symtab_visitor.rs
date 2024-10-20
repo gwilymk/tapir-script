@@ -102,6 +102,9 @@ impl<'input> SymTabVisitor<'input> {
                         self.visit_expr(expr, diagnostics);
                     }
                 }
+                StatementKind::Block { block } => {
+                    self.visit_block(block, diagnostics);
+                }
                 StatementKind::Call {
                     ref mut arguments, ..
                 }

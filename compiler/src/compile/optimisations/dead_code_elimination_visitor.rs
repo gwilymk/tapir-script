@@ -69,16 +69,67 @@ pub fn dead_code_eliminate(function: &mut Function, compile_settings: &CompileSe
     );
 
     sweep_dead_statements(&mut function.statements);
+    sweep_unconditional_if(&mut function.statements);
 }
 
-fn eliminate_after_control_flow_diverge(block: &mut Vec<Statement>) {
+fn sweep_unconditional_if(block: &mut Vec<Statement>) {
+    block.retain_mut(|statement| match &mut statement.kind {
+        StatementKind::If {
+            condition,
+            true_block,
+            false_block,
+        } => {
+            if let ExpressionKind::Bool(condition) = condition.kind {
+                let block = if condition {
+                    std::mem::take(true_block)
+                } else {
+                    std::mem::take(false_block)
+                };
+                let should_remove = block.is_empty();
+                statement.kind = StatementKind::Block { block };
+                !should_remove
+            } else if true_block.is_empty() && false_block.is_empty() {
+                let condition = std::mem::take(&mut condition.kind);
+                let block: Vec<_> = extract_side_effects(condition)
+                    .map(|x| Statement {
+                        span: statement.span,
+                        kind: x,
+                        meta: Default::default(),
+                    })
+                    .collect();
+                if block.is_empty() {
+                    false
+                } else {
+                    statement.kind = StatementKind::Block { block };
+                    true
+                }
+            } else {
+                true
+            }
+        }
+        StatementKind::Block { block } => !block.is_empty(),
+        StatementKind::Error
+        | StatementKind::VariableDeclaration { .. }
+        | StatementKind::Assignment { .. }
+        | StatementKind::Wait
+        | StatementKind::Continue
+        | StatementKind::Break
+        | StatementKind::Nop
+        | StatementKind::Loop { .. }
+        | StatementKind::Call { .. }
+        | StatementKind::Spawn { .. }
+        | StatementKind::Return { .. } => true,
+    })
+}
+
+fn eliminate_after_control_flow_diverge(block: &mut Vec<Statement>) -> bool {
     let mut encountered_control_flow_diverge = false;
     block.retain_mut(|statement| {
         if encountered_control_flow_diverge {
             return false;
         }
         match &mut statement.kind {
-            StatementKind::Continue | StatementKind::Break => {
+            StatementKind::Continue | StatementKind::Break | StatementKind::Return { .. } => {
                 encountered_control_flow_diverge = true;
             }
             StatementKind::Error
@@ -87,8 +138,7 @@ fn eliminate_after_control_flow_diverge(block: &mut Vec<Statement>) {
             | StatementKind::Assignment { .. }
             | StatementKind::VariableDeclaration { .. }
             | StatementKind::Call { .. }
-            | StatementKind::Spawn { .. }
-            | StatementKind::Return { .. } => {}
+            | StatementKind::Spawn { .. } => {}
             StatementKind::If {
                 true_block,
                 false_block,
@@ -100,88 +150,56 @@ fn eliminate_after_control_flow_diverge(block: &mut Vec<Statement>) {
             StatementKind::Loop { block } => {
                 eliminate_after_control_flow_diverge(block);
             }
+            StatementKind::Block { block } => {
+                encountered_control_flow_diverge |= eliminate_after_control_flow_diverge(block);
+            }
         }
         true
     });
+    encountered_control_flow_diverge
 }
 
-fn sweep_dead_statements(block: &mut Vec<Statement>) {
-    *block = block
-        .drain(..)
-        .flat_map(|statement| match statement.kind {
-            kind @ (StatementKind::Continue
+fn sweep_dead_statements(block: &mut [Statement]) {
+    for statement in block.iter_mut() {
+        match &mut statement.kind {
+            StatementKind::Continue
             | StatementKind::Break
             | StatementKind::Error
             | StatementKind::Nop
             | StatementKind::Wait
             | StatementKind::Call { .. }
             | StatementKind::Spawn { .. }
-            | StatementKind::Return { .. }) => Box::new(std::iter::once(Statement {
-                span: statement.span,
-                kind,
-                meta: statement.meta,
-            })),
-            StatementKind::Assignment { value, ident } => {
-                let boxed: Box<dyn Iterator<Item = Statement>> =
-                    if statement.meta.get::<DeadStatement>().is_some() {
-                        Box::new(extract_side_effects(value).map(move |x| Statement {
-                            span: statement.span,
-                            kind: x,
-                            meta: Default::default(),
-                        }))
-                    } else {
-                        Box::new(std::iter::once(Statement {
-                            span: statement.span,
-                            kind: StatementKind::Assignment { ident, value },
-                            meta: statement.meta,
-                        }))
-                    };
-                boxed
-            }
-            StatementKind::VariableDeclaration { value, ident } => {
-                let boxed: Box<dyn Iterator<Item = Statement>> =
-                    if statement.meta.get::<DeadStatement>().is_some() {
-                        Box::new(extract_side_effects(value).map(move |x| Statement {
-                            span: statement.span,
-                            kind: x,
-                            meta: Default::default(),
-                        }))
-                    } else {
-                        Box::new(std::iter::once(Statement {
-                            span: statement.span,
-                            kind: StatementKind::VariableDeclaration { ident, value },
-                            meta: statement.meta,
-                        }))
-                    };
-                boxed
+            | StatementKind::Return { .. } => {}
+            StatementKind::Assignment { value, .. }
+            | StatementKind::VariableDeclaration { value, .. } => {
+                if statement.meta.get::<DeadStatement>().is_some() {
+                    let value = std::mem::take(&mut value.kind);
+                    statement.kind = StatementKind::Block {
+                        block: extract_side_effects(value)
+                            .map(|x| Statement {
+                                span: statement.span,
+                                kind: x,
+                                meta: Default::default(),
+                            })
+                            .collect(),
+                    }
+                }
             }
             StatementKind::If {
-                mut true_block,
-                mut false_block,
-                condition,
+                true_block,
+                false_block,
+                ..
             } => {
-                sweep_dead_statements(&mut true_block);
-                sweep_dead_statements(&mut false_block);
-                Box::new(std::iter::once(Statement {
-                    span: statement.span,
-                    kind: StatementKind::If {
-                        condition,
-                        true_block,
-                        false_block,
-                    },
-                    meta: statement.meta,
-                }))
+                sweep_dead_statements(true_block);
+                sweep_dead_statements(false_block);
             }
-            StatementKind::Loop { mut block } => {
-                sweep_dead_statements(&mut block);
-                Box::new(std::iter::once(Statement {
-                    span: statement.span,
-                    kind: StatementKind::Loop { block },
-                    meta: statement.meta,
-                }))
+
+            StatementKind::Loop { block } => {
+                sweep_dead_statements(block);
             }
-        })
-        .collect();
+            StatementKind::Block { block } => sweep_dead_statements(block),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -254,6 +272,9 @@ fn annotate_dead_statements(
                 *used_symbols = true_block_used_symbols.combine(false_block_used_symbols);
                 dead_code_visit_expression(condition, used_symbols, compile_settings);
             }
+            StatementKind::Block { block } => {
+                annotate_dead_statements(block, used_symbols, compile_settings, true);
+            }
             StatementKind::Loop { block } => {
                 let mut analyse_existing = used_symbols.clone();
                 annotate_dead_statements(block, &mut analyse_existing, compile_settings, false);
@@ -281,9 +302,9 @@ fn annotate_dead_statements(
 }
 
 fn extract_side_effects<'input>(
-    expression: Expression<'input>,
+    expression: ExpressionKind<'input>,
 ) -> Box<dyn Iterator<Item = StatementKind> + '_> {
-    match expression.kind {
+    match expression {
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)
@@ -294,7 +315,7 @@ fn extract_side_effects<'input>(
             lhs,
             operator: _,
             rhs,
-        } => Box::new(extract_side_effects(*lhs).chain(extract_side_effects(*rhs))),
+        } => Box::new(extract_side_effects(lhs.kind).chain(extract_side_effects(rhs.kind))),
         ExpressionKind::Call { name, arguments } => {
             Box::new(std::iter::once(StatementKind::Call { name, arguments }))
         }

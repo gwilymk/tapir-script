@@ -259,6 +259,13 @@ impl<'input> TypeVisitor<'input> {
                         }
                     }
                 }
+                ast::StatementKind::Block { block } => {
+                    if self.visit_block(block, symtab, expected_return_type, diagnostics)
+                        == BlockAnalysisResult::AllBranchesReturn
+                    {
+                        return BlockAnalysisResult::AllBranchesReturn;
+                    }
+                }
             }
         }
 

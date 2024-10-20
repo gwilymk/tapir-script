@@ -243,6 +243,11 @@ impl<'input> Compiler<'input> {
                 let end_target = self.bytecode.new_label();
                 self.bytecode.patch_jump(if_true_jump, end_target);
             }
+            ast::StatementKind::Block { block } => {
+                let stack_depth_before_block = self.stack.len();
+                self.compile_block(block, symtab, types, stack_bottom, num_args);
+                self.compile_drop_to(stack_depth_before_block);
+            }
             ast::StatementKind::Return { values } => {
                 for ret_value in values {
                     self.compile_expression(ret_value, symtab);

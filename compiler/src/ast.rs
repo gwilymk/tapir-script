@@ -126,7 +126,7 @@ impl<'input> Statement<'input> {
                     .chain(true_block.iter_mut().flat_map(Statement::expressions_mut))
                     .chain(false_block.iter_mut().flat_map(Statement::expressions_mut)),
             ),
-            StatementKind::Loop { block } => {
+            StatementKind::Block { block } | StatementKind::Loop { block } => {
                 Box::new(block.iter_mut().flat_map(Statement::expressions_mut))
             }
             StatementKind::Call { arguments, .. }
@@ -148,6 +148,9 @@ pub enum StatementKind<'input> {
         value: Expression<'input>,
     },
     Wait,
+    Block {
+        block: Vec<Statement<'input>>,
+    },
     Continue,
     Break,
     #[default]

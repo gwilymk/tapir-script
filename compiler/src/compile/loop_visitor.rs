@@ -53,6 +53,11 @@ fn visit_block_in_loop(
 
                 result = LoopReturn::MayBreak;
             }
+            StatementKind::Block { block } => {
+                if visit_block_in_loop(block, is_in_loop, diagnostics) == LoopReturn::MayBreak {
+                    result = LoopReturn::MayBreak;
+                }
+            }
             StatementKind::If {
                 true_block,
                 false_block,

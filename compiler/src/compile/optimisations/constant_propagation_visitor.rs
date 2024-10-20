@@ -82,6 +82,9 @@ fn constant_propagation_block(
                 constant_symbols.apply_poisons(&loop_block_symbols);
                 did_propagate
             }
+            StatementKind::Block { block } => {
+                constant_propagation_block(block, constant_symbols, compile_settings)
+            }
             StatementKind::Call { arguments, .. } => {
                 let did_propagate = arguments
                     .iter_mut()
