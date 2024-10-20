@@ -1,0 +1,11 @@
+var y = 7;
+
+loop {
+    if true {
+        break;
+    }
+
+    y = 3;
+}
+
+int_prop = y;

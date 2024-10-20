@@ -258,7 +258,9 @@ fn annotate_dead_statements(
                 let mut analyse_existing = used_symbols.clone();
                 annotate_dead_statements(block, &mut analyse_existing, compile_settings, false);
                 used_symbols.absorb(analyse_existing);
-                annotate_dead_statements(block, used_symbols, compile_settings, true);
+                let mut analyse_existing = used_symbols.clone();
+                annotate_dead_statements(block, &mut analyse_existing, compile_settings, true);
+                used_symbols.absorb(analyse_existing);
             }
             StatementKind::Call { arguments, .. } => {
                 for expr in arguments {
