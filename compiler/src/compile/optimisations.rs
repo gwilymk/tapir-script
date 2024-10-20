@@ -1,10 +1,12 @@
 mod constant_folding_visitor;
 mod constant_propagation_visitor;
+mod dead_code_elimination_visitor;
 
 use std::ops::{BitOr, BitOrAssign};
 
 use constant_folding_visitor::constant_fold;
 use constant_propagation_visitor::constant_propagation;
+use dead_code_elimination_visitor::dead_code_eliminate;
 
 use crate::{
     ast::{ExpressionKind, Function},
