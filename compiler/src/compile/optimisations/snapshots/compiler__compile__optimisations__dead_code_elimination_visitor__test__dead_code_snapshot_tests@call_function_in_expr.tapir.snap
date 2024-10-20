@@ -1,0 +1,97 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimination_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/call_function_in_expr.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Call(
+            name: "add",
+            arguments: [
+              Expression(
+                span: "[span]",
+                kind: Integer(2),
+                meta: "[meta]",
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(5),
+                meta: "[meta]",
+              ),
+            ],
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+    Function(
+      name: "add",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Variable("x"),
+                    meta: "[meta]",
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("y"),
+                    meta: "[meta]",
+                  ),
+                ),
+                meta: "[meta]",
+              ),
+            ],
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [
+        FunctionArgument(
+          span: "[span]",
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          name: Resolved(SymbolId(4)),
+        ),
+        FunctionArgument(
+          span: "[span]",
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          name: Resolved(SymbolId(5)),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+    ),
+  ],
+)
