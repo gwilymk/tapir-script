@@ -8,6 +8,13 @@ use crate::{
 #[derive(Default, Clone)]
 struct UsedAssignmentsSet {
     used: HashSet<SymbolId>,
+    used_declaration: HashSet<SymbolId>,
+}
+
+enum DeclarationUsage {
+    ValueUsed,
+    DeclarationUsed,
+    Unused,
 }
 
 impl UsedAssignmentsSet {
@@ -17,20 +24,35 @@ impl UsedAssignmentsSet {
 
     fn used(&mut self, symbol: SymbolId) {
         self.used.insert(symbol);
+        self.used_declaration.insert(symbol);
     }
 
     fn remove(&mut self, symbol: SymbolId) -> bool {
         self.used.remove(&symbol)
     }
 
+    fn remove_declaration(&mut self, symbol: SymbolId) -> DeclarationUsage {
+        match (
+            self.used.remove(&symbol),
+            self.used_declaration.remove(&symbol),
+        ) {
+            (true, true) => DeclarationUsage::ValueUsed,
+            (true, false) => unreachable!(),
+            (false, true) => DeclarationUsage::DeclarationUsed,
+            (false, false) => DeclarationUsage::Unused,
+        }
+    }
+
     fn combine(self, other: UsedAssignmentsSet) -> UsedAssignmentsSet {
         UsedAssignmentsSet {
             used: self.used.union(&other.used).copied().collect(),
+            used_declaration: self.used_declaration.union(&other.used).copied().collect(),
         }
     }
 
     fn absorb(&mut self, other: UsedAssignmentsSet) {
         self.used.extend(other.used);
+        self.used_declaration.extend(other.used_declaration);
     }
 }
 
@@ -130,8 +152,7 @@ fn annotate_dead_statements(
             StatementKind::Wait => {
                 used_symbols.poison_properties(compile_settings);
             }
-            StatementKind::Assignment { value, .. }
-            | StatementKind::VariableDeclaration { value, .. } => {
+            StatementKind::Assignment { value, .. } => {
                 let symbol = statement.meta.get().unwrap();
                 let symbol_is_used = used_symbols.remove(*symbol);
                 if !symbol_is_used {
@@ -140,6 +161,25 @@ fn annotate_dead_statements(
                     }
                 } else {
                     dead_code_visit_expression(value, used_symbols, compile_settings);
+                }
+            }
+            StatementKind::VariableDeclaration { value, .. } => {
+                let symbol = statement.meta.get().unwrap();
+                let symbol_is_used = used_symbols.remove_declaration(*symbol);
+                match symbol_is_used {
+                    DeclarationUsage::ValueUsed => {
+                        dead_code_visit_expression(value, used_symbols, compile_settings);
+                    }
+                    DeclarationUsage::DeclarationUsed => {
+                        if mark_as_dead {
+                            value.kind = ExpressionKind::Integer(0);
+                        }
+                    }
+                    DeclarationUsage::Unused => {
+                        if mark_as_dead {
+                            statement.meta.set(DeadStatement);
+                        }
+                    }
                 }
             }
             StatementKind::If {
