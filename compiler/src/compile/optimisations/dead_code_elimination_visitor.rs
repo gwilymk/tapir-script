@@ -28,6 +28,10 @@ impl UsedAssignmentsSet {
             used: self.used.union(&other.used).copied().collect(),
         }
     }
+
+    fn absorb(&mut self, other: UsedAssignmentsSet) {
+        self.used.extend(other.used);
+    }
 }
 
 pub fn dead_code_eliminate(function: &mut Function, compile_settings: &CompileSettings) {
@@ -141,7 +145,7 @@ fn annotate_dead_statements(
             StatementKind::If {
                 true_block,
                 false_block,
-                ..
+                condition,
             } => {
                 let mut true_block_used_symbols = used_symbols.clone();
                 let mut false_block_used_symbols = used_symbols.clone();
@@ -158,9 +162,12 @@ fn annotate_dead_statements(
                     true,
                 );
                 *used_symbols = true_block_used_symbols.combine(false_block_used_symbols);
+                dead_code_visit_expression(condition, used_symbols, compile_settings);
             }
             StatementKind::Loop { block } => {
-                annotate_dead_statements(block, used_symbols, compile_settings, false);
+                let mut analyse_existing = used_symbols.clone();
+                annotate_dead_statements(block, &mut analyse_existing, compile_settings, false);
+                used_symbols.absorb(analyse_existing);
                 annotate_dead_statements(block, used_symbols, compile_settings, true);
             }
             StatementKind::Call { arguments, .. } => {
