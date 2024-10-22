@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::Serialize;
 
 use crate::{
-    ast::{self, Expression, Function, FunctionReturn, MaybeResolved, SymbolId},
+    ast::{self, Expression, Function, FunctionModifiers, FunctionReturn, MaybeResolved, SymbolId},
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::{FunctionType, Type},
@@ -120,14 +120,25 @@ impl<'input> TypeVisitor<'input> {
             self.resolve_type(symbol_id, argument.t.t, argument.span, diagnostics);
         }
 
-        if function.is_event_handler && !function.return_types.types.is_empty() {
-            diagnostics.add_message(
-                CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType {
-                    return_type_span: function.return_types.span,
-                    function_name: function.name.to_string(),
-                }
-                .into_message(function.span),
-            );
+        if let FunctionModifiers {
+            is_event_handler: Some(event_span),
+        } = &function.modifiers
+        {
+            if !function.return_types.types.is_empty() {
+                diagnostics.add_message(
+                    CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType {
+                        return_type_span: function.return_types.span,
+                        function_name: function.name.to_string(),
+                    }
+                    .into_message(function.span),
+                );
+
+                // we've added an error, so compilation will fail
+                // but we also want to warn about invalid returns etc, so
+                // change to what the user intended and warn about everything else too
+                function.return_types.types.clear();
+                function.return_types.span = *event_span;
+            }
         }
 
         let block_analysis_result = self.visit_block(

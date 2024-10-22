@@ -14,7 +14,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "foo",
@@ -47,7 +49,13 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: true,
+      modifiers: FunctionModifiers(
+        is_event_handler: Some(Span(
+          file_id: FileId(0),
+          start: 0,
+          end: 5,
+        )),
+      ),
     ),
   ],
 )

@@ -78,7 +78,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
   ],
 )

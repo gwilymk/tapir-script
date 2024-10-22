@@ -49,7 +49,7 @@ impl<'input> Script<'input> {
                 types: vec![],
                 span: Span::new(file_id, 0, 0),
             },
-            is_event_handler: false,
+            modifiers: FunctionModifiers::default(),
         };
 
         functions.insert(0, top_level_function);
@@ -65,7 +65,13 @@ pub struct Function<'input> {
     pub statements: Vec<Statement<'input>>,
     pub arguments: Vec<FunctionArgument<'input>>,
     pub return_types: FunctionReturn,
-    pub is_event_handler: bool,
+
+    pub modifiers: FunctionModifiers,
+}
+
+#[derive(Clone, Debug, Serialize, Default)]
+pub struct FunctionModifiers {
+    pub is_event_handler: Option<Span>,
 }
 
 #[derive(Clone, Debug, Serialize)]

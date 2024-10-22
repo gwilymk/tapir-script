@@ -10,3 +10,15 @@ Error: Event 'foo' should not have a return type
    │                         ─┬─  
    │                          ╰─── Expected no return type
 ───╯
+Error: Function should be returning 0 return values, but you are actually returning 1.
+   ╭─[event_fn_with_return_fail.tapir:1:1]
+   │
+ 1 │ event fn foo(x: int) -> int {
+   │ ──┬──  
+   │   ╰──── Function returns 0 values
+ 2 │     return x;
+   │     ────┬────  
+   │         ╰────── This has 1 return values
+   │ 
+   │ Note: Functions must return a fixed number of values
+───╯

@@ -27,7 +27,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function_with_no_args_or_return",
@@ -38,7 +40,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function_with_an_arg_no_return",
@@ -58,7 +62,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function_with_no_args_one_return",
@@ -74,7 +80,9 @@ Script(
         ],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function_with_no_args_multiple_returns",
@@ -94,7 +102,9 @@ Script(
         ],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function_with_args_and_mulitple_returns",
@@ -131,7 +141,9 @@ Script(
         ],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function_trailing_comma_in_args",
@@ -159,7 +171,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function_trailing_comma_in_return",
@@ -179,7 +193,9 @@ Script(
         ],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function_single_return_in_brackets",
@@ -195,7 +211,9 @@ Script(
         ],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
   ],
 )

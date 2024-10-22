@@ -14,7 +14,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_function",
@@ -33,7 +35,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_second_function",
@@ -63,7 +67,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_third_function",
@@ -88,7 +94,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
     Function(
       name: "my_fourth_function",
@@ -154,7 +162,9 @@ Script(
         types: [],
         span: "[span]",
       ),
-      is_event_handler: false,
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
     ),
   ],
 )
