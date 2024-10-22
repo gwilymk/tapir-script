@@ -4,7 +4,7 @@ use symtab_visitor::{SymTab, SymTabVisitor};
 use type_visitor::{TypeTable, TypeVisitor};
 
 use crate::{
-    ast::{self, Function, MaybeResolved, Statement, SymbolId},
+    ast::{self, BinaryOperator, Function, MaybeResolved, Statement, SymbolId},
     grammar,
     lexer::Lexer,
     reporting::Diagnostics,
@@ -416,6 +416,16 @@ impl<'input> Compiler<'input> {
                 // should not push the symbol ID because this is a temporary copy
                 self.stack.push(None);
             }
+            ast::ExpressionKind::BinaryOperation {
+                lhs,
+                operator: BinaryOperator::Then,
+                rhs,
+            } => {
+                let stack_before = self.stack.len();
+                self.compile_expression(lhs, symtab);
+                self.compile_drop_to(stack_before);
+                self.compile_expression(rhs, symtab);
+            }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
                 self.compile_expression(lhs, symtab);
                 self.compile_expression(rhs, symtab);
@@ -609,6 +619,7 @@ pub mod opcodes {
                 BinaryOperator::LtEq => LtEq,
                 BinaryOperator::FixMul => FixMul,
                 BinaryOperator::FixDiv => FixDiv,
+                BinaryOperator::Then => panic!("Shouldn't be compiling then binops"),
             }
         }
     }

@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use serde::Serialize;
 
 use crate::{
-    ast::{self, Expression, Function, FunctionModifiers, FunctionReturn, MaybeResolved, SymbolId},
+    ast::{
+        self, BinaryOperator, Expression, Function, FunctionModifiers, FunctionReturn,
+        MaybeResolved, SymbolId,
+    },
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::{FunctionType, Type},
@@ -360,7 +363,7 @@ impl<'input> TypeVisitor<'input> {
                     return Type::Error;
                 }
 
-                if lhs_type != rhs_type {
+                if lhs_type != rhs_type && *operator != BinaryOperator::Then {
                     diagnostics.add_message(
                         CompilerErrorKind::BinaryOperatorTypeError { lhs_type, rhs_type }
                             .into_message(expression.span),
@@ -380,7 +383,7 @@ impl<'input> TypeVisitor<'input> {
 
                 operator.update_type_with_lhs(lhs_type);
 
-                operator.resulting_type(lhs_type)
+                operator.resulting_type(lhs_type, rhs_type)
             }
             ast::ExpressionKind::Error => Type::Error,
             ast::ExpressionKind::Nop => Type::Error,

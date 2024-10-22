@@ -88,6 +88,7 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
         // ==============================================
         // mulitply by zero
         // TODO: Not valid if arguments have side effects
+        // (5 + foo(x)) * 0 -> (5 + foo(x)) then 0 -> foo(x) then 0
         // ==============================================
         // (_, B::Mul, E::Integer(0)) | (E::Integer(0), B::Mul, _) => E::Integer(0),
         // (_, B::FixMul, E::Fix(n)) | (E::Fix(n), B::FixMul, _) if n == 0.into() => E::Fix(0.into()),

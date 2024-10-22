@@ -157,6 +157,7 @@ fn pretty_print_expr(
                     super::BinaryOperator::GtEq => ">=",
                     super::BinaryOperator::Lt => "<",
                     super::BinaryOperator::LtEq => "<=",
+                    super::BinaryOperator::Then => "then",
                 }
             )?;
             pretty_print_expr(rhs, output, indent)?;

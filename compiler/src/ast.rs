@@ -271,6 +271,8 @@ pub enum BinaryOperator {
     GtEq,
     Lt,
     LtEq,
+
+    Then,
 }
 
 impl BinaryOperator {
@@ -303,10 +305,11 @@ impl BinaryOperator {
             B::FixMul | B::FixDiv => matches!(lhs_type, Type::Fix),
 
             B::EqEq | B::NeEq => !matches!(lhs_type, Type::Error),
+            B::Then => true,
         }
     }
 
-    pub fn resulting_type(self, lhs_type: Type) -> Type {
+    pub fn resulting_type(self, lhs_type: Type, rhs_type: Type) -> Type {
         use BinaryOperator as B;
 
         match self {
@@ -321,6 +324,7 @@ impl BinaryOperator {
             | B::FixDiv => lhs_type,
 
             B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq => Type::Bool,
+            B::Then => rhs_type,
         }
     }
 }
