@@ -1,0 +1,18 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/event_fn_call_fail.tapir
+---
+Error: Cannot call event handlers
+   ╭─[event_fn_call_fail.tapir:1:1]
+   │
+ 1 │ event fn foo(x: int) {
+   │          ─┬─  
+   │           ╰─── This event handler
+   │ 
+ 7 │ foo(3);
+   │ ───┬───  
+   │    ╰───── This call here
+   │ 
+   │ Note: 'foo' is an event handler. It must be called in rust via the generated 'on_foo' method
+───╯

@@ -13,7 +13,13 @@ use super::{loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab, CompileSe
 
 pub struct TypeVisitor<'input> {
     type_table: Vec<Option<Type>>,
-    functions: HashMap<&'input str, (Span, FunctionType)>,
+    functions: HashMap<&'input str, FunctionInfo>,
+}
+
+struct FunctionInfo {
+    span: Span,
+    ty: FunctionType,
+    modifiers: FunctionModifiers,
 }
 
 impl<'input> TypeVisitor<'input> {
@@ -30,13 +36,18 @@ impl<'input> TypeVisitor<'input> {
                 rets: function.return_types.types.iter().map(|t| t.t).collect(),
             };
 
-            if let Some((already_resolved_span, _)) =
-                resolved_functions.insert(function.name, (function.span, function_type))
-            {
+            if let Some(already_resolved) = resolved_functions.insert(
+                function.name,
+                FunctionInfo {
+                    span: function.span,
+                    ty: function_type,
+                    modifiers: function.modifiers.clone(),
+                },
+            ) {
                 diagnostics.add_message(
                     CompilerErrorKind::FunctionAlreadyDeclared {
                         function_name: function.name.to_string(),
-                        old_function_declaration: already_resolved_span,
+                        old_function_declaration: already_resolved.span,
                         new_function_declaration: function.span,
                     }
                     .into_message(function.span),
@@ -317,7 +328,7 @@ impl<'input> TypeVisitor<'input> {
             num_function_returns: self
                 .functions
                 .iter()
-                .map(|(name, function)| (*name, function.1.rets.len()))
+                .map(|(name, function)| (*name, function.ty.rets.len()))
                 .collect(),
         }
     }
@@ -404,20 +415,30 @@ impl<'input> TypeVisitor<'input> {
             .map(|arg| (self.type_for_expression(arg, symtab, diagnostics), arg.span))
             .collect();
 
-        if let Some((function_span, function_type)) = self.functions.get(name) {
-            if argument_types.len() != function_type.args.len() {
+        if let Some(function_info) = self.functions.get(name) {
+            if function_info.modifiers.is_event_handler.is_some() {
+                diagnostics.add_message(
+                    CompilerErrorKind::CannotCallEventHandler {
+                        function_span: function_info.span,
+                        function_name: name.to_string(),
+                    }
+                    .into_message(span),
+                );
+
+                return vec![Type::Error];
+            } else if argument_types.len() != function_info.ty.args.len() {
                 diagnostics.add_message(
                     CompilerErrorKind::IncorrectNumberOfArguments {
-                        expected: function_type.args.len(),
+                        expected: function_info.ty.args.len(),
                         actual: argument_types.len(),
-                        function_span: *function_span,
+                        function_span: function_info.span,
                         function_name: name.to_string(),
                     }
                     .into_message(span),
                 );
             } else {
                 for ((actual, actual_span), expected) in
-                    argument_types.iter().zip(&function_type.args)
+                    argument_types.iter().zip(&function_info.ty.args)
                 {
                     if actual != expected && *actual != Type::Error && *expected != Type::Error {
                         diagnostics.add_message(
@@ -431,7 +452,7 @@ impl<'input> TypeVisitor<'input> {
                 }
             }
 
-            function_type.rets.clone()
+            function_info.ty.rets.clone()
         } else {
             diagnostics.add_message(
                 CompilerErrorKind::UnknownFunction {

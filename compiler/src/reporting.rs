@@ -203,6 +203,10 @@ pub enum CompilerErrorKind {
         return_type_span: Span,
         function_name: String,
     },
+    CannotCallEventHandler {
+        function_span: Span,
+        function_name: String,
+    },
 }
 
 impl CompilerErrorKind {

@@ -221,5 +221,10 @@ fn compiler_error_report(
         CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType { return_type_span, function_name } => build_error_report(span)
             .with_label(Label::new(*return_type_span).with_message("Expected no return type"))
             .with_message(format!("Event '{function_name}' should not have a return type")),
+        CompilerErrorKind::CannotCallEventHandler { function_span, function_name } => build_error_report(span)
+            .with_label(Label::new(span).with_message("This call here"))
+            .with_label(Label::new(*function_span).with_message("This event handler"))
+            .with_message("Cannot call event handlers")
+            .with_note(format!("'{function_name}' is an event handler. It must be called in rust via the generated 'on_{function_name}' method")),
     }
 }

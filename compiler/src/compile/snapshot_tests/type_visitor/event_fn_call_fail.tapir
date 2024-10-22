@@ -1,0 +1,7 @@
+event fn foo(x: int) {
+    loop {
+        wait;
+    }
+}
+
+foo(3);
