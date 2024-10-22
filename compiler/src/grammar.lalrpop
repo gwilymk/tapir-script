@@ -141,10 +141,13 @@ StatementKind: StatementKind<'input> = {
 
     spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Spawn { <> },
 
+    <block: Block> => StatementKind::Block { <> },
+    
     <error: !> ";" => {
         diagnostics.add_lalrpop(<>.error, file_id);
         StatementKind::Error
     }
+
 }
 
 Block: Vec<Statement<'input>> = "{" <Statement*> "}";
