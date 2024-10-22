@@ -196,6 +196,7 @@ fn sweep_dead_statements(block: &mut [Statement]) -> ConstantOptimisationResult 
                             })
                             .collect(),
                     };
+                    statement.meta.clear(); // the existing metadata is no longer relevant
                     result |= ConstantOptimisationResult::DidSomething;
                 }
             }

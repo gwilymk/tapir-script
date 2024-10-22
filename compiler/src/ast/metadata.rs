@@ -74,6 +74,10 @@ impl Metadata {
             .get(&type_id)
             .and_then(|(value, _)| (**value).as_any().downcast_ref())
     }
+
+    pub fn clear(&mut self) {
+        self.map.clear();
+    }
 }
 
 #[cfg(test)]
