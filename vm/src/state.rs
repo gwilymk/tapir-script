@@ -42,13 +42,6 @@ impl State {
 
             let arg = instr & 0xff;
 
-            extern crate std;
-            std::println!(
-                "{} {parsed:?} {arg} {:?}",
-                self.pc,
-                bytecode.get(self.pc + 1)
-            );
-
             self.pc += 1;
 
             match parsed {
