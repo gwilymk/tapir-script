@@ -116,7 +116,14 @@ fn sweep_unconditional_if(block: &mut Vec<Statement>) -> ConstantOptimisationRes
                 true
             }
         }
-        StatementKind::Block { block } => !block.is_empty(),
+        StatementKind::Block { block } => {
+            result |= sweep_unconditional_if(block);
+            !block.is_empty()
+        }
+        StatementKind::Loop { block, .. } => {
+            result |= sweep_unconditional_if(block);
+            true
+        }
         StatementKind::Error
         | StatementKind::VariableDeclaration { .. }
         | StatementKind::Assignment { .. }
@@ -124,7 +131,6 @@ fn sweep_unconditional_if(block: &mut Vec<Statement>) -> ConstantOptimisationRes
         | StatementKind::Continue
         | StatementKind::Break
         | StatementKind::Nop
-        | StatementKind::Loop { .. }
         | StatementKind::Call { .. }
         | StatementKind::Spawn { .. }
         | StatementKind::Return { .. } => true,
@@ -433,7 +439,9 @@ mod test {
                     &mut diagnostics,
                 );
 
-                dead_code_eliminate(function, &compile_settings);
+                while dead_code_eliminate(function, &compile_settings)
+                    == ConstantOptimisationResult::DidSomething
+                {}
             }
 
             let pretty_printed = script.pretty_print();
