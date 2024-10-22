@@ -218,9 +218,11 @@ fn compiler_error_report(
         CompilerErrorKind::DivideByZero => build_error_report(span)
             .with_label(Label::new(span).with_message("This reduces to 0"))
             .with_message("Divide by zero not allowed"),
-        CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType { return_type_span, function_name } => build_error_report(span)
+        CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType { return_type_span, function_name, event_span } => build_error_report(span)
             .with_label(Label::new(*return_type_span).with_message("Expected no return type"))
-            .with_message(format!("Event '{function_name}' should not have a return type")),
+            .with_label(Label::new(*event_span).with_message(format!("'{function_name}' has been declared as an event handler")))
+            .with_message("Event handlers should not have a return type")
+            .with_help("Either remove the return type, or change this to be a regular function"),
         CompilerErrorKind::CannotCallEventHandler { function_span, function_name } => build_error_report(span)
             .with_label(Label::new(span).with_message("This call here"))
             .with_label(Label::new(*function_span).with_message("This event handler"))

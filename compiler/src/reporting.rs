@@ -201,6 +201,7 @@ pub enum CompilerErrorKind {
     DivideByZero,
     EventFunctionsShouldNotHaveAReturnType {
         return_type_span: Span,
+        event_span: Span,
         function_name: String,
     },
     CannotCallEventHandler {

@@ -140,6 +140,7 @@ impl<'input> TypeVisitor<'input> {
                     CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType {
                         return_type_span: function.return_types.span,
                         function_name: function.name.to_string(),
+                        event_span: *event_span,
                     }
                     .into_message(function.span),
                 );
