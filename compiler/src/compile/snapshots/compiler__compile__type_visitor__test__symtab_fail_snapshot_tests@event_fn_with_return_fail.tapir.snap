@@ -1,0 +1,12 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/event_fn_with_return_fail.tapir
+---
+Error: Event 'foo' should not have a return type
+   ╭─[event_fn_with_return_fail.tapir:1:1]
+   │
+ 1 │ event fn foo(x: int) -> int {
+   │                         ─┬─  
+   │                          ╰─── Expected no return type
+───╯

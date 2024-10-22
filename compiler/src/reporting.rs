@@ -199,6 +199,10 @@ pub enum CompilerErrorKind {
     },
     BreakOrContinueOutsideOfLoop,
     DivideByZero,
+    EventFunctionsShouldNotHaveAReturnType {
+        return_type_span: Span,
+        function_name: String,
+    },
 }
 
 impl CompilerErrorKind {

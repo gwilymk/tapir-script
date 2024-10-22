@@ -120,6 +120,16 @@ impl<'input> TypeVisitor<'input> {
             self.resolve_type(symbol_id, argument.t.t, argument.span, diagnostics);
         }
 
+        if function.is_event_handler && !function.return_types.types.is_empty() {
+            diagnostics.add_message(
+                CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType {
+                    return_type_span: function.return_types.span,
+                    function_name: function.name.to_string(),
+                }
+                .into_message(function.span),
+            );
+        }
+
         let block_analysis_result = self.visit_block(
             &mut function.statements,
             symtab,
