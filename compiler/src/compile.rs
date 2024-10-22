@@ -605,7 +605,7 @@ pub struct Bytecode {
     /// opcodes have different sizes, this is the current size of the _compiled_ code
     length: usize,
 
-    event_handlers: Vec<EventHandler>,
+    pub event_handlers: Vec<EventHandler>,
 }
 
 impl Bytecode {

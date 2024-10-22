@@ -121,8 +121,9 @@ mod test {
                 enable_optimisations: true,
             };
 
-            let bytecode =
-                compiler::compile(path.file_name().unwrap(), &input, compiler_settings).unwrap();
+            let bytecode = compiler::compile(path.file_name().unwrap(), &input, compiler_settings)
+                .unwrap()
+                .bytecode;
 
             let mut vm = Vm::new(&bytecode);
             let mut prop_object = PropObj { int_prop: 5 };
@@ -176,7 +177,7 @@ mod test {
                             concat!(stringify!($name), ".tapir"),
                             concat!("prop = ", $code, ";"),
                             compile_settings
-                        ).unwrap();
+                        ).unwrap().bytecode;
 
                         let mut vm = Vm::new(&bytecode);
                         let mut prop_object = PropObj {

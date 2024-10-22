@@ -54,11 +54,13 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let reduced_filename = reduced_filename.canonicalize().unwrap();
     let reduced_filename = reduced_filename.to_string_lossy();
 
+    let bytecode = &compiled_content.bytecode;
+
     quote! {
         #[automatically_derived]
         unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
             fn script(self) -> ::tapir_script::Script<Self> {
-                static BYTECODE: &[u16] = &[#(#compiled_content),*];
+                static BYTECODE: &[u16] = &[#(#bytecode),*];
 
                 ::tapir_script::Script::new(self, BYTECODE)
             }

@@ -25,10 +25,19 @@ pub fn compile(
     filename: impl AsRef<Path>,
     input: &str,
     compile_settings: CompileSettings,
-) -> Result<Vec<u16>, Diagnostics> {
+) -> Result<CompileResult, Diagnostics> {
     let bytecode = compile::compile(filename, input, &compile_settings)?;
 
-    Ok(bytecode.compile())
+    let compiled = bytecode.compile();
+    Ok(CompileResult {
+        bytecode: compiled,
+        event_handlers: bytecode.event_handlers,
+    })
+}
+
+pub struct CompileResult {
+    pub bytecode: Vec<u16>,
+    pub event_handlers: Vec<EventHandler>,
 }
 
 pub struct EventHandler {
