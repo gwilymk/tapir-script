@@ -56,6 +56,7 @@ Script(
         types: [],
         span: "[span]",
       ),
+      is_event_handler: false,
     ),
   ],
 )

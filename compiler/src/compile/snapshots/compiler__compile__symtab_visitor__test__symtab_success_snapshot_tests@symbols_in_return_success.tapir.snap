@@ -14,6 +14,7 @@ Script(
         types: [],
         span: "[span]",
       ),
+      is_event_handler: false,
     ),
     Function(
       name: "my_function",
@@ -113,6 +114,7 @@ Script(
         ],
         span: "[span]",
       ),
+      is_event_handler: false,
     ),
   ],
 )

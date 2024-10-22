@@ -77,7 +77,7 @@ TopLevelStatement: TopLevelStatement<'input> = {
 
 FunctionDefinition: Function<'input> =
     "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end) };
+        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), is_event_handler: false };
 
 FunctionArguments: Vec<FunctionArgument<'input>> = CommaSeparated<FunctionArgument>;
 FunctionArgument: FunctionArgument<'input> = 

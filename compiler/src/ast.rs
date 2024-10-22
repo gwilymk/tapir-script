@@ -34,7 +34,9 @@ impl<'input> Script<'input> {
                 TopLevelStatement::Statement(statement) => {
                     top_level_function_statements.push(statement)
                 }
-                TopLevelStatement::FunctionDefinition(function) => functions.push(function),
+                TopLevelStatement::FunctionDefinition(function)
+                | TopLevelStatement::EventDefinition(function) => functions.push(function),
+
                 TopLevelStatement::Error => {}
             }
         }
@@ -48,6 +50,7 @@ impl<'input> Script<'input> {
                 types: vec![],
                 span: Span::new(file_id, 0, 0),
             },
+            is_event_handler: false,
         };
 
         functions.insert(0, top_level_function);
@@ -63,6 +66,7 @@ pub struct Function<'input> {
     pub statements: Vec<Statement<'input>>,
     pub arguments: Vec<FunctionArgument<'input>>,
     pub return_types: FunctionReturn,
+    pub is_event_handler: bool,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -94,6 +98,7 @@ pub enum MaybeResolved<'input> {
 pub enum TopLevelStatement<'input> {
     Statement(Statement<'input>),
     FunctionDefinition(Function<'input>),
+    EventDefinition(Function<'input>),
     Error,
 }
 
