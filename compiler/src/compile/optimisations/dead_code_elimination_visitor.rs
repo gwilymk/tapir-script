@@ -5,6 +5,8 @@ use crate::{
     CompileSettings,
 };
 
+use super::ConstantOptimisationResult;
+
 #[derive(Default, Clone)]
 struct UsedAssignmentsSet {
     used: HashSet<SymbolId>,
@@ -56,7 +58,10 @@ impl UsedAssignmentsSet {
     }
 }
 
-pub fn dead_code_eliminate(function: &mut Function, compile_settings: &CompileSettings) {
+pub fn dead_code_eliminate(
+    function: &mut Function,
+    compile_settings: &CompileSettings,
+) -> ConstantOptimisationResult {
     eliminate_after_control_flow_diverge(&mut function.statements);
 
     let mut constant_symbol = UsedAssignmentsSet::default();
@@ -68,11 +73,12 @@ pub fn dead_code_eliminate(function: &mut Function, compile_settings: &CompileSe
         true,
     );
 
-    sweep_dead_statements(&mut function.statements);
-    sweep_unconditional_if(&mut function.statements);
+    sweep_dead_statements(&mut function.statements)
+        | sweep_unconditional_if(&mut function.statements)
 }
 
-fn sweep_unconditional_if(block: &mut Vec<Statement>) {
+fn sweep_unconditional_if(block: &mut Vec<Statement>) -> ConstantOptimisationResult {
+    let mut result = ConstantOptimisationResult::DidNothing;
     block.retain_mut(|statement| match &mut statement.kind {
         StatementKind::If {
             condition,
@@ -87,6 +93,7 @@ fn sweep_unconditional_if(block: &mut Vec<Statement>) {
                 };
                 let should_remove = block.is_empty();
                 statement.kind = StatementKind::Block { block };
+                result |= ConstantOptimisationResult::DidSomething;
                 !should_remove
             } else if true_block.is_empty() && false_block.is_empty() {
                 let condition = std::mem::take(&mut condition.kind);
@@ -97,6 +104,8 @@ fn sweep_unconditional_if(block: &mut Vec<Statement>) {
                         meta: Default::default(),
                     })
                     .collect();
+                result |= ConstantOptimisationResult::DidSomething;
+
                 if block.is_empty() {
                     false
                 } else {
@@ -119,7 +128,9 @@ fn sweep_unconditional_if(block: &mut Vec<Statement>) {
         | StatementKind::Call { .. }
         | StatementKind::Spawn { .. }
         | StatementKind::Return { .. } => true,
-    })
+    });
+
+    result
 }
 
 fn eliminate_after_control_flow_diverge(block: &mut Vec<Statement>) -> bool {
@@ -144,8 +155,9 @@ fn eliminate_after_control_flow_diverge(block: &mut Vec<Statement>) -> bool {
                 false_block,
                 ..
             } => {
-                eliminate_after_control_flow_diverge(true_block);
-                eliminate_after_control_flow_diverge(false_block);
+                encountered_control_flow_diverge |=
+                    eliminate_after_control_flow_diverge(true_block)
+                        && eliminate_after_control_flow_diverge(false_block);
             }
             StatementKind::Loop { block } => {
                 eliminate_after_control_flow_diverge(block);
@@ -159,7 +171,8 @@ fn eliminate_after_control_flow_diverge(block: &mut Vec<Statement>) -> bool {
     encountered_control_flow_diverge
 }
 
-fn sweep_dead_statements(block: &mut [Statement]) {
+fn sweep_dead_statements(block: &mut [Statement]) -> ConstantOptimisationResult {
+    let mut result = ConstantOptimisationResult::DidNothing;
     for statement in block.iter_mut() {
         match &mut statement.kind {
             StatementKind::Continue
@@ -182,7 +195,8 @@ fn sweep_dead_statements(block: &mut [Statement]) {
                                 meta: Default::default(),
                             })
                             .collect(),
-                    }
+                    };
+                    result |= ConstantOptimisationResult::DidSomething;
                 }
             }
             StatementKind::If {
@@ -190,16 +204,20 @@ fn sweep_dead_statements(block: &mut [Statement]) {
                 false_block,
                 ..
             } => {
-                sweep_dead_statements(true_block);
-                sweep_dead_statements(false_block);
+                result |= sweep_dead_statements(true_block);
+                result |= sweep_dead_statements(false_block);
             }
 
             StatementKind::Loop { block } => {
-                sweep_dead_statements(block);
+                result |= sweep_dead_statements(block);
             }
-            StatementKind::Block { block } => sweep_dead_statements(block),
+            StatementKind::Block { block } => {
+                result |= sweep_dead_statements(block);
+            }
         }
     }
+
+    result
 }
 
 #[derive(Debug)]
