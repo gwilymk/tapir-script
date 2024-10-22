@@ -1,0 +1,7 @@
+int_prop = foo(int_prop) * 0;
+
+fn foo(x: int) -> int {
+    int_prop = x;
+    wait;
+    return x;
+}
