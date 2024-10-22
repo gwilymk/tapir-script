@@ -7,7 +7,6 @@ use enumn::N;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, N)]
 pub enum Instruction {
     Push8,
-    Push24,
     Push32,
     Dup,
     Drop,

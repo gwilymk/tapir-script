@@ -48,7 +48,6 @@ impl State {
                 bytecode::Instruction::Push8 => {
                     self.stack.push(arg as i8 as i32);
                 }
-                bytecode::Instruction::Push24 => todo!(),
                 bytecode::Instruction::Push32 => {
                     let first = bytecode[self.pc].to_le_bytes();
                     let second = bytecode[self.pc + 1].to_le_bytes();
