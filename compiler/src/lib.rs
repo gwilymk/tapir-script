@@ -43,5 +43,10 @@ pub struct CompileResult {
 pub struct EventHandler {
     pub name: String,
     pub bytecode_offset: usize,
-    pub arguments: Vec<Type>,
+    pub arguments: Vec<EventHandlerArgument>,
+}
+
+pub struct EventHandlerArgument {
+    pub name: String,
+    pub ty: Type,
 }

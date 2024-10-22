@@ -7,3 +7,4 @@ edition = "2021"
 
 tapir-script-macros = { path = "../tapir-script-macros" }
 vm = { path = "../vm" }
+agb_fixnum = "0.20"

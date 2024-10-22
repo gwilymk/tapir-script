@@ -6,7 +6,7 @@ use std::{
 
 use compiler::{CompileSettings, Property, Type};
 use proc_macro2::TokenStream;
-use quote::quote;
+use quote::{format_ident, quote};
 use syn::{parse2, DeriveInput, LitStr};
 
 pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
@@ -55,6 +55,55 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let reduced_filename = reduced_filename.to_string_lossy();
 
     let bytecode = &compiled_content.bytecode;
+    let event_handlers = compiled_content.event_handlers;
+
+    let (event_handler_trait_fns, event_handler_trait_impls): (Vec<_>, Vec<_>) = event_handlers
+        .iter()
+        .map(|event_handler| {
+            let arg_definitions = event_handler
+                .arguments
+                .iter()
+                .map(|arg| {
+                    let kind = match arg.ty {
+                        Type::Int => quote!(i32),
+                        Type::Fix => quote!(::tapir_script::Fix),
+                        Type::Bool => quote!(bool),
+                        Type::Error => panic!("Should not have errors here"),
+                    };
+                    let name = format_ident!("{}", arg.name);
+
+                    quote!(#name: #kind)
+                })
+                .collect::<Vec<_>>();
+
+            let trigger_name = format_ident!("on_{}", event_handler.name);
+
+            let initial_stack_vector = event_handler.arguments.iter().map(|arg| {
+                let arg_name = format_ident!("{}", arg.name);
+                quote! {
+                    initial_stack.push(::tapir_script::TapirProperty::to_i32(&#arg_name))
+                }
+            });
+
+            let initial_stack_vector_len = event_handler.arguments.len() + 1; // the mandatory return value
+
+            let initial_pc = event_handler.bytecode_offset;
+
+            (
+                quote!(fn #trigger_name(&mut self, #(#arg_definitions,)*)),
+                quote! {
+                    fn #trigger_name(&mut self, #(#arg_definitions,)*) {
+                        let mut initial_stack = ::tapir_script::Vec::with_capacity(#initial_stack_vector_len);
+                        #(#initial_stack_vector;)*
+
+                        unsafe { self.__private_trigger_event(initial_stack, #initial_pc); }
+                    }
+                },
+            )
+        })
+        .unzip();
+
+    let event_handler_trait_name = format_ident!("{}Events", struct_name);
 
     quote! {
         #[automatically_derived]
@@ -81,6 +130,14 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                     _ => unreachable!("Invalid index {index}"),
                 }
             }
+        }
+
+        trait #event_handler_trait_name {
+            #(#event_handler_trait_fns;)*
+        }
+
+        impl #impl_generics #event_handler_trait_name for ::tapir_script::Script<#struct_name #ty_generics> #where_clause {
+            #(#event_handler_trait_impls)*
         }
 
         const _: &[u8] = include_bytes!(#reduced_filename);

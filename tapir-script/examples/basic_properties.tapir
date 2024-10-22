@@ -4,3 +4,8 @@ int_prop = 2;
 wait;
 int_prop = 3;
 wait;
+
+event fn foo(x: int) {
+    int_prop = x;
+    wait;
+}

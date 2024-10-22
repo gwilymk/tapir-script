@@ -10,7 +10,7 @@ use crate::{
     reporting::Diagnostics,
     tokens::FileId,
     types::Type,
-    EventHandler,
+    EventHandler, EventHandlerArgument,
 };
 
 mod loop_visitor;
@@ -146,7 +146,21 @@ impl<'input> Compiler<'input> {
             self.bytecode.event_handlers.push(EventHandler {
                 name: function.name.to_owned(),
                 bytecode_offset: self.bytecode.length,
-                arguments: function.arguments.iter().map(|arg| arg.t.t).collect(),
+                arguments: function
+                    .arguments
+                    .iter()
+                    .map(|arg| {
+                        let MaybeResolved::Resolved(symbol_id) = arg.name else {
+                            panic!("Should have been resolved by the symbol visitor");
+                        };
+
+                        let symbol_name = symtab.name_for_symbol(symbol_id);
+                        EventHandlerArgument {
+                            name: symbol_name.to_string(),
+                            ty: arg.t.t,
+                        }
+                    })
+                    .collect(),
             });
         }
 
