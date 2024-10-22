@@ -30,6 +30,7 @@ extern {
         loop => Token::KeywordLoop,
         break => Token::KeywordBreak,
         continue => Token::KeywordContinue,
+        event => Token::KeywordEvent,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -75,9 +76,12 @@ TopLevelStatement: TopLevelStatement<'input> = {
     },
 }
 
-FunctionDefinition: Function<'input> =
+FunctionDefinition: Function<'input> = {
     "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), is_event_handler: false };
+        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), is_event_handler: false },
+    event "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: VoidReturn> <statements: Block> =>
+        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), is_event_handler: true },
+}
 
 FunctionArguments: Vec<FunctionArgument<'input>> = CommaSeparated<FunctionArgument>;
 FunctionArgument: FunctionArgument<'input> = 
@@ -87,10 +91,11 @@ FunctionArgument: FunctionArgument<'input> =
         name: MaybeResolved::Unresolved(name),
     };
 FunctionReturn: FunctionReturn = {
-    <start: @L> <end: @R> => FunctionReturn { types: vec![], span: Span::new(file_id, start, end) },
+    <VoidReturn>,
     "->" <start: @L> <t: Type> <end: @R> => FunctionReturn { types: vec![t], span: Span::new(file_id, start, end) },
     "->" "(" <start: @L> <types: CommaSeparated<Type>> <end: @R> ")" => FunctionReturn { types, span: Span::new(file_id, start, end) },
 }
+VoidReturn: FunctionReturn = <start: @L> <end: @R> => FunctionReturn { types: vec![], span: Span::new(file_id, start, end) };
 
 CommaSeparated<T>: Vec<T> =
     <mut v:(<T> ",")*> <e:T?> => match e {

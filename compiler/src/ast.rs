@@ -34,8 +34,7 @@ impl<'input> Script<'input> {
                 TopLevelStatement::Statement(statement) => {
                     top_level_function_statements.push(statement)
                 }
-                TopLevelStatement::FunctionDefinition(function)
-                | TopLevelStatement::EventDefinition(function) => functions.push(function),
+                TopLevelStatement::FunctionDefinition(function) => functions.push(function),
 
                 TopLevelStatement::Error => {}
             }
@@ -98,7 +97,6 @@ pub enum MaybeResolved<'input> {
 pub enum TopLevelStatement<'input> {
     Statement(Statement<'input>),
     FunctionDefinition(Function<'input>),
-    EventDefinition(Function<'input>),
     Error,
 }
 

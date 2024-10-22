@@ -1,0 +1,53 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: ast
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/event_fn.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      is_event_handler: false,
+    ),
+    Function(
+      name: "foo",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            ident: "int_prop",
+            value: Expression(
+              span: "[span]",
+              kind: Variable("x"),
+              meta: {},
+            ),
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        FunctionArgument(
+          span: "[span]",
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          name: Unresolved("x"),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      is_event_handler: true,
+    ),
+  ],
+)
