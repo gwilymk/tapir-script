@@ -85,11 +85,12 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
         (E::Integer(0), B::Add | B::Sub, any) | (any, B::Add | B::Sub, E::Integer(0)) => any,
         (any, B::Add | B::Sub, E::Fix(n)) | (E::Fix(n), B::Add | B::Sub, any) if n == 0.into() => any,
 
-        // ================
+        // ==============================================
         // mulitply by zero
-        // ================
-        (_, B::Mul, E::Integer(0)) | (E::Integer(0), B::Mul, _) => E::Integer(0),
-        (_, B::FixMul, E::Fix(n)) | (E::Fix(n), B::FixMul, _) if n == 0.into() => E::Fix(0.into()),
+        // TODO: Not valid if arguments have side effects
+        // ==============================================
+        // (_, B::Mul, E::Integer(0)) | (E::Integer(0), B::Mul, _) => E::Integer(0),
+        // (_, B::FixMul, E::Fix(n)) | (E::Fix(n), B::FixMul, _) if n == 0.into() => E::Fix(0.into()),
 
         // ======================
         // multiply / divide by 1
