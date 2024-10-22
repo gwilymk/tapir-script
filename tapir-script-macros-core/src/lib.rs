@@ -49,6 +49,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let getters = properties.iter().map(|property| &property.getter);
 
     let struct_name = ast.ident;
+    let visibility = ast.vis;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let reduced_filename = reduced_filename.canonicalize().unwrap();
@@ -89,7 +90,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
             }
         }
 
-        trait #event_handler_trait_name {
+        #visibility trait #event_handler_trait_name {
             #(#event_handler_trait_fns;)*
         }
 
