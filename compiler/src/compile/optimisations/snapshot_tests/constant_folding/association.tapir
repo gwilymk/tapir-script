@@ -1,0 +1,3 @@
+int_prop = 2 + int_prop + 3;
+wait;
+int_prop = 2 + int_prop - 3;

@@ -1,0 +1,73 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations/constant_folding_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_folding/association.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            ident: "int_prop",
+            value: Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Variable("int_prop"),
+                  meta: "[meta]",
+                ),
+                operator: Add,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Integer(5),
+                  meta: "[meta]",
+                ),
+              ),
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: Wait,
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            ident: "int_prop",
+            value: Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Variable("int_prop"),
+                  meta: "[meta]",
+                ),
+                operator: Add,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Integer(-1),
+                  meta: "[meta]",
+                ),
+              ),
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+  ],
+)

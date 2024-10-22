@@ -32,10 +32,10 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
     use ExpressionKind as E;
     
     macro_rules! replace_op {
-        ($lhs:expr, $op:ident, $rhs:expr) => {{
+        ($lhs:expr, $op:expr, $rhs:expr) => {{
             lhs.kind = $lhs;
             rhs.kind = $rhs;
-            *operator = B::$op;
+            *operator = $op;
 
             return ConstantOptimisationResult::DidSomething;
         }};
@@ -112,12 +112,41 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
         }
 
         // ==========================
+        //         Association
+        // (a + 1) + 2 => a + (1 + 2)
+        // ==========================
+        (
+            E::BinaryOperation { lhs: a, operator: op1 @ (B::Add | B::Mul | B::FixMul), rhs: b }, 
+            op2 @ (B::Add | B::Mul | B::FixMul | B::Sub), 
+            c @ (E::Integer(_) | E::Fix(_))
+        )
+            if matches!(b.kind, E::Fix(_) | E::Integer(_)) && (op1 == op2 || matches!((op1, op2), (B::Add, B::Sub))) =>
+                replace_op!(a.kind, op1, 
+                    E::BinaryOperation { 
+                        lhs: b, 
+                        operator: op2, 
+                        rhs: Box::new(c.with_span(a.span.file_id, a.span.start, a.span.end)),
+                    }),
+            
+        // ==========================
         // Fix multiply by an integer
         // ==========================
-        (any, B::FixMul, E::Fix(n)) |
-        (E::Fix(n), B::FixMul, any) 
-            if n.frac() == 0 => replace_op!(any, Mul, E::Integer(n.floor())),
+        (any, B::FixMul, E::Fix(n))
+            if n.frac() == 0 => replace_op!(any, B::Mul, E::Integer(n.floor())),
 
+        // ==================================
+        // Canonicalise commutative operators
+        // (1 + a) + 2 => (a + 1) + 2
+        // ==================================
+        (llhs @ (E::Fix(_) | E::Integer(_)), B::Add | B::Mul | B::FixMul, rrhs)
+            if !matches!(rrhs, E::Fix(_) | E::Integer(_)) => 
+                {
+                    std::mem::swap(&mut lhs.meta, &mut rhs.meta);
+                    lhs.kind = rrhs;
+                    rhs.kind = llhs;
+
+                    return ConstantOptimisationResult::DidSomething;
+                },
 
         // Put it back the way it was
         (lhs_kind, _, rhs_kind) => {
@@ -196,7 +225,9 @@ mod test {
                     &mut diagnostics,
                 );
 
-                constant_fold(function, &mut diagnostics);
+                while constant_fold(function, &mut diagnostics)
+                    == ConstantOptimisationResult::DidSomething
+                {}
             }
 
             assert_ron_snapshot!(script, {
