@@ -7,15 +7,19 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/wait.tapir
 00000001: push8	3
 00000002: setprop	0
 00000003: wait
-00000004: push8	6
-00000005: move	1
-00000006: push8	6
-00000007: setprop	0
-00000008: wait
-00000009: push8	7
-00000010: move	1
-00000011: push8	7
-00000012: setprop	0
-00000013: wait
-00000014: drop	1
-00000015: ret	args=0 rets=0 shift=0
+00000004: dup	0
+00000005: push8	1
+00000006: add
+00000007: move	1
+00000008: dup	0
+00000009: setprop	0
+00000010: wait
+00000011: dup	0
+00000012: push8	1
+00000013: add
+00000014: move	1
+00000015: dup	0
+00000016: setprop	0
+00000017: wait
+00000018: drop	1
+00000019: ret	args=0 rets=0 shift=0

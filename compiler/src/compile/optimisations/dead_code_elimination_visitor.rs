@@ -253,13 +253,8 @@ fn annotate_dead_statements(
                 let symbol = statement.meta.get().unwrap();
                 let symbol_is_used = used_symbols.remove_declaration(*symbol);
                 match symbol_is_used {
-                    DeclarationUsage::ValueUsed => {
+                    DeclarationUsage::ValueUsed | DeclarationUsage::DeclarationUsed => {
                         dead_code_visit_expression(value, used_symbols, compile_settings);
-                    }
-                    DeclarationUsage::DeclarationUsed => {
-                        if mark_as_dead {
-                            value.kind = ExpressionKind::Integer(0);
-                        }
                     }
                     DeclarationUsage::Unused => {
                         if mark_as_dead {
@@ -421,6 +416,7 @@ mod test {
                         name: "bool_prop".to_owned(),
                     },
                 ],
+                enable_optimisations: true,
             };
 
             let mut symtab_visitor = SymTabVisitor::new(&compile_settings);

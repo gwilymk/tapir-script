@@ -282,6 +282,7 @@ mod test {
                     index: 0,
                     name: "int_prop".to_string(),
                 }],
+                enable_optimisations: false,
             });
 
             for function in &mut script.functions {
@@ -315,6 +316,7 @@ mod test {
                     index: 0,
                     name: "int_prop".to_string(),
                 }],
+                enable_optimisations: false,
             });
 
             for function in &mut script.functions {

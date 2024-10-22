@@ -9,3 +9,4 @@ var x = foo();
 wait;
 x = 121;
 wait;
+int_prop = x;

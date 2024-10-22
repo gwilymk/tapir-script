@@ -8,28 +8,26 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/conditional_taken.ta
     [
       5,
       1,
-      15,
     ],
   ], PropObj(
     int_prop: 5,
   )),
   ([
     [
-      15,
+      5,
       1,
-      15,
     ],
   ], PropObj(
     int_prop: 5,
   )),
   ([
     [
-      15,
+      5,
     ],
   ], PropObj(
-    int_prop: 5,
+    int_prop: 15,
   )),
   ([], PropObj(
-    int_prop: 5,
+    int_prop: 15,
   )),
 ]

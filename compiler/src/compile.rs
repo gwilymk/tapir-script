@@ -28,6 +28,7 @@ pub struct Property {
 
 pub struct CompileSettings {
     pub properties: Vec<Property>,
+    pub enable_optimisations: bool,
 }
 
 impl CompileSettings {
@@ -389,7 +390,8 @@ impl<'input> Compiler<'input> {
                     self.bytecode.add_opcode(Opcode::Dup(offset as u8 - 1));
                 }
 
-                self.stack.push(Some(*symbol_id));
+                // should not push the symbol ID because this is a temporary copy
+                self.stack.push(None);
             }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
                 self.compile_expression(lhs, symtab);
@@ -558,6 +560,7 @@ pub mod opcodes {
                 | Self::Call(_)
                 | Self::Return { .. }
                 | Self::Spawn { .. } => 2,
+                Self::Push32(_) => 3,
                 _ => 1,
             }
         }
@@ -736,6 +739,7 @@ mod test {
                     index: 0,
                     name: "int_prop".to_string(),
                 }],
+                enable_optimisations: false,
             };
 
             let bytecode = compile(path, &input, &compiler_settings).unwrap();

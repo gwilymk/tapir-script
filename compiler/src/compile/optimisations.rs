@@ -20,7 +20,13 @@ pub fn optimise(
     compile_settings: &CompileSettings,
     diagnostics: &mut Diagnostics,
 ) {
-    while constant_propagation(function, compile_settings) | constant_fold(function, diagnostics)
+    if !compile_settings.enable_optimisations {
+        return;
+    }
+
+    while constant_propagation(function, compile_settings)
+        | constant_fold(function, diagnostics)
+        | dead_code_eliminate(function, compile_settings)
         == ConstantOptimisationResult::DidSomething
     {}
 }

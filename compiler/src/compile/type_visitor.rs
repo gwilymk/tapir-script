@@ -484,6 +484,7 @@ mod test {
                     index: 0,
                     name: "int_prop".to_string(),
                 }],
+                enable_optimisations: false,
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
 
@@ -533,6 +534,7 @@ mod test {
                     index: 0,
                     name: "int_prop".to_string(),
                 }],
+                enable_optimisations: false,
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings);
             let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);

@@ -1,0 +1,134 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimination_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/declaration_unused_but_variable_used_later.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "y",
+            value: Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Call(
+                    name: "foo",
+                    arguments: [
+                      Expression(
+                        span: "[span]",
+                        kind: Variable("int_prop"),
+                        meta: "[meta]",
+                      ),
+                    ],
+                  ),
+                  meta: "[meta]",
+                ),
+                operator: Mul,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Integer(2),
+                  meta: "[meta]",
+                ),
+              ),
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: Wait,
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            ident: "y",
+            value: Expression(
+              span: "[span]",
+              kind: Call(
+                name: "foo",
+                arguments: [
+                  Expression(
+                    span: "[span]",
+                    kind: Variable("int_prop"),
+                    meta: "[meta]",
+                  ),
+                ],
+              ),
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            ident: "int_prop",
+            value: Expression(
+              span: "[span]",
+              kind: Variable("y"),
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+    Function(
+      name: "foo",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Wait,
+          meta: "[meta]",
+        ),
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Variable("x"),
+                meta: "[meta]",
+              ),
+            ],
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [
+        FunctionArgument(
+          span: "[span]",
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          name: Resolved(SymbolId(4)),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Error,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+    ),
+  ],
+)

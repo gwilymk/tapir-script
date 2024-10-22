@@ -210,6 +210,7 @@ mod test {
                         name: "bool_prop".to_owned(),
                     },
                 ],
+                enable_optimisations: true,
             };
 
             let mut symtab_visitor = SymTabVisitor::new(&compile_settings);

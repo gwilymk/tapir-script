@@ -11,3 +11,4 @@ fn foo2(x: int, y: int) -> int {
 
 var x = foo1(55) + 44;
 wait;
+int_prop = x;

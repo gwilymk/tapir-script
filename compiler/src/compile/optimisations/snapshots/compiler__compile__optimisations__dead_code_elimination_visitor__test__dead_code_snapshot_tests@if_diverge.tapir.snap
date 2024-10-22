@@ -27,7 +27,7 @@ Script(
             ident: "y",
             value: Expression(
               span: "[span]",
-              kind: Integer(0),
+              kind: Integer(4),
               meta: "[meta]",
             ),
           ),

@@ -5,10 +5,14 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/large_number_manipul
 ---
 [
   ([
+    [],
+  ], PropObj(
+    int_prop: 3024,
+  )),
+  ([
     [
-      1024,
-      3200,
       6400,
+      10,
     ],
   ], PropObj(
     int_prop: 3024,

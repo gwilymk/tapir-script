@@ -1,0 +1,9 @@
+var y = foo(int_prop) * 2;
+wait;
+y = foo(int_prop);
+int_prop = y;
+
+fn foo(x: int) -> x {
+    wait;
+    return x;
+}

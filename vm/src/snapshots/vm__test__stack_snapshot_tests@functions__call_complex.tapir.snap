@@ -8,7 +8,6 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_compl
     [
       55,
       3,
-      12,
     ],
   ], PropObj(
     int_prop: 5,
@@ -17,10 +16,9 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_compl
     [
       55,
       3,
-      12,
       55,
       12,
-      15,
+      16,
     ],
   ], PropObj(
     int_prop: 5,
@@ -33,6 +31,6 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_compl
     int_prop: 5,
   )),
   ([], PropObj(
-    int_prop: 5,
+    int_prop: 111,
   )),
 ]

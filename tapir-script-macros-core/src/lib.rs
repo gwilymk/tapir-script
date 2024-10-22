@@ -35,6 +35,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 .iter()
                 .map(|property| property.property.clone())
                 .collect(),
+            enable_optimisations: true,
         },
     ) {
         Ok(content) => content,

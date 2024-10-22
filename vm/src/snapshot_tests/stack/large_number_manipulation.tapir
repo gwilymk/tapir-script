@@ -5,3 +5,8 @@ var z = 12.5;
 var y = z * 2.0;
 
 wait;
+black_box(y);
+
+fn black_box(x: fix) {
+    wait;
+}

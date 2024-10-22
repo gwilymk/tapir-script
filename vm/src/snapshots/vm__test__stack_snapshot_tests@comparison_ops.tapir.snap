@@ -7,7 +7,6 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/comparison_ops.tapir
   ([
     [
       5,
-      6,
       1,
       15,
     ],
@@ -17,14 +16,22 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/comparison_ops.tapir
   ([
     [
       5,
-      6,
+      1,
+      20,
+    ],
+  ], PropObj(
+    int_prop: 15,
+  )),
+  ([
+    [
+      5,
       1,
       30,
     ],
   ], PropObj(
-    int_prop: 5,
+    int_prop: 20,
   )),
   ([], PropObj(
-    int_prop: 5,
+    int_prop: 30,
   )),
 ]

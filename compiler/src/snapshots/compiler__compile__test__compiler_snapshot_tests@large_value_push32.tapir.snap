@@ -5,6 +5,6 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/large_value
 ---
 00000000: push8	8
 00000001: push32	1024
-00000002: push32	2147483647
-00000003: drop	3
-00000004: ret	args=0 rets=0 shift=0
+00000004: push32	2147483647
+00000007: drop	3
+00000008: ret	args=0 rets=0 shift=0

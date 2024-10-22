@@ -118,6 +118,7 @@ mod test {
                     index: 0,
                     name: "int_prop".to_string(),
                 }],
+                enable_optimisations: true,
             };
 
             let bytecode =
@@ -168,6 +169,7 @@ mod test {
                                 index: 0,
                                 name: "prop".to_string(),
                             }],
+                            enable_optimisations: false,
                         };
 
                         let bytecode = compiler::compile(

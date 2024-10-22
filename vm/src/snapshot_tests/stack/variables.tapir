@@ -1,10 +1,18 @@
-var x = 5;
-var y = x + 3;
-var z = y * 2;
+var x = 55;
+var y = black_box(x) + 3;
+var z = black_box(y) * 2;
 wait;
 
-x = 3;
-y = 4;
+x = black_box(x);
+y = black_box(y);
 wait;
-z = x + y;
+z = black_box(x) + black_box(y);
 wait;
+
+black_box(x);
+black_box(y);
+black_box(z);
+
+fn black_box(x: int) -> int {
+    return x;
+}
