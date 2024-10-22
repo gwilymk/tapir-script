@@ -10,6 +10,8 @@ use metadata::Metadata;
 use serde::Serialize;
 
 mod metadata;
+#[cfg(test)]
+mod pretty_printer;
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize)]
 pub struct SymbolId(pub usize);
@@ -67,6 +69,19 @@ pub struct Function<'input> {
     pub return_types: FunctionReturn,
 
     pub modifiers: FunctionModifiers,
+}
+
+impl Script<'_> {
+    #[cfg(test)]
+    pub fn pretty_print(&self) -> String {
+        let mut output = String::new();
+
+        for function in &self.functions {
+            pretty_printer::pretty_print(function, &mut output).unwrap();
+        }
+
+        output
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Default)]

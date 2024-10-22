@@ -163,7 +163,7 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
 mod test {
     use std::fs;
 
-    use insta::{assert_ron_snapshot, glob};
+    use insta::{assert_snapshot, glob};
 
     use crate::{
         compile::{
@@ -231,10 +231,9 @@ mod test {
                 {}
             }
 
-            assert_ron_snapshot!(script, {
-                ".**.span" => "[span]",
-                ".**.meta" => "[meta]",
-            });
+            let pretty_printed = script.pretty_print();
+
+            assert_snapshot!(pretty_printed);
         });
     }
 }

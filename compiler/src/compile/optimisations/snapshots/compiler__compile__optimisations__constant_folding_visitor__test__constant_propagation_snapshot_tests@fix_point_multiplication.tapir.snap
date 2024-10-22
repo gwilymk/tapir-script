@@ -1,47 +1,6 @@
 ---
 source: crates/tapir-script/compiler/src/compile/optimisations/constant_folding_visitor.rs
-expression: script
+expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_folding/fix_point_multiplication.tapir
 ---
-Script(
-  functions: [
-    Function(
-      name: "@toplevel",
-      span: "[span]",
-      statements: [
-        Statement(
-          span: "[span]",
-          kind: Assignment(
-            ident: "fix_prop",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Variable("fix_prop"),
-                  meta: "[meta]",
-                ),
-                operator: Mul,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: "[meta]",
-                ),
-              ),
-              meta: "[meta]",
-            ),
-          ),
-          meta: "[meta]",
-        ),
-      ],
-      arguments: [],
-      return_types: FunctionReturn(
-        types: [],
-        span: "[span]",
-      ),
-      modifiers: FunctionModifiers(
-        is_event_handler: None,
-      ),
-    ),
-  ],
-)
+fix_prop = (fix_prop * 2); # {"SymbolId(1)"}

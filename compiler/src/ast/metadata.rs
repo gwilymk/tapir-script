@@ -20,7 +20,7 @@ where
     }
 }
 
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone)]
 pub(crate) struct Metadata {
     map: HashMap<TypeId, (Arc<dyn AnyDebug>, &'static str)>,
 }
@@ -38,9 +38,27 @@ impl Serialize for Metadata {
     }
 }
 
+impl Debug for Metadata {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut entries: Vec<_> = self
+            .map
+            .values()
+            .map(|(kind, _)| format!("{kind:?}"))
+            .collect();
+        entries.sort();
+
+        f.debug_set().entries(entries).finish()
+    }
+}
+
 impl Metadata {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    #[cfg(test)]
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
     }
 
     pub fn set<T: 'static + Debug>(&mut self, value: T) {

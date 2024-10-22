@@ -1,79 +1,11 @@
 ---
 source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimination_visitor.rs
-expression: script
+expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/if_diverge.tapir
 ---
-Script(
-  functions: [
-    Function(
-      name: "@toplevel",
-      span: "[span]",
-      statements: [
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(5),
-              meta: "[meta]",
-            ),
-          ),
-          meta: "[meta]",
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "y",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(4),
-              meta: "[meta]",
-            ),
-          ),
-          meta: "[meta]",
-        ),
-        Statement(
-          span: "[span]",
-          kind: Block(
-            block: [
-              Statement(
-                span: "[span]",
-                kind: Assignment(
-                  ident: "y",
-                  value: Expression(
-                    span: "[span]",
-                    kind: Variable("x"),
-                    meta: "[meta]",
-                  ),
-                ),
-                meta: "[meta]",
-              ),
-            ],
-          ),
-          meta: "[meta]",
-        ),
-        Statement(
-          span: "[span]",
-          kind: Assignment(
-            ident: "int_prop",
-            value: Expression(
-              span: "[span]",
-              kind: Variable("y"),
-              meta: "[meta]",
-            ),
-          ),
-          meta: "[meta]",
-        ),
-      ],
-      arguments: [],
-      return_types: FunctionReturn(
-        types: [],
-        span: "[span]",
-      ),
-      modifiers: FunctionModifiers(
-        is_event_handler: None,
-      ),
-    ),
-  ],
-)
+var x = 5; # {"SymbolId(3)"}
+var y = 4; # {"SymbolId(4)"}
+{
+    y = x; # {"SymbolId(4)"}
+}
+int_prop = y; # {"SymbolId(0)"}

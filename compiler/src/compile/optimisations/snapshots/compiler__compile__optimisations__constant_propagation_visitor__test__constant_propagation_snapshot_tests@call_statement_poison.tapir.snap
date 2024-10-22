@@ -1,98 +1,14 @@
 ---
 source: crates/tapir-script/compiler/src/compile/optimisations/constant_propagation_visitor.rs
-expression: script
+expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_propagation/call_statement_poison.tapir
 ---
-Script(
-  functions: [
-    Function(
-      name: "@toplevel",
-      span: "[span]",
-      statements: [
-        Statement(
-          span: "[span]",
-          kind: Assignment(
-            ident: "int_prop",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(4),
-              meta: "[meta]",
-            ),
-          ),
-          meta: "[meta]",
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(4),
-              meta: "[meta]",
-            ),
-          ),
-          meta: "[meta]",
-        ),
-        Statement(
-          span: "[span]",
-          kind: Call(
-            name: "foo",
-            arguments: [],
-          ),
-          meta: "[meta]",
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "y",
-            value: Expression(
-              span: "[span]",
-              kind: Variable("int_prop"),
-              meta: "[meta]",
-            ),
-          ),
-          meta: "[meta]",
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "z",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(4),
-              meta: "[meta]",
-            ),
-          ),
-          meta: "[meta]",
-        ),
-      ],
-      arguments: [],
-      return_types: FunctionReturn(
-        types: [],
-        span: "[span]",
-      ),
-      modifiers: FunctionModifiers(
-        is_event_handler: None,
-      ),
-    ),
-    Function(
-      name: "foo",
-      span: "[span]",
-      statements: [
-        Statement(
-          span: "[span]",
-          kind: Wait,
-          meta: "[meta]",
-        ),
-      ],
-      arguments: [],
-      return_types: FunctionReturn(
-        types: [],
-        span: "[span]",
-      ),
-      modifiers: FunctionModifiers(
-        is_event_handler: None,
-      ),
-    ),
-  ],
-)
+int_prop = 4; # {"SymbolId(0)"}
+var x = 4; # {"SymbolId(1)"}
+foo();
+var y = int_prop; # {"SymbolId(2)"}
+var z = 4; # {"SymbolId(3)"}
+
+fn foo() {
+    wait;
+}

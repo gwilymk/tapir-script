@@ -151,7 +151,7 @@ fn constant_propagation_expr(
 mod test {
     use std::fs;
 
-    use insta::{assert_ron_snapshot, glob};
+    use insta::{assert_snapshot, glob};
 
     use crate::{
         compile::{
@@ -205,10 +205,9 @@ mod test {
                 constant_propagation(function, &compile_settings);
             }
 
-            assert_ron_snapshot!(script, {
-                ".**.span" => "[span]",
-                ".**.meta" => "[meta]",
-            });
+            let pretty_printed = script.pretty_print();
+
+            assert_snapshot!(pretty_printed);
         });
     }
 }
