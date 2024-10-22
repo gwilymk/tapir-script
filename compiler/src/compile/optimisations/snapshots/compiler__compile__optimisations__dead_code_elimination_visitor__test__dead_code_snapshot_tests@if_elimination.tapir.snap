@@ -1,0 +1,40 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimination_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/if_elimination.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Block(
+            block: [
+              Statement(
+                span: "[span]",
+                kind: Assignment(
+                  ident: "int_prop",
+                  value: Expression(
+                    span: "[span]",
+                    kind: Integer(5),
+                    meta: "[meta]",
+                  ),
+                ),
+                meta: "[meta]",
+              ),
+            ],
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+    ),
+  ],
+)
