@@ -77,10 +77,8 @@ TopLevelStatement: TopLevelStatement<'input> = {
 }
 
 FunctionDefinition: Function<'input> = {
-    "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), is_event_handler: false },
-    event "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: VoidReturn> <statements: Block> =>
-        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), is_event_handler: true },
+    <event: event?> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
+        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), is_event_handler: event.is_some() },
 }
 
 FunctionArguments: Vec<FunctionArgument<'input>> = CommaSeparated<FunctionArgument>;
