@@ -30,3 +30,9 @@ pub fn compile(
 
     Ok(bytecode.compile())
 }
+
+pub struct EventHandler {
+    pub name: String,
+    pub bytecode_offset: usize,
+    pub arguments: Vec<Type>,
+}

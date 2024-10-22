@@ -10,6 +10,7 @@ use crate::{
     reporting::Diagnostics,
     tokens::FileId,
     types::Type,
+    EventHandler,
 };
 
 mod loop_visitor;
@@ -140,6 +141,14 @@ impl<'input> Compiler<'input> {
 
         self.function_locations
             .insert(function.name, self.bytecode.new_label());
+
+        if function.modifiers.is_event_handler.is_some() {
+            self.bytecode.event_handlers.push(EventHandler {
+                name: function.name.to_owned(),
+                bytecode_offset: self.bytecode.length,
+                arguments: function.arguments.iter().map(|arg| arg.t.t).collect(),
+            });
+        }
 
         self.compile_block(
             &function.statements,
@@ -593,7 +602,10 @@ pub mod opcodes {
 
 pub struct Bytecode {
     data: Vec<Opcode>,
+    /// opcodes have different sizes, this is the current size of the _compiled_ code
     length: usize,
+
+    event_handlers: Vec<EventHandler>,
 }
 
 impl Bytecode {
@@ -601,6 +613,7 @@ impl Bytecode {
         Self {
             data: vec![],
             length: 0,
+            event_handlers: vec![],
         }
     }
 
