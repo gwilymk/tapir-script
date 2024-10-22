@@ -57,7 +57,54 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let bytecode = &compiled_content.bytecode;
     let event_handlers = compiled_content.event_handlers;
 
-    let (event_handler_trait_fns, event_handler_trait_impls): (Vec<_>, Vec<_>) = event_handlers
+    let (event_handler_trait_fns, event_handler_trait_impls) =
+        generate_event_handlers(event_handlers);
+
+    let event_handler_trait_name = format_ident!("{}Events", struct_name);
+
+    quote! {
+        #[automatically_derived]
+        unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
+            fn script(self) -> ::tapir_script::Script<Self> {
+                static BYTECODE: &[u16] = &[#(#bytecode),*];
+
+                ::tapir_script::Script::new(self, BYTECODE)
+            }
+
+            type EventType = ();
+            fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType {}
+
+            fn set_prop(&mut self, index: u8, value: i32) {
+                match index {
+                    #(#setters,)*
+                    _ => unreachable!("Invalid index {index}"),
+                };
+            }
+
+            fn get_prop(&self, index: u8) -> i32 {
+                match index {
+                    #(#getters,)*
+                    _ => unreachable!("Invalid index {index}"),
+                }
+            }
+        }
+
+        trait #event_handler_trait_name {
+            #(#event_handler_trait_fns;)*
+        }
+
+        impl #impl_generics #event_handler_trait_name for ::tapir_script::Script<#struct_name #ty_generics> #where_clause {
+            #(#event_handler_trait_impls)*
+        }
+
+        const _: &[u8] = include_bytes!(#reduced_filename);
+    }
+}
+
+fn generate_event_handlers(
+    event_handlers: Vec<compiler::EventHandler>,
+) -> (Vec<TokenStream>, Vec<TokenStream>) {
+    event_handlers
         .iter()
         .map(|event_handler| {
             let arg_definitions = event_handler
@@ -101,47 +148,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 },
             )
         })
-        .unzip();
-
-    let event_handler_trait_name = format_ident!("{}Events", struct_name);
-
-    quote! {
-        #[automatically_derived]
-        unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
-            fn script(self) -> ::tapir_script::Script<Self> {
-                static BYTECODE: &[u16] = &[#(#bytecode),*];
-
-                ::tapir_script::Script::new(self, BYTECODE)
-            }
-
-            type EventType = ();
-            fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType {}
-
-            fn set_prop(&mut self, index: u8, value: i32) {
-                match index {
-                    #(#setters,)*
-                    _ => unreachable!("Invalid index {index}"),
-                };
-            }
-
-            fn get_prop(&self, index: u8) -> i32 {
-                match index {
-                    #(#getters,)*
-                    _ => unreachable!("Invalid index {index}"),
-                }
-            }
-        }
-
-        trait #event_handler_trait_name {
-            #(#event_handler_trait_fns;)*
-        }
-
-        impl #impl_generics #event_handler_trait_name for ::tapir_script::Script<#struct_name #ty_generics> #where_clause {
-            #(#event_handler_trait_impls)*
-        }
-
-        const _: &[u8] = include_bytes!(#reduced_filename);
-    }
+        .unzip()
 }
 
 fn get_script_path(ast: &DeriveInput) -> PathBuf {
