@@ -3,7 +3,7 @@ wait;
 y = foo(int_prop);
 int_prop = y;
 
-fn foo(x: int) -> x {
+fn foo(x: int) -> int {
     wait;
     return x;
 }

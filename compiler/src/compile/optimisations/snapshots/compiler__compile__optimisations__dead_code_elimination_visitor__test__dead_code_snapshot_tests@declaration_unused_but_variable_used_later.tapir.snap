@@ -123,7 +123,7 @@ Script(
       return_types: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Error,
+            t: Int,
             span: "[span]",
           ),
         ],
