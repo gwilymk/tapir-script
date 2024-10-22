@@ -31,6 +31,7 @@ extern {
         break => Token::KeywordBreak,
         continue => Token::KeywordContinue,
         event => Token::KeywordEvent,
+        then => Token::KeywordThen,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -171,6 +172,11 @@ Expression: Expression<'input> = {
     #[assoc(side="none")]
     <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> => 
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+
+    #[precedence(level="6")]
+    #[assoc(side="none")]
+    <start: @L> <lhs: Expression> <operator: then> <rhs: Expression> <end: @R> =>
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::Then, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 }
 
 MulDiv: BinaryOperator = {

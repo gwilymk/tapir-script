@@ -1,0 +1,18 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/then.tapir
+---
+00000000: push8	7
+00000001: call	13
+00000003: drop	1
+00000004: push8	77
+00000005: dup	0
+00000006: drop	1
+00000007: push8	2
+00000008: call	13
+00000010: drop	2
+00000011: ret	args=0 rets=0 shift=0
+00000013: push8	3
+00000014: ret	args=1 rets=1 shift=1
+00000016: drop	1

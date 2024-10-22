@@ -1,0 +1,6 @@
+fn foo(x: int) -> int {
+    return 3;
+}
+
+var x = foo(7) then 77;
+var y = x then foo(2);

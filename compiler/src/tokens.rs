@@ -98,6 +98,8 @@ pub enum Token<'input> {
     KeywordContinue,
     #[token("event")]
     KeywordEvent,
+    #[token("then")]
+    KeywordThen,
 
     #[token("true")]
     True,
