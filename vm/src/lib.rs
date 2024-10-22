@@ -239,6 +239,10 @@ mod test {
         Bool, lteq: ("10 <= 10", 1),
         Bool, lteq2: ("5 <= 10", 1),
         Bool, lteq3: ("15 <= 10", 0),
+
+        Int, then: ("5 then 8", 8),
+        Int, then2: ("prop then 7", 7),
+        Int, then3: ("7 then prop", 5),
     );
 
     #[derive(Serialize, Clone, Debug)]
