@@ -163,9 +163,8 @@ fn get_script_path(ast: &DeriveInput) -> PathBuf {
         );
     };
 
-    let filename = &top_level_tapir_attribute.parse_args::<LitStr>().unwrap_or_else(|_| {
-            panic!(r#"tapir must take exactly 1 argument which is a path to the script, so be of the format #[tapir("path/to/my/script.tapir")]"#)
-    });
+    let filename = &top_level_tapir_attribute.parse_args::<LitStr>()
+        .expect(r#"tapir must take exactly 1 argument which is a path to the script, so be of the format #[tapir("path/to/my/script.tapir")]"#);
 
     let filename = filename.value();
 
