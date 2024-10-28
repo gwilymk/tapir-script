@@ -6,8 +6,8 @@ use std::{
 
 use compiler::{CompileSettings, Property, Type};
 use proc_macro2::TokenStream;
-use quote::{format_ident, quote};
-use syn::{parse2, DeriveInput, LitStr};
+use quote::{format_ident, quote, ToTokens};
+use syn::{parse2, DeriveInput, Ident, LitStr, Token};
 
 pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let ast: DeriveInput = parse2(struct_def).unwrap();
@@ -16,7 +16,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         panic!("Can only be defined on structs");
     };
 
-    let reduced_filename = get_script_path(&ast);
+    let (reduced_filename, trigger_type) = get_script_path(&ast);
 
     let file_content = fs::read_to_string(&reduced_filename)
         .unwrap_or_else(|e| panic!("Failed to read file {}: {e}", reduced_filename.display()));
@@ -45,6 +45,57 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         }
     };
 
+    if compiled_content.triggers.len() > 0 && trigger_type.is_none() {
+        panic!("Tapir code is calling triggers, but no trigger_type defined");
+    }
+
+    let trigger_type = trigger_type
+        .map(|t| t.into_token_stream())
+        .unwrap_or(quote! { () });
+
+    let triggers = compiled_content
+        .triggers
+        .iter()
+        .enumerate()
+        .map(|(trigger_index, trigger)| {
+            let ident = format_ident!("{}", trigger.name);
+
+            let (args, definitions): (Vec<_>, Vec<_>) = trigger
+                .arguments
+                .iter()
+                .enumerate()
+                .rev()
+                .map(|(index, ty)| {
+                    let arg_name = format_ident!("arg{index}");
+                    let pop = quote!(stack.pop().expect("Stack underflow"));
+                    let value = match *ty {
+                        Type::Int => quote! { #pop },
+                        Type::Fix => quote! { ::tapir_script::Fix::from_raw(#pop) },
+                        Type::Bool => quote! { #pop != 0 },
+                        _ => panic!("Unknown type {ty}"),
+                    };
+
+                    (arg_name.clone(), quote! { let #arg_name = #value })
+                })
+                .unzip();
+
+            let trigger_index = trigger_index as u8;
+
+            let args = if args.len() == 0 {
+                quote! {}
+            } else {
+                quote! { (#(#args,)*) }
+            };
+
+            quote! {
+                #trigger_index => {
+                    #(#definitions;)*
+
+                    #trigger_type::#ident #args
+                }
+            }
+        });
+
     let setters = properties.iter().map(|property| &property.setter);
     let getters = properties.iter().map(|property| &property.getter);
 
@@ -72,8 +123,13 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 ::tapir_script::Script::new(self, BYTECODE)
             }
 
-            type EventType = ();
-            fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType {}
+            type EventType = #trigger_type;
+            fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType {
+                match index {
+                    #(#triggers,)*
+                    _ => unreachable!("Invalid index {index}"),
+                }
+            }
 
             fn set_prop(&mut self, index: u8, value: i32) {
                 match index {
@@ -152,7 +208,7 @@ fn generate_event_handlers(
         .unzip()
 }
 
-fn get_script_path(ast: &DeriveInput) -> PathBuf {
+fn get_script_path(ast: &DeriveInput) -> (PathBuf, Option<syn::Path>) {
     let Some(top_level_tapir_attribute) = ast
         .attrs
         .iter()
@@ -163,10 +219,10 @@ fn get_script_path(ast: &DeriveInput) -> PathBuf {
         );
     };
 
-    let filename = &top_level_tapir_attribute.parse_args::<LitStr>()
+    let top_level_args = top_level_tapir_attribute.parse_args::<TopLevelTapirArgs>()
         .expect(r#"tapir must take exactly 1 argument which is a path to the script, so be of the format #[tapir("path/to/my/script.tapir")]"#);
 
-    let filename = filename.value();
+    let filename = top_level_args.script_name.value();
 
     let root = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".into());
     let filename = Path::new(&root).join(&filename);
@@ -182,7 +238,38 @@ fn get_script_path(ast: &DeriveInput) -> PathBuf {
     } else {
         filename
     };
-    reduced_filename
+
+    (reduced_filename, top_level_args.trigger_type)
+}
+
+struct TopLevelTapirArgs {
+    script_name: LitStr,
+    trigger_type: Option<syn::Path>,
+}
+
+impl syn::parse::Parse for TopLevelTapirArgs {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let script_name = input.parse()?;
+        let mut trigger_type = None;
+
+        if input.peek(Token![,]) {
+            let _: Token![,] = input.parse()?;
+            let ident: Ident = input.parse()?;
+            let _: Token![=] = input.parse()?;
+
+            match ident.to_string().as_str() {
+                "trigger_type" => trigger_type = Some(input.parse()?),
+                _ => return Err(input.error("Expected 'trigger_type'")),
+            }
+        } else if !input.is_empty() {
+            return Err(input.error("Expected 'trigger_type =' or nothing"));
+        }
+
+        Ok(Self {
+            script_name,
+            trigger_type,
+        })
+    }
 }
 
 struct DeriveProperty {

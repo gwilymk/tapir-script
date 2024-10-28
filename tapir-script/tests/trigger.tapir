@@ -1,0 +1,20 @@
+trigger IntKind(4);
+wait;
+trigger FixKind(3.5);
+wait;
+trigger BoolKind(true);
+wait;
+trigger EmptyKind;
+
+wait;
+
+var i = 0;
+loop {
+    if i > 5 {
+        break;
+    }
+
+    trigger IntKind(i);
+
+    i = i + 1;
+}

@@ -143,6 +143,7 @@ StatementKind: StatementKind<'input> = {
 
     spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Spawn { <> },
     trigger <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Trigger { <> },
+    trigger <name: identifier> ";" => StatementKind::Trigger { name, arguments: vec![] },
 
     <block: Block> => StatementKind::Block { <> },
     
