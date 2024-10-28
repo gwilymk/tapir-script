@@ -41,4 +41,6 @@ fn triggers() {
         assert_eq!(script.run(), expected_order[i], "Failed at {i}");
         i += 1;
     }
+
+    assert!(!script.will_calling_run_do_anything());
 }
