@@ -208,6 +208,12 @@ pub enum CompilerErrorKind {
         function_span: Span,
         function_name: String,
     },
+    TriggerIncorrectArgs {
+        name: String,
+        first_definition_span: Span,
+        first_definition_args: Vec<Type>,
+        second_definition_args: Vec<Type>,
+    },
 }
 
 impl CompilerErrorKind {

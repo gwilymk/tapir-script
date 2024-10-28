@@ -1,0 +1,50 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/trigger_fail.tapir
+---
+Error: Trigger 'Foo' has been called with inconsistent arguments
+   ╭─[trigger_fail.tapir:1:1]
+   │
+ 1 │ trigger Foo(true);
+   │ ─────────┬────────  
+   │          ╰────────── This is called with types bool
+ 2 │ trigger Foo(5);
+   │ ───────┬───────  
+   │        ╰───────── This is called with types int
+   │ 
+   │ Help: `trigger` calls must be made with the same argument types
+───╯
+Error: Trigger 'Foo' has been called with inconsistent arguments
+   ╭─[trigger_fail.tapir:1:1]
+   │
+ 1 │ trigger Foo(true);
+   │ ─────────┬────────  
+   │          ╰────────── This is called with types bool
+   │ 
+ 4 │ trigger Foo(5, 8);
+   │ ─────────┬────────  
+   │          ╰────────── This is called with types int, int
+   │ 
+   │ Help: `trigger` calls must be made with the same argument types
+───╯
+Error: Trigger 'Foo' has been called with inconsistent arguments
+   ╭─[trigger_fail.tapir:1:1]
+   │
+ 1 │ trigger Foo(true);
+   │ ─────────┬────────  
+   │          ╰────────── This is called with types bool
+   │ 
+ 8 │ trigger Foo(9, x);
+   │ ─────────┬────────  
+   │          ╰────────── This is called with types int, bool
+   │ 
+   │ Help: `trigger` calls must be made with the same argument types
+───╯
+Error: No such function function
+    ╭─[trigger_fail.tapir:1:1]
+    │
+ 11 │ var y = function(4);
+    │         ─────┬─────  
+    │              ╰─────── Unknown function
+────╯

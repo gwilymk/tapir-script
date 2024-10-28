@@ -1,0 +1,12 @@
+trigger Foo(true);
+trigger Foo(5);
+
+trigger Foo(5, 8);
+
+var x = false;
+
+trigger Foo(9, x);
+
+# This should only error on the y
+var y = function(4);
+trigger Foo(y);

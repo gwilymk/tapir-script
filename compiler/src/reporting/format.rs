@@ -228,5 +228,10 @@ fn compiler_error_report(
             .with_label(Label::new(*function_span).with_message("This event handler"))
             .with_message("Cannot call event handlers")
             .with_note(format!("'{function_name}' is an event handler. It must be called in rust via the generated 'on_{function_name}' method")),
+        CompilerErrorKind::TriggerIncorrectArgs { name, first_definition_span, first_definition_args, second_definition_args } => build_error_report(span)
+            .with_label(Label::new(*first_definition_span).with_message(format!("This is called with types {}", first_definition_args.iter().map(|a| a.to_string()).collect::<Vec<_>>().join(", "))))
+            .with_label(Label::new(span).with_message(format!("This is called with types {}", second_definition_args.iter().map(|a| a.to_string()).collect::<Vec<_>>().join(", "))))
+            .with_message(format!("Trigger '{name}' has been called with inconsistent arguments"))
+            .with_help("`trigger` calls must be made with the same argument types"),
     }
 }

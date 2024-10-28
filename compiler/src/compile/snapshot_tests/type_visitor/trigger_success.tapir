@@ -1,0 +1,5 @@
+trigger Foo(4, 5);
+
+var x = 8;
+trigger Foo(x, x);
+trigger Bar(x, true);

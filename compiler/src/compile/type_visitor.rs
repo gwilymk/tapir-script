@@ -17,12 +17,19 @@ use super::{loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab, CompileSe
 pub struct TypeVisitor<'input> {
     type_table: Vec<Option<Type>>,
     functions: HashMap<&'input str, FunctionInfo>,
+
+    trigger_types: HashMap<&'input str, TriggerInfo>,
 }
 
 struct FunctionInfo {
     span: Span,
     ty: FunctionType,
     modifiers: FunctionModifiers,
+}
+
+struct TriggerInfo {
+    span: Span,
+    ty: Vec<Type>,
 }
 
 impl<'input> TypeVisitor<'input> {
@@ -66,6 +73,7 @@ impl<'input> TypeVisitor<'input> {
                 .collect(),
 
             functions: resolved_functions,
+            trigger_types: HashMap::new(),
         }
     }
 
@@ -302,7 +310,42 @@ impl<'input> TypeVisitor<'input> {
                         return BlockAnalysisResult::AllBranchesReturn;
                     }
                 }
-                ast::StatementKind::Trigger { name, arguments } => todo!(),
+                ast::StatementKind::Trigger { name, arguments } => {
+                    let trigger_arguments = arguments
+                        .iter_mut()
+                        .map(|arg| self.type_for_expression(arg, symtab, diagnostics))
+                        .collect::<Vec<_>>();
+
+                    if let Some(trigger_info) = self.trigger_types.get(name) {
+                        if trigger_info.ty.len() != trigger_arguments.len()
+                            || trigger_info.ty.iter().zip(&trigger_arguments).any(
+                                |(expected, actual)| {
+                                    actual != expected
+                                        && *actual != Type::Error
+                                        && *expected != Type::Error
+                                },
+                            )
+                        {
+                            diagnostics.add_message(
+                                CompilerErrorKind::TriggerIncorrectArgs {
+                                    name: name.to_owned(),
+                                    first_definition_span: trigger_info.span,
+                                    first_definition_args: trigger_info.ty.clone(),
+                                    second_definition_args: trigger_arguments,
+                                }
+                                .into_message(statement.span),
+                            );
+                        }
+                    } else {
+                        self.trigger_types.insert(
+                            name,
+                            TriggerInfo {
+                                span: statement.span,
+                                ty: trigger_arguments,
+                            },
+                        );
+                    }
+                }
             }
         }
 
