@@ -113,6 +113,14 @@ fn pretty_print_statements(
                 }
                 write!(output, ");")?;
             }
+            StatementKind::Trigger { name, arguments } => {
+                write!(output, "trigger {name}(")?;
+                for arg in arguments {
+                    pretty_print_expr(arg, output, indent.increase())?;
+                    write!(output, ",")?;
+                }
+                write!(output, ");")?;
+            }
         }
 
         if statement.meta.is_empty() {

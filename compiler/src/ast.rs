@@ -155,6 +155,7 @@ impl<'input> Statement<'input> {
             }
             StatementKind::Call { arguments, .. }
             | StatementKind::Return { values: arguments }
+            | StatementKind::Trigger { arguments, .. }
             | StatementKind::Spawn { arguments, .. } => Box::new(arguments.iter_mut()),
         }
     }
@@ -194,6 +195,10 @@ pub enum StatementKind<'input> {
         arguments: Vec<Expression<'input>>,
     },
     Spawn {
+        name: &'input str,
+        arguments: Vec<Expression<'input>>,
+    },
+    Trigger {
         name: &'input str,
         arguments: Vec<Expression<'input>>,
     },

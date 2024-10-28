@@ -97,6 +97,9 @@ fn constant_propagation_block(
             StatementKind::Spawn {
                 arguments: values, ..
             }
+            | StatementKind::Trigger {
+                arguments: values, ..
+            }
             | StatementKind::Return { values } => values
                 .iter_mut()
                 .map(|expr| constant_propagation_expr(expr, constant_symbols, compile_settings))

@@ -32,6 +32,7 @@ extern {
         continue => Token::KeywordContinue,
         event => Token::KeywordEvent,
         then => Token::KeywordThen,
+        trigger => Token::KeywordTrigger,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -141,6 +142,7 @@ StatementKind: StatementKind<'input> = {
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
 
     spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Spawn { <> },
+    trigger <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Trigger { <> },
 
     <block: Block> => StatementKind::Block { <> },
     

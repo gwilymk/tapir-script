@@ -30,6 +30,7 @@ fn visit_block_in_loop(
             | StatementKind::Assignment { .. }
             | StatementKind::Wait
             | StatementKind::Nop
+            | StatementKind::Trigger { .. }
             | StatementKind::Call { .. }
             | StatementKind::Spawn { .. } => {}
             StatementKind::Return { .. } => {

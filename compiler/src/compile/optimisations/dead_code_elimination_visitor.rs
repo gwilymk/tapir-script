@@ -133,6 +133,7 @@ fn sweep_unconditional_if(block: &mut Vec<Statement>) -> ConstantOptimisationRes
         | StatementKind::Nop
         | StatementKind::Call { .. }
         | StatementKind::Spawn { .. }
+        | StatementKind::Trigger { .. }
         | StatementKind::Return { .. } => true,
     });
 
@@ -155,6 +156,7 @@ fn eliminate_after_control_flow_diverge(block: &mut Vec<Statement>) -> bool {
             | StatementKind::Assignment { .. }
             | StatementKind::VariableDeclaration { .. }
             | StatementKind::Call { .. }
+            | StatementKind::Trigger { .. }
             | StatementKind::Spawn { .. } => {}
             StatementKind::If {
                 true_block,
@@ -187,6 +189,7 @@ fn sweep_dead_statements(block: &mut [Statement]) -> ConstantOptimisationResult 
             | StatementKind::Nop
             | StatementKind::Wait
             | StatementKind::Call { .. }
+            | StatementKind::Trigger { .. }
             | StatementKind::Spawn { .. }
             | StatementKind::Return { .. } => {}
             StatementKind::Assignment { value, .. }
@@ -310,6 +313,9 @@ fn annotate_dead_statements(
                 used_symbols.poison_properties(compile_settings);
             }
             StatementKind::Spawn {
+                arguments: values, ..
+            }
+            | StatementKind::Trigger {
                 arguments: values, ..
             }
             | StatementKind::Return { values } => {

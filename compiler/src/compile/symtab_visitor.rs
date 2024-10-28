@@ -110,6 +110,9 @@ impl<'input> SymTabVisitor<'input> {
                 }
                 | StatementKind::Spawn {
                     ref mut arguments, ..
+                }
+                | StatementKind::Trigger {
+                    ref mut arguments, ..
                 } => {
                     for argument in arguments {
                         self.visit_expr(argument, diagnostics);

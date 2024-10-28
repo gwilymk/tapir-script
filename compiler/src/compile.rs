@@ -368,6 +368,7 @@ impl<'input> Compiler<'input> {
                     self.bytecode.patch_jump(forward_jump, loop_end);
                 }
             }
+            ast::StatementKind::Trigger { name, arguments } => todo!(),
         }
 
         ControlFlow::Continue(())

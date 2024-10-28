@@ -302,6 +302,7 @@ impl<'input> TypeVisitor<'input> {
                         return BlockAnalysisResult::AllBranchesReturn;
                     }
                 }
+                ast::StatementKind::Trigger { name, arguments } => todo!(),
             }
         }
 

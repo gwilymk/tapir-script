@@ -100,6 +100,8 @@ pub enum Token<'input> {
     KeywordEvent,
     #[token("then")]
     KeywordThen,
+    #[token("trigger")]
+    KeywordTrigger,
 
     #[token("true")]
     True,
