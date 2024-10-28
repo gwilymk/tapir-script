@@ -21,6 +21,7 @@ pub enum Instruction {
     Call,
     Return,
     Spawn,
+    Trigger,
 }
 
 #[repr(u8)]

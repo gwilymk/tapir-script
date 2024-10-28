@@ -10,6 +10,7 @@ use crate::{
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::{FunctionType, Type},
+    Trigger,
 };
 
 use super::{loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab, CompileSettings};
@@ -27,9 +28,11 @@ struct FunctionInfo {
     modifiers: FunctionModifiers,
 }
 
+#[derive(Serialize, Clone, Debug)]
 struct TriggerInfo {
     span: Span,
     ty: Vec<Type>,
+    index: usize,
 }
 
 impl<'input> TypeVisitor<'input> {
@@ -342,6 +345,7 @@ impl<'input> TypeVisitor<'input> {
                             TriggerInfo {
                                 span: statement.span,
                                 ty: trigger_arguments,
+                                index: self.trigger_types.len(),
                             },
                         );
                     }
@@ -378,6 +382,8 @@ impl<'input> TypeVisitor<'input> {
                 .iter()
                 .map(|(name, function)| (*name, function.ty.rets.len()))
                 .collect(),
+
+            triggers: self.trigger_types,
         }
     }
 
@@ -524,6 +530,8 @@ enum BlockAnalysisResult {
 pub struct TypeTable<'input> {
     types: Vec<Type>,
     num_function_returns: HashMap<&'input str, usize>,
+
+    triggers: HashMap<&'input str, TriggerInfo>,
 }
 
 impl TypeTable<'_> {
@@ -534,6 +542,30 @@ impl TypeTable<'_> {
 
     pub fn num_function_returns(&self, fn_name: &str) -> usize {
         self.num_function_returns[fn_name]
+    }
+
+    pub fn trigger_index(&self, trigger_name: &str) -> usize {
+        self.triggers
+            .get(trigger_name)
+            .expect("Should only ask about real triggers")
+            .index
+    }
+
+    pub fn triggers(&self) -> Vec<Trigger> {
+        let mut result = vec![];
+        result.resize_with(self.triggers.len(), || Trigger {
+            name: String::new(),
+            arguments: vec![],
+        });
+
+        for (name, info) in &self.triggers {
+            result[info.index] = Trigger {
+                name: name.to_string(),
+                arguments: info.ty.clone(),
+            };
+        }
+
+        result
     }
 }
 

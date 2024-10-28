@@ -32,18 +32,25 @@ pub fn compile(
     Ok(CompileResult {
         bytecode: compiled,
         event_handlers: bytecode.event_handlers,
+        triggers: bytecode.triggers,
     })
 }
 
 pub struct CompileResult {
     pub bytecode: Vec<u16>,
     pub event_handlers: Vec<EventHandler>,
+    pub triggers: Vec<Trigger>,
 }
 
 pub struct EventHandler {
     pub name: String,
     pub bytecode_offset: usize,
     pub arguments: Vec<EventHandlerArgument>,
+}
+
+pub struct Trigger {
+    pub name: String,
+    pub arguments: Vec<Type>,
 }
 
 pub struct EventHandlerArgument {

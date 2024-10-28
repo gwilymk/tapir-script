@@ -163,6 +163,9 @@ impl State {
 
                     self.pc = new_pc as usize;
                 }
+                bytecode::Instruction::Trigger => {
+                    properties.add_event(arg as u8, &mut self.stack);
+                }
             }
         }
     }

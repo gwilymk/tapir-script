@@ -10,7 +10,7 @@ use crate::{
     reporting::Diagnostics,
     tokens::FileId,
     types::Type,
-    EventHandler, EventHandlerArgument,
+    EventHandler, EventHandlerArgument, Trigger,
 };
 
 mod loop_visitor;
@@ -80,10 +80,10 @@ pub fn compile(
         return Err(diagnostics);
     }
 
-    let mut compiler = Compiler::new();
+    let mut compiler = Compiler::new(type_table);
 
     for function in ast.functions {
-        compiler.compile_function(&function, sym_tab_visitor.get_symtab(), &type_table);
+        compiler.compile_function(&function, sym_tab_visitor.get_symtab());
     }
 
     compiler.finalise();
@@ -97,6 +97,8 @@ struct Compiler<'input> {
 
     function_calls: Vec<(&'input str, Jump)>,
     function_locations: HashMap<&'input str, Label>,
+
+    type_table: TypeTable<'input>,
     bytecode: Bytecode,
 }
 
@@ -108,23 +110,19 @@ struct LoopCompliationState {
 }
 
 impl<'input> Compiler<'input> {
-    pub fn new() -> Self {
+    pub fn new(type_table: TypeTable<'input>) -> Self {
         Self {
             stack: vec![],
             loops: vec![],
 
             function_calls: vec![],
             function_locations: HashMap::from([("@toplevel", Label(0))]),
-            bytecode: Bytecode::new(),
+            bytecode: Bytecode::new(type_table.triggers()),
+            type_table,
         }
     }
 
-    pub fn compile_function(
-        &mut self,
-        function: &Function<'input>,
-        symtab: &SymTab,
-        types: &TypeTable,
-    ) {
+    pub fn compile_function(&mut self, function: &Function<'input>, symtab: &SymTab) {
         if function.name != "@toplevel" {
             // the stack will be arguments, then the return pointer. However, if we're at toplevel, then
             // the stack will be empty to start with
@@ -167,7 +165,6 @@ impl<'input> Compiler<'input> {
         self.compile_block(
             &function.statements,
             symtab,
-            types,
             self.stack.len(),
             function.arguments.len(),
         );
@@ -186,14 +183,13 @@ impl<'input> Compiler<'input> {
         &mut self,
         statements: &[Statement<'input>],
         symtab: &SymTab,
-        types: &TypeTable,
         stack_bottom: usize,
         num_args: usize,
     ) {
         let previous_stack_size = self.stack.len();
 
         for statement in statements {
-            if self.compile_statement(statement, symtab, types, stack_bottom, num_args)
+            if self.compile_statement(statement, symtab, stack_bottom, num_args)
                 == ControlFlow::Break(())
             {
                 break;
@@ -208,7 +204,6 @@ impl<'input> Compiler<'input> {
         &mut self,
         statement: &Statement<'input>,
         symtab: &SymTab,
-        types: &TypeTable,
         stack_bottom: usize,
         num_args: usize,
     ) -> ControlFlow<()> {
@@ -250,7 +245,7 @@ impl<'input> Compiler<'input> {
                 self.compile_expression(condition, symtab);
                 let if_false_jump = self.bytecode.new_jump_if_false();
 
-                self.compile_block(true_block, symtab, types, stack_bottom, num_args);
+                self.compile_block(true_block, symtab, stack_bottom, num_args);
                 self.compile_drop_to(stack_depth_before_if);
 
                 let if_true_jump = self.bytecode.new_jump();
@@ -261,7 +256,7 @@ impl<'input> Compiler<'input> {
                 // insert a fake additional stack value for the bool that will be left
                 self.stack.push(None);
 
-                self.compile_block(false_block, symtab, types, stack_bottom, num_args);
+                self.compile_block(false_block, symtab, stack_bottom, num_args);
 
                 self.compile_drop_to(stack_depth_before_if);
                 let end_target = self.bytecode.new_label();
@@ -269,7 +264,7 @@ impl<'input> Compiler<'input> {
             }
             ast::StatementKind::Block { block } => {
                 let stack_depth_before_block = self.stack.len();
-                self.compile_block(block, symtab, types, stack_bottom, num_args);
+                self.compile_block(block, symtab, stack_bottom, num_args);
                 self.compile_drop_to(stack_depth_before_block);
             }
             ast::StatementKind::Return { values } => {
@@ -289,7 +284,7 @@ impl<'input> Compiler<'input> {
                 return ControlFlow::Break(());
             }
             ast::StatementKind::Call { name, arguments } => {
-                let number_of_returns = types.num_function_returns(name);
+                let number_of_returns = self.type_table.num_function_returns(name);
                 let stack_before_call = self.stack.len();
 
                 for argument in arguments {
@@ -356,7 +351,7 @@ impl<'input> Compiler<'input> {
                     stack_length: self.stack.len(),
                 });
 
-                self.compile_block(block, symtab, types, stack_bottom, num_args);
+                self.compile_block(block, symtab, stack_bottom, num_args);
 
                 let jump = self.bytecode.new_jump();
                 self.bytecode.patch_jump(jump, loop_start);
@@ -368,7 +363,19 @@ impl<'input> Compiler<'input> {
                     self.bytecode.patch_jump(forward_jump, loop_end);
                 }
             }
-            ast::StatementKind::Trigger { name, arguments } => todo!(),
+            ast::StatementKind::Trigger { name, arguments } => {
+                let stack_before_trigger = self.stack.len();
+                for arg in arguments {
+                    self.compile_expression(arg, symtab);
+                }
+
+                let trigger_index = self.type_table.trigger_index(name);
+
+                self.bytecode
+                    .add_opcode(Opcode::Trigger(trigger_index as u8));
+
+                self.stack.truncate(stack_before_trigger);
+            }
         }
 
         ControlFlow::Continue(())
@@ -509,6 +516,7 @@ pub mod opcodes {
         Call(u16),
         Spawn { args: u8, target: u16 },
         Return { args: u8, rets: u8, shift: u8 },
+        Trigger(u8),
     }
 
     impl Display for Opcode {
@@ -548,6 +556,7 @@ pub mod opcodes {
                     write!(f, "ret\targs={args} rets={rets} shift={shift}")
                 }
                 Opcode::Spawn { args, target } => write!(f, "spawn\t{args} {target}"),
+                Opcode::Trigger(index) => write!(f, "trigger\t{index}"),
             }
         }
     }
@@ -632,14 +641,16 @@ pub struct Bytecode {
     length: usize,
 
     pub event_handlers: Vec<EventHandler>,
+    pub triggers: Vec<Trigger>,
 }
 
 impl Bytecode {
-    pub fn new() -> Self {
+    pub fn new(triggers: Vec<Trigger>) -> Self {
         Self {
             data: vec![],
             length: 0,
             event_handlers: vec![],
+            triggers,
         }
     }
 
@@ -746,6 +757,9 @@ impl Bytecode {
                 Opcode::Return { args, rets, shift } => {
                     one_arg!(Return, args);
                     result.push(u16::from_be_bytes([rets, shift]));
+                }
+                Opcode::Trigger(index) => {
+                    one_arg!(Trigger, index);
                 }
             }
         }
