@@ -10,6 +10,7 @@ enum MyEventType {
     IntKind(i32),
     FixKind(Fix),
     BoolKind(bool),
+    TwoArguments(i32, i32),
     EmptyKind,
 }
 
@@ -30,6 +31,7 @@ fn triggers() {
             IntKind(4),
             IntKind(5),
         ],
+        &[TwoArguments(5, 7)],
     ];
 
     let mut script = Triggers.script();

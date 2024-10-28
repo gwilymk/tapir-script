@@ -60,7 +60,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         .map(|(trigger_index, trigger)| {
             let ident = format_ident!("{}", trigger.name);
 
-            let (args, definitions): (Vec<_>, Vec<_>) = trigger
+            let (mut args, definitions): (Vec<_>, Vec<_>) = trigger
                 .arguments
                 .iter()
                 .enumerate()
@@ -84,6 +84,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
             let args = if args.len() == 0 {
                 quote! {}
             } else {
+                args.reverse();
                 quote! { (#(#args,)*) }
             };
 
