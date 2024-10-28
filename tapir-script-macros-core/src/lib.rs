@@ -124,7 +124,7 @@ fn generate_event_handlers(
                 })
                 .collect::<Vec<_>>();
 
-            let trigger_name = format_ident!("on_{}", event_handler.name);
+            let event_name = format_ident!("on_{}", event_handler.name);
 
             let initial_stack_vector = event_handler.arguments.iter().map(|arg| {
                 let arg_name = format_ident!("{}", arg.name);
@@ -138,9 +138,9 @@ fn generate_event_handlers(
             let initial_pc = event_handler.bytecode_offset;
 
             (
-                quote!(fn #trigger_name(&mut self, #(#arg_definitions,)*)),
+                quote!(fn #event_name(&mut self, #(#arg_definitions,)*)),
                 quote! {
-                    fn #trigger_name(&mut self, #(#arg_definitions,)*) {
+                    fn #event_name(&mut self, #(#arg_definitions,)*) {
                         let mut initial_stack = ::tapir_script::Vec::with_capacity(#initial_stack_vector_len);
                         #(#initial_stack_vector;)*
 
