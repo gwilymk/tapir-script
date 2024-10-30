@@ -1,0 +1,15 @@
+fn foo(x: int) -> (int, int) {
+    int_prop = x;
+    wait;
+    return x, x;
+}
+
+var x = black_box(67);
+wait;
+foo(33);
+wait;
+int_prop = x;
+
+fn black_box(x: int) -> int {
+    return x;
+}
