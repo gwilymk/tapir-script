@@ -1,3 +1,5 @@
+#![deny(unfulfilled_lint_expectations)]
+
 use agb_fixnum::num;
 use tapir_script::{Fix, TapirScript};
 
@@ -12,6 +14,9 @@ enum MyEventType {
     BoolKind(bool),
     TwoArguments(i32, i32),
     EmptyKind,
+
+    #[expect(dead_code, reason = "This isn't referenced in the trigger.tapir code")]
+    UnusedEventType,
 }
 
 #[test]
