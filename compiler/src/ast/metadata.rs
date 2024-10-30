@@ -2,27 +2,37 @@ use std::{
     any::{type_name, Any, TypeId},
     collections::HashMap,
     fmt::Debug,
-    sync::Arc,
 };
 
 use serde::Serialize;
 
 pub(crate) trait AnyDebug: Any + Debug {
     fn as_any(&self) -> &dyn Any;
+    fn clone_to_any(&self) -> Box<dyn AnyDebug>;
 }
 
 impl<T> AnyDebug for T
 where
-    T: Any + Debug,
+    T: Any + Debug + Clone,
 {
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn clone_to_any(&self) -> Box<dyn AnyDebug> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<dyn AnyDebug> {
+    fn clone(&self) -> Self {
+        self.clone_to_any()
     }
 }
 
 #[derive(Default, Clone)]
 pub(crate) struct Metadata {
-    map: HashMap<TypeId, (Arc<dyn AnyDebug>, &'static str)>,
+    map: HashMap<TypeId, (Box<dyn AnyDebug>, &'static str)>,
 }
 
 impl Serialize for Metadata {
@@ -61,11 +71,11 @@ impl Metadata {
         self.map.is_empty()
     }
 
-    pub fn set<T: 'static + Debug>(&mut self, value: T) {
-        let arced: Arc<dyn AnyDebug> = Arc::new(value);
+    pub fn set<T: 'static + Debug + Clone>(&mut self, value: T) {
         let type_id = TypeId::of::<T>();
 
-        self.map.insert(type_id, (arced, type_name::<T>()));
+        self.map
+            .insert(type_id, (Box::new(value), type_name::<T>()));
     }
 
     pub fn get<T: 'static + Debug>(&self) -> Option<&T> {
@@ -93,7 +103,7 @@ mod test {
 
     #[test]
     fn store_and_retrieve() {
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone, Copy)]
         struct SomeData(i32);
 
         let mut meta = Metadata::new();

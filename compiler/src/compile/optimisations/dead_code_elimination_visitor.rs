@@ -230,7 +230,7 @@ fn sweep_dead_statements(block: &mut [Statement]) -> ConstantOptimisationResult 
     result
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct DeadStatement;
 
 fn annotate_dead_statements(

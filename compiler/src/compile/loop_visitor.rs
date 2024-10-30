@@ -3,7 +3,7 @@ use crate::{
     reporting::{CompilerErrorKind, Diagnostics},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct LoopContainsNoBreak;
 
 pub fn visit_loop_check(function: &mut Function<'_>, diagnostics: &mut Diagnostics) {
