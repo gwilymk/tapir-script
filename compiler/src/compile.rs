@@ -1,7 +1,7 @@
 use std::{collections::HashMap, ops::ControlFlow, path::Path};
 
 use symtab_visitor::{SymTab, SymTabVisitor};
-use type_visitor::{TypeTable, TypeVisitor};
+use type_visitor::{TriggerId, TypeTable, TypeVisitor};
 
 use crate::{
     ast::{self, BinaryOperator, Function, MaybeResolved, Statement, SymbolId},
@@ -363,13 +363,14 @@ impl<'input> Compiler<'input> {
                     self.bytecode.patch_jump(forward_jump, loop_end);
                 }
             }
-            ast::StatementKind::Trigger { name, arguments } => {
+            ast::StatementKind::Trigger { arguments, .. } => {
                 let stack_before_trigger = self.stack.len();
                 for arg in arguments {
                     self.compile_expression(arg, symtab);
                 }
 
-                let trigger_index = self.type_table.trigger_index(name);
+                let &TriggerId(trigger_index) =
+                    statement.meta.get().expect("Should have a trigger id");
 
                 self.bytecode
                     .add_opcode(Opcode::Trigger(trigger_index as u8));

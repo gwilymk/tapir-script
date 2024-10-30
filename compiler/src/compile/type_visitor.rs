@@ -22,6 +22,9 @@ pub struct TypeVisitor<'input> {
     trigger_types: HashMap<&'input str, TriggerInfo>,
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct TriggerId(pub usize);
+
 struct FunctionInfo {
     span: Span,
     ty: FunctionType,
@@ -319,6 +322,8 @@ impl<'input> TypeVisitor<'input> {
                         .map(|arg| self.type_for_expression(arg, symtab, diagnostics))
                         .collect::<Vec<_>>();
 
+                    let trigger_index;
+
                     if let Some(trigger_info) = self.trigger_types.get(name) {
                         if trigger_info.ty.len() != trigger_arguments.len()
                             || trigger_info.ty.iter().zip(&trigger_arguments).any(
@@ -339,16 +344,22 @@ impl<'input> TypeVisitor<'input> {
                                 .into_message(statement.span),
                             );
                         }
+
+                        trigger_index = trigger_info.index;
                     } else {
+                        trigger_index = self.trigger_types.len();
+
                         self.trigger_types.insert(
                             name,
                             TriggerInfo {
                                 span: statement.span,
                                 ty: trigger_arguments,
-                                index: self.trigger_types.len(),
+                                index: trigger_index,
                             },
                         );
                     }
+
+                    statement.meta.set(TriggerId(trigger_index));
                 }
             }
         }
@@ -542,13 +553,6 @@ impl TypeTable<'_> {
 
     pub fn num_function_returns(&self, fn_name: &str) -> usize {
         self.num_function_returns[fn_name]
-    }
-
-    pub fn trigger_index(&self, trigger_name: &str) -> usize {
-        self.triggers
-            .get(trigger_name)
-            .expect("Should only ask about real triggers")
-            .index
     }
 
     pub fn triggers(&self) -> Vec<Trigger> {
