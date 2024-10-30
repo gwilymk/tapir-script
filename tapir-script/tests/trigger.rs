@@ -36,10 +36,8 @@ fn triggers() {
 
     let mut script = Triggers.script();
 
-    let mut i = 0;
-    while script.will_calling_run_do_anything() {
-        assert_eq!(script.run(), expected_order[i], "Failed at {i}");
-        i += 1;
+    for (i, expected) in expected_order.iter().enumerate() {
+        assert_eq!(&script.run(), expected, "Failed at {i}");
     }
 
     assert!(!script.will_calling_run_do_anything());
