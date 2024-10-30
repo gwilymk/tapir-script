@@ -45,7 +45,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         }
     };
 
-    if compiled_content.triggers.len() > 0 && trigger_type.is_none() {
+    if !compiled_content.triggers.is_empty() && trigger_type.is_none() {
         panic!("Tapir code is calling triggers, but no trigger_type defined");
     }
 
@@ -81,7 +81,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
 
             let trigger_index = trigger_index as u8;
 
-            let args = if args.len() == 0 {
+            let args = if args.is_empty() {
                 quote! {}
             } else {
                 args.reverse();

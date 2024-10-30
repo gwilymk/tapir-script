@@ -85,7 +85,7 @@ FunctionDefinition: Function<'input> = {
 
 FunctionModifiers: FunctionModifiers = {
     () => FunctionModifiers::default(),
-    <event_start: @L> event <event_end: @R> => FunctionModifiers { is_event_handler: Some(Span::new(file_id, event_start, event_end)), ..Default::default() },
+    <event_start: @L> event <event_end: @R> => FunctionModifiers { is_event_handler: Some(Span::new(file_id, event_start, event_end)) },
 }
 FunctionArguments: Vec<FunctionArgument<'input>> = CommaSeparated<FunctionArgument>;
 FunctionArgument: FunctionArgument<'input> = 
