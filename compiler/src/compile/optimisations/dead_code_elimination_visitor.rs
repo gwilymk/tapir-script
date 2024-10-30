@@ -194,7 +194,7 @@ fn sweep_dead_statements(block: &mut [Statement]) -> ConstantOptimisationResult 
             | StatementKind::Return { .. } => {}
             StatementKind::Assignment { value, .. }
             | StatementKind::VariableDeclaration { value, .. } => {
-                if statement.meta.get::<DeadStatement>().is_some() {
+                if statement.meta.has::<DeadStatement>() {
                     let value = std::mem::take(&mut value.kind);
                     statement.kind = StatementKind::Block {
                         block: extract_side_effects(value)

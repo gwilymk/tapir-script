@@ -75,6 +75,13 @@ impl Metadata {
             .and_then(|(value, _)| (**value).as_any().downcast_ref())
     }
 
+    pub fn has<T: 'static + Debug>(&self) -> bool {
+        let type_id = TypeId::of::<T>();
+        self.map
+            .get(&type_id)
+            .map_or(false, |(value, _)| (**value).as_any().is::<T>())
+    }
+
     pub fn clear(&mut self) {
         self.map.clear();
     }

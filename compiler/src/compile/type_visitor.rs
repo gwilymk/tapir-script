@@ -303,7 +303,7 @@ impl<'input> TypeVisitor<'input> {
                             return BlockAnalysisResult::AllBranchesReturn
                         }
                         BlockAnalysisResult::ContainsNonReturningBranch => {
-                            if statement.meta.get::<LoopContainsNoBreak>().is_some() {
+                            if statement.meta.has::<LoopContainsNoBreak>() {
                                 return BlockAnalysisResult::AllBranchesReturn;
                             }
                         }
