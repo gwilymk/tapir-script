@@ -1,0 +1,28 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations/unused_function_visitor.rs
+expression: pretty_printed
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/unused_function/layers_of_calls.tapir
+---
+# @toplevel: {"FunctionId(0)"}
+
+first_function(); # {"FunctionId(1)"}
+
+# {"FunctionId(1)"}
+fn first_function() {
+    second_function(); # {"FunctionId(2)"}
+}
+
+# {"FunctionId(2)"}
+fn second_function() {
+    third_function(); # {"FunctionId(3)"}
+}
+
+# {"FunctionId(3)"}
+fn third_function() {
+    wait;
+}
+
+# {"FunctionId(4)", "UnusedFunction"}
+fn unused_fourth_function() {
+    wait;
+}

@@ -1,0 +1,24 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations/unused_function_visitor.rs
+expression: pretty_printed
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/unused_function/unused_recursive_function.tapir
+---
+# @toplevel: {"FunctionId(0)"}
+
+used(5,); # {"FunctionId(2)"}
+
+# {"FunctionId(1)", "UnusedFunction"}
+fn foo(int,) {
+    if (x < 0) {
+        return (x,);
+    }
+    return (foo((x - 1),),);
+}
+
+# {"FunctionId(2)"}
+fn used(int,) {
+    if (x < 0) {
+        return (x,);
+    }
+    return (used((x - 1),),);
+}

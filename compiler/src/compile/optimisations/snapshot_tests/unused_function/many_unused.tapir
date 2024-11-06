@@ -1,0 +1,11 @@
+fn first_unused() {
+    second_unused();
+}
+
+fn second_unused() {
+    third_unused();
+}
+
+fn third_unused() {
+    wait;
+}
