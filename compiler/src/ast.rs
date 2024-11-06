@@ -232,6 +232,27 @@ pub struct Expression<'input> {
     pub meta: Metadata,
 }
 
+impl<'input> Expression<'input> {
+    pub fn all_inner(&self) -> Box<dyn Iterator<Item = &Expression<'input>> + '_> {
+        match &self.kind {
+            ExpressionKind::Integer(_)
+            | ExpressionKind::Fix(_)
+            | ExpressionKind::Bool(_)
+            | ExpressionKind::Variable(_)
+            | ExpressionKind::Error => Box::new(iter::once(self)),
+            ExpressionKind::Nop => Box::new(iter::empty()),
+            ExpressionKind::Call { arguments, .. } => Box::new(
+                iter::once(self).chain(arguments.iter().flat_map(|argument| argument.all_inner())),
+            ),
+            ExpressionKind::BinaryOperation { lhs, rhs, .. } => Box::new(
+                iter::once(self)
+                    .chain(lhs.all_inner())
+                    .chain(rhs.all_inner()),
+            ),
+        }
+    }
+}
+
 #[derive(Clone, Default, Debug, Serialize)]
 pub enum ExpressionKind<'input> {
     Integer(i32),

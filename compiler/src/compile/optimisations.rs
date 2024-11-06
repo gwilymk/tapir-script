@@ -8,6 +8,7 @@ use std::ops::{BitOr, BitOrAssign};
 use constant_folding_visitor::constant_fold;
 use constant_propagation_visitor::constant_propagation;
 use dead_code_elimination_visitor::dead_code_eliminate;
+use unused_function_visitor::{unused_function_visitor, UnusedFunction};
 
 use crate::{
     ast::{ExpressionKind, Function},
@@ -17,7 +18,7 @@ use crate::{
 use super::CompileSettings;
 
 pub fn optimise(
-    function: &mut Function,
+    functions: &mut [Function],
     compile_settings: &CompileSettings,
     diagnostics: &mut Diagnostics,
 ) {
@@ -25,11 +26,27 @@ pub fn optimise(
         return;
     }
 
-    while constant_propagation(function, compile_settings)
-        | constant_fold(function, diagnostics)
-        | dead_code_eliminate(function, compile_settings)
-        == ConstantOptimisationResult::DidSomething
-    {}
+    loop {
+        let mut did_something = unused_function_visitor(functions);
+
+        for function in functions.iter_mut() {
+            if function.meta.has::<UnusedFunction>() {
+                continue; // no point optimising functions which aren't called
+            }
+
+            while constant_propagation(function, compile_settings)
+                | constant_fold(function, diagnostics)
+                | dead_code_eliminate(function, compile_settings)
+                == ConstantOptimisationResult::DidSomething
+            {
+                did_something = ConstantOptimisationResult::DidSomething;
+            }
+        }
+
+        if did_something == ConstantOptimisationResult::DidNothing {
+            break;
+        }
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

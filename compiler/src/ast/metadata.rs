@@ -71,11 +71,13 @@ impl Metadata {
         self.map.is_empty()
     }
 
-    pub fn set<T: 'static + Debug + Clone>(&mut self, value: T) {
+    // Returns whether there was a value before
+    pub fn set<T: 'static + Debug + Clone>(&mut self, value: T) -> bool {
         let type_id = TypeId::of::<T>();
 
         self.map
-            .insert(type_id, (Box::new(value), type_name::<T>()));
+            .insert(type_id, (Box::new(value), type_name::<T>()))
+            .is_some()
     }
 
     pub fn get<T: 'static + Debug>(&self) -> Option<&T> {

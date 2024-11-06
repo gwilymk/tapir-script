@@ -70,9 +70,9 @@ pub fn compile(
         loop_visitor::visit_loop_check(function, &mut diagnostics);
 
         type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
-
-        optimisations::optimise(function, settings, &mut diagnostics);
     }
+
+    optimisations::optimise(&mut ast.functions, settings, &mut diagnostics);
 
     let type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);
 

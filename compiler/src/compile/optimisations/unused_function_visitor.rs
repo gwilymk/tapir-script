@@ -4,15 +4,21 @@ use serde::Serialize;
 
 use crate::ast::{ExpressionKind, Function, FunctionId, StatementKind};
 
+use super::ConstantOptimisationResult;
+
 #[derive(Debug, Clone, Copy, Serialize)]
 pub struct UnusedFunction;
 
-pub fn unused_function_visitor(functions: &mut [Function]) {
+pub fn unused_function_visitor(functions: &mut [Function]) -> ConstantOptimisationResult {
     let mut call_graph = DiGraphMap::new();
 
     let mut roots = vec![FunctionId(0)];
 
     for function in functions.iter_mut() {
+        if function.meta.has::<UnusedFunction>() {
+            continue; // don't need to inspect this since we already know it is unused
+        }
+
         let function_id: FunctionId = *function.meta.get().unwrap();
 
         if function.modifiers.is_event_handler.is_some() {
@@ -23,12 +29,19 @@ pub fn unused_function_visitor(functions: &mut [Function]) {
 
         for statement in &mut function.statements {
             if matches!(statement.kind, StatementKind::Call { .. }) {
-                call_graph.add_edge(function_id, *statement.meta.get().unwrap(), ());
+                if let Some(called_id) = statement.meta.get() {
+                    call_graph.add_edge(function_id, *called_id, ());
+                }
             }
 
-            for expr in statement.expressions_mut() {
+            for expr in statement
+                .expressions_mut()
+                .flat_map(|expr| expr.all_inner())
+            {
                 if matches!(expr.kind, ExpressionKind::Call { .. }) {
-                    call_graph.add_edge(function_id, *expr.meta.get().unwrap(), ());
+                    if let Some(called_id) = expr.meta.get() {
+                        call_graph.add_edge(function_id, *called_id, ());
+                    }
                 }
             }
         }
@@ -43,13 +56,17 @@ pub fn unused_function_visitor(functions: &mut [Function]) {
 
     let called_functions = called_functions.discovered;
 
+    let mut did_something = ConstantOptimisationResult::DidNothing;
     for function in functions.iter_mut() {
         let function_id: FunctionId = *function.meta.get().unwrap();
 
-        if !called_functions.contains(&function_id) {
-            function.meta.set(UnusedFunction);
+        if !called_functions.contains(&function_id) && !function.meta.set(UnusedFunction) {
+            // we've newly set a meta field
+            did_something = ConstantOptimisationResult::DidSomething;
         }
     }
+
+    did_something
 }
 
 #[cfg(test)]
