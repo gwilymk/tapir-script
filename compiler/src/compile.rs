@@ -4,7 +4,7 @@ use symtab_visitor::{SymTab, SymTabVisitor};
 use type_visitor::{TriggerId, TypeTable, TypeVisitor};
 
 use crate::{
-    ast::{self, BinaryOperator, Function, MaybeResolved, Statement, SymbolId},
+    ast::{self, BinaryOperator, Function, FunctionId, MaybeResolved, Statement, SymbolId},
     grammar,
     lexer::Lexer,
     reporting::Diagnostics,
@@ -95,8 +95,8 @@ struct Compiler<'input> {
     stack: Vec<Option<SymbolId>>,
     loops: Vec<LoopCompliationState>,
 
-    function_calls: Vec<(&'input str, Jump)>,
-    function_locations: HashMap<&'input str, Label>,
+    function_calls: Vec<(FunctionId, Jump)>,
+    function_locations: HashMap<FunctionId, Label>,
 
     type_table: TypeTable<'input>,
     bytecode: Bytecode,
@@ -116,14 +116,14 @@ impl<'input> Compiler<'input> {
             loops: vec![],
 
             function_calls: vec![],
-            function_locations: HashMap::from([("@toplevel", Label(0))]),
+            function_locations: HashMap::from([(FunctionId(0), Label(0))]),
             bytecode: Bytecode::new(type_table.triggers()),
             type_table,
         }
     }
 
     pub fn compile_function(&mut self, function: &Function<'input>, symtab: &SymTab) {
-        if function.name != "@toplevel" {
+        if *function.meta.get::<FunctionId>().unwrap() != FunctionId(0) {
             // the stack will be arguments, then the return pointer. However, if we're at toplevel, then
             // the stack will be empty to start with
             for argument in &function.arguments {
@@ -138,7 +138,7 @@ impl<'input> Compiler<'input> {
         }
 
         self.function_locations
-            .insert(function.name, self.bytecode.new_label());
+            .insert(*function.meta.get().unwrap(), self.bytecode.new_label());
 
         if function.modifiers.is_event_handler.is_some() {
             self.bytecode.event_handlers.push(EventHandler {
@@ -284,6 +284,7 @@ impl<'input> Compiler<'input> {
                 return ControlFlow::Break(());
             }
             ast::StatementKind::Call { name, arguments } => {
+                let function_id: FunctionId = *statement.meta.get().unwrap();
                 let number_of_returns = self.type_table.num_function_returns(name);
                 let stack_before_call = self.stack.len();
 
@@ -292,7 +293,7 @@ impl<'input> Compiler<'input> {
                 }
 
                 let call_jump = self.bytecode.new_call();
-                self.function_calls.push((name, call_jump));
+                self.function_calls.push((function_id, call_jump));
 
                 // fixup the stack after the call instruction
                 self.stack
@@ -300,13 +301,15 @@ impl<'input> Compiler<'input> {
 
                 self.compile_drop_to(stack_before_call);
             }
-            ast::StatementKind::Spawn { name, arguments } => {
+            ast::StatementKind::Spawn { arguments, .. } => {
+                let function_id: FunctionId = *statement.meta.get().unwrap();
+
                 for argument in arguments {
                     self.compile_expression(argument, symtab);
                 }
 
                 let spawn_jump = self.bytecode.new_spawn(arguments.len() as u8);
-                self.function_calls.push((name, spawn_jump));
+                self.function_calls.push((function_id, spawn_jump));
 
                 self.stack.truncate(self.stack.len() - arguments.len());
             }
@@ -447,14 +450,16 @@ impl<'input> Compiler<'input> {
             }
             ast::ExpressionKind::Error => panic!("Should never have to compile an error"),
             ast::ExpressionKind::Nop => panic!("NOP expression will cause stack issues"),
-            ast::ExpressionKind::Call { name, arguments } => {
+            ast::ExpressionKind::Call { arguments, .. } => {
+                let function_id: FunctionId = *value.meta.get().unwrap();
+
                 let number_of_returns = 1;
                 for argument in arguments {
                     self.compile_expression(argument, symtab);
                 }
 
                 let call_jump = self.bytecode.new_call();
-                self.function_calls.push((name, call_jump));
+                self.function_calls.push((function_id, call_jump));
 
                 // fixup the stack after the call instruction
                 self.stack

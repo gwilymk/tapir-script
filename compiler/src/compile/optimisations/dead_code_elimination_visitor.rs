@@ -1,7 +1,10 @@
 use std::collections::HashSet;
 
 use crate::{
-    ast::{Expression, ExpressionKind, Function, Statement, StatementKind, SymbolId},
+    ast::{
+        Expression, ExpressionKind, Function, FunctionId, Metadata, Statement, StatementKind,
+        SymbolId,
+    },
     CompileSettings,
 };
 
@@ -96,14 +99,7 @@ fn sweep_unconditional_if(block: &mut Vec<Statement>) -> ConstantOptimisationRes
                 result |= ConstantOptimisationResult::DidSomething;
                 !should_remove
             } else if true_block.is_empty() && false_block.is_empty() {
-                let condition = std::mem::take(&mut condition.kind);
-                let block: Vec<_> = extract_side_effects(condition)
-                    .map(|x| Statement {
-                        span: statement.span,
-                        kind: x,
-                        meta: Default::default(),
-                    })
-                    .collect();
+                let block: Vec<_> = extract_side_effects(condition).collect();
                 result |= ConstantOptimisationResult::DidSomething;
 
                 if block.is_empty() {
@@ -195,15 +191,8 @@ fn sweep_dead_statements(block: &mut [Statement]) -> ConstantOptimisationResult 
             StatementKind::Assignment { value, .. }
             | StatementKind::VariableDeclaration { value, .. } => {
                 if statement.meta.has::<DeadStatement>() {
-                    let value = std::mem::take(&mut value.kind);
                     statement.kind = StatementKind::Block {
-                        block: extract_side_effects(value)
-                            .map(|x| Statement {
-                                span: statement.span,
-                                kind: x,
-                                meta: Default::default(),
-                            })
-                            .collect(),
+                        block: extract_side_effects(value).collect(),
                     };
                     statement.meta.clear(); // the existing metadata is no longer relevant
                     result |= ConstantOptimisationResult::DidSomething;
@@ -328,9 +317,9 @@ fn annotate_dead_statements(
 }
 
 fn extract_side_effects<'input>(
-    expression: ExpressionKind<'input>,
-) -> Box<dyn Iterator<Item = StatementKind> + '_> {
-    match expression {
+    expression: &Expression<'input>,
+) -> Box<dyn Iterator<Item = Statement<'input>> + 'input> {
+    match &expression.kind {
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)
@@ -341,9 +330,19 @@ fn extract_side_effects<'input>(
             lhs,
             operator: _,
             rhs,
-        } => Box::new(extract_side_effects(lhs.kind).chain(extract_side_effects(rhs.kind))),
+        } => Box::new(extract_side_effects(lhs).chain(extract_side_effects(rhs))),
         ExpressionKind::Call { name, arguments } => {
-            Box::new(std::iter::once(StatementKind::Call { name, arguments }))
+            let mut meta = Metadata::new();
+            meta.set(*expression.meta.get::<FunctionId>().unwrap());
+
+            Box::new(std::iter::once(Statement {
+                kind: StatementKind::Call {
+                    name,
+                    arguments: arguments.to_vec(),
+                },
+                span: expression.span,
+                meta,
+            }))
         }
     }
 }

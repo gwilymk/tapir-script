@@ -110,6 +110,8 @@ mod test {
     #[test]
     fn stack_snapshot_tests() {
         glob!("snapshot_tests", "stack/**/*.tapir", |path| {
+            std::println!("{}", path.display());
+
             let input = fs::read_to_string(path).unwrap();
 
             let compiler_settings = CompileSettings {
