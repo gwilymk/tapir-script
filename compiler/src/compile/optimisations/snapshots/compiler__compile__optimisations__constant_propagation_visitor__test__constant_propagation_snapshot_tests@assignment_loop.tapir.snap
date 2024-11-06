@@ -5,13 +5,24 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 # @toplevel: {"FunctionId(0)"}
 
-var x = 4; # {"SymbolId(1)"}
-var y = 0; # {"SymbolId(2)"}
+# {"SymbolId(1)"}
+var x = 4;
+# {"SymbolId(2)"}
+var y = 0;
 loop {
-    if (y == 3) {
+    if (
+            y # {"SymbolId(2)"}
+             == 3) {
         break;
     }
-    y = x; # {"SymbolId(2)"}
-    x = 3; # {"SymbolId(1)"}
+    # {"SymbolId(2)"}
+    y = 
+            x # {"SymbolId(1)"}
+            ;
+    # {"SymbolId(1)"}
+    x = 3;
 }
-var z = y; # {"SymbolId(3)"}
+# {"SymbolId(3)"}
+var z = 
+        y # {"SymbolId(2)"}
+        ;

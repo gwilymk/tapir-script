@@ -5,4 +5,7 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 # @toplevel: {"FunctionId(0)"}
 
-fix_prop = (fix_prop * 2); # {"SymbolId(1)"}
+# {"SymbolId(1)"}
+fix_prop = (
+        fix_prop # {"SymbolId(1)"}
+         * 2);

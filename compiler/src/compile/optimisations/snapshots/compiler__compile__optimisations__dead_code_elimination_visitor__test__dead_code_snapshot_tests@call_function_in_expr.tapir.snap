@@ -6,10 +6,15 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 # @toplevel: {"FunctionId(0)"}
 
 {
-    add(2,5,); # {"FunctionId(1)"}
+    # {"FunctionId(1)"}
+    add(2,5,);
 }
 
 # {"FunctionId(1)"}
 fn add(int,int,) -> (int,) {
-    return ((x + y),);
+    return ((
+            x # {"SymbolId(4)"}
+             + 
+            y # {"SymbolId(5)"}
+            ),);
 }

@@ -26,7 +26,7 @@ where
 
 impl Clone for Box<dyn AnyDebug> {
     fn clone(&self) -> Self {
-        self.clone_to_any()
+        (**self).clone_to_any()
     }
 }
 
@@ -113,5 +113,21 @@ mod test {
         meta.set(SomeData(33));
 
         assert_eq!(meta.get::<SomeData>(), Some(&SomeData(33)));
+    }
+
+    #[test]
+    fn can_clone() {
+        #[derive(Debug, PartialEq, Clone, Copy)]
+        struct SomeData(i32);
+
+        let mut meta = Metadata::new();
+
+        meta.set(SomeData(33));
+
+        let mut meta2 = meta.clone();
+        meta2.set(SomeData(34));
+
+        assert_eq!(meta.get::<SomeData>(), Some(&SomeData(33)));
+        assert_eq!(meta2.get::<SomeData>(), Some(&SomeData(34)));
     }
 }

@@ -1,5 +1,6 @@
 use std::{collections::HashMap, ops::ControlFlow, path::Path};
 
+use optimisations::UnusedFunction;
 use symtab_visitor::{SymTab, SymTabVisitor};
 use type_visitor::{TriggerId, TypeTable, TypeVisitor};
 
@@ -83,6 +84,10 @@ pub fn compile(
     let mut compiler = Compiler::new(type_table);
 
     for function in ast.functions {
+        if function.meta.has::<UnusedFunction>() {
+            continue; // don't need to compile unused functions
+        }
+
         compiler.compile_function(&function, sym_tab_visitor.get_symtab());
     }
 
@@ -123,7 +128,8 @@ impl<'input> Compiler<'input> {
     }
 
     pub fn compile_function(&mut self, function: &Function<'input>, symtab: &SymTab) {
-        if *function.meta.get::<FunctionId>().unwrap() != FunctionId(0) {
+        let function_id = *function.meta.get::<FunctionId>().unwrap();
+        if function_id != FunctionId(0) {
             // the stack will be arguments, then the return pointer. However, if we're at toplevel, then
             // the stack will be empty to start with
             for argument in &function.arguments {
@@ -138,7 +144,7 @@ impl<'input> Compiler<'input> {
         }
 
         self.function_locations
-            .insert(*function.meta.get().unwrap(), self.bytecode.new_label());
+            .insert(function_id, self.bytecode.new_label());
 
         if function.modifiers.is_event_handler.is_some() {
             self.bytecode.event_handlers.push(EventHandler {
@@ -493,8 +499,8 @@ impl<'input> Compiler<'input> {
 
     fn finalise(&mut self) {
         for (fname, jump) in &self.function_calls {
-            let label = &self.function_locations[fname];
-            self.bytecode.patch_jump(*jump, *label);
+            let label = self.function_locations[fname];
+            self.bytecode.patch_jump(*jump, label);
         }
     }
 }

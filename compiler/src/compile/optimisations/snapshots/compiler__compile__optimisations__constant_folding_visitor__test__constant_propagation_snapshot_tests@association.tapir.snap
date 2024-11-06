@@ -5,6 +5,8 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 # @toplevel: {"FunctionId(0)"}
 
-int_prop = (int_prop + 5); # {"SymbolId(0)"}
+# {"SymbolId(0)"}
+int_prop = (int_prop + 5);
 wait;
-int_prop = (int_prop + -1); # {"SymbolId(0)"}
+# {"SymbolId(0)"}
+int_prop = (int_prop + -1);

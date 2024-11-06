@@ -5,9 +5,12 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 # @toplevel: {"FunctionId(0)"}
 
-foo(4,); # {"FunctionId(1)"}
+# {"FunctionId(1)"}
+foo(4,);
 
 # {"FunctionId(1)"}
 fn foo(int,) -> (int,) {
-    return (x,);
+    return (
+            x # {"SymbolId(0)"}
+            ,);
 }

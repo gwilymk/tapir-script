@@ -5,16 +5,19 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 # @toplevel: {"FunctionId(0)"}
 
-first_function(); # {"FunctionId(1)"}
+# {"FunctionId(1)"}
+first_function();
 
 # {"FunctionId(1)"}
 fn first_function() {
-    second_function(); # {"FunctionId(2)"}
+    # {"FunctionId(2)"}
+    second_function();
 }
 
 # {"FunctionId(2)"}
 fn second_function() {
-    third_function(); # {"FunctionId(3)"}
+    # {"FunctionId(3)"}
+    third_function();
 }
 
 # {"FunctionId(3)"}

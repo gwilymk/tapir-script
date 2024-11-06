@@ -1,0 +1,12 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations.rs
+expression: pretty_printed
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/optimisation_integration/unused_function_in_never_taken_branch.tapir
+---
+# @toplevel: {"FunctionId(0)"}
+
+
+# {"FunctionId(1)", "UnusedFunction"}
+fn foo() {
+    wait;
+}

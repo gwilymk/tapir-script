@@ -1,0 +1,11 @@
+fn foo() -> int {
+    wait;
+    return 33;
+}
+
+var y = 7;
+wait;
+var x = foo();
+wait;
+x = 121;
+wait;

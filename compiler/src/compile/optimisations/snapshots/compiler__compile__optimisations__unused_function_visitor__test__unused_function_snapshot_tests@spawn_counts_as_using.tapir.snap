@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations/unused_function_visitor.rs
+expression: pretty_printed
+input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/unused_function/spawn_counts_as_using.tapir
+---
+# @toplevel: {"FunctionId(0)"}
+
+# {"FunctionId(1)"}
+spawn foo();
+
+# {"FunctionId(1)"}
+fn foo() {
+    wait;
+}

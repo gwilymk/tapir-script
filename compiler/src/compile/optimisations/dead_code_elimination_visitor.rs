@@ -1,10 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    ast::{
-        Expression, ExpressionKind, Function, FunctionId, Metadata, Statement, StatementKind,
-        SymbolId,
-    },
+    ast::{Expression, ExpressionKind, Function, Statement, StatementKind, SymbolId},
     CompileSettings,
 };
 
@@ -332,8 +329,7 @@ fn extract_side_effects<'input>(
             rhs,
         } => Box::new(extract_side_effects(lhs).chain(extract_side_effects(rhs))),
         ExpressionKind::Call { name, arguments } => {
-            let mut meta = Metadata::new();
-            meta.set(*expression.meta.get::<FunctionId>().unwrap());
+            let meta = expression.meta.clone();
 
             Box::new(std::iter::once(Statement {
                 kind: StatementKind::Call {

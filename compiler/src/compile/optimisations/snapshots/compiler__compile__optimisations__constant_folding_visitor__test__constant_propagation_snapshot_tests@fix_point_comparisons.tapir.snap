@@ -5,5 +5,7 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 # @toplevel: {"FunctionId(0)"}
 
-var x = true; # {"SymbolId(3)"}
-var y = true; # {"SymbolId(4)"}
+# {"SymbolId(3)"}
+var x = true;
+# {"SymbolId(4)"}
+var y = true;

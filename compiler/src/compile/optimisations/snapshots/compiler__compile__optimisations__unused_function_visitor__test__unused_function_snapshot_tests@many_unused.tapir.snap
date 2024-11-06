@@ -8,12 +8,14 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 
 # {"FunctionId(1)", "UnusedFunction"}
 fn first_unused() {
-    second_unused(); # {"FunctionId(2)"}
+    # {"FunctionId(2)"}
+    second_unused();
 }
 
 # {"FunctionId(2)", "UnusedFunction"}
 fn second_unused() {
-    third_unused(); # {"FunctionId(3)"}
+    # {"FunctionId(3)"}
+    third_unused();
 }
 
 # {"FunctionId(3)", "UnusedFunction"}

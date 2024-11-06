@@ -54,6 +54,11 @@ fn pretty_print_statements(
     indent: Indent,
 ) -> std::fmt::Result {
     for statement in statements {
+        if statement.meta.is_empty() {
+        } else {
+            writeln!(output, "{indent}# {:?}", statement.meta)?;
+        }
+
         write!(output, "{indent}")?;
         match &statement.kind {
             StatementKind::Error => write!(output, "ERROR;")?,
@@ -111,7 +116,7 @@ fn pretty_print_statements(
                     pretty_print_expr(argument, output, indent.increase())?;
                     write!(output, ",")?;
                 }
-                write!(output, "}};")?;
+                write!(output, ");")?;
             }
             StatementKind::Return { values } => {
                 write!(output, "return (")?;
@@ -131,11 +136,7 @@ fn pretty_print_statements(
             }
         }
 
-        if statement.meta.is_empty() {
-            writeln!(output)?;
-        } else {
-            writeln!(output, " # {:?}", statement.meta)?;
-        }
+        writeln!(output)?;
     }
 
     Ok(())
@@ -144,8 +145,13 @@ fn pretty_print_statements(
 fn pretty_print_expr(
     expression: &Expression,
     output: &mut dyn Write,
-    indent: Indent,
+    mut indent: Indent,
 ) -> std::fmt::Result {
+    if !expression.meta.is_empty() {
+        indent = indent.increase();
+        write!(output, "\n{indent}")?;
+    }
+
     match &expression.kind {
         ExpressionKind::Integer(int) => write!(output, "{int}")?,
         ExpressionKind::Fix(num) => write!(output, "{num}")?,
@@ -189,6 +195,10 @@ fn pretty_print_expr(
             }
             write!(output, ")")?;
         }
+    }
+
+    if !expression.meta.is_empty() {
+        write!(output, " # {:?}\n{indent}", expression.meta)?;
     }
 
     Ok(())

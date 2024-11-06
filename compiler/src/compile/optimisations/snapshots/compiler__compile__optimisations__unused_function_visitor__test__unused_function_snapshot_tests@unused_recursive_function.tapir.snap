@@ -5,20 +5,37 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 # @toplevel: {"FunctionId(0)"}
 
-used(5,); # {"FunctionId(2)"}
+# {"FunctionId(2)"}
+used(5,);
 
 # {"FunctionId(1)", "UnusedFunction"}
 fn foo(int,) {
-    if (x < 0) {
-        return (x,);
+    if (
+            x # {"SymbolId(0)"}
+             < 0) {
+        return (
+                x # {"SymbolId(0)"}
+                ,);
     }
-    return (foo((x - 1),),);
+    return (
+            foo((
+                    x # {"SymbolId(0)"}
+                     - 1),) # {"FunctionId(1)"}
+            ,);
 }
 
 # {"FunctionId(2)"}
 fn used(int,) {
-    if (x < 0) {
-        return (x,);
+    if (
+            x # {"SymbolId(1)"}
+             < 0) {
+        return (
+                x # {"SymbolId(1)"}
+                ,);
     }
-    return (used((x - 1),),);
+    return (
+            used((
+                    x # {"SymbolId(1)"}
+                     - 1),) # {"FunctionId(2)"}
+            ,);
 }

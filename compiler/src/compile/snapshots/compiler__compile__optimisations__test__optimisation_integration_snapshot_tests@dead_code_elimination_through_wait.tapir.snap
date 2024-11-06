@@ -1,0 +1,20 @@
+---
+source: crates/tapir-script/compiler/src/compile/optimisations.rs
+expression: pretty_printed
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/optimisation_integration/dead_code_elimination_through_wait.tapir
+---
+# @toplevel: {"FunctionId(0)"}
+
+wait;
+{
+    # {"FunctionId(1)"}
+    foo();
+}
+wait;
+wait;
+
+# {"FunctionId(1)"}
+fn foo() -> (int,) {
+    wait;
+    return (33,);
+}

@@ -1,0 +1,9 @@
+var x = false;
+
+if x {
+    foo();
+}
+
+fn foo() {
+    wait;
+}

@@ -5,10 +5,14 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 # @toplevel: {"FunctionId(0)"}
 
-var y = 7; # {"SymbolId(3)"}
+# {"SymbolId(3)"}
+var y = 7;
 loop {
     {
         break;
     }
 }
-int_prop = y; # {"SymbolId(0)"}
+# {"SymbolId(0)"}
+int_prop = 
+        y # {"SymbolId(3)"}
+        ;

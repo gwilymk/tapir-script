@@ -8,7 +8,8 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 
 # {"FunctionId(1)"}
 event fn foo() {
-    call_function(); # {"FunctionId(2)"}
+    # {"FunctionId(2)"}
+    call_function();
 }
 
 # {"FunctionId(2)"}

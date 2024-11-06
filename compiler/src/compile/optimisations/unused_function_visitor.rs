@@ -2,7 +2,7 @@ use petgraph::prelude::*;
 
 use serde::Serialize;
 
-use crate::ast::{ExpressionKind, Function, FunctionId, StatementKind};
+use crate::ast::{ExpressionKind, Function, FunctionId, Statement, StatementKind};
 
 use super::ConstantOptimisationResult;
 
@@ -27,20 +27,68 @@ pub fn unused_function_visitor(functions: &mut [Function]) -> ConstantOptimisati
 
         call_graph.add_node(function_id);
 
-        for statement in &mut function.statements {
-            if matches!(statement.kind, StatementKind::Call { .. }) {
-                if let Some(called_id) = statement.meta.get() {
-                    call_graph.add_edge(function_id, *called_id, ());
-                }
+        visit_block(function_id, &function.statements, &mut call_graph);
+
+        fn visit_block(
+            calling_function: FunctionId,
+            block: &[Statement],
+            call_graph: &mut DiGraphMap<FunctionId, ()>,
+        ) {
+            macro_rules! visit_expr {
+                ($expr:expr) => {
+                    for expr in $expr.all_inner() {
+                        if matches!(expr.kind, ExpressionKind::Call { .. }) {
+                            if let Some(called_id) = expr.meta.get() {
+                                call_graph.add_edge(calling_function, *called_id, ());
+                            }
+                        }
+                    }
+                };
             }
 
-            for expr in statement
-                .expressions_mut()
-                .flat_map(|expr| expr.all_inner())
-            {
-                if matches!(expr.kind, ExpressionKind::Call { .. }) {
-                    if let Some(called_id) = expr.meta.get() {
-                        call_graph.add_edge(function_id, *called_id, ());
+            macro_rules! visit_exprs {
+                ($exprs:expr) => {
+                    for expr in $exprs {
+                        visit_expr!(expr);
+                    }
+                };
+            }
+
+            for statement in block {
+                match &statement.kind {
+                    StatementKind::Error
+                    | StatementKind::Wait
+                    | StatementKind::Continue
+                    | StatementKind::Break
+                    | StatementKind::Nop => continue,
+
+                    StatementKind::VariableDeclaration { value, .. }
+                    | StatementKind::Assignment { value, .. } => {
+                        visit_expr!(value);
+                    }
+                    StatementKind::Loop { block } | StatementKind::Block { block } => {
+                        visit_block(calling_function, block, call_graph)
+                    }
+                    StatementKind::If {
+                        condition,
+                        true_block,
+                        false_block,
+                    } => {
+                        visit_expr!(condition);
+                        visit_block(calling_function, true_block, call_graph);
+                        visit_block(calling_function, false_block, call_graph);
+                    }
+                    StatementKind::Spawn { arguments, .. }
+                    | StatementKind::Call { arguments, .. } => {
+                        if let Some(called_id) = statement.meta.get() {
+                            call_graph.add_edge(calling_function, *called_id, ());
+                        }
+
+                        visit_exprs!(arguments);
+                    }
+                    StatementKind::Return { values: arguments }
+                    | StatementKind::Trigger { arguments, .. } => {
+                        visit_exprs!(arguments);
                     }
                 }
             }

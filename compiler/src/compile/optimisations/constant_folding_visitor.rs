@@ -41,6 +41,18 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
         }};
     }
 
+    macro_rules! take_side {
+        (lhs, $lhs:expr) => {{
+            exp.meta = mem::take(&mut lhs.meta);
+            $lhs
+        }};
+
+        (rhs, $rhs:expr) => {{
+            exp.meta = mem::take(&mut rhs.meta);
+            $rhs
+        }};
+    }
+
     exp.kind = match (mem::take(&mut lhs.kind), *operator, mem::take(&mut rhs.kind)) {
         // ========================
         // Integer maths operations
@@ -82,8 +94,11 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
         // ===================
         // add / subtract zero
         // ===================
-        (E::Integer(0), B::Add | B::Sub, any) | (any, B::Add | B::Sub, E::Integer(0)) => any,
-        (any, B::Add | B::Sub, E::Fix(n)) | (E::Fix(n), B::Add | B::Sub, any) if n == 0.into() => any,
+        (E::Integer(0), B::Add | B::Sub, any) => take_side!(rhs, any),
+        (any, B::Add | B::Sub, E::Integer(0)) => take_side!(lhs, any),
+
+        (any, B::Add | B::Sub, E::Fix(n)) if n == 0.into() => take_side!(lhs, any),
+        (E::Fix(n), B::Add | B::Sub, any) if n == 0.into() => take_side!(rhs, any),
 
         // ==============================================
         // mulitply by zero
