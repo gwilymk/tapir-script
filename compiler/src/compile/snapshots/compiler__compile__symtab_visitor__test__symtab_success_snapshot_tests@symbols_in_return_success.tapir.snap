@@ -17,7 +17,9 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
-      meta: {},
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+      },
     ),
     Function(
       name: "my_function",
@@ -120,7 +122,9 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
-      meta: {},
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(1)",
+      },
     ),
   ],
 )

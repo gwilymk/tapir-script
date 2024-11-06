@@ -19,14 +19,17 @@ pub struct SymTabVisitor<'input> {
 }
 
 impl<'input> SymTabVisitor<'input> {
-    pub fn new(settings: &CompileSettings, functions: &[Function<'input>]) -> Self {
+    pub fn new(settings: &CompileSettings, functions: &mut [Function<'input>]) -> Self {
+        for (i, function) in functions.iter_mut().enumerate() {
+            function.meta.set(FunctionId(i));
+        }
+
         Self {
             symtab: SymTab::new(settings),
             symbol_names: NameTable::new(settings),
             function_names: functions
                 .iter()
-                .enumerate()
-                .map(|(i, f)| (f.name, FunctionId(i)))
+                .map(|f| (f.name, *f.meta.get::<FunctionId>().unwrap()))
                 .collect(),
         }
     }
@@ -113,12 +116,22 @@ impl<'input> SymTabVisitor<'input> {
                     self.visit_block(block, diagnostics);
                 }
                 StatementKind::Call {
-                    ref mut arguments, ..
+                    ref mut arguments,
+                    name,
                 }
                 | StatementKind::Spawn {
-                    ref mut arguments, ..
+                    ref mut arguments,
+                    name,
+                } => {
+                    if let Some(function) = self.function_names.get(name) {
+                        statement.meta.set(*function);
+                    }
+
+                    for argument in arguments {
+                        self.visit_expr(argument, diagnostics);
+                    }
                 }
-                | StatementKind::Trigger {
+                StatementKind::Trigger {
                     ref mut arguments, ..
                 } => {
                     for argument in arguments {
@@ -155,8 +168,13 @@ impl<'input> SymTabVisitor<'input> {
                 self.visit_expr(rhs, diagnostics);
             }
             ExpressionKind::Call {
-                ref mut arguments, ..
+                ref mut arguments,
+                name,
             } => {
+                if let Some(function) = self.function_names.get(name) {
+                    expr.meta.set(*function);
+                }
+
                 for argument in arguments {
                     self.visit_expr(argument, diagnostics);
                 }
@@ -295,7 +313,7 @@ mod test {
                     }],
                     enable_optimisations: false,
                 },
-                &script.functions,
+                &mut script.functions,
             );
 
             for function in &mut script.functions {
@@ -332,7 +350,7 @@ mod test {
                     }],
                     enable_optimisations: false,
                 },
-                &script.functions,
+                &mut script.functions,
             );
 
             for function in &mut script.functions {

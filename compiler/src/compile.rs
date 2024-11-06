@@ -62,7 +62,7 @@ pub fn compile(
         }
     };
 
-    let mut sym_tab_visitor = SymTabVisitor::new(settings, &ast.functions);
+    let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast.functions);
     let mut type_visitor = TypeVisitor::new(settings, &ast.functions, &mut diagnostics);
 
     for function in &mut ast.functions {

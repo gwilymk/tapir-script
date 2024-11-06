@@ -5,7 +5,7 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 ---
 int_prop = 4; # {"SymbolId(0)"}
 var x = 4; # {"SymbolId(1)"}
-foo();
+foo(); # {"FunctionId(1)"}
 var y = int_prop; # {"SymbolId(2)"}
 var z = 4; # {"SymbolId(3)"}
 
