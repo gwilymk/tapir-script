@@ -3,6 +3,8 @@ source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimina
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/loop.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 var x = 5; # {"SymbolId(3)"}
 var z = 0; # {"SymbolId(4)"}
 loop {

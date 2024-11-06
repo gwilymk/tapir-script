@@ -4,9 +4,16 @@ use super::{Expression, ExpressionKind, Function, Statement, StatementKind};
 
 pub(super) fn pretty_print(function: &Function, output: &mut dyn Write) -> std::fmt::Result {
     if function.name == "@toplevel" {
+        if !function.meta.is_empty() {
+            writeln!(output, "# @toplevel: {:?}\n", function.meta)?;
+        }
         pretty_print_statements(&function.statements, output, Indent(0))?;
     } else {
         writeln!(output)?;
+        if !function.meta.is_empty() {
+            writeln!(output, "# {:?}", function.meta)?;
+        }
+
         write!(
             output,
             "{}fn {}(",
@@ -32,7 +39,8 @@ pub(super) fn pretty_print(function: &Function, output: &mut dyn Write) -> std::
             write!(output, ")")?;
         }
 
-        writeln!(output, " {{")?;
+        write!(output, " {{")?;
+
         pretty_print_statements(&function.statements, output, Indent(1))?;
         writeln!(output, "}}")?;
     }

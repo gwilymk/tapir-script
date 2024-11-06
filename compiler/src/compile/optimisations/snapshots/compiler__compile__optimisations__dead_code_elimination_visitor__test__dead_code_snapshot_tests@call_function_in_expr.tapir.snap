@@ -3,10 +3,12 @@ source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimina
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/call_function_in_expr.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 {
     add(2,5,); # {"FunctionId(1)"}
 }
 
-fn add(int,int,) -> (int,) {
-    return ((x + y),);
+# {"FunctionId(1)"}
+fn add(int,int,) -> (int,) {    return ((x + y),);
 }

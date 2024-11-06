@@ -3,6 +3,8 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_folding_
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_folding/association.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 int_prop = (int_prop + 5); # {"SymbolId(0)"}
 wait;
 int_prop = (int_prop + -1); # {"SymbolId(0)"}

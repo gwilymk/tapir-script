@@ -3,6 +3,8 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_propagat
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_propagation/simple_case_int.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 var x = 4; # {"SymbolId(1)"}
 var y = 4; # {"SymbolId(2)"}
 var z = (3 + 4); # {"SymbolId(3)"}

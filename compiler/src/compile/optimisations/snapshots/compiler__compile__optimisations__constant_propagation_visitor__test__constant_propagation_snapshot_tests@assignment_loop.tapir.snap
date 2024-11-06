@@ -3,6 +3,8 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_propagat
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_propagation/assignment_loop.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 var x = 4; # {"SymbolId(1)"}
 var y = 0; # {"SymbolId(2)"}
 loop {

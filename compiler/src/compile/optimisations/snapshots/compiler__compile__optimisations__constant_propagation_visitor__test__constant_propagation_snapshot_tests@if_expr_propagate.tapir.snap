@@ -3,6 +3,8 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_propagat
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_propagation/if_expr_propagate.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 var x = true; # {"SymbolId(1)"}
 if true {
     var y = true; # {"SymbolId(2)"}

@@ -3,12 +3,14 @@ source: crates/tapir-script/compiler/src/compile/optimisations/dead_code_elimina
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/declaration_unused_but_variable_used_later.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 var y = (foo(int_prop,) * 2); # {"SymbolId(3)"}
 wait;
 y = foo(int_prop,); # {"SymbolId(3)"}
 int_prop = y; # {"SymbolId(0)"}
 
-fn foo(int,) -> (int,) {
-    wait;
+# {"FunctionId(1)"}
+fn foo(int,) -> (int,) {    wait;
     return (x,);
 }

@@ -3,6 +3,8 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_propagat
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_propagation/loop_prop_poison.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 int_prop = 5; # {"SymbolId(0)"}
 loop {
     wait;

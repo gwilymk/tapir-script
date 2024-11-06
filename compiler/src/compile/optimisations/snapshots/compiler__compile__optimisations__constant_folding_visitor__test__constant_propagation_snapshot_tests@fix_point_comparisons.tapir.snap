@@ -3,5 +3,7 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_folding_
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_folding/fix_point_comparisons.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 var x = true; # {"SymbolId(3)"}
 var y = true; # {"SymbolId(4)"}

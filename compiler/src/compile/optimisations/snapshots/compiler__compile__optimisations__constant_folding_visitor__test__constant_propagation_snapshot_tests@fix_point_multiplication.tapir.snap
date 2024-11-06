@@ -3,4 +3,6 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_folding_
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_folding/fix_point_multiplication.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 fix_prop = (fix_prop * 2); # {"SymbolId(1)"}

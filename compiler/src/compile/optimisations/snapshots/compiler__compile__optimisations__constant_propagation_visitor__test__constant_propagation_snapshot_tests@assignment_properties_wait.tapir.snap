@@ -3,6 +3,8 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_propagat
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_propagation/assignment_properties_wait.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 var x = 3; # {"SymbolId(1)"}
 int_prop = 3; # {"SymbolId(0)"}
 wait;

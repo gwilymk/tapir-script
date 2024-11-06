@@ -3,10 +3,12 @@ source: crates/tapir-script/compiler/src/compile/optimisations/constant_folding_
 expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/constant_folding/multiply_by_zero.tapir
 ---
+# @toplevel: {"FunctionId(0)"}
+
 int_prop = (foo(int_prop,) then 0); # {"SymbolId(0)"}
 
-fn foo(int,) -> (int,) {
-    int_prop = x; # {"SymbolId(0)"}
+# {"FunctionId(1)"}
+fn foo(int,) -> (int,) {    int_prop = x; # {"SymbolId(0)"}
     wait;
     return (x,);
 }
