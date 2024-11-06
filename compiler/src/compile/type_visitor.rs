@@ -612,7 +612,7 @@ mod test {
                 }],
                 enable_optimisations: false,
             };
-            let mut symtab_visitor = SymTabVisitor::new(&settings);
+            let mut symtab_visitor = SymTabVisitor::new(&settings, &script.functions);
 
             let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);
 
@@ -662,7 +662,7 @@ mod test {
                 }],
                 enable_optimisations: false,
             };
-            let mut symtab_visitor = SymTabVisitor::new(&settings);
+            let mut symtab_visitor = SymTabVisitor::new(&settings, &script.functions);
             let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);
 
             for function in &mut script.functions {

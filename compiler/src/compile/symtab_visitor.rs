@@ -2,7 +2,8 @@ use std::{borrow::Cow, collections::HashMap};
 
 use crate::{
     ast::{
-        Expression, ExpressionKind, Function, MaybeResolved, Statement, StatementKind, SymbolId,
+        Expression, ExpressionKind, Function, FunctionId, MaybeResolved, Statement, StatementKind,
+        SymbolId,
     },
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
@@ -14,13 +15,19 @@ pub struct SymTabVisitor<'input> {
     symtab: SymTab<'input>,
 
     symbol_names: NameTable<'input>,
+    function_names: HashMap<&'input str, FunctionId>,
 }
 
 impl<'input> SymTabVisitor<'input> {
-    pub fn new(settings: &CompileSettings) -> Self {
+    pub fn new(settings: &CompileSettings, functions: &[Function<'input>]) -> Self {
         Self {
             symtab: SymTab::new(settings),
             symbol_names: NameTable::new(settings),
+            function_names: functions
+                .iter()
+                .enumerate()
+                .map(|(i, f)| (f.name, FunctionId(i)))
+                .collect(),
         }
     }
 
@@ -279,14 +286,17 @@ mod test {
 
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
-            let mut visitor = SymTabVisitor::new(&CompileSettings {
-                properties: vec![Property {
-                    ty: Type::Int,
-                    index: 0,
-                    name: "int_prop".to_string(),
-                }],
-                enable_optimisations: false,
-            });
+            let mut visitor = SymTabVisitor::new(
+                &CompileSettings {
+                    properties: vec![Property {
+                        ty: Type::Int,
+                        index: 0,
+                        name: "int_prop".to_string(),
+                    }],
+                    enable_optimisations: false,
+                },
+                &script.functions,
+            );
 
             for function in &mut script.functions {
                 visitor.visit_function(function, &mut diagnostics);
@@ -313,14 +323,17 @@ mod test {
                 .parse(FileId::new(0), &mut diagnostics, lexer)
                 .unwrap();
 
-            let mut visitor = SymTabVisitor::new(&CompileSettings {
-                properties: vec![Property {
-                    ty: Type::Int,
-                    index: 0,
-                    name: "int_prop".to_string(),
-                }],
-                enable_optimisations: false,
-            });
+            let mut visitor = SymTabVisitor::new(
+                &CompileSettings {
+                    properties: vec![Property {
+                        ty: Type::Int,
+                        index: 0,
+                        name: "int_prop".to_string(),
+                    }],
+                    enable_optimisations: false,
+                },
+                &script.functions,
+            );
 
             for function in &mut script.functions {
                 visitor.visit_function(function, &mut diagnostics);

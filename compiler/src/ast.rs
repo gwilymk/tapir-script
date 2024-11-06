@@ -16,6 +16,9 @@ mod pretty_printer;
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize)]
 pub struct SymbolId(pub usize);
 
+#[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize)]
+pub struct FunctionId(pub usize);
+
 pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]
