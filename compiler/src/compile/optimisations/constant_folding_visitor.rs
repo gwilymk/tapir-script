@@ -110,10 +110,10 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
         // ======================
         // multiply / divide by 1
         // ======================
-        (any, B::Mul | B::Div | B::RealDiv, E::Integer(1)) => any,
-        (E::Integer(1), B::Mul, any) => any,
-        (any, B::FixDiv | B::FixMul, E::Fix(n)) if n == 1.into() => any,
-        (E::Fix(n), B::FixDiv | B::FixMul, any) if n == 1.into() => any,
+        (any, B::Mul | B::Div | B::RealDiv, E::Integer(1)) => take_side!(lhs, any),
+        (E::Integer(1), B::Mul, any) => take_side!(rhs, any),
+        (any, B::FixDiv | B::FixMul | B::RealDiv, E::Fix(n)) if n == 1.into() => take_side!(lhs, any),
+        (E::Fix(n), B::FixDiv | B::FixMul, any) if n == 1.into() => take_side!(rhs, any),
 
         // ===========
         // Divide by 0

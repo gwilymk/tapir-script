@@ -1,0 +1,9 @@
+int_prop = int_prop * 1;
+int_prop = int_prop // 1;
+int_prop = 1 * int_prop;
+int_prop = 1 // int_prop;
+
+fix_prop = fix_prop * 1.0;
+fix_prop = fix_prop // 1.0;
+fix_prop = 1.0 * fix_prop;
+fix_prop = 1.0 // fix_prop;
