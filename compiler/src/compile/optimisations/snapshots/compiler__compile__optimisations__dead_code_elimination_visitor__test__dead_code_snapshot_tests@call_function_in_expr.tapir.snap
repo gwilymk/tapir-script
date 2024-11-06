@@ -10,5 +10,6 @@ input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_test
 }
 
 # {"FunctionId(1)"}
-fn add(int,int,) -> (int,) {    return ((x + y),);
+fn add(int,int,) -> (int,) {
+    return ((x + y),);
 }

@@ -39,7 +39,7 @@ pub(super) fn pretty_print(function: &Function, output: &mut dyn Write) -> std::
             write!(output, ")")?;
         }
 
-        write!(output, " {{")?;
+        writeln!(output, " {{")?;
 
         pretty_print_statements(&function.statements, output, Indent(1))?;
         writeln!(output, "}}")?;

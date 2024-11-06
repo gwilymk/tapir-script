@@ -12,6 +12,7 @@ num-traits = "0.2.19"
 serde = { version = "1.0.210", features = ["derive"] }
 
 bytecode = { path = "../bytecode" }
+petgraph = "0.6.5"
 
 [dev-dependencies]
 insta = { version = "1.40.0", features = ["ron", "glob", "redactions"] }

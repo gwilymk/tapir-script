@@ -12,5 +12,6 @@ var y = int_prop; # {"SymbolId(2)"}
 var z = 4; # {"SymbolId(3)"}
 
 # {"FunctionId(1)"}
-fn foo() {    wait;
+fn foo() {
+    wait;
 }

@@ -9,6 +9,7 @@ int_prop = 4; # {"SymbolId(0)"}
 var x = ((4 + foo()) + int_prop); # {"SymbolId(1)"}
 
 # {"FunctionId(1)"}
-fn foo() -> (int,) {    wait;
+fn foo() -> (int,) {
+    wait;
     return (4,);
 }

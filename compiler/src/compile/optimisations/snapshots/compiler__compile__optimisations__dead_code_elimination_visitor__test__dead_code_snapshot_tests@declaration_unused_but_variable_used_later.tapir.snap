@@ -11,6 +11,7 @@ y = foo(int_prop,); # {"SymbolId(3)"}
 int_prop = y; # {"SymbolId(0)"}
 
 # {"FunctionId(1)"}
-fn foo(int,) -> (int,) {    wait;
+fn foo(int,) -> (int,) {
+    wait;
     return (x,);
 }

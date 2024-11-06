@@ -1,6 +1,7 @@
 mod constant_folding_visitor;
 mod constant_propagation_visitor;
 mod dead_code_elimination_visitor;
+mod unused_function_visitor;
 
 use std::ops::{BitOr, BitOrAssign};
 
