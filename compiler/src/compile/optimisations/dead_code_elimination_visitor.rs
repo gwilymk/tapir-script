@@ -431,9 +431,9 @@ mod test {
                 enable_optimisations: true,
             };
 
-            let mut symtab_visitor = SymTabVisitor::new(&compile_settings, &mut script.functions);
-            let mut type_visitor =
-                TypeVisitor::new(&compile_settings, &script.functions, &mut diagnostics);
+            let mut symtab_visitor =
+                SymTabVisitor::new(&compile_settings, &mut script.functions, &mut diagnostics);
+            let mut type_visitor = TypeVisitor::new(&compile_settings, &script.functions);
 
             for function in &mut script.functions {
                 visit_loop_check(function, &mut diagnostics);

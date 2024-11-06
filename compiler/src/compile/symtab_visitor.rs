@@ -19,9 +19,26 @@ pub struct SymTabVisitor<'input> {
 }
 
 impl<'input> SymTabVisitor<'input> {
-    pub fn new(settings: &CompileSettings, functions: &mut [Function<'input>]) -> Self {
+    pub fn new(
+        settings: &CompileSettings,
+        functions: &mut [Function<'input>],
+        diagnostics: &mut Diagnostics,
+    ) -> Self {
+        let mut function_declarations = HashMap::new();
+
         for (i, function) in functions.iter_mut().enumerate() {
             function.meta.set(FunctionId(i));
+
+            if let Some(other_span) = function_declarations.insert(function.name, function.span) {
+                diagnostics.add_message(
+                    CompilerErrorKind::FunctionAlreadyDeclared {
+                        function_name: function.name.to_string(),
+                        old_function_declaration: other_span,
+                        new_function_declaration: function.span,
+                    }
+                    .into_message(function.span),
+                );
+            }
         }
 
         Self {
@@ -125,6 +142,13 @@ impl<'input> SymTabVisitor<'input> {
                 } => {
                     if let Some(function) = self.function_names.get(name) {
                         statement.meta.set(*function);
+                    } else {
+                        diagnostics.add_message(
+                            CompilerErrorKind::UnknownFunction {
+                                name: name.to_string(),
+                            }
+                            .into_message(statement.span),
+                        );
                     }
 
                     for argument in arguments {
@@ -173,6 +197,13 @@ impl<'input> SymTabVisitor<'input> {
             } => {
                 if let Some(function) = self.function_names.get(name) {
                     expr.meta.set(*function);
+                } else {
+                    diagnostics.add_message(
+                        CompilerErrorKind::UnknownFunction {
+                            name: name.to_string(),
+                        }
+                        .into_message(expr.span),
+                    );
                 }
 
                 for argument in arguments {
@@ -314,6 +345,7 @@ mod test {
                     enable_optimisations: false,
                 },
                 &mut script.functions,
+                &mut diagnostics,
             );
 
             for function in &mut script.functions {
@@ -351,6 +383,7 @@ mod test {
                     enable_optimisations: false,
                 },
                 &mut script.functions,
+                &mut diagnostics,
             );
 
             for function in &mut script.functions {

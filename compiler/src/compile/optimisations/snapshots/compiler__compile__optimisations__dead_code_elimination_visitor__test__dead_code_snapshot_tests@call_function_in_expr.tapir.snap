@@ -4,7 +4,7 @@ expression: pretty_printed
 input_file: crates/tapir-script/compiler/src/compile/optimisations/snapshot_tests/dead_code/call_function_in_expr.tapir
 ---
 {
-    add(2,5,);
+    add(2,5,); # {"FunctionId(1)"}
 }
 
 fn add(int,int,) -> (int,) {

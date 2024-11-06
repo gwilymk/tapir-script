@@ -62,8 +62,8 @@ pub fn compile(
         }
     };
 
-    let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast.functions);
-    let mut type_visitor = TypeVisitor::new(settings, &ast.functions, &mut diagnostics);
+    let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast.functions, &mut diagnostics);
+    let mut type_visitor = TypeVisitor::new(settings, &ast.functions);
 
     for function in &mut ast.functions {
         sym_tab_visitor.visit_function(function, &mut diagnostics);
@@ -283,9 +283,9 @@ impl<'input> Compiler<'input> {
                 // we should stop compiling this block
                 return ControlFlow::Break(());
             }
-            ast::StatementKind::Call { name, arguments } => {
+            ast::StatementKind::Call { arguments, .. } => {
                 let function_id: FunctionId = *statement.meta.get().unwrap();
-                let number_of_returns = self.type_table.num_function_returns(name);
+                let number_of_returns = self.type_table.num_function_returns(function_id);
                 let stack_before_call = self.stack.len();
 
                 for argument in arguments {

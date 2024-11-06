@@ -4,7 +4,7 @@ use serde::Serialize;
 
 use crate::{
     ast::{
-        self, BinaryOperator, Expression, Function, FunctionModifiers, FunctionReturn,
+        self, BinaryOperator, Expression, Function, FunctionId, FunctionModifiers, FunctionReturn,
         MaybeResolved, SymbolId,
     },
     reporting::{CompilerErrorKind, Diagnostics},
@@ -17,7 +17,7 @@ use super::{loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab, CompileSe
 
 pub struct TypeVisitor<'input> {
     type_table: Vec<Option<Type>>,
-    functions: HashMap<&'input str, FunctionInfo>,
+    functions: HashMap<FunctionId, FunctionInfo>,
 
     trigger_types: HashMap<&'input str, TriggerInfo>,
 }
@@ -39,11 +39,7 @@ struct TriggerInfo {
 }
 
 impl<'input> TypeVisitor<'input> {
-    pub fn new(
-        settings: &CompileSettings,
-        functions: &[Function<'input>],
-        diagnostics: &mut Diagnostics,
-    ) -> Self {
+    pub fn new(settings: &CompileSettings, functions: &[Function<'input>]) -> Self {
         let mut resolved_functions = HashMap::new();
 
         for function in functions {
@@ -52,23 +48,14 @@ impl<'input> TypeVisitor<'input> {
                 rets: function.return_types.types.iter().map(|t| t.t).collect(),
             };
 
-            if let Some(already_resolved) = resolved_functions.insert(
-                function.name,
+            resolved_functions.insert(
+                *function.meta.get().unwrap(),
                 FunctionInfo {
                     span: function.span,
                     ty: function_type,
                     modifiers: function.modifiers.clone(),
                 },
-            ) {
-                diagnostics.add_message(
-                    CompilerErrorKind::FunctionAlreadyDeclared {
-                        function_name: function.name.to_string(),
-                        old_function_declaration: already_resolved.span,
-                        new_function_declaration: function.span,
-                    }
-                    .into_message(function.span),
-                );
-            }
+            );
         }
 
         Self {
@@ -292,10 +279,24 @@ impl<'input> TypeVisitor<'input> {
                     return BlockAnalysisResult::AllBranchesReturn;
                 }
                 ast::StatementKind::Call { name, arguments } => {
-                    self.type_for_call(statement.span, name, arguments, symtab, diagnostics);
+                    self.type_for_call(
+                        statement.span,
+                        name,
+                        statement.meta.get().copied(),
+                        arguments,
+                        symtab,
+                        diagnostics,
+                    );
                 }
                 ast::StatementKind::Spawn { name, arguments } => {
-                    self.type_for_call(statement.span, name, arguments, symtab, diagnostics);
+                    self.type_for_call(
+                        statement.span,
+                        name,
+                        statement.meta.get().copied(),
+                        arguments,
+                        symtab,
+                        diagnostics,
+                    );
                 }
                 ast::StatementKind::Loop { block } => {
                     match self.visit_block(block, symtab, expected_return_type, diagnostics) {
@@ -449,8 +450,14 @@ impl<'input> TypeVisitor<'input> {
             ast::ExpressionKind::Error => Type::Error,
             ast::ExpressionKind::Nop => Type::Error,
             ast::ExpressionKind::Call { name, arguments } => {
-                let types =
-                    self.type_for_call(expression.span, name, arguments, symtab, diagnostics);
+                let types = self.type_for_call(
+                    expression.span,
+                    name,
+                    expression.meta.get().copied(),
+                    arguments,
+                    symtab,
+                    diagnostics,
+                );
 
                 if types.len() != 1 {
                     diagnostics.add_message(
@@ -471,6 +478,7 @@ impl<'input> TypeVisitor<'input> {
         &mut self,
         span: Span,
         name: &'input str,
+        function_id: Option<FunctionId>,
         arguments: &mut [Expression<'input>],
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
@@ -480,54 +488,49 @@ impl<'input> TypeVisitor<'input> {
             .map(|arg| (self.type_for_expression(arg, symtab, diagnostics), arg.span))
             .collect();
 
-        if let Some(function_info) = self.functions.get(name) {
-            if function_info.modifiers.is_event_handler.is_some() {
-                diagnostics.add_message(
-                    CompilerErrorKind::CannotCallEventHandler {
-                        function_span: function_info.span,
-                        function_name: name.to_string(),
-                    }
-                    .into_message(span),
-                );
+        let Some(function_id) = function_id else {
+            return vec![Type::Error];
+        };
 
-                return vec![Type::Error];
-            } else if argument_types.len() != function_info.ty.args.len() {
-                diagnostics.add_message(
-                    CompilerErrorKind::IncorrectNumberOfArguments {
-                        expected: function_info.ty.args.len(),
-                        actual: argument_types.len(),
-                        function_span: function_info.span,
-                        function_name: name.to_string(),
-                    }
-                    .into_message(span),
-                );
-            } else {
-                for ((actual, actual_span), expected) in
-                    argument_types.iter().zip(&function_info.ty.args)
-                {
-                    if actual != expected && *actual != Type::Error && *expected != Type::Error {
-                        diagnostics.add_message(
-                            CompilerErrorKind::TypeError {
-                                expected: *expected,
-                                actual: *actual,
-                            }
-                            .into_message(*actual_span),
-                        );
-                    }
-                }
-            }
+        let function_info = self.functions.get(&function_id).unwrap();
 
-            function_info.ty.rets.clone()
-        } else {
+        if function_info.modifiers.is_event_handler.is_some() {
             diagnostics.add_message(
-                CompilerErrorKind::UnknownFunction {
-                    name: name.to_string(),
+                CompilerErrorKind::CannotCallEventHandler {
+                    function_span: function_info.span,
+                    function_name: name.to_string(),
                 }
                 .into_message(span),
             );
 
-            vec![Type::Error]
+            return vec![Type::Error];
+        } else if argument_types.len() != function_info.ty.args.len() {
+            diagnostics.add_message(
+                CompilerErrorKind::IncorrectNumberOfArguments {
+                    expected: function_info.ty.args.len(),
+                    actual: argument_types.len(),
+                    function_span: function_info.span,
+                    function_name: name.to_string(),
+                }
+                .into_message(span),
+            );
+        } else {
+            for ((actual, actual_span), expected) in
+                argument_types.iter().zip(&function_info.ty.args)
+            {
+                if actual != expected && *actual != Type::Error && *expected != Type::Error {
+                    diagnostics.add_message(
+                        CompilerErrorKind::TypeError {
+                            expected: *expected,
+                            actual: *actual,
+                        }
+                        .into_message(*actual_span),
+                    );
+                }
+            }
         }
+
+        function_info.ty.rets.clone()
     }
 }
 
@@ -540,7 +543,7 @@ enum BlockAnalysisResult {
 #[derive(Clone, Serialize)]
 pub struct TypeTable<'input> {
     types: Vec<Type>,
-    num_function_returns: HashMap<&'input str, usize>,
+    num_function_returns: HashMap<FunctionId, usize>,
 
     triggers: HashMap<&'input str, TriggerInfo>,
 }
@@ -551,8 +554,8 @@ impl TypeTable<'_> {
         self.types[symbol_id.0]
     }
 
-    pub fn num_function_returns(&self, fn_name: &str) -> usize {
-        self.num_function_returns[fn_name]
+    pub fn num_function_returns(&self, function_id: FunctionId) -> usize {
+        self.num_function_returns[&function_id]
     }
 
     pub fn triggers(&self) -> Vec<Trigger> {
@@ -612,9 +615,10 @@ mod test {
                 }],
                 enable_optimisations: false,
             };
-            let mut symtab_visitor = SymTabVisitor::new(&settings, &mut script.functions);
+            let mut symtab_visitor =
+                SymTabVisitor::new(&settings, &mut script.functions, &mut diagnostics);
 
-            let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);
+            let mut type_visitor = TypeVisitor::new(&settings, &script.functions);
 
             for function in &mut script.functions {
                 loop_visitor::visit_loop_check(function, &mut diagnostics);
@@ -662,8 +666,9 @@ mod test {
                 }],
                 enable_optimisations: false,
             };
-            let mut symtab_visitor = SymTabVisitor::new(&settings, &mut script.functions);
-            let mut type_visitor = TypeVisitor::new(&settings, &script.functions, &mut diagnostics);
+            let mut symtab_visitor =
+                SymTabVisitor::new(&settings, &mut script.functions, &mut diagnostics);
+            let mut type_visitor = TypeVisitor::new(&settings, &script.functions);
 
             for function in &mut script.functions {
                 loop_visitor::visit_loop_check(function, &mut diagnostics);
