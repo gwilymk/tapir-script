@@ -132,17 +132,19 @@ fn fold(exp: &mut Expression, diagnostics: &mut Diagnostics) -> ConstantOptimisa
         // (a + 1) + 2 => a + (1 + 2)
         // ==========================
         (
-            E::BinaryOperation { lhs: a, operator: op1 @ (B::Add | B::Mul | B::FixMul), rhs: b }, 
+            E::BinaryOperation { lhs: mut a, operator: op1 @ (B::Add | B::Mul | B::FixMul), rhs: b }, 
             op2 @ (B::Add | B::Mul | B::FixMul | B::Sub), 
             c @ (E::Integer(_) | E::Fix(_))
         )
-            if matches!(b.kind, E::Fix(_) | E::Integer(_)) && (op1 == op2 || matches!((op1, op2), (B::Add, B::Sub))) =>
+            if matches!(b.kind, E::Fix(_) | E::Integer(_)) && (op1 == op2 || matches!((op1, op2), (B::Add, B::Sub))) => {
+                mem::swap(&mut lhs.meta, &mut a.meta);
                 replace_op!(a.kind, op1, 
                     E::BinaryOperation { 
                         lhs: b, 
                         operator: op2, 
                         rhs: Box::new(c.with_span(a.span.file_id, a.span.start, a.span.end)),
-                    }),
+                    })
+                }
             
         // ==========================
         // Fix multiply by an integer
