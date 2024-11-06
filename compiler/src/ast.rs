@@ -5,7 +5,7 @@ use crate::{
     types::Type,
 };
 
-use metadata::Metadata;
+pub(crate) use metadata::Metadata;
 
 use serde::Serialize;
 
@@ -52,6 +52,8 @@ impl<'input> Script<'input> {
                 span: Span::new(file_id, 0, 0),
             },
             modifiers: FunctionModifiers::default(),
+
+            meta: Metadata::new(),
         };
 
         functions.insert(0, top_level_function);
@@ -69,6 +71,8 @@ pub struct Function<'input> {
     pub return_types: FunctionReturn,
 
     pub modifiers: FunctionModifiers,
+
+    pub meta: Metadata,
 }
 
 impl Script<'_> {

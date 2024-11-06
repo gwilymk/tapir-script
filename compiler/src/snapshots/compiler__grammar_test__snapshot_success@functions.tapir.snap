@@ -30,6 +30,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "my_function_with_no_args_or_return",
@@ -43,6 +44,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "my_function_with_an_arg_no_return",
@@ -65,6 +67,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "my_function_with_no_args_one_return",
@@ -83,6 +86,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "my_function_with_no_args_multiple_returns",
@@ -105,6 +109,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "my_function_with_args_and_mulitple_returns",
@@ -144,6 +149,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "my_function_trailing_comma_in_args",
@@ -174,6 +180,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "my_function_trailing_comma_in_return",
@@ -196,6 +203,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "my_function_single_return_in_brackets",
@@ -214,6 +222,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
   ],
 )

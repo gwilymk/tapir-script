@@ -47,6 +47,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
   ],
 )

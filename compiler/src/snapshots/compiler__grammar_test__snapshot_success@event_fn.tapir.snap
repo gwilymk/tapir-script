@@ -17,6 +17,7 @@ Script(
       modifiers: FunctionModifiers(
         is_event_handler: None,
       ),
+      meta: {},
     ),
     Function(
       name: "foo",
@@ -56,6 +57,7 @@ Script(
           end: 5,
         )),
       ),
+      meta: {},
     ),
   ],
 )

@@ -80,7 +80,7 @@ TopLevelStatement: TopLevelStatement<'input> = {
 
 FunctionDefinition: Function<'input> = {
     <modifiers: FunctionModifiers> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers },
+        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 }
 
 FunctionModifiers: FunctionModifiers = {
