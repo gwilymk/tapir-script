@@ -125,6 +125,9 @@ fn parse_error_report(parse_error: &ParseError, span: Span) -> ariadne::ReportBu
             .with_message(format!(
                 "'{token}' is not a valid type, must be one of fix, bool or int"
             )),
+        ParseError::ExternFunctionWithBlock { name } => build_error_report(span)
+            .with_label(Label::new(span).with_message("extern function cannot have body"))
+            .with_message(format!("extern function '{name}' cannot have a body")),
     }
 }
 

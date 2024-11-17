@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: diagnostics.pretty_string(false)
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/extern_fn_with_block.tapir
+---
+Error: extern function 'foo' cannot have a body
+   ╭─[extern_fn_with_block.tapir:1:1]
+   │
+ 1 │ ╭─▶ extern fn foo(x: int) -> int {
+   ┆ ┆   
+ 3 │ ├─▶ }
+   │ │      
+   │ ╰────── extern function cannot have body
+───╯

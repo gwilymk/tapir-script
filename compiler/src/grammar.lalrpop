@@ -88,6 +88,11 @@ FunctionDefinition: Function<'input> = {
 ExternFunctionDefinition: ExternFunctionDefinition<'input> = {
     "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> ";" =>
         ExternFunctionDefinition { name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() },
+    
+    "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <block_start: @L> Block <block_end: @R> => {
+        diagnostics.add_message(ParseError::ExternFunctionWithBlock { name: name.to_string() }.with_span(file_id, block_start, block_end));
+        ExternFunctionDefinition { name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() }
+    }
 }
 
 FunctionModifiers: FunctionModifiers = {

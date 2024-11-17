@@ -111,6 +111,9 @@ pub enum ParseError {
     UnknownType {
         token: String,
     },
+    ExternFunctionWithBlock {
+        name: String,
+    },
 }
 
 impl ParseError {

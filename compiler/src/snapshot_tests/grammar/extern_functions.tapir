@@ -1,0 +1,3 @@
+extern fn foo(a: int, b: fix) -> int;
+
+extern fn bar() -> (int, fix);
