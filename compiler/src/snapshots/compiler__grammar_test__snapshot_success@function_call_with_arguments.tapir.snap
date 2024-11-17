@@ -101,4 +101,5 @@ Script(
       meta: {},
     ),
   ],
+  extern_functions: [],
 )

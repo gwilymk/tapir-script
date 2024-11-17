@@ -20,6 +20,7 @@ extern {
         wait => Token::KeywordWait,
         var => Token::KeywordVar,
         "if" => Token::KeywordIf,
+        "extern" => Token::KeywordExtern,
         "else" => Token::KeywordElse,
         "fn" => Token::KeywordFn,
         t_integer => Token::KeywordInt,
@@ -72,6 +73,7 @@ pub Script: Script<'input> = <TopLevelStatement*> => Script::from_top_level(<>, 
 TopLevelStatement: TopLevelStatement<'input> = {
     <Statement> => TopLevelStatement::Statement(<>),
     <FunctionDefinition> => TopLevelStatement::FunctionDefinition(<>),
+    <ExternFunctionDefinition> => TopLevelStatement::ExternFunctionDefinition(<>),
     <error: !> => {
         diagnostics.add_lalrpop(<>.error, file_id);
         TopLevelStatement::Error
@@ -81,6 +83,11 @@ TopLevelStatement: TopLevelStatement<'input> = {
 FunctionDefinition: Function<'input> = {
     <modifiers: FunctionModifiers> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
         Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+}
+
+ExternFunctionDefinition: ExternFunctionDefinition<'input> = {
+    "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> ";" =>
+        ExternFunctionDefinition { name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() },
 }
 
 FunctionModifiers: FunctionModifiers = {

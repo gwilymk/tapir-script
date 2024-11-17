@@ -80,6 +80,8 @@ pub enum Token<'input> {
     KeywordElse,
     #[token("fn")]
     KeywordFn,
+    #[token("extern")]
+    KeywordExtern,
     #[token("int")]
     KeywordInt,
     #[token("fix")]

@@ -24,6 +24,7 @@ pub type Fix = agb_fixnum::Num<i32, 8>;
 #[derive(Clone, Debug, Serialize)]
 pub struct Script<'input> {
     pub functions: Vec<Function<'input>>,
+    pub extern_functions: Vec<ExternFunctionDefinition<'input>>,
 }
 
 impl<'input> Script<'input> {
@@ -33,6 +34,7 @@ impl<'input> Script<'input> {
     ) -> Self {
         let mut top_level_function_statements = vec![];
         let mut functions = vec![];
+        let mut extern_functions = vec![];
 
         for top_level_statement in top_level.into_iter() {
             match top_level_statement {
@@ -40,6 +42,9 @@ impl<'input> Script<'input> {
                     top_level_function_statements.push(statement)
                 }
                 TopLevelStatement::FunctionDefinition(function) => functions.push(function),
+                TopLevelStatement::ExternFunctionDefinition(extern_function) => {
+                    extern_functions.push(extern_function)
+                }
 
                 TopLevelStatement::Error => {}
             }
@@ -61,8 +66,21 @@ impl<'input> Script<'input> {
 
         functions.insert(0, top_level_function);
 
-        Self { functions }
+        Self {
+            functions,
+            extern_functions,
+        }
     }
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct ExternFunctionDefinition<'input> {
+    pub name: &'input str,
+    pub span: Span,
+    pub arguments: Vec<FunctionArgument<'input>>,
+    pub return_types: FunctionReturn,
+
+    pub meta: Metadata,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -125,6 +143,7 @@ pub enum MaybeResolved<'input> {
 pub enum TopLevelStatement<'input> {
     Statement(Statement<'input>),
     FunctionDefinition(Function<'input>),
+    ExternFunctionDefinition(ExternFunctionDefinition<'input>),
     Error,
 }
 

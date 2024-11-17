@@ -65,4 +65,5 @@ Script(
       },
     ),
   ],
+  extern_functions: [],
 )

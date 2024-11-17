@@ -77,4 +77,5 @@ Script(
       },
     ),
   ],
+  extern_functions: [],
 )

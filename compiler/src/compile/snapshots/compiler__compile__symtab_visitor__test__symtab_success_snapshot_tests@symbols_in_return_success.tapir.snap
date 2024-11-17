@@ -127,4 +127,5 @@ Script(
       },
     ),
   ],
+  extern_functions: [],
 )
