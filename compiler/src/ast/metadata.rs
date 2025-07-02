@@ -7,7 +7,6 @@ use std::{
 use serde::Serialize;
 
 pub(crate) trait AnyDebug: Any + Debug {
-    fn as_any(&self) -> &dyn Any;
     fn clone_to_any(&self) -> Box<dyn AnyDebug>;
 }
 
@@ -15,10 +14,6 @@ impl<T> AnyDebug for T
 where
     T: Any + Debug + Clone,
 {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
     fn clone_to_any(&self) -> Box<dyn AnyDebug> {
         Box::new(self.clone())
     }
@@ -84,14 +79,14 @@ impl Metadata {
         let type_id = TypeId::of::<T>();
         self.map
             .get(&type_id)
-            .and_then(|(value, _)| (**value).as_any().downcast_ref())
+            .and_then(|(value, _)| (&**value as &dyn Any).downcast_ref())
     }
 
     pub fn has<T: 'static + Debug>(&self) -> bool {
         let type_id = TypeId::of::<T>();
         self.map
             .get(&type_id)
-            .is_some_and(|(value, _)| (**value).as_any().is::<T>())
+            .is_some_and(|(value, _)| (&**value as &dyn Any).is::<T>())
     }
 
     pub fn clear(&mut self) {
