@@ -16,7 +16,7 @@ y.1 = foo(temp.6)
 return 
 
 =======================
-fn foo(x.2: int) -> int
+fn foo(x.2) -> int
 
 ---- block 0 ----
 temp.7 = int 3

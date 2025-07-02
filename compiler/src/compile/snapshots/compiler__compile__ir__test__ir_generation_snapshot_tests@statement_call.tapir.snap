@@ -12,7 +12,7 @@ foo(temp.1)
 return 
 
 =======================
-fn foo(x.0: int) -> int, int
+fn foo(x.0) -> int, int
 
 ---- block 0 ----
 temp.2 = int 3

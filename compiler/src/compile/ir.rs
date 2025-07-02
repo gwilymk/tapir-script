@@ -110,7 +110,7 @@ impl FunctionModifiers {
 
 pub struct EventHandlerData {
     pub name: String,
-    pub arg_names: Vec<EventHandlerArgument>,
+    pub arg_names: Box<[EventHandlerArgument]>,
 }
 
 pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {

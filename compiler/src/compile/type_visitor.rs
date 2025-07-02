@@ -34,7 +34,7 @@ struct FunctionInfo {
 #[derive(Serialize, Clone, Debug)]
 struct TriggerInfo {
     span: Span,
-    ty: Vec<Type>,
+    ty: Box<[Type]>,
     index: usize,
 }
 
@@ -321,7 +321,7 @@ impl<'input> TypeVisitor<'input> {
                     let trigger_arguments = arguments
                         .iter_mut()
                         .map(|arg| self.type_for_expression(arg, symtab, diagnostics))
-                        .collect::<Vec<_>>();
+                        .collect::<Box<[_]>>();
 
                     let trigger_index;
 
@@ -557,11 +557,11 @@ impl TypeTable<'_> {
         self.num_function_returns[&function_id]
     }
 
-    pub fn triggers(&self) -> Vec<Trigger> {
+    pub fn triggers(&self) -> Box<[Trigger]> {
         let mut result = vec![];
         result.resize_with(self.triggers.len(), || Trigger {
             name: String::new(),
-            arguments: vec![],
+            arguments: Box::new([]),
         });
 
         for (name, info) in &self.triggers {
@@ -571,7 +571,7 @@ impl TypeTable<'_> {
             };
         }
 
-        result
+        result.into_boxed_slice()
     }
 }
 

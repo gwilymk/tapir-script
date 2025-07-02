@@ -28,29 +28,29 @@ pub fn compile(
 ) -> Result<CompileResult, Diagnostics> {
     let bytecode = compile::compile(filename, input, &compile_settings)?;
 
-    let compiled = bytecode.compile();
+    let compiled = bytecode.data.into_boxed_slice();
     Ok(CompileResult {
         bytecode: compiled,
-        event_handlers: bytecode.event_handlers,
+        event_handlers: bytecode.event_handlers.into_boxed_slice(),
         triggers: bytecode.triggers,
     })
 }
 
 pub struct CompileResult {
-    pub bytecode: Vec<u16>,
-    pub event_handlers: Vec<EventHandler>,
-    pub triggers: Vec<Trigger>,
+    pub bytecode: Box<[u32]>,
+    pub event_handlers: Box<[EventHandler]>,
+    pub triggers: Box<[Trigger]>,
 }
 
 pub struct EventHandler {
     pub name: String,
     pub bytecode_offset: usize,
-    pub arguments: Vec<EventHandlerArgument>,
+    pub arguments: Box<[EventHandlerArgument]>,
 }
 
 pub struct Trigger {
     pub name: String,
-    pub arguments: Vec<Type>,
+    pub arguments: Box<[Type]>,
 }
 
 #[derive(Clone)]

@@ -99,11 +99,11 @@ impl MessageKind {
 #[derive(Clone, Debug, Serialize)]
 pub enum ParseError {
     UnrecognizedEof {
-        expected: Vec<String>,
+        expected: Box<[String]>,
     },
     UnrecognizedToken {
         token: String,
-        expected: Vec<String>,
+        expected: Box<[String]>,
     },
     ExtraToken {
         token: String,
@@ -132,12 +132,15 @@ impl Message {
                 .with_span(file_id, location, location)
                 .into(),
             lalrpop_util::ParseError::UnrecognizedEof { location, expected } => {
-                ParseError::UnrecognizedEof { expected }.with_span(file_id, location, location)
+                ParseError::UnrecognizedEof {
+                    expected: expected.into_boxed_slice(),
+                }
+                .with_span(file_id, location, location)
             }
             lalrpop_util::ParseError::UnrecognizedToken { token, expected } => {
                 ParseError::UnrecognizedToken {
                     token: format!("{:?}", token.1),
-                    expected,
+                    expected: expected.into_boxed_slice(),
                 }
                 .with_span(file_id, token.0, token.2)
             }
@@ -214,8 +217,8 @@ pub enum CompilerErrorKind {
     TriggerIncorrectArgs {
         name: String,
         first_definition_span: Span,
-        first_definition_args: Vec<Type>,
-        second_definition_args: Vec<Type>,
+        first_definition_args: Box<[Type]>,
+        second_definition_args: Box<[Type]>,
     },
 }
 

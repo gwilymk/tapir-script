@@ -8,27 +8,31 @@ The VM ensures that there is always enough stack
 
 ## Type 1:
 
-| 8       | 8      | 8    | 8   | meaning                                      |
-| ------- | ------ | ---- | --- | -------------------------------------------- |
-| opcode  | target | a    | b   |                                              |
-|         |        |      |     |                                              |
-| add     | r0     | r1   | r2  | r0 = r1 + r2                                 |
-| sub     | r0     | r1   | r2  | r0 = r1 - r2                                 |
-|         |        |      |     |                                              |
-| call    | arg0   |      |     | prepares for a function call                 |
-| spawn   | arg0   |      |     | same as `call` but starts a new thread       |
-| trigger | id     | arg0 |     | fires trigger with given id and starting arg |
+| 8        | 8      | 8       | 8   | meaning                                      |
+| -------- | ------ | ------- | --- | -------------------------------------------- |
+| opcode   | target | a       | b   |                                              |
+|          |        |         |     |                                              |
+| binop    | r0     | r1      | r2  | r0 = r1 binop r2                             |
+|          |        |         |     |                                              |
+| get_prop | r0     | prop_id |     | r0 = prop(prop_id)                           |
+| set_prop | r0     | prop_id |     | prop(prop_id) = r0                           |
+|          |        |         |     |                                              |
+| call     | arg0   |         |     | prepares for a function call                 |
+| spawn    | arg0   |         |     | same as `call` but starts a new thread       |
+| trigger  | id     | arg0    |     | fires trigger with given id and starting arg |
+|          |        |         |     |                                              |
+| jump_if  | target |         |     | skips the next instruction if target != 0    |
+| ret      |        |         |     | returns (see function call below)            |
 
 ...
 
 ## Type 2:
 
-| 8       | 8      | 16    |                                                                                 |
-| ------- | ------ | ----- | ------------------------------------------------------------------------------- |
-| opcode  | target | value | meaning                                                                         |
-|         |        |       |                                                                                 |
-| jump_if | r0     | dest  | if r0 != 0 go to dest. Dest is a signed 16 bit offset from the current location |
-| load_k  | r0     | value | r0 = sign_extend(value)                                                         |
+| 8      | 8      | 16    |                         |
+| ------ | ------ | ----- | ----------------------- |
+| opcode | target | value | meaning                 |
+|        |        |       |                         |
+| load_k | r0     | value | r0 = sign_extend(value) |
 
 ## Type 3:
 

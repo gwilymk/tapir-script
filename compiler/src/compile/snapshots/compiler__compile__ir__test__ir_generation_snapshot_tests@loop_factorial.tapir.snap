@@ -13,7 +13,7 @@ wait
 return 
 
 =======================
-fn factorial(x.1: int) -> int
+fn factorial(x.1) -> int
 
 ---- block 2 ----
 result.2 = int 1
