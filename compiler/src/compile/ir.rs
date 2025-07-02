@@ -607,6 +607,8 @@ mod test {
                 );
             }
 
+            assert!(!diagnostics.has_any());
+
             let mut symtab = symtab_visitor.into_symtab();
 
             let irs = script
