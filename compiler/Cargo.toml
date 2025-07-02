@@ -7,15 +7,15 @@ edition = "2021"
 agb_fixnum = "0.22"
 ariadne = "0.5"
 lalrpop-util = "0.22.2"
-logos = "0.14.2"
-num-traits = "0.2.19"
+logos = "0.15"
+num-traits = "0.2"
 serde = { version = "1", features = ["derive"] }
 
 bytecode = { path = "../bytecode" }
 petgraph = "0.6.5"
 
 [dev-dependencies]
-insta = { version = "1.40.0", features = ["ron", "glob", "redactions"] }
+insta = { version = "1.40", features = ["ron", "glob", "redactions"] }
 
 [build-dependencies]
 lalrpop = "0.22.2"
