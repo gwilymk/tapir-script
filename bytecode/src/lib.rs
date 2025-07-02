@@ -7,6 +7,8 @@ use enumn::N;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, N)]
 pub enum Opcode {
     // Type 1
+    Mov,
+
     Add,
     Sub,
     Mul,
@@ -32,7 +34,8 @@ pub enum Opcode {
 
     JumpIf,
 
-    Return,
+    Ret,
+    Wait,
 
     // Type 2
     LoadConstant,
@@ -55,12 +58,24 @@ pub struct Type1 {
 }
 
 impl Type1 {
-    pub const fn ret() -> Self {
+    const fn new0(opcode: Opcode) -> Self {
+        Self::new1(opcode, 0)
+    }
+
+    const fn new1(opcode: Opcode, target: u8) -> Self {
+        Self::new2(opcode, target, 0)
+    }
+
+    const fn new2(opcode: Opcode, target: u8, a: u8) -> Self {
+        Self::new3(opcode, target, a, 0)
+    }
+
+    const fn new3(opcode: Opcode, target: u8, a: u8, b: u8) -> Self {
         Self {
-            opcode: Opcode::Return,
-            target: 0,
-            a: 0,
-            b: 0,
+            opcode,
+            target,
+            a,
+            b,
         }
     }
 
@@ -92,6 +107,14 @@ pub struct Type2 {
 }
 
 impl Type2 {
+    const fn new(opcode: Opcode, target: u8, value: u16) -> Self {
+        Self {
+            opcode,
+            target,
+            value,
+        }
+    }
+
     pub const fn opcode(self) -> Opcode {
         self.opcode
     }
@@ -120,17 +143,6 @@ pub struct Type3 {
 }
 
 impl Type3 {
-    pub const fn jump(target: u32) -> Self {
-        Self {
-            opcode: Opcode::Jump,
-            value: target,
-        }
-    }
-
-    pub const fn invalid_jump() -> Self {
-        Self::jump((1 << 24) - 1)
-    }
-
     pub const fn opcode(self) -> Opcode {
         self.opcode
     }
@@ -148,5 +160,52 @@ impl Type3 {
             opcode: Opcode::n(opcode).expect("Invalid encoded"),
             value,
         }
+    }
+}
+
+/// Creation functions for the various opcodes
+impl Type1 {
+    pub const fn ret() -> Self {
+        Self::new0(Opcode::Ret)
+    }
+
+    pub const fn wait() -> Self {
+        Self::new0(Opcode::Wait)
+    }
+
+    pub const fn mov(target: u8, source: u8) -> Self {
+        Self::new2(Opcode::Mov, target, source)
+    }
+
+    pub const fn binop(opcode: Opcode, target: u8, lhs: u8, rhs: u8) -> Self {
+        assert!(
+            opcode as u8 >= Opcode::Add as u8 && opcode as u8 <= Opcode::FixDiv as u8,
+            "Invalid opcode for binary operator",
+        );
+
+        Self::new3(opcode, target, lhs, rhs)
+    }
+
+    pub const fn jump_if(target: u8) -> Self {
+        Self::new1(Opcode::JumpIf, target)
+    }
+}
+
+impl Type2 {
+    pub const fn constant(target: u8, value: u16) -> Self {
+        Self::new(Opcode::LoadConstant, target, value)
+    }
+}
+
+impl Type3 {
+    pub const fn jump(target: u32) -> Self {
+        Self {
+            opcode: Opcode::Jump,
+            value: target,
+        }
+    }
+
+    pub const fn invalid_jump() -> Self {
+        Self::jump((1 << 24) - 1)
     }
 }

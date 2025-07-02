@@ -1,4 +1,7 @@
-use std::fmt::{Display, Write};
+use std::{
+    collections::HashSet,
+    fmt::{Display, Write},
+};
 
 use agb_fixnum::Num;
 
@@ -53,7 +56,7 @@ pub enum BlockExitInstr {
         if_true: BlockId,
         if_false: BlockId,
     },
-    Return(Vec<SymbolId>),
+    Return(Box<[SymbolId]>),
 }
 
 /// Blocks have ids which aren't necessarily strictly increasing.
@@ -72,8 +75,8 @@ pub struct TapIrFunction {
     pub blocks: Vec<TapIrBlock>,
 
     pub modifiers: FunctionModifiers,
-    pub arguments: Vec<SymbolId>,
-    pub return_types: Vec<Type>,
+    pub arguments: Box<[SymbolId]>,
+    pub return_types: Box<[Type]>,
 }
 
 pub struct FunctionModifiers {
@@ -156,7 +159,7 @@ impl BlockVisitor {
         }
 
         if !self.current_block.is_empty() || self.next_block_id.is_some() {
-            self.finalize_block(BlockExitInstr::Return(vec![]));
+            self.finalize_block(BlockExitInstr::Return(Box::new([])));
         }
 
         self.blocks
@@ -418,6 +421,53 @@ fn blocks_for_expression(
                 },
             });
         }
+    }
+}
+
+impl TapIrBlock {
+    fn symbols(&self, symbols: &mut HashSet<SymbolId>) {
+        for instr in &self.instrs {
+            match &instr.instr {
+                TapIrInstr::Constant(symbol_id, ..) => {
+                    symbols.insert(*symbol_id);
+                }
+                TapIrInstr::Move { target, source } => {
+                    symbols.extend([*target, *source]);
+                }
+                TapIrInstr::BinOp {
+                    target, lhs, rhs, ..
+                } => symbols.extend([*target, *lhs, *rhs]),
+                TapIrInstr::Wait => {}
+                TapIrInstr::Call { target, args, .. } => {
+                    symbols.extend(target);
+                    symbols.extend(args);
+                }
+                TapIrInstr::Trigger { args, .. } | TapIrInstr::Spawn { args, .. } => {
+                    symbols.extend(args);
+                }
+            }
+        }
+
+        match &self.block_exit {
+            BlockExitInstr::JumpToBlock(_) => {}
+            BlockExitInstr::ConditionalJump { test, .. } => {
+                symbols.insert(*test);
+            }
+            BlockExitInstr::Return(symbol_ids) => symbols.extend(symbol_ids),
+        }
+    }
+}
+
+impl TapIrFunction {
+    pub fn symbols(&self) -> HashSet<SymbolId> {
+        let mut symbols = HashSet::new();
+        symbols.extend(&self.arguments);
+
+        for block in &self.blocks {
+            block.symbols(&mut symbols);
+        }
+
+        symbols
     }
 }
 

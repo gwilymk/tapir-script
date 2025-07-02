@@ -1,13 +1,13 @@
 use std::{collections::HashMap, path::Path};
 
-use bytecode::{Type1, Type3};
+use bytecode::{Type1, Type2, Type3};
 use optimisations::UnusedFunction;
 use symtab_visitor::SymTabVisitor;
 use type_visitor::{TypeTable, TypeVisitor};
 
 use crate::{
-    ast::{FunctionId, SymbolId},
-    compile::ir::{create_ir, BlockId, TapIrFunction},
+    ast::{BinaryOperator, FunctionId, SymbolId},
+    compile::ir::{create_ir, BlockId, TapIrFunction, TapIrInstr},
     grammar,
     lexer::Lexer,
     reporting::Diagnostics,
@@ -162,9 +162,83 @@ impl Compiler {
         // these are filled in later as function calls.
         let mut jumps: Vec<(BlockId, Jump)> = vec![];
 
+        let symbols = function.symbols();
+        assert!(
+            symbols.len() < 200,
+            "Need fewer than 200 symbols in a function, but got {}",
+            symbols.len()
+        );
+        let var_locations = symbols
+            .iter()
+            .enumerate()
+            .map(|(i, sym)| (*sym, i as u8))
+            .collect::<HashMap<_, _>>();
+
+        let v = move |s: &SymbolId| *var_locations.get(s).unwrap();
+
         for block in &function.blocks {
             let entry_point = self.bytecode.new_label();
             block_entrypoints.insert(block.id, entry_point);
+
+            for instr in &block.instrs {
+                match &instr.instr {
+                    TapIrInstr::Constant(target, constant) => {
+                        let constant = match constant {
+                            ir::Constant::Int(i) => *i as i16 as u16,
+                            ir::Constant::Fix(num) => num.to_raw() as i16 as u16,
+                            ir::Constant::Bool(b) => *b as u16,
+                        };
+
+                        self.bytecode.constant(v(target), constant);
+                    }
+                    TapIrInstr::Move { target, source } => self.bytecode.mov(v(target), v(source)),
+                    TapIrInstr::BinOp {
+                        target,
+                        lhs,
+                        op,
+                        rhs,
+                    } => {
+                        self.bytecode.binop(v(target), v(lhs), *op, v(rhs));
+                    }
+                    TapIrInstr::Wait => self.bytecode.wait(),
+                    TapIrInstr::Call { target, f, args } => todo!(),
+                    TapIrInstr::Spawn { f, args } => todo!(),
+                    TapIrInstr::Trigger { f, args } => todo!(),
+                }
+            }
+
+            match &block.block_exit {
+                ir::BlockExitInstr::JumpToBlock(block_id) => {
+                    let jump = self.bytecode.new_jump();
+                    jumps.push((*block_id, jump));
+                }
+                ir::BlockExitInstr::ConditionalJump {
+                    test,
+                    if_true,
+                    if_false,
+                } => {
+                    self.bytecode.jump_if(v(test));
+                    let true_jump = self.bytecode.new_jump();
+                    let false_jump = self.bytecode.new_jump();
+
+                    jumps.extend([(*if_true, true_jump), (*if_false, false_jump)]);
+                }
+                ir::BlockExitInstr::Return(symbol_ids) => {
+                    for (i, symbol) in symbol_ids.iter().enumerate() {
+                        self.bytecode.mov(i as u8 + 1, v(symbol));
+                    }
+
+                    self.bytecode.ret();
+                }
+            }
+        }
+
+        for (block_id, jump) in jumps {
+            let label = block_entrypoints
+                .get(&block_id)
+                .expect("Should jump to a valid block");
+
+            self.bytecode.patch_jump(jump, *label);
         }
     }
 
@@ -179,7 +253,7 @@ pub struct Bytecode {
 }
 
 impl Bytecode {
-    pub fn new(triggers: Box<[Trigger]>) -> Self {
+    fn new(triggers: Box<[Trigger]>) -> Self {
         Self {
             data: vec![],
 
@@ -188,20 +262,20 @@ impl Bytecode {
         }
     }
 
-    pub fn offset(&self) -> usize {
+    fn offset(&self) -> usize {
         self.data.len()
     }
 
-    pub fn new_label(&self) -> Label {
+    fn new_label(&self) -> Label {
         Label(self.data.len())
     }
 
-    pub fn new_jump(&mut self) -> Jump {
+    fn new_jump(&mut self) -> Jump {
         self.data.push(Type3::invalid_jump().encode());
         Jump(self.data.len() - 1)
     }
 
-    pub fn patch_jump(&mut self, jump: Jump, label: Label) {
+    fn patch_jump(&mut self, jump: Jump, label: Label) {
         assert_eq!(
             bytecode::opcode(self.data[jump.0]),
             Some(Opcode::Jump),
@@ -214,8 +288,48 @@ impl Bytecode {
 }
 
 impl Bytecode {
-    pub fn ret(&mut self) {
+    fn ret(&mut self) {
         self.data.push(Type1::ret().encode());
+    }
+
+    fn mov(&mut self, target: u8, source: u8) {
+        self.data.push(Type1::mov(target, source).encode());
+    }
+
+    fn wait(&mut self) {
+        self.data.push(Type1::wait().encode());
+    }
+
+    fn constant(&mut self, target: u8, value: u16) {
+        self.data.push(Type2::constant(target, value).encode());
+    }
+
+    fn jump_if(&mut self, target: u8) {
+        self.data.push(Type1::jump_if(target).encode());
+    }
+
+    fn binop(&mut self, target: u8, lhs: u8, binop: BinaryOperator, rhs: u8) {
+        let opcode = match binop {
+            BinaryOperator::Add => Opcode::Add,
+            BinaryOperator::Sub => Opcode::Sub,
+            BinaryOperator::Mul => Opcode::Mul,
+            BinaryOperator::Div => unreachable!("Shouldn't be compiling div binops"),
+            BinaryOperator::Mod => unreachable!("Shouldn't be compiling mod binops"),
+            BinaryOperator::RealDiv => Opcode::RealDiv,
+            BinaryOperator::RealMod => Opcode::RealMod,
+            BinaryOperator::FixMul => Opcode::FixMul,
+            BinaryOperator::FixDiv => Opcode::FixDiv,
+            BinaryOperator::EqEq => Opcode::EqEq,
+            BinaryOperator::NeEq => Opcode::NeEq,
+            BinaryOperator::Gt => Opcode::Gt,
+            BinaryOperator::GtEq => Opcode::GtEq,
+            BinaryOperator::Lt => Opcode::Lt,
+            BinaryOperator::LtEq => Opcode::LtEq,
+            BinaryOperator::Then => unreachable!("Shouldn't be compiling then binops"),
+        };
+
+        self.data
+            .push(Type1::binop(opcode, target, lhs, rhs).encode());
     }
 }
 

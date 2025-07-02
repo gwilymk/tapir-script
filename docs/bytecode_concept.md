@@ -21,7 +21,7 @@ The VM ensures that there is always enough stack
 | spawn    | arg0   |         |     | same as `call` but starts a new thread       |
 | trigger  | id     | arg0    |     | fires trigger with given id and starting arg |
 |          |        |         |     |                                              |
-| jump_if  | target |         |     | skips the next instruction if target != 0    |
+| jump_if  | target |         |     | skips the next instruction if target == 0    |
 | ret      |        |         |     | returns (see function call below)            |
 
 ...
