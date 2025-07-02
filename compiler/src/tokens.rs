@@ -22,7 +22,7 @@ pub struct Span {
 
 impl Span {
     pub fn new(file_id: FileId, start: usize, end: usize) -> Self {
-        assert!(start <= end, "{} was not <= {}", start, end);
+        assert!(start <= end, "{start} was not <= {end}");
         Self {
             file_id,
             start,

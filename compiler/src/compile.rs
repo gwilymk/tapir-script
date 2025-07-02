@@ -205,7 +205,6 @@ impl<'input> Compiler<'input> {
         self.compile_drop_to(previous_stack_size);
     }
 
-    #[must_use]
     fn compile_statement(
         &mut self,
         statement: &Statement<'input>,
