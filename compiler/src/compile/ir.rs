@@ -26,17 +26,17 @@ pub enum TapIrInstr {
     },
     Wait,
     Call {
-        target: Vec<SymbolId>,
+        target: Box<[SymbolId]>,
         f: FunctionId,
-        args: Vec<SymbolId>,
+        args: Box<[SymbolId]>,
     },
     Spawn {
         f: FunctionId,
-        args: Vec<SymbolId>,
+        args: Box<[SymbolId]>,
     },
     Trigger {
         f: TriggerId,
-        args: Vec<SymbolId>,
+        args: Box<[SymbolId]>,
     },
 }
 
@@ -266,7 +266,7 @@ impl BlockVisitor {
                     .expect("Should have function IDs by now");
                 self.current_block.push(TapIr {
                     instr: TapIrInstr::Call {
-                        target: vec![],
+                        target: Box::new([]),
                         f,
                         args,
                     },
@@ -412,7 +412,7 @@ fn blocks_for_expression(
 
             current_block.push(TapIr {
                 instr: TapIrInstr::Call {
-                    target: vec![target_symbol],
+                    target: Box::new([target_symbol]),
                     f: function_id,
                     args,
                 },
