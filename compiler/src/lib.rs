@@ -53,6 +53,7 @@ pub struct Trigger {
     pub arguments: Vec<Type>,
 }
 
+#[derive(Clone)]
 pub struct EventHandlerArgument {
     pub name: String,
     pub ty: Type,

@@ -5,7 +5,7 @@ use agb_fixnum::Num;
 use crate::{
     ast::{self, BinaryOperator, Expression, FunctionId, SymbolId},
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
-    Type,
+    EventHandlerArgument, Type,
 };
 
 pub struct TapIr {
@@ -72,12 +72,45 @@ pub struct TapIrFunction {
     pub blocks: Vec<TapIrBlock>,
 
     pub modifiers: FunctionModifiers,
-    pub arguments: Vec<(SymbolId, Type)>,
+    pub arguments: Vec<SymbolId>,
     pub return_types: Vec<Type>,
 }
 
 pub struct FunctionModifiers {
-    pub is_event_handler: bool,
+    pub event_handler: Option<EventHandlerData>,
+}
+
+impl FunctionModifiers {
+    pub fn new(f: &ast::Function<'_>, symtab: &SymTab) -> Self {
+        let event_handler = if f.modifiers.is_event_handler.is_some() {
+            Some(EventHandlerData {
+                name: f.name.to_string(),
+                arg_names: f
+                    .arguments
+                    .iter()
+                    .map(|a| EventHandlerArgument {
+                        name: symtab
+                            .name_for_symbol(
+                                a.name
+                                    .symbol_id()
+                                    .expect("Should've been resolved by the symbol visitor"),
+                            )
+                            .to_string(),
+                        ty: a.t.t,
+                    })
+                    .collect(),
+            })
+        } else {
+            None
+        };
+
+        Self { event_handler }
+    }
+}
+
+pub struct EventHandlerData {
+    pub name: String,
+    pub arg_names: Vec<EventHandlerArgument>,
 }
 
 pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
@@ -87,16 +120,11 @@ pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
     TapIrFunction {
         id: *f.meta.get().expect("Should have FunctionId by now"),
         blocks,
-        modifiers: FunctionModifiers::from(&f.modifiers),
+        modifiers: FunctionModifiers::new(f, symtab),
         arguments: f
             .arguments
             .iter()
-            .map(|a| {
-                (
-                    a.name.symbol_id().expect("Should have resolved arguments"),
-                    a.t.t,
-                )
-            })
+            .map(|a| a.name.symbol_id().expect("Should have resolved arguments"))
             .collect(),
         return_types: f.return_types.types.iter().map(|t| t.t).collect(),
     }
@@ -393,14 +421,6 @@ fn blocks_for_expression(
     }
 }
 
-impl From<&ast::FunctionModifiers> for FunctionModifiers {
-    fn from(value: &ast::FunctionModifiers) -> Self {
-        Self {
-            is_event_handler: value.is_event_handler.is_some(),
-        }
-    }
-}
-
 impl TapIr {
     fn pretty_print(&self, symtab: &SymTab<'_>, output: &mut dyn Write) -> std::fmt::Result {
         match &self.instr {
@@ -515,7 +535,7 @@ impl TapIrFunction {
         let args = self
             .arguments
             .iter()
-            .map(|a| format!("{}: {}", symtab.debug_name_for_symbol(a.0), a.1))
+            .map(|a| symtab.debug_name_for_symbol(*a))
             .collect::<Vec<_>>()
             .join(", ");
 
@@ -529,7 +549,7 @@ impl TapIrFunction {
         writeln!(
             output,
             "=======================\n{}fn {}({args}) -> {returns}\n",
-            if self.modifiers.is_event_handler {
+            if self.modifiers.event_handler.is_some() {
                 "event "
             } else {
                 ""
