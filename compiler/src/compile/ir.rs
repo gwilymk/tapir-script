@@ -429,7 +429,7 @@ impl TapIr {
             ),
             TapIrInstr::Wait => write!(output, "wait"),
             TapIrInstr::Call { target, f, args } => {
-                let targets = target
+                let mut targets = target
                     .iter()
                     .map(|t| symtab.debug_name_for_symbol(*t))
                     .collect::<Vec<_>>()
@@ -440,11 +440,11 @@ impl TapIr {
                     .collect::<Vec<_>>()
                     .join(", ");
 
-                write!(
-                    output,
-                    "{targets} = {}({args})",
-                    symtab.name_for_function(*f)
-                )
+                if !targets.is_empty() {
+                    targets += " = ";
+                }
+
+                write!(output, "{targets}{}({args})", symtab.name_for_function(*f))
             }
             TapIrInstr::Spawn { f, args } => {
                 let args = args

@@ -1,0 +1,23 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/then.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.4 = int 7
+temp.3 = foo(temp.4)
+x.0 = int 77
+temp.5 = x.0
+temp.6 = int 2
+y.1 = foo(temp.6)
+return 
+
+=======================
+fn foo(x.2: int) -> int
+
+---- block 0 ----
+temp.7 = int 3
+return temp.7
