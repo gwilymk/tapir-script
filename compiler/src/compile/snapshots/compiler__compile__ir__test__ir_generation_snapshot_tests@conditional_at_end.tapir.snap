@@ -1,0 +1,25 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/conditional_at_end.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+temp.1 = int 5
+temp.2 = int 5
+temp.0 = temp.1 == temp.2
+conditional_jump temp.0 0 1
+
+---- block 0 ----
+wait
+jmp 2
+
+---- block 1 ----
+wait
+wait
+jmp 2
+
+---- block 2 ----
+return

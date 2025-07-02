@@ -127,7 +127,7 @@ impl BlockVisitor {
             self.visit_statement(statement, symtab);
         }
 
-        if !self.current_block.is_empty() {
+        if !self.current_block.is_empty() || self.next_block_id.is_some() {
             self.finalize_block(BlockExitInstr::Return(vec![]));
         }
 
