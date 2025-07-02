@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-agb_fixnum = "0.21.0"
+agb_fixnum = "0.22"
 ariadne = "0.4.1"
 lalrpop-util = "0.21.0"
 logos = "0.14.2"
