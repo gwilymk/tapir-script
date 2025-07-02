@@ -4,42 +4,42 @@ expression: diagnostics.pretty_string(false)
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/loop_visitor/break_after_function_outside_loop_fail.tapir
 ---
 Error: `break` or `continue` must be within a loop
-   ╭─[break_after_function_outside_loop_fail.tapir:1:1]
+   ╭─[ break_after_function_outside_loop_fail.tapir:1:1 ]
    │
  1 │ break;
    │ ───┬──  
    │    ╰──── This statement
 ───╯
 Error: `break` or `continue` must be within a loop
-   ╭─[break_after_function_outside_loop_fail.tapir:1:1]
+   ╭─[ break_after_function_outside_loop_fail.tapir:3:1 ]
    │
  3 │ break;
    │ ───┬──  
    │    ╰──── This statement
 ───╯
 Error: `break` or `continue` must be within a loop
-   ╭─[break_after_function_outside_loop_fail.tapir:1:1]
+   ╭─[ break_after_function_outside_loop_fail.tapir:4:1 ]
    │
  4 │ continue;
    │ ────┬────  
    │     ╰────── This statement
 ───╯
 Error: `break` or `continue` must be within a loop
-   ╭─[break_after_function_outside_loop_fail.tapir:1:1]
+   ╭─[ break_after_function_outside_loop_fail.tapir:5:1 ]
    │
  5 │ break;
    │ ───┬──  
    │    ╰──── This statement
 ───╯
 Error: `break` or `continue` must be within a loop
-   ╭─[break_after_function_outside_loop_fail.tapir:1:1]
+   ╭─[ break_after_function_outside_loop_fail.tapir:7:5 ]
    │
  7 │     break;
    │     ───┬──  
    │        ╰──── This statement
 ───╯
 Error: `break` or `continue` must be within a loop
-   ╭─[break_after_function_outside_loop_fail.tapir:1:1]
+   ╭─[ break_after_function_outside_loop_fail.tapir:9:5 ]
    │
  9 │     continue;
    │     ────┬────  

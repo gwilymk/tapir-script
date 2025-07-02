@@ -4,7 +4,7 @@ expression: diagnostics.pretty_string(false)
 input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/non_associative_comparison.tapir
 ---
 Error: Unexpected token OperatorEqEq, expected one of then, ";", "+", "-"
-   ╭─[non_associative_comparison.tapir:1:1]
+   ╭─[ non_associative_comparison.tapir:1:16 ]
    │
  1 │ var x = 3 == 5 == true;
    │                ─┬  

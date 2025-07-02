@@ -4,28 +4,28 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/function_call_fail.tapir
 ---
 Error: No such function baz
-    ╭─[function_call_fail.tapir:1:1]
+    ╭─[ function_call_fail.tapir:14:1 ]
     │
  14 │ baz();
     │ ───┬──  
     │    ╰──── Unknown function
 ────╯
 Error: Left hand side has type fix but right hand side has type int
-   ╭─[function_call_fail.tapir:1:1]
+   ╭─[ function_call_fail.tapir:9:9 ]
    │
  9 │ var x = foo() * 2;
    │         ────┬────  
    │             ╰────── Mismatching types on binary operator
 ───╯
 Error: Function call must return exactly 1 value here, but got 2
-    ╭─[function_call_fail.tapir:1:1]
+    ╭─[ function_call_fail.tapir:10:9 ]
     │
  10 │ var y = bar() * 2.3;
     │         ──┬──  
     │           ╰──── Function must return 1 value here
 ────╯
 Error: Function call must return exactly 1 value here, but got 2
-    ╭─[function_call_fail.tapir:1:1]
+    ╭─[ function_call_fail.tapir:12:9 ]
     │
  12 │ var z = bar();
     │         ──┬──  

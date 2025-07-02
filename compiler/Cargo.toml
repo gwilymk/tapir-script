@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 agb_fixnum = "0.22"
-ariadne = "0.4.1"
+ariadne = "0.5"
 lalrpop-util = "0.22.2"
 logos = "0.14.2"
 num-traits = "0.2.19"

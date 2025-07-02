@@ -4,7 +4,7 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/event_fn_with_return_fail.tapir
 ---
 Error: Event handlers should not have a return type
-   ╭─[event_fn_with_return_fail.tapir:1:1]
+   ╭─[ event_fn_with_return_fail.tapir:1:10 ]
    │
  1 │ event fn foo(x: int) -> int {
    │ ──┬──                   ─┬─  
@@ -15,7 +15,7 @@ Error: Event handlers should not have a return type
    │ Help: Either remove the return type, or change this to be a regular function
 ───╯
 Error: Function should be returning 0 return values, but you are actually returning 1.
-   ╭─[event_fn_with_return_fail.tapir:1:1]
+   ╭─[ event_fn_with_return_fail.tapir:2:5 ]
    │
  1 │ event fn foo(x: int) -> int {
    │ ──┬──  

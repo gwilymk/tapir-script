@@ -4,14 +4,14 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/if_condition_is_boolean_fail.tapir
 ---
 Error: Condition in if statement must be a bool, but got a int
-   ╭─[if_condition_is_boolean_fail.tapir:1:1]
+   ╭─[ if_condition_is_boolean_fail.tapir:1:4 ]
    │
  1 │ if 3 {
    │    ┬  
    │    ╰── This has type int
 ───╯
 Error: Condition in if statement must be a bool, but got a fix
-   ╭─[if_condition_is_boolean_fail.tapir:1:1]
+   ╭─[ if_condition_is_boolean_fail.tapir:6:4 ]
    │
  6 │ if x {}
    │    ┬  

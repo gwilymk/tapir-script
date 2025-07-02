@@ -4,14 +4,14 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_return_type_fail.tapir
 ---
 Error: 'boool' is not a valid type, must be one of fix, bool or int
-   ╭─[incorrect_return_type_fail.tapir:1:1]
+   ╭─[ incorrect_return_type_fail.tapir:6:20 ]
    │
  6 │ fn foo2() -> (int, boool) {
    │                    ──┬──  
    │                      ╰──── Unknown type
 ───╯
 Error: Function is declared to return type int but got fix
-   ╭─[incorrect_return_type_fail.tapir:1:1]
+   ╭─[ incorrect_return_type_fail.tapir:2:5 ]
    │
  1 │ fn foo() -> (int, bool) {
    │              ─┬─  
@@ -21,7 +21,7 @@ Error: Function is declared to return type int but got fix
    │             ╰─── This has type fix
 ───╯
 Error: Function is declared to return type bool but got int
-   ╭─[incorrect_return_type_fail.tapir:1:1]
+   ╭─[ incorrect_return_type_fail.tapir:2:5 ]
    │
  1 │ fn foo() -> (int, bool) {
    │                   ──┬─  

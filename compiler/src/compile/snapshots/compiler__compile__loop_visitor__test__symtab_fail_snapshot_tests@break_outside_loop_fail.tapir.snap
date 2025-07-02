@@ -4,7 +4,7 @@ expression: diagnostics.pretty_string(false)
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/loop_visitor/break_outside_loop_fail.tapir
 ---
 Error: `break` or `continue` must be within a loop
-   ╭─[break_outside_loop_fail.tapir:1:1]
+   ╭─[ break_outside_loop_fail.tapir:2:1 ]
    │
  2 │ break;
    │ ───┬──  

@@ -1,12 +1,12 @@
 use std::{
     collections::HashMap,
-    fmt,
+    fmt::{self, Debug, Display},
     io::{self, Write},
     iter,
     path::Path,
 };
 
-use ariadne::{Label, Source};
+use ariadne::{Cache, Label, Source};
 
 use crate::tokens::{FileId, LexicalErrorKind, Span};
 
@@ -72,14 +72,17 @@ impl DiagnosticCache {
 impl ariadne::Cache<FileId> for DiagnosticCache {
     type Storage = String;
 
-    fn fetch(&mut self, id: &FileId) -> Result<&Source<Self::Storage>, Box<dyn fmt::Debug + '_>> {
+    fn fetch(
+        &mut self,
+        id: &FileId,
+    ) -> Result<&ariadne::Source<<Self as Cache<FileId>>::Storage>, impl Debug> {
         match self.map.get(id) {
             Some((_, data)) => Ok(data),
             None => Err(Box::new(format!("Failed to find file with ID {id:?}"))),
         }
     }
 
-    fn display<'a>(&self, id: &'a FileId) -> Option<Box<dyn fmt::Display + 'a>> {
+    fn display<'a>(&self, id: &'a FileId) -> Option<impl Display + 'a> {
         let (filename, _) = self.map.get(id)?;
         Some(Box::new(filename.clone()))
     }
@@ -102,7 +105,7 @@ impl ariadne::Span for Span {
 }
 
 fn build_error_report(span: Span) -> ariadne::ReportBuilder<'static, Span> {
-    ariadne::Report::build(ariadne::ReportKind::Error, span.file_id, 0)
+    ariadne::Report::build(ariadne::ReportKind::Error, span)
 }
 
 fn parse_error_report(parse_error: &ParseError, span: Span) -> ariadne::ReportBuilder<'_, Span> {
