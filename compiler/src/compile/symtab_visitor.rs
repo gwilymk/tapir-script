@@ -25,9 +25,11 @@ impl<'input> SymTabVisitor<'input> {
         diagnostics: &mut Diagnostics,
     ) -> Self {
         let mut function_declarations = HashMap::new();
+        let mut function_names = vec![];
 
         for (i, function) in functions.iter_mut().enumerate() {
             function.meta.set(FunctionId(i));
+            function_names.push(function.name);
 
             if let Some(other_span) = function_declarations.insert(function.name, function.span) {
                 diagnostics.add_message(
@@ -42,7 +44,7 @@ impl<'input> SymTabVisitor<'input> {
         }
 
         Self {
-            symtab: SymTab::new(settings),
+            symtab: SymTab::new(settings, function_names),
             symbol_names: NameTable::new(settings),
             function_names: functions
                 .iter()
@@ -53,6 +55,10 @@ impl<'input> SymTabVisitor<'input> {
 
     pub fn get_symtab(&self) -> &SymTab<'input> {
         &self.symtab
+    }
+
+    pub fn into_symtab(self) -> SymTab<'input> {
+        self.symtab
     }
 
     pub fn visit_function(
@@ -268,10 +274,11 @@ pub struct SymTab<'input> {
     properties: Vec<Property>,
 
     symbol_names: Vec<(Cow<'input, str>, Option<Span>)>,
+    function_names: Vec<&'input str>,
 }
 
 impl<'input> SymTab<'input> {
-    fn new(settings: &CompileSettings) -> Self {
+    fn new(settings: &CompileSettings, function_names: Vec<&'input str>) -> Self {
         let properties = settings.properties.clone();
         let symbol_names = properties
             .iter()
@@ -281,6 +288,7 @@ impl<'input> SymTab<'input> {
         Self {
             properties,
             symbol_names,
+            function_names,
         }
     }
 
@@ -289,8 +297,32 @@ impl<'input> SymTab<'input> {
         SymbolId(self.symbol_names.len() - 1)
     }
 
+    pub(crate) fn new_temporary(&mut self) -> SymbolId {
+        let id = self.symbol_names.len();
+        self.symbol_names.push((Cow::Borrowed(""), None));
+        SymbolId(id)
+    }
+
     pub(crate) fn name_for_symbol(&self, symbol_id: SymbolId) -> Cow<'input, str> {
-        self.symbol_names[symbol_id.0].0.clone()
+        let name = self.symbol_names[symbol_id.0].0.clone();
+        if name.is_empty() {
+            Cow::Owned(format!("temp.{}", symbol_id.0))
+        } else {
+            name
+        }
+    }
+
+    pub(crate) fn debug_name_for_symbol(&self, symbol_id: SymbolId) -> String {
+        let name = self.symbol_names[symbol_id.0].0.clone();
+        if name.is_empty() {
+            format!("temp.{}", symbol_id.0)
+        } else {
+            format!("{name}.{}", symbol_id.0)
+        }
+    }
+
+    pub(crate) fn name_for_function(&self, function_id: FunctionId) -> &'input str {
+        self.function_names[function_id.0]
     }
 
     pub(crate) fn span_for_symbol(&self, symbol_id: SymbolId) -> Span {

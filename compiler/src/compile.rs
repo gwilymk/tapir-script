@@ -14,6 +14,7 @@ use crate::{
     EventHandler, EventHandlerArgument, Trigger,
 };
 
+mod ir;
 mod loop_visitor;
 mod optimisations;
 mod symtab_visitor;

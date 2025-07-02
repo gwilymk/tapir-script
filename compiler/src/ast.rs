@@ -1,4 +1,4 @@
-use std::iter;
+use std::{fmt::Display, iter};
 
 use crate::{
     tokens::{FileId, Span},
@@ -137,6 +137,15 @@ pub struct FunctionArgument<'input> {
 pub enum MaybeResolved<'input> {
     Unresolved(&'input str),
     Resolved(SymbolId),
+}
+
+impl MaybeResolved<'_> {
+    pub(crate) fn symbol_id(&self) -> Option<SymbolId> {
+        match self {
+            MaybeResolved::Unresolved(_) => None,
+            MaybeResolved::Resolved(symbol_id) => Some(*symbol_id),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -378,5 +387,32 @@ impl BinaryOperator {
             B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq => Type::Bool,
             B::Then => rhs_type,
         }
+    }
+}
+
+impl Display for BinaryOperator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                BinaryOperator::Add => "+",
+                BinaryOperator::Sub => "-",
+                BinaryOperator::Mul => "*",
+                BinaryOperator::Div => "/",
+                BinaryOperator::Mod => "%",
+                BinaryOperator::RealDiv => "//",
+                BinaryOperator::RealMod => "%%",
+                BinaryOperator::FixMul => "f*",
+                BinaryOperator::FixDiv => "f/",
+                BinaryOperator::EqEq => "==",
+                BinaryOperator::NeEq => "!=",
+                BinaryOperator::Gt => ">",
+                BinaryOperator::GtEq => ">=",
+                BinaryOperator::Lt => "<",
+                BinaryOperator::LtEq => "<=",
+                BinaryOperator::Then => "then",
+            }
+        )
     }
 }

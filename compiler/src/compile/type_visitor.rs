@@ -549,7 +549,6 @@ pub struct TypeTable<'input> {
 }
 
 impl TypeTable<'_> {
-    #[cfg(test)]
     pub fn type_for_symbol(&self, symbol_id: SymbolId) -> Type {
         self.types[symbol_id.0]
     }

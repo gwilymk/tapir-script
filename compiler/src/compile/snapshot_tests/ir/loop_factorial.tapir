@@ -1,0 +1,15 @@
+fn factorial(x: int) -> int {
+    var result = 1;
+    
+    loop {
+        if x == 0 {
+            return result;
+        }
+
+        result = result * x;
+        x = x - 1;
+    }
+}
+
+var x = factorial(10);
+wait;
