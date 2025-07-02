@@ -81,7 +81,7 @@ pub struct FunctionModifiers {
 }
 
 pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
-    let mut block_visitor = BlockVisitor::default();
+    let block_visitor = BlockVisitor::default();
     let blocks = block_visitor.create_blocks(&f.statements, symtab);
 
     TapIrFunction {
