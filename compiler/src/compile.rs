@@ -98,9 +98,7 @@ pub fn compile(
         compiler.compile_function(&function);
     }
 
-    compiler.finalise();
-
-    Ok(compiler.bytecode)
+    Ok(compiler.finalise())
 }
 
 struct Compiler {
@@ -171,10 +169,17 @@ impl Compiler {
         let var_locations = symbols
             .iter()
             .enumerate()
-            .map(|(i, sym)| (*sym, i as u8))
+            .map(|(i, sym)| (*sym, i as u8 + function.arguments.len() as u8 + 1))
             .collect::<HashMap<_, _>>();
 
         let v = move |s: &SymbolId| *var_locations.get(s).unwrap();
+
+        let first_argument = symbols.len() as u8 + function.arguments.len() as u8 + 1;
+        let put_args = |bytecode: &mut Bytecode, args: &[SymbolId]| {
+            for (i, arg) in args.iter().enumerate() {
+                bytecode.mov(i as u8 + first_argument + 1, v(arg));
+            }
+        };
 
         for block in &function.blocks {
             let entry_point = self.bytecode.new_label();
@@ -201,9 +206,24 @@ impl Compiler {
                         self.bytecode.binop(v(target), v(lhs), *op, v(rhs));
                     }
                     TapIrInstr::Wait => self.bytecode.wait(),
-                    TapIrInstr::Call { target, f, args } => todo!(),
-                    TapIrInstr::Spawn { f, args } => todo!(),
-                    TapIrInstr::Trigger { f, args } => todo!(),
+                    TapIrInstr::Call { target, f, args } => {
+                        put_args(&mut self.bytecode, args);
+                        self.bytecode.call(first_argument);
+                        self.jumps.push((*f, self.bytecode.new_jump()));
+
+                        for (i, target) in target.iter().enumerate() {
+                            self.bytecode.mov(v(target), i as u8 + first_argument + 1);
+                        }
+                    }
+                    TapIrInstr::Spawn { f, args } => {
+                        put_args(&mut self.bytecode, args);
+                        self.bytecode.spawn(first_argument, args.len() as u8);
+                        self.jumps.push((*f, self.bytecode.new_jump()));
+                    }
+                    TapIrInstr::Trigger { f, args } => {
+                        put_args(&mut self.bytecode, args);
+                        self.bytecode.trigger(f.0 as u8, first_argument);
+                    }
                 }
             }
 
@@ -242,7 +262,17 @@ impl Compiler {
         }
     }
 
-    fn finalise(&mut self) {}
+    fn finalise(mut self) -> Bytecode {
+        for (function_id, jump) in self.jumps {
+            let label = self
+                .function_locations
+                .get(&function_id)
+                .expect("Should have defined a function");
+            self.bytecode.patch_jump(jump, *label);
+        }
+
+        self.bytecode
+    }
 }
 
 pub struct Bytecode {
@@ -302,6 +332,18 @@ impl Bytecode {
 
     fn constant(&mut self, target: u8, value: u16) {
         self.data.push(Type2::constant(target, value).encode());
+    }
+
+    fn call(&mut self, first_arg: u8) {
+        self.data.push(Type1::call(first_arg).encode());
+    }
+
+    fn spawn(&mut self, first_arg: u8, num_args: u8) {
+        self.data.push(Type1::spawn(first_arg, num_args).encode());
+    }
+
+    fn trigger(&mut self, id: u8, first_arg: u8) {
+        self.data.push(Type1::trigger(id, first_arg).encode());
     }
 
     fn jump_if(&mut self, target: u8) {

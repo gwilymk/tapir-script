@@ -8,21 +8,21 @@ The VM ensures that there is always enough stack
 
 ## Type 1:
 
-| 8        | 8      | 8       | 8   | meaning                                      |
-| -------- | ------ | ------- | --- | -------------------------------------------- |
-| opcode   | target | a       | b   |                                              |
-|          |        |         |     |                                              |
-| binop    | r0     | r1      | r2  | r0 = r1 binop r2                             |
-|          |        |         |     |                                              |
-| get_prop | r0     | prop_id |     | r0 = prop(prop_id)                           |
-| set_prop | r0     | prop_id |     | prop(prop_id) = r0                           |
-|          |        |         |     |                                              |
-| call     | arg0   |         |     | prepares for a function call                 |
-| spawn    | arg0   |         |     | same as `call` but starts a new thread       |
-| trigger  | id     | arg0    |     | fires trigger with given id and starting arg |
-|          |        |         |     |                                              |
-| jump_if  | target |         |     | skips the next instruction if target == 0    |
-| ret      |        |         |     | returns (see function call below)            |
+| 8        | 8      | 8        | 8   | meaning                                                                     |
+| -------- | ------ | -------- | --- | --------------------------------------------------------------------------- |
+| opcode   | target | a        | b   |                                                                             |
+|          |        |          |     |                                                                             |
+| binop    | r0     | r1       | r2  | r0 = r1 binop r2                                                            |
+|          |        |          |     |                                                                             |
+| get_prop | r0     | prop_id  |     | r0 = prop(prop_id)                                                          |
+| set_prop | r0     | prop_id  |     | prop(prop_id) = r0                                                          |
+|          |        |          |     |                                                                             |
+| call     | arg0   |          |     | prepares for a function call                                                |
+| spawn    | arg0   | num_args |     | same as `call` but starts a new thread. Needs num_args to know what to copy |
+| trigger  | id     | arg0     |     | fires trigger with given id and starting arg                                |
+|          |        |          |     |                                                                             |
+| jump_if  | target |          |     | skips the next instruction if target == 0                                   |
+| ret      |        |          |     | returns (see function call below)                                           |
 
 ...
 

@@ -189,6 +189,18 @@ impl Type1 {
     pub const fn jump_if(target: u8) -> Self {
         Self::new1(Opcode::JumpIf, target)
     }
+
+    pub const fn call(first_arg: u8) -> Self {
+        Self::new1(Opcode::Call, first_arg)
+    }
+
+    pub const fn spawn(first_arg: u8, num_args: u8) -> Self {
+        Self::new2(Opcode::Spawn, first_arg, num_args)
+    }
+
+    pub const fn trigger(id: u8, first_arg: u8) -> Self {
+        Self::new2(Opcode::Trigger, id, first_arg)
+    }
 }
 
 impl Type2 {
