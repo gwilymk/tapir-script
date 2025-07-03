@@ -3,23 +3,21 @@ source: crates/tapir-script/compiler/src/compile.rs
 expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/wait.tapir
 ---
-00000000: push8	5
-00000001: push8	3
-00000002: setprop	0
-00000003: wait
-00000004: dup	0
-00000005: push8	1
-00000006: add
-00000007: move	1
-00000008: dup	0
-00000009: setprop	0
-00000010: wait
-00000011: dup	0
-00000012: push8	1
-00000013: add
-00000014: move	1
-00000015: dup	0
-00000016: setprop	0
-00000017: wait
-00000018: drop	1
-00000019: ret	args=0 rets=0 shift=0
+00000000: loadk 1, 5
+00000002: loadk 2, 3
+00000004: setprop 2, 0
+00000005: wait
+00000006: mov 3, 1
+00000007: loadk 4, 1
+00000009: add 1, 3, 4
+00000010: mov 5, 1
+00000011: setprop 5, 0
+00000012: wait
+00000013: mov 6, 1
+00000014: loadk 7, 1
+00000016: add 1, 6, 7
+00000017: mov 8, 1
+00000018: setprop 8, 0
+00000019: wait
+00000020: ret
+00000021: ret

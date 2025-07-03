@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::Path};
 
-use bytecode::{Type1, Type2, Type3};
+use bytecode::{Type1, Type3};
 use optimisations::UnusedFunction;
 use symtab_visitor::SymTabVisitor;
 use type_visitor::{TypeTable, TypeVisitor};
@@ -16,6 +16,8 @@ use crate::{
     EventHandler, Trigger,
 };
 
+#[cfg(test)]
+mod disassemble;
 mod ir;
 mod loop_visitor;
 mod optimisations;
@@ -160,7 +162,8 @@ impl Compiler {
         // these are filled in later as function calls.
         let mut jumps: Vec<(BlockId, Jump)> = vec![];
 
-        let symbols = function.symbols();
+        let mut symbols: Vec<_> = function.symbols().iter().copied().collect();
+        symbols.sort_by_key(|sym| sym.0);
         assert!(
             symbols.len() < 200,
             "Need fewer than 200 symbols in a function, but got {}",
@@ -169,7 +172,13 @@ impl Compiler {
         let var_locations = symbols
             .iter()
             .enumerate()
-            .map(|(i, sym)| (*sym, i as u8 + function.arguments.len() as u8 + 1))
+            .map(|(i, sym)| {
+                if let Some(i) = function.arguments.iter().position(|arg| arg == sym) {
+                    (*sym, i as u8 + 1)
+                } else {
+                    (*sym, i as u8 + function.arguments.len() as u8 + 1)
+                }
+            })
             .collect::<HashMap<_, _>>();
 
         let v = move |s: &SymbolId| *var_locations.get(s).unwrap();
@@ -189,9 +198,9 @@ impl Compiler {
                 match &instr.instr {
                     TapIrInstr::Constant(target, constant) => {
                         let constant = match constant {
-                            ir::Constant::Int(i) => *i as i16 as u16,
-                            ir::Constant::Fix(num) => num.to_raw() as i16 as u16,
-                            ir::Constant::Bool(b) => *b as u16,
+                            ir::Constant::Int(i) => *i as u32,
+                            ir::Constant::Fix(num) => num.to_raw() as u32,
+                            ir::Constant::Bool(b) => *b as u32,
                         };
 
                         self.bytecode.constant(v(target), constant);
@@ -223,6 +232,12 @@ impl Compiler {
                     TapIrInstr::Trigger { f, args } => {
                         put_args(&mut self.bytecode, args);
                         self.bytecode.trigger(f.0 as u8, first_argument);
+                    }
+                    TapIrInstr::GetProp { target, prop_index } => {
+                        self.bytecode.get_prop(v(target), *prop_index as u8);
+                    }
+                    TapIrInstr::StoreProp { prop_index, value } => {
+                        self.bytecode.set_prop(v(value), *prop_index as u8);
                     }
                 }
             }
@@ -330,8 +345,9 @@ impl Bytecode {
         self.data.push(Type1::wait().encode());
     }
 
-    fn constant(&mut self, target: u8, value: u16) {
-        self.data.push(Type2::constant(target, value).encode());
+    fn constant(&mut self, target: u8, value: u32) {
+        self.data.push(Type1::constant(target).encode());
+        self.data.push(value);
     }
 
     fn call(&mut self, first_arg: u8) {
@@ -348,6 +364,14 @@ impl Bytecode {
 
     fn jump_if(&mut self, target: u8) {
         self.data.push(Type1::jump_if(target).encode());
+    }
+
+    fn get_prop(&mut self, target: u8, prop_index: u8) {
+        self.data.push(Type1::get_prop(target, prop_index).encode());
+    }
+
+    fn set_prop(&mut self, target: u8, prop_index: u8) {
+        self.data.push(Type1::set_prop(target, prop_index).encode());
     }
 
     fn binop(&mut self, target: u8, lhs: u8, binop: BinaryOperator, rhs: u8) {
@@ -382,3 +406,35 @@ struct Label(usize);
 // The internal usize here is the index where the jump instruction is in the bytecode
 #[derive(Clone, Copy)]
 struct Jump(usize);
+
+#[cfg(test)]
+mod test {
+    use std::fs;
+
+    use insta::{assert_snapshot, glob};
+
+    use super::*;
+
+    #[test]
+    fn compiler_snapshot_tests() {
+        glob!("snapshot_tests", "compiler/*.tapir", |path| {
+            let input = fs::read_to_string(path).unwrap();
+
+            let compiler_settings = CompileSettings {
+                properties: vec![Property {
+                    ty: Type::Int,
+                    index: 0,
+                    name: "int_prop".to_string(),
+                }],
+                enable_optimisations: false,
+            };
+
+            let bytecode = compile(path, &input, &compiler_settings).unwrap();
+
+            let mut decompiled = String::new();
+            disassemble::disassemble(&bytecode.data, &mut decompiled).unwrap();
+
+            assert_snapshot!(decompiled);
+        });
+    }
+}

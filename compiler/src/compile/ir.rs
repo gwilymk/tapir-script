@@ -41,6 +41,14 @@ pub enum TapIrInstr {
         f: TriggerId,
         args: Box<[SymbolId]>,
     },
+    GetProp {
+        target: SymbolId,
+        prop_index: usize,
+    },
+    StoreProp {
+        prop_index: usize,
+        value: SymbolId,
+    },
 }
 
 pub enum Constant {
@@ -173,7 +181,23 @@ impl BlockVisitor {
             ast::StatementKind::Assignment { value, .. }
             | ast::StatementKind::VariableDeclaration { value, .. } => {
                 let target_symbol = *statement.meta.get().expect("Should've resolved symbols");
-                blocks_for_expression(value, target_symbol, symtab, &mut self.current_block);
+
+                let expr_target = if symtab.get_property(target_symbol).is_some() {
+                    symtab.new_temporary()
+                } else {
+                    target_symbol
+                };
+
+                blocks_for_expression(value, expr_target, symtab, &mut self.current_block);
+
+                if let Some(property) = symtab.get_property(target_symbol) {
+                    self.current_block.push(TapIr {
+                        instr: TapIrInstr::StoreProp {
+                            prop_index: property.index,
+                            value: expr_target,
+                        },
+                    });
+                }
             }
             ast::StatementKind::Wait => {
                 self.current_block.push(TapIr {
@@ -250,7 +274,7 @@ impl BlockVisitor {
 
                 self.loop_entries.pop();
 
-                self.finalize_block(BlockExitInstr::JumpToBlock(loop_exit));
+                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry));
                 self.next_block_id = Some(loop_exit);
             }
             ast::StatementKind::Call { arguments, .. } => {
@@ -364,13 +388,21 @@ fn blocks_for_expression(
         }),
         ast::ExpressionKind::Variable(_) => {
             let source = *expr.meta.get().expect("Should've resolved variable");
-
-            current_block.push(TapIr {
-                instr: TapIrInstr::Move {
-                    target: target_symbol,
-                    source,
-                },
-            });
+            if let Some(property) = symtab.get_property(source) {
+                current_block.push(TapIr {
+                    instr: TapIrInstr::GetProp {
+                        target: target_symbol,
+                        prop_index: property.index,
+                    },
+                });
+            } else {
+                current_block.push(TapIr {
+                    instr: TapIrInstr::Move {
+                        target: target_symbol,
+                        source,
+                    },
+                });
+            }
         }
         ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
             let lhs_target = symtab.new_temporary();
@@ -428,7 +460,13 @@ impl TapIrBlock {
     fn symbols(&self, symbols: &mut HashSet<SymbolId>) {
         for instr in &self.instrs {
             match &instr.instr {
-                TapIrInstr::Constant(symbol_id, ..) => {
+                TapIrInstr::Constant(symbol_id, ..)
+                | TapIrInstr::GetProp {
+                    target: symbol_id, ..
+                }
+                | TapIrInstr::StoreProp {
+                    value: symbol_id, ..
+                } => {
                     symbols.insert(*symbol_id);
                 }
                 TapIrInstr::Move { target, source } => {
@@ -533,6 +571,20 @@ impl TapIr {
                     .join(", ");
 
                 write!(output, "trigger {f:?}({args})")
+            }
+            TapIrInstr::GetProp { target, prop_index } => {
+                write!(
+                    output,
+                    "getprop {}, {prop_index}",
+                    symtab.debug_name_for_symbol(*target)
+                )
+            }
+            TapIrInstr::StoreProp { prop_index, value } => {
+                write!(
+                    output,
+                    "storeprop {}, {prop_index}",
+                    symtab.debug_name_for_symbol(*value)
+                )
             }
         }
     }

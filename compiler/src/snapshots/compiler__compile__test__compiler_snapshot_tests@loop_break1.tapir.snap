@@ -3,22 +3,22 @@ source: crates/tapir-script/compiler/src/compile.rs
 expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/loop_break1.tapir
 ---
-00000000: push8	0
-00000001: dup	0
-00000002: setprop	0
-00000003: dup	0
-00000004: push8	5
-00000005: >
-00000006: jif	14
-00000008: drop	1
-00000009: j	21
-00000011: drop	1
-00000012: j	15
-00000014: drop	1
-00000015: dup	0
-00000016: push8	1
-00000017: add
-00000018: move	1
-00000019: j	1
-00000021: drop	1
-00000022: ret	args=0 rets=0 shift=0
+00000000: loadk 1, 0
+00000002: jmp 3
+00000003: mov 2, 1
+00000004: setprop 2, 0
+00000005: mov 4, 1
+00000006: loadk 5, 5
+00000008: gt 3, 4, 5
+00000009: jumpif 3
+00000010: jmp 12
+00000011: jmp 14
+00000012: jmp 20
+00000013: jmp 15
+00000014: jmp 15
+00000015: mov 6, 1
+00000016: loadk 7, 1
+00000018: add 1, 6, 7
+00000019: jmp 3
+00000020: ret
+00000021: ret

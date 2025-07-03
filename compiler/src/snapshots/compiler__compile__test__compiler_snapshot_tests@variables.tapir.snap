@@ -3,14 +3,14 @@ source: crates/tapir-script/compiler/src/compile.rs
 expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/variables.tapir
 ---
-00000000: push8	3
-00000001: dup	0
-00000002: push8	2
-00000003: add
-00000004: dup	1
-00000005: dup	1
-00000006: push8	3
-00000007: mul
-00000008: add
-00000009: drop	3
-00000010: ret	args=0 rets=0 shift=0
+00000000: loadk 1, 3
+00000002: mov 4, 1
+00000003: loadk 5, 2
+00000005: add 2, 4, 5
+00000006: mov 6, 1
+00000007: mov 8, 2
+00000008: loadk 9, 3
+00000010: mul 7, 8, 9
+00000011: add 3, 6, 7
+00000012: ret
+00000013: ret

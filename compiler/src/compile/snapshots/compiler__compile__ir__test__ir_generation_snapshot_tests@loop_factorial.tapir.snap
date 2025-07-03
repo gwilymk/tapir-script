@@ -42,7 +42,7 @@ result.2 = temp.8 * temp.9
 temp.10 = x.1
 temp.11 = int 1
 x.1 = temp.10 - temp.11
-jmp 1
+jmp 0
 
 ---- block 1 ----
 return

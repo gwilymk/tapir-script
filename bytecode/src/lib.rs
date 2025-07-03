@@ -8,8 +8,10 @@ use enumn::N;
 pub enum Opcode {
     // Type 1
     Mov,
-
+    ///< `mov a, b` => `b = a`
+    // Binops
     Add,
+    ///< `add a, b, c` => `a = b + c`
     Sub,
     Mul,
     RealMod,
@@ -37,7 +39,6 @@ pub enum Opcode {
     Ret,
     Wait,
 
-    // Type 2
     LoadConstant,
 
     // Type 3
@@ -94,43 +95,6 @@ impl Type1 {
             target,
             a,
             b,
-        }
-    }
-}
-
-#[derive(Clone, Copy)]
-pub struct Type2 {
-    opcode: Opcode,
-
-    pub target: u8,
-    pub value: u16,
-}
-
-impl Type2 {
-    const fn new(opcode: Opcode, target: u8, value: u16) -> Self {
-        Self {
-            opcode,
-            target,
-            value,
-        }
-    }
-
-    pub const fn opcode(self) -> Opcode {
-        self.opcode
-    }
-
-    pub const fn encode(self) -> u32 {
-        let value = self.value.to_be_bytes();
-        u32::from_be_bytes([self.opcode as u8, self.target, value[0], value[1]])
-    }
-
-    pub fn decode(encoded: u32) -> Self {
-        let [opcode, target, value0, value1] = encoded.to_be_bytes();
-        let value = u16::from_be_bytes([value0, value1]);
-        Self {
-            opcode: Opcode::n(opcode).expect("Invalid encoded"),
-            target,
-            value,
         }
     }
 }
@@ -201,11 +165,17 @@ impl Type1 {
     pub const fn trigger(id: u8, first_arg: u8) -> Self {
         Self::new2(Opcode::Trigger, id, first_arg)
     }
-}
 
-impl Type2 {
-    pub const fn constant(target: u8, value: u16) -> Self {
-        Self::new(Opcode::LoadConstant, target, value)
+    pub const fn constant(target: u8) -> Self {
+        Self::new1(Opcode::LoadConstant, target)
+    }
+
+    pub const fn get_prop(target: u8, prop_index: u8) -> Self {
+        Self::new2(Opcode::GetProp, target, prop_index)
+    }
+
+    pub const fn set_prop(value: u8, prop_index: u8) -> Self {
+        Self::new2(Opcode::SetProp, value, prop_index)
     }
 }
 
