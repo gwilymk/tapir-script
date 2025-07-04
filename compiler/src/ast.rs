@@ -93,7 +93,7 @@ pub struct Function<'input> {
 
     pub modifiers: FunctionModifiers,
 
-    pub meta: Metadata,
+    pub(crate) meta: Metadata,
 }
 
 impl Script<'_> {
@@ -161,7 +161,7 @@ pub struct Statement<'input> {
     pub span: Span,
     pub kind: StatementKind<'input>,
 
-    pub meta: Metadata,
+    pub(crate) meta: Metadata,
 }
 
 impl<'input> Statement<'input> {
@@ -257,7 +257,7 @@ pub struct Expression<'input> {
     pub span: Span,
     pub kind: ExpressionKind<'input>,
 
-    pub meta: Metadata,
+    pub(crate) meta: Metadata,
 }
 
 impl<'input> Expression<'input> {
