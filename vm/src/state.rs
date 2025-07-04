@@ -3,13 +3,14 @@ use crate::TapirScript;
 use agb_fixnum::Num;
 use alloc::{boxed::Box, vec::Vec};
 
+type Fix = Num<i32, 8>;
+
 #[derive(Debug)]
 pub(crate) struct State {
     pc: usize,
     stack: Vec<i32>,
+    stack_offset: usize,
 }
-
-const SPAWN_FINISHED: i32 = u16::MAX as i32;
 
 pub(crate) enum RunResult {
     Waiting,
@@ -19,7 +20,11 @@ pub(crate) enum RunResult {
 
 impl State {
     pub(crate) fn new(pc: usize, stack: Vec<i32>) -> Self {
-        Self { pc, stack }
+        Self {
+            pc,
+            stack,
+            stack_offset: 0,
+        }
     }
 
     #[cfg(test)]
@@ -29,145 +34,162 @@ impl State {
 
     pub(crate) fn run_until_wait(
         &mut self,
-        bytecode: &[u16],
+        bytecode: &[u32],
         properties: &mut dyn ObjectSafeProperties,
     ) -> RunResult {
         loop {
-            let Some(instr) = bytecode.get(self.pc) else {
+            let Some(&instr) = bytecode.get(self.pc) else {
                 return RunResult::Finished;
             };
 
-            let parsed =
-                bytecode::Instruction::n((instr >> 8) as u8).expect("Invalid bytecode instruction");
-
-            let arg = instr & 0xff;
+            let opcode = bytecode::opcode(instr).expect("Invalid bytecode instruction");
 
             self.pc += 1;
 
-            match parsed {
-                bytecode::Instruction::Push8 => {
-                    self.stack.push(arg as i8 as i32);
+            use bytecode::Opcode as O;
+
+            macro_rules! type1 {
+                ($target:ident) => {
+                    type1!($target, _a)
+                };
+                ($target:ident, $a:ident) => {
+                    type1!($target, $a, _b)
+                };
+                ($target:ident, $a:ident, $b:ident) => {
+                    let bytecode::Type1 {
+                        target: $target,
+                        a: $a,
+                        b: $b,
+                        ..
+                    } = bytecode::Type1::decode(instr);
+                };
+            }
+
+            macro_rules! binop {
+                ($a:ident, $b:ident, $op:expr) => {{
+                    type1!(target, a, b);
+                    let $a = self.get_reg(a);
+                    let $b = self.get_reg(b);
+                    self.set_reg(target, $op);
+                }};
+            }
+
+            match opcode {
+                O::Mov => {
+                    type1!(target, a);
+                    self.set_reg(target, self.get_reg(a));
                 }
-                bytecode::Instruction::Push32 => {
-                    let first = bytecode[self.pc].to_le_bytes();
-                    let second = bytecode[self.pc + 1].to_le_bytes();
-                    self.pc += 2;
-                    let value = i32::from_le_bytes([first[0], first[1], second[0], second[1]]);
-                    self.stack.push(value);
+
+                O::Add => binop!(a, b, a + b),
+                O::Sub => binop!(a, b, a - b),
+                O::Mul => binop!(a, b, a * b),
+                O::RealMod => binop!(a, b, a.rem_euclid(b)),
+                O::RealDiv => binop!(a, b, a / b), // FIXME: div_floor
+                O::EqEq => binop!(a, b, (a == b).into()),
+                O::NeEq => binop!(a, b, (a != b).into()),
+                O::Gt => binop!(a, b, (a > b).into()),
+                O::GtEq => binop!(a, b, (a >= b).into()),
+                O::Lt => binop!(a, b, (a < b).into()),
+                O::LtEq => binop!(a, b, (a <= b).into()),
+                O::FixMul => binop!(a, b, (Fix::from_raw(a) * Fix::from_raw(b)).to_raw()),
+                O::FixDiv => binop!(a, b, (Fix::from_raw(a) / Fix::from_raw(b)).to_raw()),
+
+                O::GetProp => {
+                    type1!(target, prop_index);
+                    self.set_reg(target, properties.get_prop(prop_index));
                 }
-                bytecode::Instruction::Dup => {
-                    self.stack
-                        .push(self.stack[self.stack.len() - arg as usize - 1]);
+                O::SetProp => {
+                    type1!(value, prop_index);
+                    properties.set_prop(prop_index, self.get_reg(value));
                 }
-                bytecode::Instruction::Drop => {
-                    let desired_size = self.stack.len() - arg as usize;
-                    self.stack.truncate(desired_size);
+
+                O::Call => {
+                    type1!(first_arg);
+                    let reg_value = (first_arg as u32) << 24 | (self.pc as u32);
+                    self.set_reg(first_arg, reg_value as i32);
+                    self.stack_offset += first_arg as usize;
                 }
-                bytecode::Instruction::GetProp => {
-                    self.stack.push(properties.get_prop(arg as u8));
+                O::Spawn => {
+                    type1!(first_arg, num_args);
+                    let mut new_stack = Vec::with_capacity(num_args as usize + 1);
+                    new_stack.push(-1);
+
+                    let stack_to_copy_start = self.stack_offset + usize::from(first_arg + 1);
+                    let stack_to_copy_end = stack_to_copy_start + usize::from(num_args);
+                    new_stack.extend(&self.stack[stack_to_copy_start..stack_to_copy_end]);
+
+                    let new_thread_pc = self.pc;
+                    self.pc += 1; // skip over the jump instruction
+
+                    return RunResult::Spawn(Box::new(Self::new(new_thread_pc, new_stack)));
                 }
-                bytecode::Instruction::SetProp => {
-                    properties.set_prop(arg as u8, self.stack.pop().expect("Stack underflow"));
+                O::Trigger => {
+                    type1!(id, first_arg);
+
+                    let stack_to_copy_start = self.stack_offset + usize::from(first_arg + 1);
+                    properties.add_event(id, &self.stack[stack_to_copy_start..]);
                 }
-                bytecode::Instruction::Nop => {}
-                bytecode::Instruction::Wait => {
+
+                O::JumpIf => {
+                    type1!(test);
+
+                    let test_value = self.get_reg(test);
+                    if test_value == 0 {
+                        self.pc += 1;
+                    }
+                }
+
+                O::Ret => {
+                    let value = self.get_reg(0);
+                    if value == -1 {
+                        return RunResult::Finished;
+                    }
+
+                    let value = value as u32;
+                    let offset = value >> 24;
+                    self.stack_offset -= offset as usize;
+
+                    let new_pc = value & 0x00FF_FFFF;
+                    self.pc = new_pc as usize + 1; // skip the jump instruction
+                }
+                O::Wait => {
                     return RunResult::Waiting;
                 }
-                bytecode::Instruction::Move => {
-                    let move_location = self.stack.len() - arg as usize - 1;
-                    self.stack[move_location] = self.stack.pop().expect("Stack underflow");
-                }
-                bytecode::Instruction::MathsOp => {
-                    let op = bytecode::MathsOp::n(arg as u8).expect("Invalid maths op");
-                    let rhs = self.stack.pop().expect("Stack underflow");
-                    let lhs = self.stack.pop().expect("Stack underflow");
 
-                    let result = match op {
-                        bytecode::MathsOp::Add => lhs + rhs,
-                        bytecode::MathsOp::Sub => lhs - rhs,
-                        bytecode::MathsOp::Mul => lhs * rhs,
-                        bytecode::MathsOp::RealMod => lhs.rem_euclid(rhs),
-                        bytecode::MathsOp::RealDiv => lhs / rhs, // FIXME: div_floor
-                        bytecode::MathsOp::EqEq => (lhs == rhs).into(),
-                        bytecode::MathsOp::NeEq => (lhs != rhs).into(),
-                        bytecode::MathsOp::Gt => (lhs > rhs).into(),
-                        bytecode::MathsOp::GtEq => (lhs >= rhs).into(),
-                        bytecode::MathsOp::Lt => (lhs < rhs).into(),
-                        bytecode::MathsOp::LtEq => (lhs <= rhs).into(),
-                        bytecode::MathsOp::FixMul => {
-                            (Num::<i32, 8>::from_raw(lhs) * Num::<i32, 8>::from_raw(rhs)).to_raw()
-                        }
-                        bytecode::MathsOp::FixDiv => {
-                            (Num::<i32, 8>::from_raw(lhs) / Num::<i32, 8>::from_raw(rhs)).to_raw()
-                        }
-                    };
-
-                    self.stack.push(result);
-                }
-                bytecode::Instruction::JumpIfFalse => {
-                    let target_for_jump = bytecode[self.pc];
+                O::LoadConstant => {
+                    type1!(target);
+                    let constant = bytecode[self.pc];
                     self.pc += 1;
 
-                    if *self.stack.last().expect("Stack underflow") == 0 {
-                        self.pc = target_for_jump as usize;
-                    }
+                    self.set_reg(target, constant as i32);
                 }
-                bytecode::Instruction::Jump => {
-                    let target_for_jump = bytecode[self.pc];
-                    self.pc = target_for_jump as usize;
-                }
-                bytecode::Instruction::Call => {
-                    let target_for_jump = bytecode[self.pc];
-                    self.stack.push((self.pc + 1) as i32);
 
-                    self.pc = target_for_jump as usize;
-                }
-                bytecode::Instruction::Spawn => {
-                    let target_for_spawn = bytecode[self.pc];
-                    self.pc += 1;
-
-                    let mut new_stack = self.stack.split_off(self.stack.len() - arg as usize);
-                    new_stack.push(SPAWN_FINISHED);
-
-                    return RunResult::Spawn(Box::new(Self::new(
-                        target_for_spawn as usize,
-                        new_stack,
-                    )));
-                }
-                bytecode::Instruction::Return => {
-                    let args = arg;
-                    let [rets, shift] = bytecode[self.pc].to_be_bytes();
-
-                    let args = args as usize;
-                    let rets = rets as usize;
-                    let shift = shift as usize;
-
-                    if self.stack.len() == shift {
-                        return RunResult::Finished;
-                    }
-
-                    let new_pc = self.stack[self.stack.len() - shift - 1];
-
-                    if new_pc == SPAWN_FINISHED {
-                        // this is the end of a spawned function or event
-                        return RunResult::Finished;
-                    }
-
-                    // extra -1 to cover the new program counter
-                    let copy_range = (self.stack.len() - rets)..;
-                    let copy_dest = self.stack.len() - args - shift - 1;
-
-                    self.stack.copy_within(copy_range, copy_dest);
-                    self.stack
-                        .truncate(self.stack.len() - args - shift + rets - 1);
-
-                    self.pc = new_pc as usize;
-                }
-                bytecode::Instruction::Trigger => {
-                    properties.add_event(arg as u8, &mut self.stack);
+                O::Jump => {
+                    let target = instr & 0x00FF_FFFF;
+                    self.pc = target as usize;
                 }
             }
         }
+    }
+
+    fn set_reg(&mut self, reg: u8, value: i32) {
+        *self.reg(reg) = value;
+    }
+
+    fn get_reg(&self, reg: u8) -> i32 {
+        let reg_id = self.reg_id(reg);
+        self.stack.get(reg_id).copied().unwrap_or(0)
+    }
+
+    fn reg_id(&self, reg: u8) -> usize {
+        self.stack_offset + reg as usize
+    }
+
+    fn reg(&mut self, reg: u8) -> &mut i32 {
+        let reg_id = self.reg_id(reg);
+        self.stack.resize(self.stack.len().max(reg_id + 1), 0);
+
+        &mut self.stack[reg_id]
     }
 }
 
@@ -175,7 +197,7 @@ pub(crate) trait ObjectSafeProperties {
     fn set_prop(&mut self, index: u8, value: i32);
     fn get_prop(&self, index: u8) -> i32;
 
-    fn add_event(&mut self, index: u8, stack: &mut Vec<i32>);
+    fn add_event(&mut self, index: u8, args: &[i32]);
 }
 
 pub(crate) struct ObjectSafePropertiesImpl<'a, T, U>
@@ -198,7 +220,7 @@ where
         self.properties.get_prop(index)
     }
 
-    fn add_event(&mut self, index: u8, stack: &mut Vec<i32>) {
-        self.events.push(self.properties.create_event(index, stack));
+    fn add_event(&mut self, index: u8, args: &[i32]) {
+        self.events.push(self.properties.create_event(index, args));
     }
 }

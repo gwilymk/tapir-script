@@ -6,7 +6,11 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/conditional_not_take
 [
   ([
     [
+      -1,
       5,
+      0,
+      5,
+      3,
     ],
   ], PropObj(
     int_prop: 5,

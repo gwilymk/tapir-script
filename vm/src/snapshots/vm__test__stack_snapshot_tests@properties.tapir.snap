@@ -6,13 +6,20 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/properties.tapir
 [
   ([
     [
+      -1,
       8,
+      5,
+      3,
     ],
   ], PropObj(
     int_prop: 5,
   )),
   ([
     [
+      -1,
+      8,
+      5,
+      3,
       8,
     ],
   ], PropObj(

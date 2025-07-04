@@ -8,15 +8,15 @@ use alloc::{vec, vec::Vec};
 use state::{ObjectSafeProperties, ObjectSafePropertiesImpl, State};
 
 struct Vm<'a> {
-    bytecode: &'a [u16],
+    bytecode: &'a [u32],
     states: Vec<State>,
 }
 
 impl<'a> Vm<'a> {
-    pub fn new(bytecode: &'a [u16]) -> Self {
+    pub fn new(bytecode: &'a [u32]) -> Self {
         Self {
             bytecode,
-            states: vec![State::new(0, vec![])],
+            states: vec![State::new(0, vec![-1])],
         }
     }
 
@@ -53,7 +53,7 @@ pub unsafe trait TapirScript {
     fn set_prop(&mut self, index: u8, value: i32);
     fn get_prop(&self, index: u8) -> i32;
 
-    fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType;
+    fn create_event(&self, index: u8, args: &[i32]) -> Self::EventType;
 }
 
 pub struct Script<T: TapirScript> {
@@ -62,7 +62,7 @@ pub struct Script<T: TapirScript> {
 }
 
 impl<T: TapirScript> Script<T> {
-    pub fn new(properties: T, bytecode: &'static [u16]) -> Self {
+    pub fn new(properties: T, bytecode: &'static [u32]) -> Self {
         Self {
             vm: Vm::new(bytecode),
             properties,
@@ -85,9 +85,7 @@ impl<T: TapirScript> Script<T> {
     }
 
     #[doc(hidden)]
-    pub unsafe fn __private_trigger_event(&mut self, mut initial_stack: Vec<i32>, pc: usize) {
-        initial_stack.push(0);
-
+    pub unsafe fn __private_trigger_event(&mut self, initial_stack: Vec<i32>, pc: usize) {
         self.vm.states.push(State::new(pc, initial_stack));
     }
 }
@@ -275,6 +273,6 @@ mod test {
             unimplemented!("Shouldn't create the script this way in the tests")
         }
 
-        fn create_event(&self, _index: u8, _stack: &mut Vec<i32>) -> Self::EventType {}
+        fn create_event(&self, _index: u8, _args: &[i32]) -> Self::EventType {}
     }
 }

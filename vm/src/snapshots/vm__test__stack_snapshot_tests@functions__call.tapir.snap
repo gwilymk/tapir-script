@@ -5,24 +5,38 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call.tapir
 ---
 [
   ([
-    [],
-  ], PropObj(
-    int_prop: 5,
-  )),
-  ([
     [
-      3,
+      -1,
     ],
   ], PropObj(
     int_prop: 5,
   )),
   ([
-    [],
+    [
+      -1,
+      0,
+      33554434,
+    ],
   ], PropObj(
     int_prop: 5,
   )),
   ([
-    [],
+    [
+      -1,
+      0,
+      33554434,
+      33,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [
+      -1,
+      0,
+      33554434,
+      33,
+    ],
   ], PropObj(
     int_prop: 5,
   )),

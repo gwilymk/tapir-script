@@ -1,6 +1,6 @@
 #![deny(clippy::all)]
 use std::{
-    env, fs,
+    env, fs, iter,
     path::{Path, PathBuf},
 };
 
@@ -111,7 +111,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let event_handlers = compiled_content.event_handlers;
 
     let (event_handler_trait_fns, event_handler_trait_impls) =
-        generate_event_handlers(event_handlers);
+        generate_event_handlers(&event_handlers);
 
     let event_handler_trait_name = format_ident!("{}Events", struct_name);
 
@@ -160,7 +160,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
 }
 
 fn generate_event_handlers(
-    event_handlers: Vec<compiler::EventHandler>,
+    event_handlers: &[compiler::EventHandler],
 ) -> (Vec<TokenStream>, Vec<TokenStream>) {
     event_handlers
         .iter()
@@ -183,12 +183,12 @@ fn generate_event_handlers(
 
             let event_name = format_ident!("on_{}", event_handler.name);
 
-            let initial_stack_vector = event_handler.arguments.iter().map(|arg| {
+            let initial_stack_vector = iter::once(quote!(initial_stack.push(-1);)).chain(event_handler.arguments.iter().map(|arg| {
                 let arg_name = format_ident!("{}", arg.name);
                 quote! {
                     initial_stack.push(::tapir_script::TapirProperty::to_i32(&#arg_name))
                 }
-            });
+            }));
 
             let initial_stack_vector_len = event_handler.arguments.len() + 1; // the mandatory return value
 

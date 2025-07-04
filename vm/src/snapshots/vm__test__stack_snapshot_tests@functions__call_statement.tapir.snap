@@ -6,6 +6,14 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_state
 [
   ([
     [
+      -1,
+      67,
+      67,
+      0,
+      0,
+      83886084,
+      67,
+      0,
       67,
     ],
   ], PropObj(
@@ -13,16 +21,32 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_state
   )),
   ([
     [
+      -1,
+      67,
       67,
       33,
-      7,
+      0,
+      83886091,
+      33,
+      0,
+      33,
     ],
   ], PropObj(
     int_prop: 33,
   )),
   ([
     [
+      -1,
       67,
+      67,
+      33,
+      0,
+      83886091,
+      33,
+      33,
+      33,
+      33,
+      33,
     ],
   ], PropObj(
     int_prop: 33,
