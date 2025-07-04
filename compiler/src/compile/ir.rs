@@ -167,7 +167,7 @@ impl BlockVisitor {
         }
 
         if !self.current_block.is_empty() || self.next_block_id.is_some() {
-            self.finalize_block(BlockExitInstr::Return(Box::new([])));
+            self.finalize_block(BlockExitInstr::Return(Box::new([])), None);
         }
 
         self.blocks
@@ -214,14 +214,14 @@ impl BlockVisitor {
                     .loop_entries
                     .last()
                     .expect("Continue should be in loop by this point");
-                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry.entry));
+                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry.entry), None);
             }
             ast::StatementKind::Break => {
                 let loop_entry = self
                     .loop_entries
                     .last()
                     .expect("Continue should be in loop by this point");
-                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry.exit));
+                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry.exit), None);
             }
             ast::StatementKind::Nop => {}
             ast::StatementKind::If {
@@ -236,32 +236,36 @@ impl BlockVisitor {
                 let false_block_id = self.next_block_id();
                 let continue_block_id = self.next_block_id();
 
-                self.finalize_block(BlockExitInstr::ConditionalJump {
-                    test: condition_target,
-                    if_true: true_block_id,
-                    if_false: false_block_id,
-                });
+                self.finalize_block(
+                    BlockExitInstr::ConditionalJump {
+                        test: condition_target,
+                        if_true: true_block_id,
+                        if_false: false_block_id,
+                    },
+                    Some(true_block_id),
+                );
 
-                self.next_block_id = Some(true_block_id);
                 for statement in true_block {
                     self.visit_statement(statement, symtab);
                 }
-                self.finalize_block(BlockExitInstr::JumpToBlock(continue_block_id));
+                self.finalize_block(
+                    BlockExitInstr::JumpToBlock(continue_block_id),
+                    Some(false_block_id),
+                );
 
-                self.next_block_id = Some(false_block_id);
                 for statement in false_block {
                     self.visit_statement(statement, symtab);
                 }
-                self.finalize_block(BlockExitInstr::JumpToBlock(continue_block_id));
-
-                self.next_block_id = Some(continue_block_id);
+                self.finalize_block(
+                    BlockExitInstr::JumpToBlock(continue_block_id),
+                    Some(continue_block_id),
+                );
             }
             ast::StatementKind::Loop { block } => {
                 let loop_entry = self.next_block_id();
                 let loop_exit = self.next_block_id();
 
-                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry));
-                self.next_block_id = Some(loop_entry);
+                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry), Some(loop_entry));
 
                 self.loop_entries.push(LoopEntry {
                     entry: loop_entry,
@@ -274,8 +278,7 @@ impl BlockVisitor {
 
                 self.loop_entries.pop();
 
-                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry));
-                self.next_block_id = Some(loop_exit);
+                self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry), Some(loop_exit));
             }
             ast::StatementKind::Call { arguments, .. } => {
                 let args = arguments
@@ -345,7 +348,7 @@ impl BlockVisitor {
                     })
                     .collect();
 
-                self.finalize_block(BlockExitInstr::Return(return_values));
+                self.finalize_block(BlockExitInstr::Return(return_values), None);
             }
         }
     }
@@ -355,7 +358,7 @@ impl BlockVisitor {
         BlockId(self.next_free_block_id - 1)
     }
 
-    fn finalize_block(&mut self, block_exit: BlockExitInstr) {
+    fn finalize_block(&mut self, block_exit: BlockExitInstr, next_block_id: Option<BlockId>) {
         let id = self
             .next_block_id
             .take()
@@ -366,6 +369,8 @@ impl BlockVisitor {
             block_exit,
             id,
         });
+
+        self.next_block_id = next_block_id;
     }
 }
 
