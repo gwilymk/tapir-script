@@ -389,12 +389,6 @@ impl<'input> TypeVisitor<'input> {
 
         TypeTable {
             types,
-            num_function_returns: self
-                .functions
-                .iter()
-                .map(|(name, function)| (*name, function.ty.rets.len()))
-                .collect(),
-
             triggers: self.trigger_types,
         }
     }
@@ -543,18 +537,14 @@ enum BlockAnalysisResult {
 #[derive(Clone, Serialize)]
 pub struct TypeTable<'input> {
     types: Vec<Type>,
-    num_function_returns: HashMap<FunctionId, usize>,
 
     triggers: HashMap<&'input str, TriggerInfo>,
 }
 
 impl TypeTable<'_> {
+    #[cfg(test)]
     pub fn type_for_symbol(&self, symbol_id: SymbolId) -> Type {
         self.types[symbol_id.0]
-    }
-
-    pub fn num_function_returns(&self, function_id: FunctionId) -> usize {
-        self.num_function_returns[&function_id]
     }
 
     pub fn triggers(&self) -> Box<[Trigger]> {

@@ -274,6 +274,9 @@ pub struct SymTab<'input> {
     properties: Vec<Property>,
 
     symbol_names: Vec<(Cow<'input, str>, Option<Span>)>,
+
+    // function names are only used in tests
+    #[cfg_attr(not(test), expect(dead_code))]
     function_names: Vec<&'input str>,
 }
 
@@ -312,6 +315,7 @@ impl<'input> SymTab<'input> {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn debug_name_for_symbol(&self, symbol_id: SymbolId) -> String {
         let name = self.symbol_names[symbol_id.0].0.clone();
         if name.is_empty() {
@@ -321,6 +325,7 @@ impl<'input> SymTab<'input> {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn name_for_function(&self, function_id: FunctionId) -> &'input str {
         self.function_names[function_id.0]
     }

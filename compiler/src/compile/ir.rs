@@ -1,9 +1,9 @@
-use std::{
-    collections::HashSet,
-    fmt::{Display, Write},
-};
+use std::{collections::HashSet, fmt::Display};
 
 use agb_fixnum::Num;
+
+#[cfg(test)]
+mod pretty_print;
 
 use crate::{
     ast::{self, BinaryOperator, Expression, FunctionId, SymbolId},
@@ -509,164 +509,6 @@ impl TapIrFunction {
     }
 }
 
-impl TapIr {
-    fn pretty_print(&self, symtab: &SymTab<'_>, output: &mut dyn Write) -> std::fmt::Result {
-        match &self.instr {
-            TapIrInstr::Constant(symbol_id, constant) => write!(
-                output,
-                "{} = {constant}",
-                symtab.debug_name_for_symbol(*symbol_id)
-            ),
-            TapIrInstr::Move { target, source } => write!(
-                output,
-                "{} = {}",
-                symtab.debug_name_for_symbol(*target),
-                symtab.debug_name_for_symbol(*source)
-            ),
-            TapIrInstr::BinOp {
-                target,
-                lhs,
-                op,
-                rhs,
-            } => write!(
-                output,
-                "{} = {} {op} {}",
-                symtab.debug_name_for_symbol(*target),
-                symtab.debug_name_for_symbol(*lhs),
-                symtab.debug_name_for_symbol(*rhs)
-            ),
-            TapIrInstr::Wait => write!(output, "wait"),
-            TapIrInstr::Call { target, f, args } => {
-                let mut targets = target
-                    .iter()
-                    .map(|t| symtab.debug_name_for_symbol(*t))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                let args = args
-                    .iter()
-                    .map(|t| symtab.debug_name_for_symbol(*t))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-
-                if !targets.is_empty() {
-                    targets += " = ";
-                }
-
-                write!(output, "{targets}{}({args})", symtab.name_for_function(*f))
-            }
-            TapIrInstr::Spawn { f, args } => {
-                let args = args
-                    .iter()
-                    .map(|t| symtab.debug_name_for_symbol(*t))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-
-                write!(output, "spawn {}({args})", symtab.name_for_function(*f))
-            }
-            TapIrInstr::Trigger { f, args } => {
-                let args = args
-                    .iter()
-                    .map(|t| symtab.debug_name_for_symbol(*t))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-
-                write!(output, "trigger {f:?}({args})")
-            }
-            TapIrInstr::GetProp { target, prop_index } => {
-                write!(
-                    output,
-                    "getprop {}, {prop_index}",
-                    symtab.debug_name_for_symbol(*target)
-                )
-            }
-            TapIrInstr::StoreProp { prop_index, value } => {
-                write!(
-                    output,
-                    "storeprop {}, {prop_index}",
-                    symtab.debug_name_for_symbol(*value)
-                )
-            }
-        }
-    }
-}
-
-impl BlockExitInstr {
-    fn pretty_print(&self, symtab: &SymTab<'_>, output: &mut dyn Write) -> std::fmt::Result {
-        match self {
-            BlockExitInstr::JumpToBlock(block_id) => write!(output, "jmp {}", block_id.0),
-            BlockExitInstr::ConditionalJump {
-                test,
-                if_true,
-                if_false,
-            } => write!(
-                output,
-                "conditional_jump {} {} {}",
-                symtab.debug_name_for_symbol(*test),
-                if_true.0,
-                if_false.0
-            ),
-            BlockExitInstr::Return(symbol_ids) => {
-                let args = symbol_ids
-                    .iter()
-                    .map(|t| symtab.debug_name_for_symbol(*t))
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                write!(output, "return {args}")
-            }
-        }
-    }
-}
-
-impl TapIrBlock {
-    fn pretty_print(&self, symtab: &SymTab<'_>, output: &mut dyn Write) -> std::fmt::Result {
-        writeln!(output, "---- block {} ----", self.id.0)?;
-
-        for instr in &self.instrs {
-            instr.pretty_print(symtab, output)?;
-            writeln!(output)?;
-        }
-
-        self.block_exit.pretty_print(symtab, output)?;
-        writeln!(output)?;
-        writeln!(output)
-    }
-}
-
-impl TapIrFunction {
-    fn pretty_print(&self, symtab: &SymTab<'_>, output: &mut dyn Write) -> std::fmt::Result {
-        let args = self
-            .arguments
-            .iter()
-            .map(|a| symtab.debug_name_for_symbol(*a))
-            .collect::<Vec<_>>()
-            .join(", ");
-
-        let returns = self
-            .return_types
-            .iter()
-            .map(|r| r.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
-
-        writeln!(
-            output,
-            "=======================\n{}fn {}({args}) -> {returns}\n",
-            if self.modifiers.event_handler.is_some() {
-                "event "
-            } else {
-                ""
-            },
-            symtab.name_for_function(self.id)
-        )?;
-
-        for block in &self.blocks {
-            block.pretty_print(symtab, output)?;
-        }
-
-        Ok(())
-    }
-}
-
 impl Display for Constant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -742,7 +584,7 @@ mod test {
             let mut output = String::new();
 
             for ir in irs {
-                ir.pretty_print(&symtab, &mut output).unwrap();
+                pretty_print::pretty_print_tapir_function(&ir, &symtab, &mut output).unwrap();
             }
 
             assert_snapshot!(output);
