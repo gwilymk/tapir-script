@@ -50,6 +50,10 @@ pub enum TapIrInstr {
         prop_index: usize,
         value: SymbolId,
     },
+    Phi {
+        target: SymbolId,
+        nodes: Box<[(BlockId, SymbolId)]>,
+    },
 }
 
 pub enum Constant {
@@ -489,6 +493,10 @@ impl TapIrBlock {
                 }
                 TapIrInstr::Trigger { args, .. } | TapIrInstr::Spawn { args, .. } => {
                     symbols.extend(args);
+                }
+                TapIrInstr::Phi { target, nodes } => {
+                    symbols.insert(*target);
+                    symbols.extend(nodes.iter().map(|(_, sym)| sym));
                 }
             }
         }

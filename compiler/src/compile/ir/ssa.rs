@@ -2,7 +2,7 @@ use petgraph::algo::dominators;
 
 use super::*;
 
-pub fn dominators(function: &TapIrFunction) {
+pub fn make_ssa(function: &mut TapIrFunction) {
     let root = function.blocks[0].id;
-    dominators::simple_fast(function, root);
+    let dominators = dominators::simple_fast(&*function, root);
 }

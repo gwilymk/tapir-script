@@ -239,6 +239,9 @@ impl Compiler {
                     TapIrInstr::StoreProp { prop_index, value } => {
                         self.bytecode.set_prop(v(value), *prop_index as u8);
                     }
+                    TapIrInstr::Phi { .. } => {
+                        unreachable!("Phi nodes should've been optimised out by this point")
+                    }
                 }
             }
 
