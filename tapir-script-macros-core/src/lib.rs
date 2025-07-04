@@ -67,11 +67,11 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 .rev()
                 .map(|(index, ty)| {
                     let arg_name = format_ident!("arg{index}");
-                    let pop = quote!(stack.pop().expect("Stack underflow"));
+                    let value = quote!(stack[#index]);
                     let value = match *ty {
-                        Type::Int => quote! { #pop },
-                        Type::Fix => quote! { ::tapir_script::Fix::from_raw(#pop) },
-                        Type::Bool => quote! { #pop != 0 },
+                        Type::Int => quote! { #value },
+                        Type::Fix => quote! { ::tapir_script::Fix::from_raw(#value) },
+                        Type::Bool => quote! { #value != 0 },
                         _ => panic!("Unknown type {ty}"),
                     };
 
@@ -119,13 +119,13 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         #[automatically_derived]
         unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
             fn script(self) -> ::tapir_script::Script<Self> {
-                static BYTECODE: &[u16] = &[#(#bytecode),*];
+                static BYTECODE: &[u32] = &[#(#bytecode),*];
 
                 ::tapir_script::Script::new(self, BYTECODE)
             }
 
             type EventType = #trigger_type;
-            fn create_event(&self, index: u8, stack: &mut Vec<i32>) -> Self::EventType {
+            fn create_event(&self, index: u8, stack: &[i32]) -> Self::EventType {
                 match index {
                     #(#triggers,)*
                     _ => unreachable!("Invalid index {index}"),
