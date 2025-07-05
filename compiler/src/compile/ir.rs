@@ -1,15 +1,20 @@
-use std::{collections::HashSet, fmt::Display};
+use std::{
+    collections::{HashMap, HashSet},
+    fmt::Display,
+    iter,
+};
 
 use agb_fixnum::Num;
+use petgraph::visit::Bfs;
 
 #[cfg(test)]
 mod pretty_print;
 mod ssa;
 
 use crate::{
+    EventHandlerArgument, Type,
     ast::{self, BinaryOperator, Expression, FunctionId, SymbolId},
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
-    EventHandlerArgument, Type,
 };
 
 pub struct TapIr {
@@ -78,19 +83,20 @@ pub enum BlockExitInstr {
 pub struct BlockId(usize);
 
 pub struct TapIrBlock {
-    pub instrs: Vec<TapIr>,
-    pub block_exit: BlockExitInstr,
-    pub id: BlockId,
+    id: BlockId,
+    instrs: Vec<TapIr>,
+    block_exit: BlockExitInstr,
 }
 
 pub struct TapIrFunction {
-    pub id: FunctionId,
+    id: FunctionId,
 
-    pub blocks: Vec<TapIrBlock>,
+    blocks: HashMap<BlockId, TapIrBlock>,
+    root: BlockId,
 
-    pub modifiers: FunctionModifiers,
-    pub arguments: Box<[SymbolId]>,
-    pub return_types: Box<[Type]>,
+    modifiers: FunctionModifiers,
+    arguments: Box<[SymbolId]>,
+    return_types: Box<[Type]>,
 }
 
 pub struct FunctionModifiers {
@@ -134,17 +140,24 @@ pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
     let block_visitor = BlockVisitor::default();
     let blocks = block_visitor.create_blocks(&f.statements, symtab);
 
-    TapIrFunction {
-        id: *f.meta.get().expect("Should have FunctionId by now"),
-        blocks,
-        modifiers: FunctionModifiers::new(f, symtab),
-        arguments: f
-            .arguments
-            .iter()
-            .map(|a| a.name.symbol_id().expect("Should have resolved arguments"))
-            .collect(),
-        return_types: f.return_types.types.iter().map(|t| t.t).collect(),
-    }
+    let id = *f.meta.get().expect("Should have FunctionId by now");
+    let modifiers = FunctionModifiers::new(f, symtab);
+
+    let arguments = f
+        .arguments
+        .iter()
+        .map(|a| a.name.symbol_id().expect("Should have resolved arguments"))
+        .collect();
+
+    let return_types = f.return_types.types.iter().map(|t| t.t).collect();
+
+    TapIrFunction::new(
+        id,
+        blocks.into_boxed_slice(),
+        modifiers,
+        arguments,
+        return_types,
+    )
 }
 
 #[derive(Default)]
@@ -509,18 +522,76 @@ impl TapIrBlock {
             BlockExitInstr::Return(symbol_ids) => symbols.extend(symbol_ids),
         }
     }
+
+    pub(crate) fn id(&self) -> BlockId {
+        self.id
+    }
+
+    pub(crate) fn instrs(&self) -> &[TapIr] {
+        &self.instrs
+    }
+
+    pub(crate) fn block_exit(&self) -> &BlockExitInstr {
+        &self.block_exit
+    }
 }
 
 impl TapIrFunction {
+    pub fn new(
+        id: FunctionId,
+        blocks: Box<[TapIrBlock]>,
+        modifiers: FunctionModifiers,
+        arguments: Box<[SymbolId]>,
+        return_types: Box<[Type]>,
+    ) -> Self {
+        let root = blocks[0].id;
+
+        let blocks = blocks.into_iter().map(|block| (block.id, block)).collect();
+
+        Self {
+            id,
+            blocks,
+            root,
+            modifiers,
+            arguments,
+            return_types,
+        }
+    }
+
     pub fn symbols(&self) -> HashSet<SymbolId> {
         let mut symbols = HashSet::new();
         symbols.extend(&self.arguments);
 
-        for block in &self.blocks {
+        for block in self.blocks.values() {
             block.symbols(&mut symbols);
         }
 
         symbols
+    }
+
+    pub fn blocks(&self) -> impl Iterator<Item = &TapIrBlock> {
+        let mut bfs = Bfs::new(self, self.root);
+
+        iter::from_fn(move || {
+            bfs.next(self)
+                .map(|block_id| self.blocks.get(&block_id).expect("Invalid block reference"))
+        })
+    }
+
+    pub(crate) fn return_types(&self) -> &[Type] {
+        &self.return_types
+    }
+
+    pub(crate) fn modifiers(&self) -> &FunctionModifiers {
+        &self.modifiers
+    }
+
+    pub(crate) fn arguments(&self) -> &[SymbolId] {
+        &self.arguments
+    }
+
+    pub(crate) fn id(&self) -> FunctionId {
+        self.id
     }
 }
 
@@ -548,11 +619,7 @@ mod petgraph_trait_impls {
         type Neighbors = BlockNeighbours;
 
         fn neighbors(self, a: Self::NodeId) -> Self::Neighbors {
-            let block = self
-                .blocks
-                .iter()
-                .find(|b| b.id == a)
-                .expect("Should be able to find block");
+            let block = self.blocks.get(&a).expect("Invalid block ID");
 
             BlockNeighbours(block.block_exit.clone(), 0)
         }
@@ -611,6 +678,7 @@ mod test {
     use insta::{assert_snapshot, glob};
 
     use crate::{
+        CompileSettings,
         compile::{
             loop_visitor::visit_loop_check, symtab_visitor::SymTabVisitor,
             type_visitor::TypeVisitor,
@@ -619,7 +687,6 @@ mod test {
         lexer::Lexer,
         reporting::Diagnostics,
         tokens::FileId,
-        CompileSettings,
     };
 
     use super::*;

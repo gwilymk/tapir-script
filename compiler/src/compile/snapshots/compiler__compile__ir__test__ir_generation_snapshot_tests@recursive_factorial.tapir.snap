@@ -25,9 +25,6 @@ conditional_jump temp.3 0 1
 temp.6 = int 1
 return temp.6
 
----- block 4 ----
-jmp 2
-
 ---- block 1 ----
 jmp 2
 
@@ -40,9 +37,6 @@ conditional_jump temp.7 5 6
 ---- block 5 ----
 temp.10 = int 1
 return temp.10
-
----- block 8 ----
-jmp 7
 
 ---- block 6 ----
 jmp 7

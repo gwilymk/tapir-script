@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use crate::{
-    ast::{Expression, ExpressionKind, Function, Statement, StatementKind, SymbolId},
     CompileSettings,
+    ast::{Expression, ExpressionKind, Function, Statement, StatementKind, SymbolId},
 };
 
 use super::ConstantOptimisationResult;
@@ -354,9 +354,7 @@ fn dead_code_visit_expression(
         | ExpressionKind::Bool(_)
         | ExpressionKind::Error
         | ExpressionKind::Nop => {}
-        ExpressionKind::BinaryOperation {
-            ref lhs, ref rhs, ..
-        } => {
+        ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
             dead_code_visit_expression(lhs, used_symbols, compile_settings);
             dead_code_visit_expression(rhs, used_symbols, compile_settings);
         }
@@ -380,6 +378,7 @@ mod test {
     use insta::{assert_snapshot, glob};
 
     use crate::{
+        CompileSettings, Property, Type,
         compile::{
             loop_visitor::visit_loop_check, symtab_visitor::SymTabVisitor,
             type_visitor::TypeVisitor,
@@ -388,7 +387,6 @@ mod test {
         lexer::Lexer,
         reporting::Diagnostics,
         tokens::FileId,
-        CompileSettings, Property, Type,
     };
 
     use super::*;

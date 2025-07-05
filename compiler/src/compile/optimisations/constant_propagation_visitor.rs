@@ -3,8 +3,8 @@ use std::ops::BitOr;
 use constant_propagation_map::ConstantPropagationMap;
 
 use crate::{
-    ast::{Expression, ExpressionKind, Function, Statement, StatementKind},
     CompileSettings,
+    ast::{Expression, ExpressionKind, Function, Statement, StatementKind},
 };
 
 use super::ConstantOptimisationResult;
@@ -121,11 +121,7 @@ fn constant_propagation_expr(
         | ExpressionKind::Bool(_)
         | ExpressionKind::Error
         | ExpressionKind::Nop => ConstantOptimisationResult::DidNothing,
-        ExpressionKind::BinaryOperation {
-            ref mut lhs,
-            ref mut rhs,
-            ..
-        } => {
+        ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
             constant_propagation_expr(lhs, constant_symbols, compile_settings)
                 | constant_propagation_expr(rhs, constant_symbols, compile_settings)
         }
@@ -157,6 +153,7 @@ mod test {
     use insta::{assert_snapshot, glob};
 
     use crate::{
+        CompileSettings, Property, Type,
         compile::{
             loop_visitor::visit_loop_check, symtab_visitor::SymTabVisitor,
             type_visitor::TypeVisitor,
@@ -165,7 +162,6 @@ mod test {
         lexer::Lexer,
         reporting::Diagnostics,
         tokens::FileId,
-        CompileSettings, Property, Type,
     };
 
     use super::*;

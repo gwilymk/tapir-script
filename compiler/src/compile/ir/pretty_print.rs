@@ -81,7 +81,7 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
         TapIrInstr::Phi { target, nodes } => {
             let args = nodes
                 .iter()
-                .map(|node| format!(".{} {}", node.0 .0, symtab.debug_name_for_symbol(node.1)))
+                .map(|node| format!(".{} {}", node.0.0, symtab.debug_name_for_symbol(node.1)))
                 .collect::<Vec<_>>()
                 .join(", ");
 
@@ -170,7 +170,7 @@ pub fn pretty_print_tapir_function(
         symtab.name_for_function(function.id)
     )?;
 
-    for block in &function.blocks {
+    for block in function.blocks() {
         pretty_print_tapir_block(block, symtab, output)?;
     }
 

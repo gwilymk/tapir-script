@@ -89,10 +89,7 @@ impl<'input> SymTabVisitor<'input> {
 
         for statement in ast {
             match &mut statement.kind {
-                StatementKind::VariableDeclaration {
-                    ident,
-                    ref mut value,
-                } => {
+                StatementKind::VariableDeclaration { ident, value } => {
                     self.visit_expr(value, diagnostics);
 
                     let symbol_id = self.symtab.new_symbol(ident, statement.span);
@@ -100,10 +97,7 @@ impl<'input> SymTabVisitor<'input> {
 
                     statement.meta.set(symbol_id);
                 }
-                StatementKind::Assignment {
-                    ident,
-                    ref mut value,
-                } => {
+                StatementKind::Assignment { ident, value } => {
                     self.visit_expr(value, diagnostics);
 
                     if let Some(symbol_id) = self.symbol_names.get(ident) {
@@ -116,9 +110,9 @@ impl<'input> SymTabVisitor<'input> {
                     }
                 }
                 StatementKind::If {
-                    ref mut condition,
-                    ref mut true_block,
-                    ref mut false_block,
+                    condition,
+                    true_block,
+                    false_block,
                 } => {
                     self.visit_expr(condition, diagnostics);
 
@@ -130,7 +124,7 @@ impl<'input> SymTabVisitor<'input> {
                 | StatementKind::Nop
                 | StatementKind::Continue
                 | StatementKind::Break => {}
-                StatementKind::Return { ref mut values } => {
+                StatementKind::Return { values } => {
                     for expr in values {
                         self.visit_expr(expr, diagnostics);
                     }
@@ -138,14 +132,8 @@ impl<'input> SymTabVisitor<'input> {
                 StatementKind::Block { block } => {
                     self.visit_block(block, diagnostics);
                 }
-                StatementKind::Call {
-                    ref mut arguments,
-                    name,
-                }
-                | StatementKind::Spawn {
-                    ref mut arguments,
-                    name,
-                } => {
+                StatementKind::Call { arguments, name }
+                | StatementKind::Spawn { arguments, name } => {
                     if let Some(function) = self.function_names.get(name) {
                         statement.meta.set(*function);
                     } else {
@@ -161,14 +149,12 @@ impl<'input> SymTabVisitor<'input> {
                         self.visit_expr(argument, diagnostics);
                     }
                 }
-                StatementKind::Trigger {
-                    ref mut arguments, ..
-                } => {
+                StatementKind::Trigger { arguments, .. } => {
                     for argument in arguments {
                         self.visit_expr(argument, diagnostics);
                     }
                 }
-                StatementKind::Loop { ref mut block } => {
+                StatementKind::Loop { block } => {
                     self.visit_block(block, diagnostics);
                 }
             };
@@ -189,18 +175,11 @@ impl<'input> SymTabVisitor<'input> {
                     );
                 }
             }
-            ExpressionKind::BinaryOperation {
-                ref mut lhs,
-                ref mut rhs,
-                ..
-            } => {
+            ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
                 self.visit_expr(lhs, diagnostics);
                 self.visit_expr(rhs, diagnostics);
             }
-            ExpressionKind::Call {
-                ref mut arguments,
-                name,
-            } => {
+            ExpressionKind::Call { arguments, name } => {
                 if let Some(function) = self.function_names.get(name) {
                     expr.meta.set(*function);
                 } else {

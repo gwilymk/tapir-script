@@ -6,14 +6,14 @@ use symtab_visitor::SymTabVisitor;
 use type_visitor::{TypeTable, TypeVisitor};
 
 use crate::{
+    EventHandler, Trigger,
     ast::{BinaryOperator, FunctionId, SymbolId},
-    compile::ir::{create_ir, BlockId, TapIrFunction, TapIrInstr},
+    compile::ir::{BlockId, TapIrFunction, TapIrInstr, create_ir},
     grammar,
     lexer::Lexer,
     reporting::Diagnostics,
     tokens::FileId,
     types::Type,
-    EventHandler, Trigger,
 };
 
 #[cfg(test)]
@@ -124,12 +124,12 @@ impl Compiler {
     }
 
     pub fn compile_function(&mut self, function: &TapIrFunction) {
-        let function_id = function.id;
+        let function_id = function.id();
 
         if function_id != FunctionId(0) {
             // the stack will be arguments, then the return pointer. However, if we're at toplevel, then
             // the stack will be empty to start with
-            for argument in &function.arguments {
+            for argument in function.arguments() {
                 self.stack.push(Some(*argument));
             }
 
@@ -139,7 +139,7 @@ impl Compiler {
         self.function_locations
             .insert(function_id, self.bytecode.new_label());
 
-        if let Some(event_handler) = &function.modifiers.event_handler {
+        if let Some(event_handler) = &function.modifiers().event_handler {
             self.bytecode.event_handlers.push(EventHandler {
                 name: event_handler.name.clone(),
                 bytecode_offset: self.bytecode.offset(),
@@ -150,7 +150,7 @@ impl Compiler {
         self.compile_blocks(function);
 
         // if there is no return value, then no return is required to be compiled so we should add one
-        if function.return_types.is_empty() {
+        if function.return_types().is_empty() {
             self.bytecode.ret();
         }
     }
@@ -173,28 +173,28 @@ impl Compiler {
             .iter()
             .enumerate()
             .map(|(i, sym)| {
-                if let Some(i) = function.arguments.iter().position(|arg| arg == sym) {
+                if let Some(i) = function.arguments().iter().position(|arg| arg == sym) {
                     (*sym, i as u8 + 1)
                 } else {
-                    (*sym, i as u8 + function.arguments.len() as u8 + 1)
+                    (*sym, i as u8 + function.arguments().len() as u8 + 1)
                 }
             })
             .collect::<HashMap<_, _>>();
 
         let v = move |s: &SymbolId| *var_locations.get(s).unwrap();
 
-        let first_argument = symbols.len() as u8 + function.arguments.len() as u8 + 1;
+        let first_argument = symbols.len() as u8 + function.arguments().len() as u8 + 1;
         let put_args = |bytecode: &mut Bytecode, args: &[SymbolId]| {
             for (i, arg) in args.iter().enumerate() {
                 bytecode.mov(i as u8 + first_argument + 1, v(arg));
             }
         };
 
-        for block in &function.blocks {
+        for block in function.blocks() {
             let entry_point = self.bytecode.new_label();
-            block_entrypoints.insert(block.id, entry_point);
+            block_entrypoints.insert(block.id(), entry_point);
 
-            for instr in &block.instrs {
+            for instr in block.instrs() {
                 match &instr.instr {
                     TapIrInstr::Constant(target, constant) => {
                         let constant = match constant {
@@ -245,7 +245,7 @@ impl Compiler {
                 }
             }
 
-            match &block.block_exit {
+            match block.block_exit() {
                 ir::BlockExitInstr::JumpToBlock(block_id) => {
                     let jump = self.bytecode.new_jump();
                     jumps.push((*block_id, jump));
