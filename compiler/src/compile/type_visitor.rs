@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde::Serialize;
 
 use crate::{
+    Trigger,
     ast::{
         self, BinaryOperator, Expression, Function, FunctionId, FunctionModifiers, FunctionReturn,
         MaybeResolved, SymbolId,
@@ -10,10 +11,9 @@ use crate::{
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
     types::{FunctionType, Type},
-    Trigger,
 };
 
-use super::{loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab, CompileSettings};
+use super::{CompileSettings, loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab};
 
 pub struct TypeVisitor<'input> {
     type_table: Vec<Option<Type>>,
@@ -22,7 +22,7 @@ pub struct TypeVisitor<'input> {
     trigger_types: HashMap<&'input str, TriggerInfo>,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TriggerId(pub usize);
 
 struct FunctionInfo {
@@ -301,7 +301,7 @@ impl<'input> TypeVisitor<'input> {
                 ast::StatementKind::Loop { block } => {
                     match self.visit_block(block, symtab, expected_return_type, diagnostics) {
                         BlockAnalysisResult::AllBranchesReturn => {
-                            return BlockAnalysisResult::AllBranchesReturn
+                            return BlockAnalysisResult::AllBranchesReturn;
                         }
                         BlockAnalysisResult::ContainsNonReturningBranch => {
                             if statement.meta.has::<LoopContainsNoBreak>() {
@@ -572,7 +572,7 @@ mod test {
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
     use crate::{
-        compile::{loop_visitor, symtab_visitor::SymTabVisitor, Property},
+        compile::{Property, loop_visitor, symtab_visitor::SymTabVisitor},
         grammar,
         lexer::Lexer,
         tokens::FileId,

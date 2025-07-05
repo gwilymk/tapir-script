@@ -1,7 +1,7 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt::Display,
-    iter,
+    iter, slice,
 };
 
 use agb_fixnum::Num;
@@ -18,10 +18,12 @@ use crate::{
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
 };
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TapIr {
     pub instr: TapIrInstr,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TapIrInstr {
     Constant(SymbolId, Constant),
     Move {
@@ -70,8 +72,17 @@ impl TapIr {
     pub fn sources(&self) -> impl Iterator<Item = SymbolId> {
         SourceIter::new(&self.instr)
     }
+
+    pub fn targets_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
+        SymbolIterMut::new_target(&mut self.instr)
+    }
+
+    pub fn sources_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
+        SymbolIterMut::new_source(&mut self.instr)
+    }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Constant {
     Int(i32),
     Fix(Num<i32, 8>),
@@ -90,7 +101,7 @@ pub enum BlockExitInstr {
 }
 
 /// Blocks have ids which aren't necessarily strictly increasing.
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BlockId(usize);
 
 pub struct TapIrBlock {
@@ -676,6 +687,58 @@ impl<'a> Iterator for SourceIter<'a> {
     }
 }
 
+enum SymbolIterMut<'a> {
+    None,
+    One(Option<&'a mut SymbolId>),
+    Two(Option<&'a mut SymbolId>, Option<&'a mut SymbolId>),
+    Many(slice::IterMut<'a, SymbolId>),
+    Many2(slice::IterMut<'a, (BlockId, SymbolId)>),
+}
+
+impl<'a> SymbolIterMut<'a> {
+    pub fn new_source(instr: &'a mut TapIrInstr) -> Self {
+        match instr {
+            TapIrInstr::Move { source, .. } | TapIrInstr::StoreProp { value: source, .. } => {
+                Self::One(Some(source))
+            }
+            TapIrInstr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
+            TapIrInstr::Call { args, .. }
+            | TapIrInstr::Trigger { args, .. }
+            | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter_mut()),
+            TapIrInstr::Phi { nodes, .. } => Self::Many2(nodes.iter_mut()),
+            _ => Self::None,
+        }
+    }
+
+    pub fn new_target(instr: &'a mut TapIrInstr) -> Self {
+        match instr {
+            TapIrInstr::Constant(target, _)
+            | TapIrInstr::Move { target, .. }
+            | TapIrInstr::GetProp { target, .. }
+            | TapIrInstr::Phi { target, .. }
+            | TapIrInstr::BinOp { target, .. } => Self::One(Some(target)),
+            TapIrInstr::Call { target, .. } => Self::Many(target.iter_mut()),
+            _ => Self::None,
+        }
+    }
+}
+
+impl<'a> Iterator for SymbolIterMut<'a> {
+    type Item = &'a mut SymbolId;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            SymbolIterMut::None => None,
+            SymbolIterMut::One(symbol_id) => symbol_id.take(),
+            SymbolIterMut::Two(symbol_id1, symbol_id2) => {
+                symbol_id1.take().or_else(|| symbol_id2.take())
+            }
+            SymbolIterMut::Many(many) => many.next(),
+            SymbolIterMut::Many2(many2) => many2.next().map(|(_, symbol_id)| symbol_id),
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::fs;
@@ -790,6 +853,28 @@ mod test {
         assert_eq!(
             instr.targets().collect::<Vec<_>>(),
             vec![SymbolId(6), SymbolId(8)]
+        );
+    }
+
+    #[test]
+    fn test_sources_move() {
+        let mut instr = TapIr {
+            instr: TapIrInstr::Move {
+                target: SymbolId(5),
+                source: SymbolId(55),
+            },
+        };
+
+        for source in instr.sources_mut() {
+            source.0 += 5;
+        }
+
+        assert_eq!(
+            instr.instr,
+            TapIrInstr::Move {
+                target: SymbolId(5),
+                source: SymbolId(60)
+            }
         );
     }
 }
