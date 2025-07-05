@@ -64,7 +64,11 @@ pub enum TapIrInstr {
 
 impl TapIr {
     pub fn targets(&self) -> impl Iterator<Item = SymbolId> {
-        TargetIter(&self.instr, 0)
+        TargetIter::new(&self.instr)
+    }
+
+    pub fn sources(&self) -> impl Iterator<Item = SymbolId> {
+        SourceIter::new(&self.instr)
     }
 }
 
@@ -614,6 +618,12 @@ impl Display for Constant {
 
 struct TargetIter<'a>(&'a TapIrInstr, usize);
 
+impl<'a> TargetIter<'a> {
+    pub fn new(instr: &'a TapIrInstr) -> Self {
+        Self(instr, 0)
+    }
+}
+
 impl<'a> Iterator for TargetIter<'a> {
     type Item = SymbolId;
 
@@ -631,6 +641,36 @@ impl<'a> Iterator for TargetIter<'a> {
                 Some(*target)
             }
             TapIrInstr::Call { target, .. } => target.get(self.1 - 1).copied(),
+            _ => None,
+        }
+    }
+}
+
+struct SourceIter<'a>(&'a TapIrInstr, usize);
+
+impl<'a> SourceIter<'a> {
+    pub fn new(instr: &'a TapIrInstr) -> Self {
+        Self(instr, 0)
+    }
+}
+
+impl<'a> Iterator for SourceIter<'a> {
+    type Item = SymbolId;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.1 += 1;
+
+        match &self.0 {
+            TapIrInstr::Move { source, .. } | TapIrInstr::StoreProp { value: source, .. }
+                if self.1 == 1 =>
+            {
+                Some(*source)
+            }
+            TapIrInstr::BinOp { lhs, rhs, .. } => [*lhs, *rhs].get(self.1 - 1).copied(),
+            TapIrInstr::Call { args, .. }
+            | TapIrInstr::Trigger { args, .. }
+            | TapIrInstr::Spawn { args, .. } => args.get(self.1 - 1).copied(),
+            TapIrInstr::Phi { nodes, .. } => nodes.get(self.1 - 1).map(|(_, symbol)| *symbol),
             _ => None,
         }
     }
