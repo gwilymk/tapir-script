@@ -61,6 +61,12 @@ pub enum TapIrInstr {
     },
 }
 
+impl TapIr {
+    pub fn targets(&self) -> impl Iterator<Item = SymbolId> {
+        TargetIter(&self.instr, 0)
+    }
+}
+
 pub enum Constant {
     Int(i32),
     Fix(Num<i32, 8>),
@@ -671,6 +677,30 @@ mod petgraph_trait_impls {
     }
 }
 
+struct TargetIter<'a>(&'a TapIrInstr, usize);
+
+impl<'a> Iterator for TargetIter<'a> {
+    type Item = SymbolId;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.1 += 1;
+
+        match &self.0 {
+            TapIrInstr::Constant(target, _)
+            | TapIrInstr::Move { target, .. }
+            | TapIrInstr::GetProp { target, .. }
+            | TapIrInstr::Phi { target, .. }
+            | TapIrInstr::BinOp { target, .. }
+                if self.1 == 1 =>
+            {
+                Some(*target)
+            }
+            TapIrInstr::Call { target, .. } => target.get(self.1 - 1).copied(),
+            _ => None,
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::fs;
@@ -741,5 +771,50 @@ mod test {
 
             assert_snapshot!(output);
         });
+    }
+
+    #[test]
+    fn test_targets_iter_wait() {
+        let instr = TapIr {
+            instr: TapIrInstr::Wait,
+        };
+        assert_eq!(instr.targets().next(), None);
+    }
+
+    #[test]
+    fn test_targets_iter_constant() {
+        let instr = TapIr {
+            instr: TapIrInstr::Constant(SymbolId(5), Constant::Bool(true)),
+        };
+
+        assert_eq!(instr.targets().collect::<Vec<_>>(), vec![SymbolId(5)]);
+    }
+
+    #[test]
+    fn test_targets_iter_move() {
+        let instr = TapIr {
+            instr: TapIrInstr::Move {
+                target: SymbolId(5),
+                source: SymbolId(6),
+            },
+        };
+
+        assert_eq!(instr.targets().collect::<Vec<_>>(), vec![SymbolId(5)]);
+    }
+
+    #[test]
+    fn test_targets_call() {
+        let instr = TapIr {
+            instr: TapIrInstr::Call {
+                target: Box::new([SymbolId(6), SymbolId(8)]),
+                f: FunctionId(3),
+                args: Box::new([SymbolId(1), SymbolId(2)]),
+            },
+        };
+
+        assert_eq!(
+            instr.targets().collect::<Vec<_>>(),
+            vec![SymbolId(6), SymbolId(8)]
+        );
     }
 }
