@@ -13,7 +13,15 @@ impl IntoNeighbors for &TapIrFunction {
     fn neighbors(self, a: Self::NodeId) -> Self::Neighbors {
         let block = self.blocks.get(&a).expect("Invalid block ID");
 
-        BlockNeighbours(block.block_exit.clone(), 0)
+        let (a, b) = match block.block_exit() {
+            BlockExitInstr::JumpToBlock(block_id) => (Some(*block_id), None),
+            BlockExitInstr::ConditionalJump {
+                if_true, if_false, ..
+            } => (Some(*if_true), Some(*if_false)),
+            BlockExitInstr::Return(_) => (None, None),
+        };
+
+        BlockNeighbours(a, b)
     }
 }
 
@@ -30,34 +38,12 @@ impl Visitable for TapIrFunction {
     }
 }
 
-pub struct BlockNeighbours(BlockExitInstr, usize);
+pub struct BlockNeighbours(Option<BlockId>, Option<BlockId>);
 
 impl Iterator for BlockNeighbours {
     type Item = BlockId;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match &self.0 {
-            BlockExitInstr::JumpToBlock(block_id) => {
-                if self.1 == 0 {
-                    self.1 += 1;
-                    Some(*block_id)
-                } else {
-                    None
-                }
-            }
-            BlockExitInstr::ConditionalJump {
-                test: _,
-                if_true,
-                if_false,
-            } => {
-                self.1 += 1;
-                match self.1 {
-                    1 => Some(*if_true),
-                    2 => Some(*if_false),
-                    _ => None,
-                }
-            }
-            BlockExitInstr::Return(_) => None,
-        }
+        self.0.take().or_else(|| self.1.take())
     }
 }

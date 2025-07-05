@@ -58,19 +58,15 @@ pub enum TapIrInstr {
         prop_index: usize,
         value: SymbolId,
     },
-    Phi {
-        target: SymbolId,
-        nodes: Box<[(BlockId, SymbolId)]>,
-    },
 }
 
 impl TapIr {
     pub fn targets(&self) -> impl Iterator<Item = SymbolId> {
-        TargetIter::new(&self.instr)
+        SymbolIter::new_target(&self.instr)
     }
 
     pub fn sources(&self) -> impl Iterator<Item = SymbolId> {
-        SourceIter::new(&self.instr)
+        SymbolIter::new_source(&self.instr)
     }
 
     pub fn targets_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
@@ -89,7 +85,6 @@ pub enum Constant {
     Bool(bool),
 }
 
-#[derive(Clone)]
 pub enum BlockExitInstr {
     JumpToBlock(BlockId),
     ConditionalJump {
@@ -100,8 +95,18 @@ pub enum BlockExitInstr {
     Return(Box<[SymbolId]>),
 }
 
+impl BlockExitInstr {
+    pub fn sources(&self) -> impl Iterator<Item = SymbolId> {
+        SymbolIter::new_source_exit(self)
+    }
+
+    pub fn sources_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
+        SymbolIterMut::new_source_exit(self)
+    }
+}
+
 /// Blocks have ids which aren't necessarily strictly increasing.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct BlockId(usize);
 
 pub struct TapIrBlock {
@@ -529,10 +534,6 @@ impl TapIrBlock {
                 TapIrInstr::Trigger { args, .. } | TapIrInstr::Spawn { args, .. } => {
                     symbols.extend(args);
                 }
-                TapIrInstr::Phi { target, nodes } => {
-                    symbols.insert(*target);
-                    symbols.extend(nodes.iter().map(|(_, sym)| sym));
-                }
             }
         }
 
@@ -600,6 +601,10 @@ impl TapIrFunction {
         })
     }
 
+    pub fn block_mut(&mut self, block_id: BlockId) -> Option<&mut TapIrBlock> {
+        self.blocks.get_mut(&block_id)
+    }
+
     pub(crate) fn return_types(&self) -> &[Type] {
         &self.return_types
     }
@@ -627,62 +632,60 @@ impl Display for Constant {
     }
 }
 
-struct TargetIter<'a>(&'a TapIrInstr, usize);
-
-impl<'a> TargetIter<'a> {
-    pub fn new(instr: &'a TapIrInstr) -> Self {
-        Self(instr, 0)
-    }
+enum SymbolIter<'a> {
+    None,
+    One(Option<SymbolId>),
+    Two(Option<SymbolId>, Option<SymbolId>),
+    Many(slice::Iter<'a, SymbolId>),
+    Many2(slice::Iter<'a, (BlockId, SymbolId)>),
 }
 
-impl<'a> Iterator for TargetIter<'a> {
-    type Item = SymbolId;
+impl<'a> SymbolIter<'a> {
+    pub fn new_source(instr: &'a TapIrInstr) -> Self {
+        match instr {
+            TapIrInstr::Move { source, .. } | TapIrInstr::StoreProp { value: source, .. } => {
+                Self::One(Some(*source))
+            }
+            TapIrInstr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
+            TapIrInstr::Call { args, .. }
+            | TapIrInstr::Trigger { args, .. }
+            | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter()),
+            _ => Self::None,
+        }
+    }
 
-    fn next(&mut self) -> Option<Self::Item> {
-        self.1 += 1;
-
-        match &self.0 {
+    pub fn new_target(instr: &'a TapIrInstr) -> Self {
+        match instr {
             TapIrInstr::Constant(target, _)
             | TapIrInstr::Move { target, .. }
             | TapIrInstr::GetProp { target, .. }
-            | TapIrInstr::Phi { target, .. }
-            | TapIrInstr::BinOp { target, .. }
-                if self.1 == 1 =>
-            {
-                Some(*target)
-            }
-            TapIrInstr::Call { target, .. } => target.get(self.1 - 1).copied(),
-            _ => None,
+            | TapIrInstr::BinOp { target, .. } => Self::One(Some(*target)),
+            TapIrInstr::Call { target, .. } => Self::Many(target.iter()),
+            _ => Self::None,
+        }
+    }
+
+    pub fn new_source_exit(instr: &'a BlockExitInstr) -> Self {
+        match instr {
+            BlockExitInstr::JumpToBlock(_) => Self::None,
+            BlockExitInstr::ConditionalJump { test, .. } => Self::One(Some(*test)),
+            BlockExitInstr::Return(symbol_ids) => Self::Many(symbol_ids.iter()),
         }
     }
 }
 
-struct SourceIter<'a>(&'a TapIrInstr, usize);
-
-impl<'a> SourceIter<'a> {
-    pub fn new(instr: &'a TapIrInstr) -> Self {
-        Self(instr, 0)
-    }
-}
-
-impl<'a> Iterator for SourceIter<'a> {
+impl<'a> Iterator for SymbolIter<'a> {
     type Item = SymbolId;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.1 += 1;
-
-        match &self.0 {
-            TapIrInstr::Move { source, .. } | TapIrInstr::StoreProp { value: source, .. }
-                if self.1 == 1 =>
-            {
-                Some(*source)
+        match self {
+            SymbolIter::None => None,
+            SymbolIter::One(symbol_id) => symbol_id.take(),
+            SymbolIter::Two(symbol_id1, symbol_id2) => {
+                symbol_id1.take().or_else(|| symbol_id2.take())
             }
-            TapIrInstr::BinOp { lhs, rhs, .. } => [*lhs, *rhs].get(self.1 - 1).copied(),
-            TapIrInstr::Call { args, .. }
-            | TapIrInstr::Trigger { args, .. }
-            | TapIrInstr::Spawn { args, .. } => args.get(self.1 - 1).copied(),
-            TapIrInstr::Phi { nodes, .. } => nodes.get(self.1 - 1).map(|(_, symbol)| *symbol),
-            _ => None,
+            SymbolIter::Many(iter) => iter.next().copied(),
+            SymbolIter::Many2(iter) => iter.next().map(|(_, symbol_id)| *symbol_id),
         }
     }
 }
@@ -705,7 +708,6 @@ impl<'a> SymbolIterMut<'a> {
             TapIrInstr::Call { args, .. }
             | TapIrInstr::Trigger { args, .. }
             | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter_mut()),
-            TapIrInstr::Phi { nodes, .. } => Self::Many2(nodes.iter_mut()),
             _ => Self::None,
         }
     }
@@ -715,10 +717,17 @@ impl<'a> SymbolIterMut<'a> {
             TapIrInstr::Constant(target, _)
             | TapIrInstr::Move { target, .. }
             | TapIrInstr::GetProp { target, .. }
-            | TapIrInstr::Phi { target, .. }
             | TapIrInstr::BinOp { target, .. } => Self::One(Some(target)),
             TapIrInstr::Call { target, .. } => Self::Many(target.iter_mut()),
             _ => Self::None,
+        }
+    }
+
+    pub fn new_source_exit(instr: &'a mut BlockExitInstr) -> Self {
+        match instr {
+            BlockExitInstr::JumpToBlock(_) => Self::None,
+            BlockExitInstr::ConditionalJump { test, .. } => Self::One(Some(test)),
+            BlockExitInstr::Return(symbol_ids) => Self::Many(symbol_ids.iter_mut()),
         }
     }
 }
