@@ -13,7 +13,7 @@ mod metadata;
 #[cfg(test)]
 mod pretty_printer;
 
-#[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize)]
+#[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]
 pub struct SymbolId(pub usize);
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]

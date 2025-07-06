@@ -112,7 +112,14 @@ pub struct BlockId(usize);
 pub struct TapIrBlock {
     id: BlockId,
     instrs: Vec<TapIr>,
+
+    block_entry: Vec<Phi>,
     block_exit: BlockExitInstr,
+}
+
+pub struct Phi {
+    target: SymbolId,
+    sources: Vec<SymbolId>,
 }
 
 pub struct TapIrFunction {
@@ -414,6 +421,7 @@ impl BlockVisitor {
             instrs: std::mem::take(&mut self.current_block),
             block_exit,
             id,
+            block_entry: vec![],
         });
 
         self.next_block_id = next_block_id;
@@ -554,8 +562,16 @@ impl TapIrBlock {
         &self.instrs
     }
 
+    pub(crate) fn instrs_mut(&mut self) -> &mut [TapIr] {
+        &mut self.instrs
+    }
+
     pub(crate) fn block_exit(&self) -> &BlockExitInstr {
         &self.block_exit
+    }
+
+    pub(crate) fn block_exit_mut(&mut self) -> &mut BlockExitInstr {
+        &mut self.block_exit
     }
 }
 

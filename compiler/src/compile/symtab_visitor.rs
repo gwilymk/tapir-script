@@ -279,6 +279,12 @@ impl<'input> SymTab<'input> {
         SymbolId(self.symbol_names.len() - 1)
     }
 
+    pub(crate) fn new_rename(&mut self, symbol_id: SymbolId) -> SymbolId {
+        self.symbol_names
+            .push(self.symbol_names[symbol_id.0].clone());
+        SymbolId(self.symbol_names.len() - 1)
+    }
+
     pub(crate) fn new_temporary(&mut self) -> SymbolId {
         let id = self.symbol_names.len();
         self.symbol_names.push((Cow::Borrowed(""), None));
