@@ -19,7 +19,6 @@ pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
 
     for block_id in post_order_list.into_iter().rev() {
         let block = function.block_mut(block_id).expect("Failed to get block");
-        let block_id = block.id();
 
         for instr in block.instrs_mut() {
             for source in instr.sources_mut() {
@@ -36,6 +35,8 @@ pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
         for source in block.block_exit_mut().sources_mut() {
             *source = converter.read_variable(*source, block_id, symtab);
         }
+
+        converter.mark_filled(block_id, symtab);
     }
 
     for (block_id, phis) in converter.into_phis() {
@@ -49,8 +50,13 @@ pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
 struct SsaConverter {
     current_def: HashMap<SymbolId, HashMap<BlockId, SymbolId>>,
 
+    incomplete_phis: HashMap<BlockId, HashMap<SymbolId, SymbolId>>,
     phis: HashMap<BlockId, HashMap<SymbolId, Vec<SymbolId>>>,
+
     graph: DiGraphMap<BlockId, ()>,
+
+    filled_blocks: HashSet<BlockId>,
+    sealed_blocks: HashSet<BlockId>,
 }
 
 impl SsaConverter {
@@ -64,9 +70,14 @@ impl SsaConverter {
 
         Self {
             graph: full_graph,
+
+            incomplete_phis: Default::default(),
             phis: Default::default(),
 
             current_def: Default::default(),
+
+            filled_blocks: Default::default(),
+            sealed_blocks: Default::default(),
         }
     }
 
@@ -96,34 +107,42 @@ impl SsaConverter {
         block: BlockId,
         symtab: &mut SymTab,
     ) -> SymbolId {
-        let predecessors = self
-            .graph
-            .neighbors_directed(block, Direction::Incoming)
-            .collect::<Vec<_>>();
+        let val = if !self.sealed_blocks.contains(&block) {
+            let val = symtab.new_rename(variable);
+            self.incomplete_phis
+                .entry(block)
+                .or_default()
+                .insert(variable, val);
+            val
+        } else {
+            let predecessors = self
+                .graph
+                .neighbors_directed(block, Direction::Incoming)
+                .collect::<Vec<_>>();
 
-        // Optimise for the common case of one predecessor: no phi needed
-        if predecessors.len() == 1 {
-            let val = self.read_variable(variable, predecessors[0], symtab);
-            self.write_variable(variable, block, val);
-            return val;
-        }
+            // Optimise for the common case of one predecessor: no phi needed
+            if predecessors.len() == 1 {
+                self.read_variable(variable, predecessors[0], symtab)
+            } else {
+                // Break potential cycles by putting the phi in there already
+                let phi_variable = symtab.new_rename(variable);
+                self.phis
+                    .entry(block)
+                    .or_default()
+                    .insert(phi_variable, vec![]);
 
-        // Break potential cycles by putting the phi in there already
-        let phi_variable = symtab.new_rename(variable);
-        self.phis
-            .entry(block)
-            .or_default()
-            .insert(phi_variable, vec![]);
+                self.write_variable(variable, block, phi_variable);
 
-        self.write_variable(variable, block, phi_variable);
+                self.add_phi_operands(
+                    variable,
+                    block,
+                    phi_variable,
+                    predecessors.into_iter(),
+                    symtab,
+                )
+            }
+        };
 
-        let val = self.add_phi_operands(
-            variable,
-            block,
-            phi_variable,
-            predecessors.into_iter(),
-            symtab,
-        );
         self.write_variable(variable, block, val);
 
         val
@@ -151,7 +170,45 @@ impl SsaConverter {
         phi_variable
     }
 
+    pub fn mark_filled(&mut self, block: BlockId, symtab: &mut SymTab) {
+        self.filled_blocks.insert(block);
+        self.maybe_seal_block(block, symtab);
+
+        let successors = self
+            .graph
+            .neighbors_directed(block, Direction::Outgoing)
+            .collect::<Vec<_>>();
+
+        // filling this block might've made some successor sealed
+        for successor in successors {
+            self.maybe_seal_block(successor, symtab);
+        }
+    }
+
+    fn maybe_seal_block(&mut self, block: BlockId, symtab: &mut SymTab) {
+        let predecessors = self
+            .graph
+            .neighbors_directed(block, Direction::Incoming)
+            .collect::<Vec<_>>();
+
+        if predecessors
+            .iter()
+            .any(|predecessor| !self.filled_blocks.contains(predecessor))
+        {
+            return; // shouldn't mark this as sealed quite yet
+        }
+
+        for (variable, val) in self.incomplete_phis.remove(&block).unwrap_or_default() {
+            self.add_phi_operands(variable, block, val, predecessors.iter().cloned(), symtab);
+        }
+
+        self.sealed_blocks.insert(block);
+    }
+
     pub fn into_phis(self) -> impl Iterator<Item = (BlockId, Vec<Phi>)> {
+        assert!(self.incomplete_phis.is_empty());
+        assert_eq!(self.filled_blocks, self.sealed_blocks);
+
         self.phis.into_iter().map(|(block, phis)| {
             let mut phis = phis
                 .into_iter()
