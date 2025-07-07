@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/ssa.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/overwrite_same_variable.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.2 = int 5
+x.3 = int 8
+x.4 = int 2
+y.5 = x.4
+return
