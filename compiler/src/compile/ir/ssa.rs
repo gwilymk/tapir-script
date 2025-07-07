@@ -68,13 +68,23 @@ impl SsaConverter {
             }
         }
 
+        // Put the function arguments as defined variables in the first block
+        let mut current_def: HashMap<SymbolId, HashMap<BlockId, SymbolId>> = HashMap::new();
+
+        for argument in function.arguments() {
+            current_def
+                .entry(*argument)
+                .or_default()
+                .insert(function.root, *argument);
+        }
+
         Self {
             graph: full_graph,
 
             incomplete_phis: Default::default(),
             phis: Default::default(),
 
-            current_def: Default::default(),
+            current_def,
 
             filled_blocks: Default::default(),
             sealed_blocks: Default::default(),
