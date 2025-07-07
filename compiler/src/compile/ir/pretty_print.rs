@@ -117,6 +117,21 @@ fn pretty_print_tapir_block(
 ) -> std::fmt::Result {
     writeln!(output, "---- block {} ----", block.id.0)?;
 
+    for phi in &block.block_entry {
+        let phi_inputs = phi
+            .sources
+            .iter()
+            .map(|s| symtab.debug_name_for_symbol(*s))
+            .collect::<Vec<_>>()
+            .join(", ");
+        writeln!(
+            output,
+            "{} = φ({})",
+            symtab.debug_name_for_symbol(phi.target),
+            phi_inputs
+        )?;
+    }
+
     for instr in &block.instrs {
         pretty_print_tapir(instr, symtab, output)?;
         writeln!(output)?;

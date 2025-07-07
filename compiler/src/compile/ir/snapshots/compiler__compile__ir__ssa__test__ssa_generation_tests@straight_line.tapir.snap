@@ -1,0 +1,12 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/ssa.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/straight_line.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.1 = int 5
+x.2 = int 7
+return

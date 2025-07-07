@@ -1,3 +1,5 @@
+// Implemented as described by https://c9x.me/compile/bib/braun13cc.pdf
+
 use petgraph::{
     Direction,
     prelude::DiGraphMap,
@@ -14,9 +16,8 @@ pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
     while let Some(next) = post_order.next(&converter.graph) {
         post_order_list.push(next);
     }
-    post_order_list.reverse();
 
-    for block_id in post_order_list {
+    for block_id in post_order_list.into_iter().rev() {
         let block = function.block_mut(block_id).expect("Failed to get block");
         let block_id = block.id();
 
@@ -28,6 +29,7 @@ pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
             for target in instr.targets_mut() {
                 let new_target = symtab.new_rename(*target);
                 converter.write_variable(*target, block_id, new_target);
+                *target = new_target;
             }
         }
 
@@ -161,5 +163,82 @@ impl SsaConverter {
 
             (block, phis)
         })
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::fs;
+
+    use insta::{assert_snapshot, glob};
+
+    use crate::{
+        CompileSettings,
+        compile::{
+            loop_visitor::visit_loop_check, symtab_visitor::SymTabVisitor,
+            type_visitor::TypeVisitor,
+        },
+        grammar,
+        lexer::Lexer,
+        reporting::Diagnostics,
+        tokens::FileId,
+    };
+
+    use super::*;
+
+    #[test]
+    fn ssa_generation_tests() {
+        glob!("snapshot_tests", "ssa/*.tapir", |path| {
+            let input = fs::read_to_string(path).unwrap();
+
+            let lexer = Lexer::new(&input, FileId::new(0));
+            let parser = grammar::ScriptParser::new();
+            let file_id = FileId::new(0);
+
+            let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
+
+            let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+
+            let compile_settings = CompileSettings {
+                properties: Vec::new(),
+                enable_optimisations: true,
+            };
+
+            let mut symtab_visitor =
+                SymTabVisitor::new(&compile_settings, &mut script.functions, &mut diagnostics);
+            let mut type_visitor = TypeVisitor::new(&compile_settings, &script.functions);
+
+            for function in &mut script.functions {
+                visit_loop_check(function, &mut diagnostics);
+                symtab_visitor.visit_function(function, &mut diagnostics);
+                type_visitor.visit_function(
+                    function,
+                    symtab_visitor.get_symtab(),
+                    &mut diagnostics,
+                );
+            }
+
+            assert!(!diagnostics.has_any());
+
+            let mut symtab = symtab_visitor.into_symtab();
+
+            let mut irs = script
+                .functions
+                .iter()
+                .map(|f| create_ir(f, &mut symtab))
+                .collect::<Vec<_>>();
+
+            for f in &mut irs {
+                make_ssa(f, &mut symtab);
+            }
+
+            let mut output = String::new();
+
+            for ir in irs {
+                pretty_print::pretty_print_tapir_function(&ir, &symtab, &mut output).unwrap();
+            }
+
+            assert_snapshot!(output);
+        });
     }
 }

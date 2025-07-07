@@ -1,0 +1,9 @@
+var x = 5;
+
+if true == true {
+    x = 8;
+} else {
+    x = 9;
+}
+
+var y = x;

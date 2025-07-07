@@ -1,0 +1,37 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/ssa.rs
+assertion_line: 239
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/loop.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 2 ----
+x.8 = int 20
+z.9 = int 50
+jmp 0
+
+---- block 0 ----
+x.10 = φ(x.8, x.10)
+temp.11 = x.10
+temp.12 = int 0
+temp.13 = temp.11 == temp.12
+conditional_jump temp.13 3 4
+
+---- block 3 ----
+jmp 1
+
+---- block 4 ----
+jmp 5
+
+---- block 1 ----
+z.14 = x.10
+y.15 = z.14
+return 
+
+---- block 5 ----
+temp.16 = x.10
+temp.17 = int 1
+x.18 = temp.16 - temp.17
+jmp 0
