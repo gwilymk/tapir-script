@@ -11,7 +11,7 @@ use super::*;
 pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
     let mut converter = SsaConverter::new(function);
 
-    let mut post_order = DfsPostOrder::new(&converter.graph, function.root);
+    let mut post_order = DfsPostOrder::new(&*function, function.root);
     let mut post_order_list = Vec::with_capacity(converter.graph.node_count());
     while let Some(next) = post_order.next(&converter.graph) {
         post_order_list.push(next);
