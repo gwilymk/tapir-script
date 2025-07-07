@@ -1,0 +1,30 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/ssa.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/trivial_phi.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+x.4 = bool true
+y.5 = bool true
+temp.6 = x.4
+conditional_jump temp.6 0 1
+
+---- block 0 ----
+jmp 4
+
+---- block 1 ----
+jmp 2
+
+---- block 4 ----
+jmp 5
+
+---- block 2 ----
+y.7 = φ(y.5, y.5)
+z.8 = y.7
+return 
+
+---- block 5 ----
+jmp 2

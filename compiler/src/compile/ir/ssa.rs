@@ -285,7 +285,11 @@ mod test {
                 );
             }
 
-            assert!(!diagnostics.has_any());
+            assert!(
+                !diagnostics.has_any(),
+                "{}",
+                diagnostics.pretty_string(false)
+            );
 
             let mut symtab = symtab_visitor.into_symtab();
 
