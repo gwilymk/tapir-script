@@ -15,9 +15,8 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/large_number_manipul
   ([
     [
       -1,
-      3024,
       6400,
-      50331656,
+      33554440,
       6400,
     ],
   ], PropObj(

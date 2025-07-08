@@ -1,95 +1,192 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap};
 
 use petgraph::visit::DfsPostOrder;
 
-use crate::{ast::SymbolId, compile::ir::TapIrFunction};
+use crate::{
+    ast::SymbolId,
+    compile::ir::{BlockId, TapIr, TapIrFunction, TapIrInstr},
+};
 
-struct RegAllocator {}
-
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
-struct RegisterId(u8);
-
-// https://graal.ens-lyon.fr/~pkchouha/presentation/ssa/ssaf.pdf
+struct RegAllocator {
+    register_allocations: HashMap<SymbolId, RegisterId>,
+    available_registers: BTreeSet<RegisterId>,
+}
 
 impl RegAllocator {
-    /// The register allocator will do the wrong thing if the function you pass here isn't in
-    /// SSA form.
-    pub fn new(function: &TapIrFunction) -> Self {
-        let mut post_order = DfsPostOrder::new(function, function.root);
+    fn new(function: &TapIrFunction) -> Self {
+        let register_allocations = function
+            .arguments()
+            .iter()
+            .enumerate()
+            .map(|(i, arg)| (*arg, RegisterId(i as u8 + 1)))
+            .collect();
 
-        let mut register_allocations: HashMap<SymbolId, RegisterId> = HashMap::new();
-
-        let mut available_registers = (1..255).map(RegisterId).collect::<BTreeSet<_>>();
-
-        while let Some(block_id) = post_order.next(function) {
-            let block = function
-                .block(block_id)
-                .expect("Should have a block if we found it");
-
-            let block_exit = block.block_exit();
-
-            match block_exit {
-                crate::compile::ir::BlockExitInstr::JumpToBlock(_) => {}
-                crate::compile::ir::BlockExitInstr::ConditionalJump { test, .. } => {
-                    if !register_allocations.contains_key(test) {
-                        // this is the last read
-                        let reg = available_registers
-                            .pop_first()
-                            .expect("Ran out of registers");
-
-                        register_allocations.insert(*test, reg);
-                    }
-                }
-                crate::compile::ir::BlockExitInstr::Return(symbol_ids) => todo!(),
-            }
-
-            for instr in block.instrs().iter().rev() {
-                instr.sources();
-                instr.targets();
-            }
-
-            for phi in block.block_entry() {}
+        Self {
+            register_allocations,
+            available_registers: ((function.arguments().len() as u8 + 1)..255)
+                .map(RegisterId)
+                .collect::<BTreeSet<_>>(),
         }
+    }
 
-        todo!()
+    fn read_symbol(&mut self, symbol: SymbolId) {
+        self.register_allocations.entry(symbol).or_insert_with(|| {
+            // this is the last read
+            self.available_registers
+                .pop_first()
+                .expect("Ran out of registers")
+        });
+    }
+
+    fn write_symbol(&mut self, symbol: SymbolId) {
+        if let Some(register) = self.register_allocations.get(&symbol) {
+            self.available_registers.insert(*register);
+        } else {
+            self.register_allocations.insert(
+                symbol,
+                *self
+                    .available_registers
+                    .first()
+                    .expect("Ran out of registers"),
+            );
+        }
+    }
+
+    fn allocations(self) -> RegisterAllocations {
+        let last_used_register = self
+            .register_allocations
+            .values()
+            .max()
+            .copied()
+            .unwrap_or(RegisterId(0));
+
+        let first_free_register = RegisterId(last_used_register.0 + 1);
+
+        RegisterAllocations {
+            allocations: self.register_allocations,
+            first_free_register,
+        }
     }
 }
 
-/// y = 0
-/// x = 0
-/// loop {
-///     y = x + y
-///     x = read
-///     y = x + y
-///     x = 6
-///     y = x + y
-/// }
-///
-/// SSA
-///
-/// y0 = 0
-/// x0 = 0
-/// loop {
-///     y4 = phi(y0, y3)
-///     x3 = phi(x0, x2)
-///     y1 = y4 + x3
-///     x1 = read
-///     y2 = x1 + y1
-///     x2 = 6
-///     y3 = x2 + y2
-/// }
-///
-/// Optimise
-///
-/// y0 = 0
-/// x0 = 0
-/// x2 = 6
-/// loop {
-///     y4 = phi(y0, y3)
-///     x3 = phi(x0 if came from not loop, x2 if came from loop)
-///     y1 = y4 + x3
-///     x1 = read
-///     y2 = x1 + y1
-///     y3 = x2 + y2
-/// }
-fn _a() {}
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct RegisterId(pub u8);
+
+pub struct RegisterAllocations {
+    allocations: HashMap<SymbolId, RegisterId>,
+    first_free_register: RegisterId,
+}
+
+impl RegisterAllocations {
+    pub fn register_for_symbol(&self, symbol: SymbolId) -> RegisterId {
+        *self
+            .allocations
+            .get(&symbol)
+            .expect("Should've done all the register allocation")
+    }
+
+    pub fn first_free_register(&self) -> RegisterId {
+        self.first_free_register
+    }
+}
+
+/// The register allocator will do the wrong thing if the function you pass here isn't in
+/// SSA form.
+pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
+    let mut post_order = DfsPostOrder::new(&*function, function.root);
+
+    let mut register_allocator = RegAllocator::new(function);
+
+    let phony_reads = get_phony_reads(function);
+
+    while let Some(block_id) = post_order.next(&*function) {
+        let block = function
+            .block_mut(block_id)
+            .expect("Should have a block if we found it");
+
+        let block_exit = block.block_exit();
+
+        match block_exit {
+            crate::compile::ir::BlockExitInstr::JumpToBlock(_) => {}
+            crate::compile::ir::BlockExitInstr::ConditionalJump { test, .. } => {
+                register_allocator.read_symbol(*test);
+            }
+            crate::compile::ir::BlockExitInstr::Return(symbol_ids) => {
+                for symbol_id in symbol_ids {
+                    register_allocator.read_symbol(*symbol_id);
+                }
+            }
+        }
+
+        // we need to insert these phony reads in because in the final phase we'll add fake
+        // move instructions here (breaking SSA form) which will read from this variable. So
+        // we need to ensure that it stays alive until that point, otherwise the register
+        // could get reused.
+        if let Some(phony_reads) = phony_reads.get(&block_id) {
+            for phony_read in phony_reads {
+                register_allocator.read_symbol(phony_read.source);
+            }
+        }
+
+        for instr in block.instrs().iter().rev() {
+            for source in instr.sources() {
+                register_allocator.read_symbol(source);
+            }
+
+            for target in instr.targets() {
+                register_allocator.write_symbol(target);
+            }
+        }
+
+        for phi in block.block_entry().iter().rev() {
+            let target = phi.target;
+
+            register_allocator.write_symbol(target);
+
+            for &(_, source) in &phi.sources {
+                register_allocator.read_symbol(source);
+            }
+        }
+
+        block.remove_block_entries();
+    }
+
+    for (target_block, moves) in phony_reads {
+        let block = function
+            .block_mut(target_block)
+            .expect("Found a block, so should have it");
+
+        for PhonyRead { target, source } in moves {
+            block.instrs.push(TapIr {
+                instr: TapIrInstr::Move { source, target },
+            });
+        }
+    }
+
+    register_allocator.allocations()
+}
+
+struct PhonyRead {
+    source: SymbolId,
+    target: SymbolId,
+}
+
+/// Collect a list of moves which will be needed to make the phi functions line up correctly
+fn get_phony_reads(function: &mut TapIrFunction) -> HashMap<BlockId, Vec<PhonyRead>> {
+    let mut phony_reads: HashMap<BlockId, Vec<PhonyRead>> = HashMap::new();
+    for block in function.blocks() {
+        for phi in block.block_entry() {
+            for &(source_block, source) in &phi.sources {
+                phony_reads
+                    .entry(source_block)
+                    .or_default()
+                    .push(PhonyRead {
+                        source,
+                        target: phi.target,
+                    });
+            }
+        }
+    }
+
+    phony_reads
+}

@@ -10,8 +10,10 @@ use petgraph::visit::Bfs;
 mod petgraph_trait_impls;
 #[cfg(test)]
 mod pretty_print;
-mod regalloc;
+pub mod regalloc;
 mod ssa;
+
+pub use ssa::make_ssa;
 
 use crate::{
     EventHandlerArgument, Type,
@@ -581,6 +583,10 @@ impl TapIrBlock {
 
     fn block_entry(&self) -> &[Phi] {
         &self.block_entry
+    }
+
+    fn remove_block_entries(&mut self) {
+        self.block_entry.clear();
     }
 }
 

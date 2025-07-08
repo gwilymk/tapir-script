@@ -3,20 +3,20 @@ source: crates/tapir-script/compiler/src/compile.rs
 expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/then.tapir
 ---
-00000000: loadk 4, 7
-00000002: mov 8, 4
-00000003: call 7
+00000000: loadk 1, 7
+00000002: mov 4, 1
+00000003: call 3
 00000004: jmp 17
-00000005: mov 3, 8
+00000005: mov 2, 4
 00000006: loadk 1, 77
-00000008: mov 5, 1
-00000009: loadk 6, 2
-00000011: mov 8, 6
-00000012: call 7
+00000008: mov 2, 1
+00000009: loadk 1, 2
+00000011: mov 4, 1
+00000012: call 3
 00000013: jmp 17
-00000014: mov 2, 8
+00000014: mov 2, 4
 00000015: ret
 00000016: ret
-00000017: loadk 3, 3
-00000019: mov 1, 3
+00000017: loadk 2, 3
+00000019: mov 1, 2
 00000020: ret

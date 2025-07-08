@@ -8,7 +8,10 @@ use type_visitor::{TypeTable, TypeVisitor};
 use crate::{
     EventHandler, Trigger,
     ast::{BinaryOperator, FunctionId, SymbolId},
-    compile::ir::{BlockId, TapIrFunction, TapIrInstr, create_ir},
+    compile::ir::{
+        BlockId, TapIrFunction, TapIrInstr, create_ir, make_ssa,
+        regalloc::{self, RegisterAllocations},
+    },
     grammar,
     lexer::Lexer,
     reporting::Diagnostics,
@@ -96,8 +99,11 @@ pub fn compile(
         .map(|f| create_ir(f, &mut symtab))
         .collect::<Vec<_>>();
 
-    for function in ir_functions {
-        compiler.compile_function(&function);
+    for mut function in ir_functions {
+        make_ssa(&mut function, &mut symtab);
+        let registers = regalloc::allocate_registers(&mut function);
+
+        compiler.compile_function(&function, &registers);
     }
 
     Ok(compiler.finalise())
@@ -123,7 +129,11 @@ impl Compiler {
         }
     }
 
-    pub fn compile_function(&mut self, function: &TapIrFunction) {
+    pub fn compile_function(
+        &mut self,
+        function: &TapIrFunction,
+        register_allocations: &RegisterAllocations,
+    ) {
         let function_id = function.id();
 
         if function_id != FunctionId(0) {
@@ -147,7 +157,7 @@ impl Compiler {
             });
         }
 
-        self.compile_blocks(function);
+        self.compile_blocks(function, register_allocations);
 
         // if there is no return value, then no return is required to be compiled so we should add one
         if function.return_types().is_empty() {
@@ -155,35 +165,21 @@ impl Compiler {
         }
     }
 
-    fn compile_blocks(&mut self, function: &TapIrFunction) {
+    fn compile_blocks(
+        &mut self,
+        function: &TapIrFunction,
+        register_allocations: &RegisterAllocations,
+    ) {
         // Where all the blocks start
         let mut block_entrypoints: HashMap<BlockId, Label> = HashMap::new();
         // Where all the jumps are and to which block they should go. For non-local jumps,
         // these are filled in later as function calls.
         let mut jumps: Vec<(BlockId, Jump)> = vec![];
 
-        let mut symbols: Vec<_> = function.symbols().iter().copied().collect();
-        symbols.sort_by_key(|sym| sym.0);
-        assert!(
-            symbols.len() < 200,
-            "Need fewer than 200 symbols in a function, but got {}",
-            symbols.len()
-        );
-        let var_locations = symbols
-            .iter()
-            .enumerate()
-            .map(|(i, sym)| {
-                if let Some(i) = function.arguments().iter().position(|arg| arg == sym) {
-                    (*sym, i as u8 + 1)
-                } else {
-                    (*sym, i as u8 + function.arguments().len() as u8 + 1)
-                }
-            })
-            .collect::<HashMap<_, _>>();
+        let v = |s: &SymbolId| register_allocations.register_for_symbol(*s).0;
 
-        let v = move |s: &SymbolId| *var_locations.get(s).unwrap();
+        let first_argument = register_allocations.first_free_register().0;
 
-        let first_argument = symbols.len() as u8 + function.arguments().len() as u8 + 1;
         let put_args = |bytecode: &mut Bytecode, args: &[SymbolId]| {
             for (i, arg) in args.iter().enumerate() {
                 bytecode.mov(i as u8 + first_argument + 1, v(arg));
