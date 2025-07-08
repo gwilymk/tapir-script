@@ -223,6 +223,10 @@ impl BlockVisitor {
             self.finalize_block(BlockExitInstr::Return(Box::new([])), None);
         }
 
+        if self.blocks.is_empty() {
+            self.finalize_block(BlockExitInstr::Return(Box::new([])), None);
+        }
+
         self.blocks
     }
 
