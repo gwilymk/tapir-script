@@ -653,7 +653,6 @@ enum SymbolIter<'a> {
     One(Option<SymbolId>),
     Two(Option<SymbolId>, Option<SymbolId>),
     Many(slice::Iter<'a, SymbolId>),
-    Many2(slice::Iter<'a, (BlockId, SymbolId)>),
 }
 
 impl<'a> SymbolIter<'a> {
@@ -701,7 +700,6 @@ impl<'a> Iterator for SymbolIter<'a> {
                 symbol_id1.take().or_else(|| symbol_id2.take())
             }
             SymbolIter::Many(iter) => iter.next().copied(),
-            SymbolIter::Many2(iter) => iter.next().map(|(_, symbol_id)| *symbol_id),
         }
     }
 }
@@ -711,7 +709,6 @@ enum SymbolIterMut<'a> {
     One(Option<&'a mut SymbolId>),
     Two(Option<&'a mut SymbolId>, Option<&'a mut SymbolId>),
     Many(slice::IterMut<'a, SymbolId>),
-    Many2(slice::IterMut<'a, (BlockId, SymbolId)>),
 }
 
 impl<'a> SymbolIterMut<'a> {
@@ -759,7 +756,6 @@ impl<'a> Iterator for SymbolIterMut<'a> {
                 symbol_id1.take().or_else(|| symbol_id2.take())
             }
             SymbolIterMut::Many(many) => many.next(),
-            SymbolIterMut::Many2(many2) => many2.next().map(|(_, symbol_id)| symbol_id),
         }
     }
 }
