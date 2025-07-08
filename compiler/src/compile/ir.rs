@@ -10,6 +10,7 @@ use petgraph::visit::Bfs;
 mod petgraph_trait_impls;
 #[cfg(test)]
 mod pretty_print;
+mod regalloc;
 mod ssa;
 
 use crate::{
@@ -119,7 +120,7 @@ pub struct TapIrBlock {
 
 pub struct Phi {
     target: SymbolId,
-    sources: Vec<SymbolId>,
+    sources: Vec<(BlockId, SymbolId)>,
 }
 
 pub struct TapIrFunction {
@@ -577,6 +578,10 @@ impl TapIrBlock {
     pub(crate) fn block_exit_mut(&mut self) -> &mut BlockExitInstr {
         &mut self.block_exit
     }
+
+    fn block_entry(&self) -> &[Phi] {
+        &self.block_entry
+    }
 }
 
 impl TapIrFunction {
@@ -639,6 +644,10 @@ impl TapIrFunction {
 
     pub(crate) fn id(&self) -> FunctionId {
         self.id
+    }
+
+    fn block(&self, block_id: BlockId) -> Option<&TapIrBlock> {
+        self.blocks.get(&block_id)
     }
 }
 

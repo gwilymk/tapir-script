@@ -1,0 +1,44 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/ssa.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/loop_factorial.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.12 = int 10
+x.13 = factorial(temp.12)
+wait
+return 
+
+=======================
+fn factorial(x.1) -> int
+
+---- block 2 ----
+result.14 = int 1
+jmp 0
+
+---- block 0 ----
+x.15 = φ(x.1 from 2, x.26 from 5)
+result.19 = φ(result.14 from 2, result.23 from 5)
+temp.16 = x.15
+temp.17 = int 0
+temp.18 = temp.16 == temp.17
+conditional_jump temp.18 3 4
+
+---- block 3 ----
+temp.20 = result.19
+return temp.20
+
+---- block 4 ----
+jmp 5
+
+---- block 5 ----
+temp.21 = result.19
+temp.22 = x.15
+result.23 = temp.21 * temp.22
+temp.24 = x.15
+temp.25 = int 1
+x.26 = temp.24 - temp.25
+jmp 0

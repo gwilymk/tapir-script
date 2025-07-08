@@ -121,7 +121,7 @@ fn pretty_print_tapir_block(
         let phi_inputs = phi
             .sources
             .iter()
-            .map(|s| symtab.debug_name_for_symbol(*s))
+            .map(|s| format!("{} from {}", symtab.debug_name_for_symbol(s.1), s.0.0))
             .collect::<Vec<_>>()
             .join(", ");
         writeln!(

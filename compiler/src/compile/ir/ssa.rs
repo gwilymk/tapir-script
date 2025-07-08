@@ -51,7 +51,7 @@ struct SsaConverter {
     current_def: HashMap<SymbolId, HashMap<BlockId, SymbolId>>,
 
     incomplete_phis: HashMap<BlockId, HashMap<SymbolId, SymbolId>>,
-    phis: HashMap<BlockId, HashMap<SymbolId, Vec<SymbolId>>>,
+    phis: HashMap<BlockId, HashMap<SymbolId, Vec<(BlockId, SymbolId)>>>,
 
     graph: DiGraphMap<BlockId, ()>,
 
@@ -174,7 +174,7 @@ impl SsaConverter {
                 .or_default()
                 .entry(phi_variable)
                 .or_default()
-                .push(value);
+                .push((predecessor, value));
         }
 
         phi_variable

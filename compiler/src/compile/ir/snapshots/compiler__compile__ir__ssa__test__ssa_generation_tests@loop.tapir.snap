@@ -12,7 +12,7 @@ z.9 = int 50
 jmp 0
 
 ---- block 0 ----
-x.10 = φ(x.8, x.18)
+x.10 = φ(x.8 from 2, x.18 from 5)
 temp.11 = x.10
 temp.12 = int 0
 temp.13 = temp.11 == temp.12

@@ -2,8 +2,7 @@ var x = true;
 var y = true;
 
 if x {
-    loop {
-        break;
+    if x {   
     }
 }
 
