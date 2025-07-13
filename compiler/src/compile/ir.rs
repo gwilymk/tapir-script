@@ -13,6 +13,8 @@ mod pretty_print;
 pub mod regalloc;
 mod ssa;
 
+pub mod optimisations;
+
 pub use ssa::make_ssa;
 
 use crate::{
@@ -583,6 +585,28 @@ impl TapIrBlock {
 
     fn block_entry(&self) -> &[Phi] {
         &self.block_entry
+    }
+
+    fn sources_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
+        self.block_entry
+            .iter_mut()
+            .flat_map(|phi| phi.sources.iter_mut().map(|(_, symbol_id)| symbol_id))
+            .chain(self.instrs.iter_mut().flat_map(|instr| instr.sources_mut()))
+            .chain(SymbolIterMut::new_source_exit(&mut self.block_exit))
+    }
+
+    fn targets_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
+        self.block_entry
+            .iter_mut()
+            .map(|phi| &mut phi.target)
+            .chain(self.instrs.iter_mut().flat_map(|instr| instr.targets_mut()))
+    }
+
+    /// Iterate through each entry in the block_entry and keeps only the ones where `f` returns true.
+    ///
+    /// Gives an opportunity to change any of them as you go.
+    fn block_entry_retain_mut(&mut self, f: impl FnMut(&mut Phi) -> bool) {
+        self.block_entry.retain_mut(f);
     }
 
     fn remove_block_entries(&mut self) {
