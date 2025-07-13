@@ -81,6 +81,23 @@ impl TapIr {
     pub fn sources_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
         SymbolIterMut::new_source(&mut self.instr)
     }
+
+    /// Returns whether this could be removed if `targets()` are all unused. So technically
+    /// there could be a side effect, but the side effect would only be changing the value
+    /// of one of the symbols in `targets()`.
+    pub fn could_have_side_effects(&self) -> bool {
+        match &self.instr {
+            TapIrInstr::Constant(..)
+            | TapIrInstr::Move { .. }
+            | TapIrInstr::BinOp { .. }
+            | TapIrInstr::GetProp { .. } => false,
+            TapIrInstr::Wait
+            | TapIrInstr::Call { .. }
+            | TapIrInstr::Spawn { .. }
+            | TapIrInstr::Trigger { .. }
+            | TapIrInstr::StoreProp { .. } => true,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -615,6 +632,14 @@ impl TapIrBlock {
             .chain(self.instrs.iter_mut().flat_map(|instr| instr.targets_mut()))
     }
 
+    fn sources(&self) -> impl Iterator<Item = SymbolId> {
+        self.block_entry
+            .iter()
+            .flat_map(|phi| phi.sources.iter().map(|(_, symbol_id)| *symbol_id))
+            .chain(self.instrs.iter().flat_map(|instr| instr.sources()))
+            .chain(SymbolIter::new_source_exit(&self.block_exit))
+    }
+
     /// Iterate through each entry in the block_entry and keeps only the ones where `f` returns true.
     ///
     /// Gives an opportunity to change any of them as you go.
@@ -628,6 +653,10 @@ impl TapIrBlock {
 
     fn block_entry_mut(&mut self) -> &mut [Phi] {
         &mut self.block_entry
+    }
+
+    fn instrs_retain(&mut self, f: impl FnMut(&TapIr) -> bool) {
+        self.instrs.retain(f)
     }
 }
 

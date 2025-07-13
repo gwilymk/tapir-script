@@ -1,0 +1,9 @@
+# dead_store_elimination
+
+var x = 5;
+var y = 8;
+var z = 9;
+
+if z == 9 {
+
+}

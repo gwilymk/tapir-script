@@ -10,6 +10,7 @@ use crate::{
 };
 
 mod copy_propagation;
+mod dead_store_elimination;
 mod empty_block;
 mod empty_phi;
 mod unreferenced_blocks_in_phi;
@@ -126,6 +127,11 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
     (
         "copy_propagation",
         &(copy_propagation::copy_propagation as fn(&mut TapIrFunction) -> OptimisationResult),
+    ),
+    (
+        "dead_store_elimination",
+        &(dead_store_elimination::remove_dead_stores
+            as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
 ];
 

@@ -1,0 +1,47 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/dead_store_elimination/assignments.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+x.7 = int 5
+y.8 = int 8
+z.9 = int 9
+temp.10 = z.9
+temp.11 = int 9
+temp.12 = temp.10 == temp.11
+conditional_jump temp.12 0 1
+
+---- block 0 ----
+jmp 2
+
+---- block 1 ----
+jmp 2
+
+---- block 2 ----
+return 
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+z.9 = int 9
+temp.10 = z.9
+temp.11 = int 9
+temp.12 = temp.10 == temp.11
+conditional_jump temp.12 0 1
+
+---- block 0 ----
+jmp 2
+
+---- block 1 ----
+jmp 2
+
+---- block 2 ----
+return
