@@ -4,6 +4,7 @@ use std::{
 };
 
 use crate::{
+    CompileSettings,
     ast::SymbolId,
     compile::ir::{TapIrFunction, TapIrFunctionBlockIter},
 };
@@ -67,7 +68,11 @@ fn rename_all_variables(
     did_something
 }
 
-pub fn optimise(program: &mut Vec<TapIrFunction>) {
+pub fn optimise(program: &mut Vec<TapIrFunction>, settings: &CompileSettings) {
+    if !settings.enable_optimisations {
+        return;
+    }
+
     loop {
         let mut did_something = OptimisationResult::DidNothing;
 

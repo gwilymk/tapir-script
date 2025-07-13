@@ -88,8 +88,6 @@ pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
         };
     }
 
-    println!("Replacements: {replacements:#?}");
-
     if replacements.is_empty() {
         return OptimisationResult::DidNothing;
     }

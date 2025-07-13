@@ -99,6 +99,16 @@ pub fn compile(
         .map(|f| create_ir(f, &mut symtab))
         .collect::<Vec<_>>();
 
+    let mut ir_functions = ir_functions
+        .into_iter()
+        .map(|mut ir_fn| {
+            make_ssa(&mut ir_fn, &mut symtab);
+            ir_fn
+        })
+        .collect::<Vec<_>>();
+
+    ir::optimisations::optimise(&mut ir_functions, settings);
+
     for mut function in ir_functions {
         make_ssa(&mut function, &mut symtab);
         let registers = regalloc::allocate_registers(&mut function);
