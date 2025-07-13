@@ -1,0 +1,17 @@
+# empty_block, empty_phi, unreferenced_blocks_in_phi, copy_propagation
+
+var i = 0;
+
+loop {
+    i = i + 1;
+
+    if i %% 2 == 0 {
+        continue;
+    }
+
+    int_prop = int_prop + 1;
+
+    if i > 20 {
+        break;
+    }
+}
