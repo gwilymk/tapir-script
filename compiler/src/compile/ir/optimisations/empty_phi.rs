@@ -1,11 +1,9 @@
 use std::collections::HashMap;
 
-use petgraph::visit::Dfs;
-
 use crate::{
     ast::SymbolId,
     compile::ir::{
-        self, Phi,
+        self, Phi, TapIrFunctionBlockIter,
         optimisations::{OptimisationResult, rename_all_variables},
     },
 };
@@ -25,12 +23,8 @@ fn remove_empty_phis(function: &mut ir::TapIrFunction) -> OptimisationResult {
     // rename all the variables that need to be renamed after removing the useless phis
     let mut renames = HashMap::new();
 
-    let mut dfs = Dfs::new(&*function, function.root);
-    while let Some(block_id) = dfs.next(&*function) {
-        let block = function
-            .block_mut(block_id)
-            .expect("Should have a block with given block id");
-
+    let mut dfs = TapIrFunctionBlockIter::new_dfs(function);
+    while let Some(block) = dfs.next_mut(function) {
         block.block_entry_retain_mut(|phi| {
             if let Some(rename) = is_empty(phi) {
                 if renames.insert(phi.target, rename).is_some() {

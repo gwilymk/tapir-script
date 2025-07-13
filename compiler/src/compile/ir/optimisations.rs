@@ -3,9 +3,10 @@ use std::{
     ops::{BitOr, BitOrAssign},
 };
 
-use petgraph::visit::Dfs;
-
-use crate::{ast::SymbolId, compile::ir::TapIrFunction};
+use crate::{
+    ast::SymbolId,
+    compile::ir::{TapIrFunction, TapIrFunctionBlockIter},
+};
 
 mod empty_phi;
 
@@ -43,10 +44,9 @@ fn rename_all_variables(
 
     let mut did_something = OptimisationResult::DidNothing;
 
-    let mut dfs = Dfs::new(&*function, function.root);
-    while let Some(block_id) = dfs.next(&*function) {
-        let block = function.block_mut(block_id).expect("Could not find block");
+    let mut dfs = TapIrFunctionBlockIter::new_dfs(function);
 
+    while let Some(block) = dfs.next_mut(function) {
         for symbol in block.sources_mut() {
             if let Some(renamed_symbol) = renames.get(symbol) {
                 *symbol = *renamed_symbol;

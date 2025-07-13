@@ -1,24 +1,16 @@
 // Implemented as described by https://c9x.me/compile/bib/braun13cc.pdf
 
-use petgraph::{
-    Direction,
-    prelude::DiGraphMap,
-    visit::{DfsPostOrder, IntoNeighbors},
-};
+use petgraph::{Direction, prelude::DiGraphMap, visit::IntoNeighbors};
 
 use super::*;
 
 pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
     let mut converter = SsaConverter::new(function);
 
-    let mut post_order = DfsPostOrder::new(&*function, function.root);
-    let mut post_order_list = Vec::with_capacity(converter.graph.node_count());
-    while let Some(next) = post_order.next(&converter.graph) {
-        post_order_list.push(next);
-    }
+    let mut reverse_post_order = TapIrFunctionBlockIter::new_reverse_post_order(function);
 
-    for block_id in post_order_list.into_iter().rev() {
-        let block = function.block_mut(block_id).expect("Failed to get block");
+    while let Some(block) = reverse_post_order.next_mut(function) {
+        let block_id = block.id();
 
         for instr in block.instrs_mut() {
             for source in instr.sources_mut() {
@@ -36,7 +28,7 @@ pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
             *source = converter.read_variable(*source, block_id, symtab);
         }
 
-        converter.mark_filled(block_id, symtab);
+        converter.mark_filled(block.id(), symtab);
     }
 
     for (block_id, phis) in converter.into_phis() {

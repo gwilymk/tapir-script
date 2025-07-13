@@ -1,10 +1,8 @@
 use std::collections::{BTreeSet, HashMap};
 
-use petgraph::visit::DfsPostOrder;
-
 use crate::{
     ast::SymbolId,
-    compile::ir::{BlockId, TapIr, TapIrFunction, TapIrInstr},
+    compile::ir::{BlockId, TapIr, TapIrFunction, TapIrFunctionBlockIter, TapIrInstr},
 };
 
 struct RegAllocator {
@@ -93,17 +91,12 @@ impl RegisterAllocations {
 /// The register allocator will do the wrong thing if the function you pass here isn't in
 /// SSA form.
 pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
-    let mut post_order = DfsPostOrder::new(&*function, function.root);
-
     let mut register_allocator = RegAllocator::new(function);
 
     let phony_reads = get_phony_reads(function);
 
-    while let Some(block_id) = post_order.next(&*function) {
-        let block = function
-            .block_mut(block_id)
-            .expect("Should have a block if we found it");
-
+    let mut post_order = TapIrFunctionBlockIter::new_post_order(function);
+    while let Some(block) = post_order.next_mut(function) {
         let block_exit = block.block_exit();
 
         match block_exit {
@@ -122,7 +115,7 @@ pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
         // move instructions here (breaking SSA form) which will read from this variable. So
         // we need to ensure that it stays alive until that point, otherwise the register
         // could get reused.
-        if let Some(phony_reads) = phony_reads.get(&block_id) {
+        if let Some(phony_reads) = phony_reads.get(&block.id()) {
             for phony_read in phony_reads {
                 register_allocator.read_symbol(phony_read.source);
             }
