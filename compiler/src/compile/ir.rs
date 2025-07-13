@@ -119,7 +119,7 @@ impl BlockExitInstr {
             BlockExitInstr::Return(_) => [None, None],
         }
         .into_iter()
-        .filter_map(|x| x)
+        .flatten()
     }
 }
 
