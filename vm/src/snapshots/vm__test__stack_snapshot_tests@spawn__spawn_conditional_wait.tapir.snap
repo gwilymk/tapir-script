@@ -46,7 +46,6 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/spawn/spawn_conditio
       0,
       7,
       7,
-      7,
     ],
   ], PropObj(
     int_prop: 7,
@@ -63,7 +62,6 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/spawn/spawn_conditio
     [
       -1,
       1,
-      2,
       2,
       2,
     ],

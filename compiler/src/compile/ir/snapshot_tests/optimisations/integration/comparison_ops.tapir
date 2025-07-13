@@ -1,0 +1,25 @@
+# empty_block, empty_phi, unreferenced_blocks_in_phi
+var a = int_prop;
+var b = 6;
+
+if b > a {
+    var c = black_box(15);
+    wait;
+    int_prop = c;
+}
+
+if b < int_prop {
+    var c = black_box(20);
+    wait;
+    int_prop = c;
+}
+
+if a != int_prop {
+    var c = black_box(30);
+    wait;
+    int_prop = c;
+}
+
+fn black_box(x: int) -> int {
+    return x;
+}

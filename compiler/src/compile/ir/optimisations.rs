@@ -131,7 +131,7 @@ mod test {
     use insta::{assert_snapshot, glob};
 
     use crate::{
-        CompileSettings,
+        CompileSettings, Property, Type,
         compile::{
             ir::{create_ir, make_ssa, pretty_print},
             loop_visitor::visit_loop_check,
@@ -160,7 +160,11 @@ mod test {
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let compile_settings = CompileSettings {
-                properties: Vec::new(),
+                properties: vec![Property {
+                    ty: Type::Int,
+                    index: 0,
+                    name: "int_prop".to_string(),
+                }],
                 enable_optimisations: true,
             };
 

@@ -1,0 +1,133 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/integration/comparison_ops.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+getprop a.23, 0
+b.24 = int 6
+temp.25 = b.24
+temp.26 = a.23
+temp.27 = temp.25 > temp.26
+conditional_jump temp.27 0 1
+
+---- block 0 ----
+temp.28 = int 15
+c.29 = black_box(temp.28)
+wait
+temp.30 = c.29
+storeprop temp.30, 0
+jmp 2
+
+---- block 1 ----
+jmp 2
+
+---- block 2 ----
+b.31 = φ(b.24 from 0, b.24 from 1)
+a.39 = φ(a.23 from 0, a.23 from 1)
+temp.32 = b.31
+getprop temp.33, 0
+temp.34 = temp.32 < temp.33
+conditional_jump temp.34 4 5
+
+---- block 4 ----
+temp.35 = int 20
+c.36 = black_box(temp.35)
+wait
+temp.37 = c.36
+storeprop temp.37, 0
+jmp 6
+
+---- block 5 ----
+jmp 6
+
+---- block 6 ----
+a.38 = φ(a.39 from 4, a.39 from 5)
+temp.40 = a.38
+getprop temp.41, 0
+temp.42 = temp.40 != temp.41
+conditional_jump temp.42 7 8
+
+---- block 7 ----
+temp.43 = int 30
+c.44 = black_box(temp.43)
+wait
+temp.45 = c.44
+storeprop temp.45, 0
+jmp 9
+
+---- block 8 ----
+jmp 9
+
+---- block 9 ----
+return 
+
+=======================
+fn black_box(x.6) -> int
+
+---- block 0 ----
+temp.46 = x.6
+return temp.46
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+getprop a.23, 0
+b.24 = int 6
+temp.25 = b.24
+temp.26 = a.23
+temp.27 = temp.25 > temp.26
+conditional_jump temp.27 0 2
+
+---- block 0 ----
+temp.28 = int 15
+c.29 = black_box(temp.28)
+wait
+temp.30 = c.29
+storeprop temp.30, 0
+jmp 2
+
+---- block 2 ----
+temp.32 = b.24
+getprop temp.33, 0
+temp.34 = temp.32 < temp.33
+conditional_jump temp.34 4 6
+
+---- block 4 ----
+temp.35 = int 20
+c.36 = black_box(temp.35)
+wait
+temp.37 = c.36
+storeprop temp.37, 0
+jmp 6
+
+---- block 6 ----
+temp.40 = a.39
+getprop temp.41, 0
+temp.42 = temp.40 != temp.41
+conditional_jump temp.42 7 9
+
+---- block 7 ----
+temp.43 = int 30
+c.44 = black_box(temp.43)
+wait
+temp.45 = c.44
+storeprop temp.45, 0
+return 
+
+---- block 9 ----
+return 
+
+=======================
+fn black_box(x.6) -> int
+
+---- block 0 ----
+temp.46 = x.6
+return temp.46

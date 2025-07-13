@@ -110,7 +110,6 @@ pub fn compile(
     ir::optimisations::optimise(&mut ir_functions, settings);
 
     for mut function in ir_functions {
-        make_ssa(&mut function, &mut symtab);
         let registers = regalloc::allocate_registers(&mut function);
 
         compiler.compile_function(&function, &registers);
