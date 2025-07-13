@@ -90,6 +90,7 @@ pub enum Constant {
     Bool(bool),
 }
 
+#[derive(Clone)]
 pub enum BlockExitInstr {
     JumpToBlock(BlockId),
     ConditionalJump {

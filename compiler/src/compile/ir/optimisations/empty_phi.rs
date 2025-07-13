@@ -8,17 +8,17 @@ use crate::{
     },
 };
 
-// A PHI is considered empty if it references itself and something else. For example,
-// x = phi(y, y, y, y) will cause us to rename all occurrences of x with y. Similarly,
-// x = phi(x, x, y, y) will do the same.
-//
-// However, x = phi(x, y, y, z) is _not_ considered empty, and therefore won't get renamed
-// or removed.
-//
-// It is important to remove these as they result in extra moves which aren't actually required
-// and can make other optimisations harder to write because they have consider the empty phis
-// when doing the joins at blocks.
-fn remove_empty_phis(function: &mut ir::TapIrFunction) -> OptimisationResult {
+/// A PHI is considered empty if it references itself and something else. For example,
+/// x = phi(y, y, y, y) will cause us to rename all occurrences of x with y. Similarly,
+/// x = phi(x, x, y, y) will do the same.
+///
+/// However, x = phi(x, y, y, z) is _not_ considered empty, and therefore won't get renamed
+/// or removed.
+///
+/// It is important to remove these as they result in extra moves which aren't actually required
+/// and can make other optimisations harder to write because they have consider the empty phis
+/// when doing the joins at blocks.
+pub fn remove_empty_phis(function: &mut ir::TapIrFunction) -> OptimisationResult {
     // We do 2 passes, the first to collect all the useless phis (and remove them), and the second to
     // rename all the variables that need to be renamed after removing the useless phis
     let mut renames = HashMap::new();

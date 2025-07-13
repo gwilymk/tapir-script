@@ -8,6 +8,7 @@ use crate::{
     compile::ir::{TapIrFunction, TapIrFunctionBlockIter},
 };
 
+mod empty_block;
 mod empty_phi;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
