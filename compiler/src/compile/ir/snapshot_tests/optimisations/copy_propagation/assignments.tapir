@@ -1,0 +1,5 @@
+# copy_propagation
+var x = 4;
+var y = x;
+var z = y;
+var w = x;

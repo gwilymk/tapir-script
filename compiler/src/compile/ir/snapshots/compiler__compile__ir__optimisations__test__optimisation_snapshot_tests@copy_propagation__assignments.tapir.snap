@@ -1,0 +1,27 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/copy_propagation/assignments.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.5 = int 4
+y.6 = x.5
+z.7 = y.6
+w.8 = x.5
+return 
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.5 = int 4
+y.6 = x.5
+z.7 = x.5
+w.8 = x.5
+return

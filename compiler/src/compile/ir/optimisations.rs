@@ -9,6 +9,7 @@ use crate::{
     compile::ir::{TapIrFunction, TapIrFunctionBlockIter},
 };
 
+mod copy_propagation;
 mod empty_block;
 mod empty_phi;
 mod unreferenced_blocks_in_phi;
@@ -121,6 +122,10 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
         "unreferenced_blocks_in_phi",
         &(unreferenced_blocks_in_phi::remove_unreferenced_blocks_in_phi
             as fn(&mut TapIrFunction) -> OptimisationResult),
+    ),
+    (
+        "copy_propagation",
+        &(copy_propagation::copy_propagation as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
 ];
 
