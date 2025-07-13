@@ -1,4 +1,4 @@
-# empty_block, empty_phi, unreferenced_blocks_in_phi, copy_propagation
+# empty_block, empty_phi, unreferenced_blocks_in_phi, copy_propagation, dead_store_elimination
 var i = 0;
 
 loop {
