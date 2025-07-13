@@ -1,0 +1,67 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/copy_propagation/through_phi.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 2 ----
+x.8 = int 5
+jmp 0
+
+---- block 0 ----
+x.9 = φ(x.8 from 2, x.16 from 5)
+y.10 = x.9
+temp.11 = x.9
+temp.12 = int 3
+temp.13 = temp.11 > temp.12
+conditional_jump temp.13 3 4
+
+---- block 3 ----
+jmp 1
+
+---- block 4 ----
+jmp 5
+
+---- block 1 ----
+return 
+
+---- block 5 ----
+temp.14 = y.10
+temp.15 = int 1
+x.16 = temp.14 - temp.15
+jmp 0
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 2 ----
+x.8 = int 5
+jmp 0
+
+---- block 0 ----
+x.9 = φ(x.8 from 2, x.16 from 5)
+y.10 = x.9
+temp.11 = x.9
+temp.12 = int 3
+temp.13 = x.9 > temp.12
+conditional_jump temp.13 3 4
+
+---- block 3 ----
+jmp 1
+
+---- block 4 ----
+jmp 5
+
+---- block 1 ----
+return 
+
+---- block 5 ----
+temp.14 = x.9
+temp.15 = int 1
+x.16 = x.9 - temp.15
+jmp 0

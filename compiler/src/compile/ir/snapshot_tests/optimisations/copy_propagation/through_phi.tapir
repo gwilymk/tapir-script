@@ -1,0 +1,12 @@
+# copy_propagation
+var x = 5;
+
+loop {
+    var y = x;
+
+    if x > 3 {
+        break;
+    }
+
+    x = y - 1;
+}
