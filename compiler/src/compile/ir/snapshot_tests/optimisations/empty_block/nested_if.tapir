@@ -1,0 +1,12 @@
+# empty_block
+
+var x = true;
+var y = true;
+
+if x {
+    if y {
+
+    }
+}
+
+var z = x;

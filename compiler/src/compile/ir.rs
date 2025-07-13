@@ -109,6 +109,18 @@ impl BlockExitInstr {
     pub fn sources_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
         SymbolIterMut::new_source_exit(self)
     }
+
+    fn target_blocks(&self) -> impl Iterator<Item = BlockId> {
+        match self {
+            BlockExitInstr::JumpToBlock(block_id) => [Some(*block_id), None],
+            BlockExitInstr::ConditionalJump {
+                if_true, if_false, ..
+            } => [Some(*if_true), Some(*if_false)],
+            BlockExitInstr::Return(_) => [None, None],
+        }
+        .into_iter()
+        .filter_map(|x| x)
+    }
 }
 
 /// Blocks have ids which aren't necessarily strictly increasing.
@@ -612,6 +624,10 @@ impl TapIrBlock {
 
     fn remove_block_entries(&mut self) {
         self.block_entry.clear();
+    }
+
+    fn block_entry_mut(&mut self) -> &mut [Phi] {
+        &mut self.block_entry
     }
 }
 

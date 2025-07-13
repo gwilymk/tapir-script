@@ -1,7 +1,8 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::compile::ir::{
-    BlockExitInstr, TapIrFunction, TapIrFunctionBlockIter, optimisations::OptimisationResult,
+    BlockExitInstr, BlockId, TapIrFunction, TapIrFunctionBlockIter,
+    optimisations::OptimisationResult,
 };
 
 /// It is quite common for blocks to be generated which contain no instructions and only contain an
@@ -11,7 +12,7 @@ use crate::compile::ir::{
 /// Note that this doesn't actually remove the blocks themselves from the function. Removing unreferenced
 /// blocks is handled by a separate optimisation step.
 pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
-    // We have to do 2 passes here. Because we don't know if a target of a jump will be empty.
+    // We have to do 3 passes here. Because we don't know if a target of a jump will be empty.
     // This would be possible with a reverse post order iteration if it wasn't a graph that we're working with.
     // Because it's a graph, we don't necessarily see every single child before the parent.
 
@@ -19,7 +20,6 @@ pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
     let mut empty_blocks = HashMap::new();
 
     let mut dfs = TapIrFunctionBlockIter::new_dfs(f);
-
     while let Some(block) = dfs.next(f) {
         if !block.instrs().is_empty() {
             continue; // there is actually something here
@@ -34,19 +34,31 @@ pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
         empty_blocks.insert(block.id(), block.block_exit().clone());
     }
 
-    let mut dfs = TapIrFunctionBlockIter::new_dfs(f);
+    if empty_blocks.is_empty() {
+        return OptimisationResult::DidNothing;
+    }
 
-    let mut did_something = OptimisationResult::DidNothing;
+    // If we do a replacement, then we need to add a new phi variable to the targets if there was a way in
+    // because we would add additional moves at register allocation time.
+
+    // This maps blocks -> list of new blocks that are now a parent for this block
+    let mut replacements: HashMap<BlockId, HashSet<BlockId>> = HashMap::new();
+
+    let mut dfs = TapIrFunctionBlockIter::new_dfs(f);
     while let Some(block) = dfs.next_mut(f) {
+        let this_block_id = block.id();
         let exit = block.block_exit_mut();
 
         match exit {
             BlockExitInstr::JumpToBlock(block_id) => {
                 if let Some(new_exit) = empty_blocks.get(block_id) {
+                    replacements
+                        .entry(*block_id)
+                        .or_default()
+                        .insert(this_block_id);
+
                     // Unconditional jumps can be replaced unconditionally with what the empty block was doing
                     *exit = new_exit.clone();
-
-                    did_something = OptimisationResult::DidSomething;
                 };
             }
             BlockExitInstr::ConditionalJump {
@@ -54,20 +66,51 @@ pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
             } => {
                 // Conditional jumps can only be replaced if the target wasn't doing its own conditional jump
                 // or its own return.
-
                 if let Some(BlockExitInstr::JumpToBlock(new_target)) = empty_blocks.get(if_true) {
+                    replacements
+                        .entry(*if_true)
+                        .or_default()
+                        .insert(this_block_id);
+
                     *if_true = *new_target;
-                    did_something = OptimisationResult::DidSomething;
                 }
 
                 if let Some(BlockExitInstr::JumpToBlock(new_target)) = empty_blocks.get(if_false) {
+                    replacements
+                        .entry(*if_false)
+                        .or_default()
+                        .insert(this_block_id);
+
                     *if_false = *new_target;
-                    did_something = OptimisationResult::DidSomething;
                 }
             }
             BlockExitInstr::Return(_) => {}
         };
     }
 
-    did_something
+    println!("Replacements: {replacements:#?}");
+
+    if replacements.is_empty() {
+        return OptimisationResult::DidNothing;
+    }
+
+    let mut dfs = TapIrFunctionBlockIter::new_dfs(f);
+    while let Some(block) = dfs.next_mut(f) {
+        for phi in block.block_entry_mut() {
+            let mut new_phi_variables = vec![];
+
+            for &(source_block, symbol) in &phi.sources {
+                let Some(replacement) = replacements.get(&source_block) else {
+                    continue;
+                };
+
+                new_phi_variables
+                    .extend(replacement.iter().map(|replacement| (*replacement, symbol)));
+            }
+
+            phi.sources.extend(new_phi_variables);
+        }
+    }
+
+    OptimisationResult::DidSomething
 }
