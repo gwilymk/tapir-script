@@ -10,6 +10,7 @@ use crate::{
 
 mod empty_block;
 mod empty_phi;
+mod unreferenced_blocks_in_phi;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum OptimisationResult {
@@ -110,6 +111,11 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
     (
         "empty_block",
         &(empty_block::remove_empty_blocks as fn(&mut TapIrFunction) -> OptimisationResult),
+    ),
+    (
+        "unreferenced_blocks_in_phi",
+        &(unreferenced_blocks_in_phi::remove_unreferenced_blocks_in_phi
+            as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
 ];
 

@@ -1,0 +1,12 @@
+# empty_block, unreferenced_blocks_in_phi
+
+var x = true;
+var y = true;
+
+if x {
+    if y {
+
+    }
+}
+
+var z = x;
