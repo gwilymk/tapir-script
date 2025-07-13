@@ -11,5 +11,4 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/really_basi
 00000005: ret
 00000006: wait
 00000007: loadk 1, 3
-00000009: mov 1, 1
-00000010: ret
+00000009: ret

@@ -334,7 +334,9 @@ impl Bytecode {
     }
 
     fn mov(&mut self, target: u8, source: u8) {
-        self.data.push(Type1::mov(target, source).encode());
+        if source != target {
+            self.data.push(Type1::mov(target, source).encode());
+        }
     }
 
     fn wait(&mut self) {
