@@ -121,6 +121,12 @@ pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
         if let Some(phony_reads) = phony_reads.get(&block.id()) {
             for phony_read in phony_reads.iter().rev() {
                 register_allocator.read_symbol(phony_read.source);
+
+                // We insert a fake read to the target too to ensure it has its own register
+                // independent of the source. We can't mark this as a write, because we're not
+                // really 'writing' to this symbol, we're really writing to the phi for this
+                // symbol. We just need a spare register allocated so that the eventual move
+                // instruction does the right thing.
                 register_allocator.read_symbol(phony_read.target);
             }
         }
