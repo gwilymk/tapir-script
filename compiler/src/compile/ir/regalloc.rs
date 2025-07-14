@@ -2,7 +2,10 @@ use std::collections::{BTreeSet, HashMap};
 
 use crate::{
     ast::SymbolId,
-    compile::ir::{BlockId, TapIr, TapIrFunction, TapIrFunctionBlockIter, TapIrInstr},
+    compile::ir::{
+        BlockExitInstr, BlockId, TapIr, TapIrBlock, TapIrFunction, TapIrFunctionBlockIter,
+        TapIrInstr,
+    },
 };
 
 struct RegAllocator {
@@ -116,8 +119,9 @@ pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
         // we need to ensure that it stays alive until that point, otherwise the register
         // could get reused.
         if let Some(phony_reads) = phony_reads.get(&block.id()) {
-            for phony_read in phony_reads {
+            for phony_read in phony_reads.iter().rev() {
                 register_allocator.read_symbol(phony_read.source);
+                register_allocator.read_symbol(phony_read.target);
             }
         }
 
@@ -145,14 +149,60 @@ pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
     }
 
     for (target_block, moves) in phony_reads {
+        let next_block_id = function.next_block_id();
+
         let block = function
             .block_mut(target_block)
             .expect("Found a block, so should have it");
 
-        for PhonyRead { target, source } in moves {
-            block.instrs.push(TapIr {
-                instr: TapIrInstr::Move { source, target },
-            });
+        // ideally these phony reads should happen _after_ the jump, but we can't
+        // put instructions there.
+        //
+        // If it's an unconditional jump, then we can safely insert these reads
+        // into it. However, if it is a conditional jump then we need to put
+        // only do these additional moves after the conditional jump. So we do
+        // this by putting in new blocks.
+
+        if let BlockExitInstr::ConditionalJump {
+            if_true, if_false, ..
+        } = block.block_exit_mut()
+        {
+            let (true_phony_reads, false_phony_reads): (Vec<_>, Vec<_>) = moves
+                .into_iter()
+                .partition(|read| read.target_block == *if_true);
+
+            let true_block_id = next_block_id;
+            let false_block_id = true_block_id.next();
+
+            let true_block = TapIrBlock {
+                id: true_block_id,
+                instrs: true_phony_reads
+                    .iter()
+                    .map(|read| read.as_tapir())
+                    .collect(),
+                block_entry: vec![],
+                block_exit: BlockExitInstr::JumpToBlock(*if_true),
+            };
+
+            let false_block = TapIrBlock {
+                id: false_block_id,
+                instrs: false_phony_reads
+                    .iter()
+                    .map(|read| read.as_tapir())
+                    .collect(),
+                block_entry: vec![],
+                block_exit: BlockExitInstr::JumpToBlock(*if_false),
+            };
+
+            *if_true = true_block_id;
+            *if_false = false_block_id;
+
+            function.insert_block(true_block);
+            function.insert_block(false_block);
+        } else {
+            for phony in moves {
+                block.instrs.push(phony.as_tapir());
+            }
         }
     }
 
@@ -162,6 +212,7 @@ pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
 struct PhonyRead {
     source: SymbolId,
     target: SymbolId,
+    target_block: BlockId,
 }
 
 /// Collect a list of moves which will be needed to make the phi functions line up correctly
@@ -176,10 +227,22 @@ fn get_phony_reads(function: &mut TapIrFunction) -> HashMap<BlockId, Vec<PhonyRe
                     .push(PhonyRead {
                         source,
                         target: phi.target,
+                        target_block: block.id(),
                     });
             }
         }
     }
 
     phony_reads
+}
+
+impl PhonyRead {
+    fn as_tapir(&self) -> TapIr {
+        TapIr {
+            instr: TapIrInstr::Move {
+                target: self.target,
+                source: self.source,
+            },
+        }
+    }
 }

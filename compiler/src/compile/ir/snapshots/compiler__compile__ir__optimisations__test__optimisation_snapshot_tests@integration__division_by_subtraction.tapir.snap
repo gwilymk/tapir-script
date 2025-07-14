@@ -1,0 +1,82 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/integration/division_by_subtraction.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.16 = int 100
+getprop temp.17, 0
+temp.18 = divide(temp.16, temp.17)
+storeprop temp.18, 0
+return 
+
+=======================
+fn divide(n.1, d.2) -> int
+
+---- block 2 ----
+r.19 = n.1
+q.20 = int 0
+jmp 0
+
+---- block 0 ----
+r.21 = φ(r.19 from 2, r.30 from 5)
+d.23 = φ(d.2 from 2, d.23 from 5)
+q.26 = φ(q.20 from 2, q.33 from 5)
+temp.22 = r.21
+temp.24 = d.23
+temp.25 = temp.22 < temp.24
+conditional_jump temp.25 3 4
+
+---- block 3 ----
+temp.27 = q.26
+return temp.27
+
+---- block 4 ----
+jmp 5
+
+---- block 5 ----
+temp.28 = r.21
+temp.29 = d.23
+r.30 = temp.28 - temp.29
+temp.31 = q.26
+temp.32 = int 1
+q.33 = temp.31 + temp.32
+jmp 0
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.16 = int 100
+getprop temp.17, 0
+temp.18 = divide(temp.16, temp.17)
+storeprop temp.18, 0
+return 
+
+=======================
+fn divide(n.1, d.2) -> int
+
+---- block 2 ----
+q.20 = int 0
+jmp 0
+
+---- block 0 ----
+r.21 = φ(n.1 from 2, r.30 from 5)
+q.26 = φ(q.20 from 2, q.33 from 5)
+temp.25 = r.21 < d.2
+conditional_jump temp.25 3 5
+
+---- block 3 ----
+return q.26
+
+---- block 5 ----
+r.30 = r.21 - d.2
+temp.32 = int 1
+q.33 = q.26 + temp.32
+jmp 0

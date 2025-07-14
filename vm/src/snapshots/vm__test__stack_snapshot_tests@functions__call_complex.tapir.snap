@@ -7,8 +7,8 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_compl
   ([
     [
       -1,
-      0,
       55,
+      0,
       0,
       67108868,
       55,
@@ -19,15 +19,14 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_compl
   ([
     [
       -1,
-      0,
       55,
+      0,
       0,
       67108868,
       55,
       0,
-      55,
       12,
-      83886101,
+      67108883,
       55,
       12,
     ],
@@ -37,20 +36,17 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_compl
   ([
     [
       -1,
-      67,
       111,
+      67,
       44,
       67108868,
       67,
       67,
-      55,
       12,
-      83886101,
+      67108883,
       67,
       12,
       67,
-      55,
-      12,
     ],
   ], PropObj(
     int_prop: 5,

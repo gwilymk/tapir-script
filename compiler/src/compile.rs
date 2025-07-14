@@ -427,13 +427,15 @@ mod test {
         glob!("snapshot_tests", "compiler/*.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
+            let enable_optimisations = input.starts_with("# optimise\n");
+
             let compiler_settings = CompileSettings {
                 properties: vec![Property {
                     ty: Type::Int,
                     index: 0,
                     name: "int_prop".to_string(),
                 }],
-                enable_optimisations: false,
+                enable_optimisations,
             };
 
             let bytecode = compile(path, &input, &compiler_settings).unwrap();

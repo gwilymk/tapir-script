@@ -144,6 +144,12 @@ impl BlockExitInstr {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct BlockId(usize);
 
+impl BlockId {
+    pub fn next(self) -> Self {
+        Self(self.0 + 1)
+    }
+}
+
 pub struct TapIrBlock {
     id: BlockId,
     instrs: Vec<TapIr>,
@@ -706,6 +712,10 @@ impl TapIrFunction {
         self.blocks.get_mut(&block_id)
     }
 
+    pub fn next_block_id(&self) -> BlockId {
+        BlockId(self.blocks.keys().max().unwrap().0).next()
+    }
+
     pub(crate) fn return_types(&self) -> &[Type] {
         &self.return_types
     }
@@ -724,6 +734,12 @@ impl TapIrFunction {
 
     fn block(&self, block_id: BlockId) -> Option<&TapIrBlock> {
         self.blocks.get(&block_id)
+    }
+
+    fn insert_block(&mut self, block: TapIrBlock) {
+        if self.blocks.insert(block.id(), block).is_some() {
+            panic!("Shouldn't be inserting a block if one already exists with the same ID");
+        }
     }
 }
 

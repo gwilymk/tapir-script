@@ -1,0 +1,16 @@
+# optimise
+fn divide(n: int, d: int) -> int {
+    var r = n;
+    var q = 0;
+
+    loop {
+        if r < d {
+            return q;
+        }
+
+        r = r - d;
+        q = q + 1;
+    }
+}
+
+int_prop = divide(100, int_prop);
