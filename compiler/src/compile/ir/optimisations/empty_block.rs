@@ -21,6 +21,10 @@ pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
 
     let mut dfs = TapIrFunctionBlockIter::new_dfs(f);
     while let Some(block) = dfs.next(f) {
+        if block.id() == f.root {
+            continue; // we should never try to remove the root node
+        }
+
         if !block.instrs().is_empty() {
             continue; // there is actually something here
         }
