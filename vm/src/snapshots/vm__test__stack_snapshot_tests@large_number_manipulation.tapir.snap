@@ -7,7 +7,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/large_number_manipul
   ([
     [
       -1,
-      3024,
+      6400,
     ],
   ], PropObj(
     int_prop: 3024,

@@ -12,6 +12,8 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_compl
       0,
       67108868,
       55,
+      0,
+      12,
     ],
   ], PropObj(
     int_prop: 5,

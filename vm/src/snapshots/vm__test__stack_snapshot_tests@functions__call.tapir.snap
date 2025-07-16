@@ -23,7 +23,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call.tapir
   ([
     [
       -1,
-      0,
+      33,
       33554434,
       33,
     ],
@@ -33,7 +33,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call.tapir
   ([
     [
       -1,
-      0,
+      121,
       33554434,
       33,
     ],

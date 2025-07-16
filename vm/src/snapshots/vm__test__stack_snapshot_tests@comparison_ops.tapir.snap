@@ -9,8 +9,8 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/comparison_ops.tapir
       -1,
       15,
       0,
+      6,
       15,
-      5,
       83886091,
       15,
     ],
@@ -24,7 +24,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/comparison_ops.tapir
       0,
       20,
       15,
-      83886107,
+      83886105,
       20,
     ],
   ], PropObj(
@@ -37,7 +37,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/comparison_ops.tapir
       30,
       20,
       15,
-      83886121,
+      83886119,
       30,
     ],
   ], PropObj(

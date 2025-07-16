@@ -8,9 +8,9 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/variables.tapir
     [
       -1,
       58,
+      55,
       58,
       3,
-      0,
       0,
       100663307,
       58,
@@ -24,9 +24,9 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/variables.tapir
       58,
       58,
       55,
+      3,
       0,
-      0,
-      100663318,
+      100663316,
       58,
     ],
   ], PropObj(
@@ -40,7 +40,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/variables.tapir
       55,
       55,
       58,
-      100663327,
+      100663325,
       58,
     ],
   ], PropObj(
