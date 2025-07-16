@@ -1,4 +1,4 @@
-# empty_block, empty_phi, unreferenced_blocks_in_phi, copy_propagation, dead_store_elimination
+# all
 fn divide(n: int, d: int) -> int {
     var r = n;
     var q = 0;

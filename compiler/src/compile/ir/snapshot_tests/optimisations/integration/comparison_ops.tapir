@@ -1,4 +1,4 @@
-# empty_block, empty_phi, unreferenced_blocks_in_phi
+# all
 var a = int_prop;
 var b = 6;
 

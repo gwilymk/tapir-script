@@ -81,45 +81,38 @@ fn @toplevel() ->
 ---- block 3 ----
 getprop a.24, 0
 b.25 = int 6
-temp.26 = b.25
-temp.27 = a.24
-temp.28 = temp.26 > temp.27
+temp.28 = b.25 > a.24
 conditional_jump temp.28 0 2
 
 ---- block 0 ----
 temp.29 = int 15
 c.30 = black_box(temp.29)
 wait
-temp.31 = c.30
-storeprop temp.31, 0
+storeprop c.30, 0
 jmp 2
 
 ---- block 2 ----
-temp.33 = b.25
 getprop temp.34, 0
-temp.35 = temp.33 < temp.34
+temp.35 = b.25 < temp.34
 conditional_jump temp.35 4 6
 
 ---- block 4 ----
 temp.36 = int 20
 c.37 = black_box(temp.36)
 wait
-temp.38 = c.37
-storeprop temp.38, 0
+storeprop c.37, 0
 jmp 6
 
 ---- block 6 ----
-temp.41 = a.40
 getprop temp.42, 0
-temp.43 = temp.41 != temp.42
+temp.43 = a.40 != temp.42
 conditional_jump temp.43 7 9
 
 ---- block 7 ----
 temp.44 = int 30
 c.45 = black_box(temp.44)
 wait
-temp.46 = c.45
-storeprop temp.46, 0
+storeprop c.45, 0
 return 
 
 ---- block 9 ----
@@ -129,5 +122,4 @@ return
 fn black_box(x.7) -> int
 
 ---- block 0 ----
-temp.47 = x.7
-return temp.47
+return x.7

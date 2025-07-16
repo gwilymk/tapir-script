@@ -271,12 +271,13 @@ mod test {
             let (_, enabled_optimisations) = enabled_optimisations.split_once("# ").unwrap();
 
             let enabled_optimisations = enabled_optimisations.split(", ").collect::<HashSet<_>>();
+            let enable_all_optimisations = enabled_optimisations.contains("all");
 
             loop {
                 let mut did_something = OptimisationResult::DidNothing;
 
                 for (name, optimisation) in OPTIMISATIONS {
-                    if enabled_optimisations.contains(name) {
+                    if enable_all_optimisations || enabled_optimisations.contains(name) {
                         did_something |= optimisation.optimise(&mut irs, &mut symtab);
                     }
                 }
