@@ -1,0 +1,5 @@
+# copy_propagation, dead_store_elimination, constant_folding
+
+int_prop = int_prop * 0;
+wait;
+int_prop = 0 * int_prop;

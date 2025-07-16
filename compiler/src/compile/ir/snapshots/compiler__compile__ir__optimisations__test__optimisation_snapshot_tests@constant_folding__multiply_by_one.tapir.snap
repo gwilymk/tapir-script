@@ -1,0 +1,29 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/multiply_by_one.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.7, 0
+getprop temp.8, 0
+temp.9 = int 1
+temp.10 = temp.8 * temp.9
+temp.11 = temp.7 + temp.10
+storeprop temp.11, 0
+return 
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.7, 0
+getprop temp.8, 0
+temp.11 = temp.7 + temp.8
+storeprop temp.11, 0
+return

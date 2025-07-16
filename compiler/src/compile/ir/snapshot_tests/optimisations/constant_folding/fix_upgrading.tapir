@@ -1,0 +1,6 @@
+# copy_propagation, dead_store_elimination, constant_folding
+
+fix_prop = fix_prop * 5.0;
+wait;
+
+fix_prop = 5.0 * fix_prop;

@@ -1,0 +1,37 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/fix_upgrading.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.8, 1
+temp.9 = fix 5
+temp.10 = temp.8 f* temp.9
+storeprop temp.10, 1
+wait
+temp.11 = fix 5
+getprop temp.12, 1
+temp.13 = temp.11 f* temp.12
+storeprop temp.13, 1
+return 
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.8, 1
+temp.14 = int 5
+temp.10 = temp.8 * temp.14
+storeprop temp.10, 1
+wait
+getprop temp.12, 1
+temp.15 = int 5
+temp.13 = temp.15 * temp.12
+storeprop temp.13, 1
+return

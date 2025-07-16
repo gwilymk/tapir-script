@@ -96,6 +96,8 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
                 // ===================
                 (_, B::Add | B::Sub, Some(C::Int(0))) => take_lhs,
                 (Some(C::Int(0)), B::Add | B::Sub, _) => take_rhs,
+                (_, B::Add | B::Sub, Some(C::Fix(n))) if n == f0 => take_lhs,
+                (Some(C::Fix(n)), B::Add | B::Sub, _) if n == f0 => take_rhs,
 
                 // ================
                 // Multiply by zero

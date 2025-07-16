@@ -1,0 +1,49 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/add_zero.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.14, 0
+temp.15 = int 0
+temp.16 = temp.14 + temp.15
+storeprop temp.16, 0
+wait
+temp.17 = int 0
+getprop temp.18, 0
+temp.19 = temp.17 + temp.18
+storeprop temp.19, 0
+wait
+temp.20 = fix 0
+getprop temp.21, 1
+temp.22 = temp.20 + temp.21
+storeprop temp.22, 1
+wait
+getprop temp.23, 1
+temp.24 = fix 0
+temp.25 = temp.23 + temp.24
+storeprop temp.25, 1
+return 
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.14, 0
+storeprop temp.14, 0
+wait
+getprop temp.18, 0
+storeprop temp.18, 0
+wait
+getprop temp.21, 1
+storeprop temp.21, 1
+wait
+getprop temp.23, 1
+storeprop temp.23, 1
+return
