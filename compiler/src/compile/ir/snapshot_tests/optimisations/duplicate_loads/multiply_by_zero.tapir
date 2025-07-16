@@ -1,0 +1,10 @@
+# copy_propagation, dead_store_elimination, constant_folding, duplicate_loads
+
+int_prop = int_prop * 0;
+wait;
+int_prop = 0 * int_prop;
+wait;
+
+fix_prop = 0.0 * fix_prop;
+wait;
+fix_prop = fix_prop * 0.0;

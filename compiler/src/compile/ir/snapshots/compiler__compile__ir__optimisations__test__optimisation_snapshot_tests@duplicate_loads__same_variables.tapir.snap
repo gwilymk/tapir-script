@@ -1,0 +1,25 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/duplicate_loads/same_variables.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.5 = int 6
+y.6 = int 6
+z.7 = int 6
+return 
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.5 = int 6
+y.6 = x.5
+z.7 = x.5
+return

@@ -15,6 +15,7 @@ use crate::{
 mod constant_folding;
 mod copy_propagation;
 mod dead_store_elimination;
+mod duplicate_loads;
 mod empty_block;
 mod empty_phi;
 mod unreferenced_blocks_in_phi;
@@ -166,6 +167,10 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
         "constant_folding",
         &(constant_folding::constant_folding
             as fn(&mut TapIrFunction, &mut SymTab) -> OptimisationResult),
+    ),
+    (
+        "duplicate_loads",
+        &(duplicate_loads::duplicate_loads as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
 ];
 

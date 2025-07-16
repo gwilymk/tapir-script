@@ -1,0 +1,5 @@
+# duplicate_loads
+
+var x = 6;
+var y = 6;
+var z = 6;
