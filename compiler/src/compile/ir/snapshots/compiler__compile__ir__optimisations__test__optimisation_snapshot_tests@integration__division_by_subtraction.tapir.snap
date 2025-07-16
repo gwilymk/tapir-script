@@ -8,43 +8,43 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.16 = int 100
-getprop temp.17, 0
-temp.18 = divide(temp.16, temp.17)
-storeprop temp.18, 0
+temp.17 = int 100
+getprop temp.18, 0
+temp.19 = divide(temp.17, temp.18)
+storeprop temp.19, 0
 return 
 
 =======================
-fn divide(n.1, d.2) -> int
+fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-r.19 = n.1
-q.20 = int 0
+r.20 = n.2
+q.21 = int 0
 jmp 0
 
 ---- block 0 ----
-r.21 = φ(r.19 from 2, r.30 from 5)
-d.23 = φ(d.2 from 2, d.23 from 5)
-q.26 = φ(q.20 from 2, q.33 from 5)
-temp.22 = r.21
-temp.24 = d.23
-temp.25 = temp.22 < temp.24
-conditional_jump temp.25 3 4
+r.22 = φ(r.20 from 2, r.31 from 5)
+d.24 = φ(d.3 from 2, d.24 from 5)
+q.27 = φ(q.21 from 2, q.34 from 5)
+temp.23 = r.22
+temp.25 = d.24
+temp.26 = temp.23 < temp.25
+conditional_jump temp.26 3 4
 
 ---- block 3 ----
-temp.27 = q.26
-return temp.27
+temp.28 = q.27
+return temp.28
 
 ---- block 4 ----
 jmp 5
 
 ---- block 5 ----
-temp.28 = r.21
-temp.29 = d.23
-r.30 = temp.28 - temp.29
-temp.31 = q.26
-temp.32 = int 1
-q.33 = temp.31 + temp.32
+temp.29 = r.22
+temp.30 = d.24
+r.31 = temp.29 - temp.30
+temp.32 = q.27
+temp.33 = int 1
+q.34 = temp.32 + temp.33
 jmp 0
 
 
@@ -53,30 +53,30 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.16 = int 100
-getprop temp.17, 0
-temp.18 = divide(temp.16, temp.17)
-storeprop temp.18, 0
+temp.17 = int 100
+getprop temp.18, 0
+temp.19 = divide(temp.17, temp.18)
+storeprop temp.19, 0
 return 
 
 =======================
-fn divide(n.1, d.2) -> int
+fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-q.20 = int 0
+q.21 = int 0
 jmp 0
 
 ---- block 0 ----
-r.21 = φ(n.1 from 2, r.30 from 5)
-q.26 = φ(q.20 from 2, q.33 from 5)
-temp.25 = r.21 < d.2
-conditional_jump temp.25 3 5
+r.22 = φ(n.2 from 2, r.31 from 5)
+q.27 = φ(q.21 from 2, q.34 from 5)
+temp.26 = r.22 < d.3
+conditional_jump temp.26 3 5
 
 ---- block 3 ----
-return q.26
+return q.27
 
 ---- block 5 ----
-r.30 = r.21 - d.2
-temp.32 = int 1
-q.33 = q.26 + temp.32
+r.31 = r.22 - d.3
+temp.33 = int 1
+q.34 = q.27 + temp.33
 jmp 0

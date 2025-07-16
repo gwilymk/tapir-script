@@ -8,13 +8,13 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 3 ----
-x.7 = int 5
-y.8 = int 8
-z.9 = int 9
-temp.10 = z.9
-temp.11 = int 9
-temp.12 = temp.10 == temp.11
-conditional_jump temp.12 0 1
+x.8 = int 5
+y.9 = int 8
+z.10 = int 9
+temp.11 = z.10
+temp.12 = int 9
+temp.13 = temp.11 == temp.12
+conditional_jump temp.13 0 1
 
 ---- block 0 ----
 jmp 2
@@ -31,11 +31,11 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-z.9 = int 9
-temp.10 = z.9
-temp.11 = int 9
-temp.12 = temp.10 == temp.11
-conditional_jump temp.12 0 1
+z.10 = int 9
+temp.11 = z.10
+temp.12 = int 9
+temp.13 = temp.11 == temp.12
+conditional_jump temp.13 0 1
 
 ---- block 0 ----
 jmp 2

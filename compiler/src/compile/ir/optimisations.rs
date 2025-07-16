@@ -205,11 +205,18 @@ mod test {
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let compile_settings = CompileSettings {
-                properties: vec![Property {
-                    ty: Type::Int,
-                    index: 0,
-                    name: "int_prop".to_string(),
-                }],
+                properties: vec![
+                    Property {
+                        ty: Type::Int,
+                        index: 0,
+                        name: "int_prop".to_string(),
+                    },
+                    Property {
+                        ty: Type::Fix,
+                        index: 1,
+                        name: "fix_prop".to_string(),
+                    },
+                ],
                 enable_optimisations: true,
             };
 
