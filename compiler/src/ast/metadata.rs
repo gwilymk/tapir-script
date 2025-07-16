@@ -1,5 +1,5 @@
 use std::{
-    any::{type_name, Any, TypeId},
+    any::{Any, TypeId, type_name},
     collections::HashMap,
     fmt::Debug,
 };
@@ -61,11 +61,6 @@ impl Metadata {
         Self::default()
     }
 
-    #[cfg(test)]
-    pub fn is_empty(&self) -> bool {
-        self.map.is_empty()
-    }
-
     // Returns whether there was a value before
     pub fn set<T: 'static + Debug + Clone>(&mut self, value: T) -> bool {
         let type_id = TypeId::of::<T>();
@@ -87,10 +82,6 @@ impl Metadata {
         self.map
             .get(&type_id)
             .is_some_and(|(value, _)| (&**value as &dyn Any).is::<T>())
-    }
-
-    pub fn clear(&mut self) {
-        self.map.clear();
     }
 }
 

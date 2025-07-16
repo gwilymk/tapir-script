@@ -1,5 +1,0 @@
-fn add(x: int, y: int) -> int {
-    return x + y;
-}
-
-var y = add(2, 5) + 3;

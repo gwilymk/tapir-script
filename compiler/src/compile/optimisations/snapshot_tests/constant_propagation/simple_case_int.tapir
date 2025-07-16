@@ -1,4 +1,0 @@
-var x = 4;
-var y = x;
-
-var z = 3 + y;

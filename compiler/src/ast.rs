@@ -10,8 +10,6 @@ pub(crate) use metadata::Metadata;
 use serde::Serialize;
 
 mod metadata;
-#[cfg(test)]
-mod pretty_printer;
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]
 pub struct SymbolId(pub usize);
@@ -96,19 +94,6 @@ pub struct Function<'input> {
     pub(crate) meta: Metadata,
 }
 
-impl Script<'_> {
-    #[cfg(test)]
-    pub fn pretty_print(&self) -> String {
-        let mut output = String::new();
-
-        for function in &self.functions {
-            pretty_printer::pretty_print(function, &mut output).unwrap();
-        }
-
-        output
-    }
-}
-
 #[derive(Clone, Debug, Serialize, Default)]
 pub struct FunctionModifiers {
     pub is_event_handler: Option<Span>,
@@ -162,38 +147,6 @@ pub struct Statement<'input> {
     pub kind: StatementKind<'input>,
 
     pub(crate) meta: Metadata,
-}
-
-impl<'input> Statement<'input> {
-    pub(crate) fn expressions_mut(
-        &mut self,
-    ) -> Box<dyn Iterator<Item = &mut Expression<'input>> + '_> {
-        match &mut self.kind {
-            StatementKind::Error
-            | StatementKind::Wait
-            | StatementKind::Continue
-            | StatementKind::Break
-            | StatementKind::Nop => Box::new(iter::empty()),
-            StatementKind::VariableDeclaration { value, .. }
-            | StatementKind::Assignment { value, .. } => Box::new(iter::once(value)),
-            StatementKind::If {
-                condition,
-                true_block,
-                false_block,
-            } => Box::new(
-                iter::once(condition)
-                    .chain(true_block.iter_mut().flat_map(Statement::expressions_mut))
-                    .chain(false_block.iter_mut().flat_map(Statement::expressions_mut)),
-            ),
-            StatementKind::Block { block } | StatementKind::Loop { block } => {
-                Box::new(block.iter_mut().flat_map(Statement::expressions_mut))
-            }
-            StatementKind::Call { arguments, .. }
-            | StatementKind::Return { values: arguments }
-            | StatementKind::Trigger { arguments, .. }
-            | StatementKind::Spawn { arguments, .. } => Box::new(arguments.iter_mut()),
-        }
-    }
 }
 
 #[derive(Clone, Debug, Default, Serialize)]

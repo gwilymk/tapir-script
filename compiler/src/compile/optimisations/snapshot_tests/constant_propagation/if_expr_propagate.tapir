@@ -1,6 +1,0 @@
-var x = true;
-
-if x {
-    var y = x;
-}
-

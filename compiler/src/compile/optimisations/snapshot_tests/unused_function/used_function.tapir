@@ -1,5 +1,0 @@
-foo(4);
-
-fn foo(x: int) -> int {
-    return x;
-}

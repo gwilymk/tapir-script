@@ -1,9 +1,0 @@
-event fn foo() {
-    call_function();
-}
-
-fn call_function() {
-    wait;
-}
-
-fn unused_function() {}

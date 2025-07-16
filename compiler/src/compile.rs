@@ -1,7 +1,6 @@
 use std::{collections::HashMap, path::Path};
 
 use bytecode::{Type1, Type3};
-use optimisations::UnusedFunction;
 use symtab_visitor::SymTabVisitor;
 use type_visitor::{TypeTable, TypeVisitor};
 
@@ -23,7 +22,6 @@ use crate::{
 mod disassemble;
 mod ir;
 mod loop_visitor;
-mod optimisations;
 mod symtab_visitor;
 mod type_visitor;
 
@@ -39,16 +37,6 @@ pub struct Property {
 pub struct CompileSettings {
     pub properties: Vec<Property>,
     pub enable_optimisations: bool,
-}
-
-impl CompileSettings {
-    pub(crate) fn is_property(&self, symbol_id: SymbolId) -> bool {
-        symbol_id.0 < self.properties.len()
-    }
-
-    pub(crate) fn property_symbols(&self) -> impl Iterator<Item = SymbolId> {
-        (0..self.properties.len()).map(SymbolId)
-    }
 }
 
 pub fn compile(
@@ -81,8 +69,6 @@ pub fn compile(
         type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
     }
 
-    optimisations::optimise(&mut ast.functions, settings, &mut diagnostics);
-
     let type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);
 
     if diagnostics.has_any() {
@@ -95,7 +81,6 @@ pub fn compile(
     let ir_functions = ast
         .functions
         .iter()
-        .filter(|f| !f.meta.has::<UnusedFunction>())
         .map(|f| create_ir(f, &mut symtab))
         .collect::<Vec<_>>();
 

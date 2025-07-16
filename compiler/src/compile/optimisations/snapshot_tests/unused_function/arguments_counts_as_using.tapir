@@ -1,9 +1,0 @@
-fn used(x: int) {
-    wait;
-}
-
-fn used2() -> int {
-    return 33;
-}
-
-used(used2());

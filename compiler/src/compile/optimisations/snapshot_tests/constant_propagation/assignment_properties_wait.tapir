@@ -1,6 +1,0 @@
-var x = 3;
-int_prop = x;
-
-wait;
-
-var y = int_prop;
