@@ -1,0 +1,91 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/integration/recursive_factorial.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.19 = int 10
+temp.20 = factorial(temp.19)
+storeprop temp.20, 0
+return 
+
+=======================
+fn factorial(x.2) -> int
+
+---- block 3 ----
+temp.21 = x.2
+temp.22 = int 0
+temp.23 = temp.21 == temp.22
+conditional_jump temp.23 0 1
+
+---- block 0 ----
+temp.24 = int 1
+return temp.24
+
+---- block 1 ----
+jmp 2
+
+---- block 2 ----
+temp.25 = x.2
+temp.26 = int 1
+temp.27 = temp.25 == temp.26
+conditional_jump temp.27 5 6
+
+---- block 5 ----
+temp.28 = int 1
+return temp.28
+
+---- block 6 ----
+jmp 7
+
+---- block 7 ----
+temp.29 = x.2
+temp.30 = x.2
+temp.31 = int 1
+temp.32 = temp.30 - temp.31
+temp.33 = factorial(temp.32)
+temp.34 = temp.29 * temp.33
+return temp.34
+
+
+----------- optimised -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.19 = int 10
+temp.20 = factorial(temp.19)
+storeprop temp.20, 0
+return 
+
+=======================
+fn factorial(x.2) -> int
+
+---- block 3 ----
+temp.22 = int 0
+temp.23 = x.2 == temp.22
+conditional_jump temp.23 0 2
+
+---- block 0 ----
+temp.24 = int 1
+return temp.24
+
+---- block 2 ----
+temp.26 = int 1
+temp.27 = x.2 == temp.26
+conditional_jump temp.27 5 7
+
+---- block 5 ----
+temp.28 = int 1
+return temp.28
+
+---- block 7 ----
+temp.31 = int 1
+temp.32 = x.2 - temp.31
+temp.33 = factorial(temp.32)
+temp.34 = x.2 * temp.33
+return temp.34
