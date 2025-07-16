@@ -12,6 +12,7 @@ use crate::{
     },
 };
 
+mod constant_conditional;
 mod constant_folding;
 mod copy_propagation;
 mod dead_store_elimination;
@@ -171,6 +172,11 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
     (
         "duplicate_loads",
         &(duplicate_loads::duplicate_loads as fn(&mut TapIrFunction) -> OptimisationResult),
+    ),
+    (
+        "remove_constant_conditionals",
+        &(constant_conditional::remove_constant_conditionals
+            as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
 ];
 

@@ -1,0 +1,15 @@
+# copy_propagation, remove_constant_conditionals
+
+if true {
+    int_prop = 5;
+} else {
+    int_prop = 9;
+}
+
+wait;
+
+if false {
+    int_prop = 15;
+} else {
+    int_prop = 19;
+}
