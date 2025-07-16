@@ -119,24 +119,8 @@ pub enum BlockExitInstr {
 }
 
 impl BlockExitInstr {
-    pub fn sources(&self) -> impl Iterator<Item = SymbolId> {
-        SymbolIter::new_source_exit(self)
-    }
-
     pub fn sources_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
         SymbolIterMut::new_source_exit(self)
-    }
-
-    fn target_blocks(&self) -> impl Iterator<Item = BlockId> {
-        match self {
-            BlockExitInstr::JumpToBlock(block_id) => [Some(*block_id), None],
-            BlockExitInstr::ConditionalJump {
-                if_true, if_false, ..
-            } => [Some(*if_true), Some(*if_false)],
-            BlockExitInstr::Return(_) => [None, None],
-        }
-        .into_iter()
-        .flatten()
     }
 }
 
