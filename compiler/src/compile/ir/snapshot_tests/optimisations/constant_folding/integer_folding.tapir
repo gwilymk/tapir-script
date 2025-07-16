@@ -1,0 +1,9 @@
+# copy_propagation, dead_store_elimination, constant_folding
+
+var x = 5;
+var y = 9;
+
+var z = x + 6;
+var w = y + 9;
+
+int_prop = z + w;

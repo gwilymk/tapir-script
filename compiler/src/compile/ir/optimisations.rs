@@ -6,9 +6,13 @@ use std::{
 use crate::{
     CompileSettings,
     ast::SymbolId,
-    compile::ir::{TapIrFunction, TapIrFunctionBlockIter},
+    compile::{
+        ir::{TapIrFunction, TapIrFunctionBlockIter},
+        symtab_visitor::SymTab,
+    },
 };
 
+mod constant_folding;
 mod copy_propagation;
 mod dead_store_elimination;
 mod empty_block;
@@ -70,7 +74,7 @@ fn rename_all_variables(
     did_something
 }
 
-pub fn optimise(program: &mut Vec<TapIrFunction>, settings: &CompileSettings) {
+pub fn optimise(program: &mut Vec<TapIrFunction>, symtab: &mut SymTab, settings: &CompileSettings) {
     if !settings.enable_optimisations {
         return;
     }
@@ -79,7 +83,7 @@ pub fn optimise(program: &mut Vec<TapIrFunction>, settings: &CompileSettings) {
         let mut did_something = OptimisationResult::DidNothing;
 
         for (_, optimisation) in OPTIMISATIONS {
-            did_something |= optimisation.optimise(program);
+            did_something |= optimisation.optimise(program, symtab);
         }
 
         if did_something == OptimisationResult::DidNothing {
@@ -89,21 +93,46 @@ pub fn optimise(program: &mut Vec<TapIrFunction>, settings: &CompileSettings) {
 }
 
 trait Optimisation: Sync {
-    fn optimise(&self, program: &mut Vec<TapIrFunction>) -> OptimisationResult;
+    fn optimise(&self, program: &mut Vec<TapIrFunction>, symtab: &mut SymTab)
+    -> OptimisationResult;
 }
 
 impl Optimisation for fn(program: &mut [TapIrFunction]) -> OptimisationResult {
-    fn optimise(&self, program: &mut Vec<TapIrFunction>) -> OptimisationResult {
+    fn optimise(
+        &self,
+        program: &mut Vec<TapIrFunction>,
+        _symtab: &mut SymTab,
+    ) -> OptimisationResult {
         (self)(program)
     }
 }
 
 impl Optimisation for fn(f: &mut TapIrFunction) -> OptimisationResult {
-    fn optimise(&self, program: &mut Vec<TapIrFunction>) -> OptimisationResult {
+    fn optimise(
+        &self,
+        program: &mut Vec<TapIrFunction>,
+        _symtab: &mut SymTab,
+    ) -> OptimisationResult {
         let mut result = OptimisationResult::DidNothing;
 
         for f in program.iter_mut() {
             result |= (self)(f);
+        }
+
+        result
+    }
+}
+
+impl Optimisation for fn(f: &mut TapIrFunction, symtab: &mut SymTab) -> OptimisationResult {
+    fn optimise(
+        &self,
+        program: &mut Vec<TapIrFunction>,
+        symtab: &mut SymTab,
+    ) -> OptimisationResult {
+        let mut result = OptimisationResult::DidNothing;
+
+        for f in program.iter_mut() {
+            result |= (self)(f, symtab);
         }
 
         result
@@ -132,6 +161,11 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
         "dead_store_elimination",
         &(dead_store_elimination::remove_dead_stores
             as fn(&mut TapIrFunction) -> OptimisationResult),
+    ),
+    (
+        "constant_folding",
+        &(constant_folding::constant_folding
+            as fn(&mut TapIrFunction, &mut SymTab) -> OptimisationResult),
     ),
 ];
 
@@ -231,7 +265,7 @@ mod test {
 
                 for (name, optimisation) in OPTIMISATIONS {
                     if enabled_optimisations.contains(name) {
-                        did_something |= optimisation.optimise(&mut irs);
+                        did_something |= optimisation.optimise(&mut irs, &mut symtab);
                     }
                 }
 

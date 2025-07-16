@@ -107,7 +107,7 @@ pub fn compile(
         })
         .collect::<Vec<_>>();
 
-    ir::optimisations::optimise(&mut ir_functions, settings);
+    ir::optimisations::optimise(&mut ir_functions, &mut symtab, settings);
 
     for mut function in ir_functions {
         let registers = regalloc::allocate_registers(&mut function);
