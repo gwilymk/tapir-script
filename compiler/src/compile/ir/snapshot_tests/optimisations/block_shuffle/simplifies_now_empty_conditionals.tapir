@@ -1,0 +1,14 @@
+# copy_propagation, remove_constant_conditionals, simplify_blocks
+
+var x = 5;
+var y = 19;
+
+if true {
+    y = 19;
+
+    if true {
+        x = y;
+    }
+}
+
+int_prop = x;

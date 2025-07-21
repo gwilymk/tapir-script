@@ -725,6 +725,15 @@ impl TapIrFunction {
             panic!("Shouldn't be inserting a block if one already exists with the same ID");
         }
     }
+
+    fn disjoint_blocks_mut<const N: usize>(
+        &mut self,
+        block_ids: [&BlockId; N],
+    ) -> [&mut TapIrBlock; N] {
+        self.blocks
+            .get_disjoint_mut(block_ids)
+            .map(|block| block.expect("Failed to find block with ID"))
+    }
 }
 
 pub enum TapIrFunctionBlockIter {

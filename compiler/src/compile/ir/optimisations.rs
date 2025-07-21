@@ -3,6 +3,8 @@ use std::{
     ops::{BitOr, BitOrAssign},
 };
 
+use petgraph::{Direction, prelude::DiGraphMap, visit::Dfs};
+
 use crate::{
     CompileSettings,
     ast::SymbolId,
@@ -12,6 +14,7 @@ use crate::{
     },
 };
 
+mod block_shuffle;
 mod constant_conditional;
 mod constant_folding;
 mod copy_propagation;
@@ -53,6 +56,8 @@ fn rename_all_variables(
         return OptimisationResult::DidNothing;
     }
 
+    let renames = reduce_renames(renames);
+
     let mut did_something = OptimisationResult::DidNothing;
 
     let mut dfs = TapIrFunctionBlockIter::new_dfs(function);
@@ -74,6 +79,36 @@ fn rename_all_variables(
     }
 
     did_something
+}
+
+fn reduce_renames(renames: &HashMap<SymbolId, SymbolId>) -> HashMap<SymbolId, SymbolId> {
+    let mut rename_graph = DiGraphMap::new();
+    for (from, to) in renames {
+        rename_graph.add_edge(*to, *from, ());
+    }
+
+    let mut roots = vec![];
+    for node in rename_graph.nodes() {
+        if rename_graph
+            .edges_directed(node, Direction::Incoming)
+            .count()
+            == 0
+        {
+            roots.push(node);
+        }
+    }
+
+    let mut result = HashMap::new();
+    for root in roots {
+        let mut dfs = Dfs::new(&rename_graph, root);
+        while let Some(rename) = dfs.next(&rename_graph) {
+            if root != rename {
+                result.insert(rename, root);
+            }
+        }
+    }
+
+    result
 }
 
 pub fn optimise(program: &mut Vec<TapIrFunction>, symtab: &mut SymTab, settings: &CompileSettings) {
@@ -147,8 +182,13 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
         &(empty_phi::remove_empty_phis as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
     (
-        "empty_block",
-        &(empty_block::remove_empty_blocks as fn(&mut TapIrFunction) -> OptimisationResult),
+        "simplify_blocks",
+        &(block_shuffle::simplify_blocks as fn(&mut TapIrFunction) -> OptimisationResult),
+    ),
+    (
+        "remove_constant_conditionals",
+        &(constant_conditional::remove_constant_conditionals
+            as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
     (
         "unreferenced_blocks_in_phi",
@@ -174,9 +214,8 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
         &(duplicate_loads::duplicate_loads as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
     (
-        "remove_constant_conditionals",
-        &(constant_conditional::remove_constant_conditionals
-            as fn(&mut TapIrFunction) -> OptimisationResult),
+        "empty_block",
+        &(empty_block::remove_empty_blocks as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
 ];
 
@@ -271,8 +310,6 @@ mod test {
                 pretty_print::pretty_print_tapir_function(ir, &symtab, &mut output).unwrap();
             }
 
-            writeln!(&mut output, "\n----------- optimised -------------").unwrap();
-
             let (enabled_optimisations, _) = input.split_once('\n').unwrap();
             let (_, enabled_optimisations) = enabled_optimisations.split_once("# ").unwrap();
 
@@ -284,7 +321,17 @@ mod test {
 
                 for (name, optimisation) in OPTIMISATIONS {
                     if enable_all_optimisations || enabled_optimisations.contains(name) {
-                        did_something |= optimisation.optimise(&mut irs, &mut symtab);
+                        let this_did_something = optimisation.optimise(&mut irs, &mut symtab);
+
+                        // if this_did_something == OptimisationResult::DidSomething {
+                        //     writeln!(&mut output, "\n----------- {name} -------------").unwrap();
+                        //     for ir in &irs {
+                        //         pretty_print::pretty_print_tapir_function(ir, &symtab, &mut output)
+                        //             .unwrap();
+                        //     }
+                        // }
+
+                        did_something |= this_did_something;
                     }
                 }
 
@@ -293,11 +340,36 @@ mod test {
                 }
             }
 
+            writeln!(&mut output, "\n----------- optimised -------------").unwrap();
             for ir in &irs {
                 pretty_print::pretty_print_tapir_function(ir, &symtab, &mut output).unwrap();
             }
 
             assert_snapshot!(output);
         });
+    }
+
+    #[test]
+    fn reduce_renames_simple_case() {
+        let mut renames = HashMap::new();
+        renames.insert(SymbolId(5), SymbolId(7));
+        renames.insert(SymbolId(6), SymbolId(19));
+
+        assert_eq!(reduce_renames(&renames), renames);
+    }
+
+    #[test]
+    fn reduce_renames_chained() {
+        let mut renames = HashMap::new();
+        renames.insert(SymbolId(5), SymbolId(7));
+        renames.insert(SymbolId(7), SymbolId(12));
+        renames.insert(SymbolId(6), SymbolId(19));
+
+        let mut expected = HashMap::new();
+        expected.insert(SymbolId(5), SymbolId(12));
+        expected.insert(SymbolId(7), SymbolId(12));
+        expected.insert(SymbolId(6), SymbolId(19));
+
+        assert_eq!(reduce_renames(&renames), expected);
     }
 }

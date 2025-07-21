@@ -105,7 +105,7 @@ jmp 6
 
 ---- block 6 ----
 getprop temp.42, 0
-temp.43 = a.40 != temp.42
+temp.43 = a.24 != temp.42
 conditional_jump temp.43 7 9
 
 ---- block 7 ----

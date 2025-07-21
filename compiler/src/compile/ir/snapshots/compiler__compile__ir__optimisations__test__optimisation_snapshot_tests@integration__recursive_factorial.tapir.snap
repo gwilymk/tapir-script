@@ -68,22 +68,22 @@ fn factorial(x.2) -> int
 ---- block 3 ----
 temp.22 = int 0
 temp.23 = x.2 == temp.22
-conditional_jump temp.23 0 2
+conditional_jump temp.23 0 1
 
 ---- block 0 ----
 temp.24 = int 1
 return temp.24
 
----- block 2 ----
+---- block 1 ----
 temp.26 = int 1
 temp.27 = x.2 == temp.26
-conditional_jump temp.27 5 7
+conditional_jump temp.27 5 6
 
 ---- block 5 ----
 temp.28 = int 1
 return temp.28
 
----- block 7 ----
+---- block 6 ----
 temp.31 = int 1
 temp.32 = x.2 - temp.31
 temp.33 = factorial(temp.32)

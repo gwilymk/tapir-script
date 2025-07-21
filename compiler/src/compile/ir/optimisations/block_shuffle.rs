@@ -1,0 +1,56 @@
+use petgraph::{prelude::DiGraphMap, visit::IntoNeighbors};
+
+use crate::compile::ir::{
+    BlockExitInstr, TapIrFunction, TapIrFunctionBlockIter, optimisations::OptimisationResult,
+};
+
+pub fn simplify_blocks(f: &mut TapIrFunction) -> OptimisationResult {
+    let mut did_something = OptimisationResult::DidNothing;
+
+    // we need to know the predecessors of every block unfortunately
+    let mut full_graph = DiGraphMap::new();
+    for block in f.blocks() {
+        for neighbour in f.neighbors(block.id()) {
+            full_graph.add_edge(block.id(), neighbour, ());
+        }
+    }
+
+    let mut dfs = TapIrFunctionBlockIter::new_dfs(f);
+    while let Some(block_id) = dfs.next_id(f) {
+        let block = f.block(block_id).unwrap();
+        let BlockExitInstr::JumpToBlock(next_block_id) = block.block_exit() else {
+            // this block doesn't have an unconditional jump in it
+            continue;
+        };
+
+        let next_block_id = *next_block_id;
+
+        if full_graph
+            .edges_directed(next_block_id, petgraph::Direction::Incoming)
+            .count()
+            != 1
+        {
+            // we can't just copy the content of the next block into this one
+            continue;
+        }
+
+        // copy the content of the next block into this one, since there isn't another block jumping to it
+        let [this_block, next_block] = f.disjoint_blocks_mut([&block_id, &next_block_id]);
+
+        if next_block.instrs.is_empty() {
+            // nothing to do here since there aren't any instructions in next
+            continue;
+        }
+
+        if !next_block.block_entry().is_empty() {
+            // phis make this a little complex, so don't bother
+            continue;
+        }
+
+        this_block.instrs.append(&mut next_block.instrs);
+
+        did_something = OptimisationResult::DidSomething;
+    }
+
+    did_something
+}

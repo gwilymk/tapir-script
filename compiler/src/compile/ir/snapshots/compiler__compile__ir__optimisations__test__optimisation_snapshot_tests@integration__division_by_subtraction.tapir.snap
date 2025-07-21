@@ -67,15 +67,15 @@ q.21 = int 0
 jmp 0
 
 ---- block 0 ----
-r.22 = φ(n.2 from 2, r.31 from 5)
-q.27 = φ(q.21 from 2, q.34 from 5)
+r.22 = φ(n.2 from 2, r.31 from 4)
+q.27 = φ(q.21 from 2, q.34 from 4)
 temp.26 = r.22 < d.3
-conditional_jump temp.26 3 5
+conditional_jump temp.26 3 4
 
 ---- block 3 ----
 return q.27
 
----- block 5 ----
+---- block 4 ----
 r.31 = r.22 - d.3
 temp.33 = int 1
 q.34 = q.27 + temp.33
