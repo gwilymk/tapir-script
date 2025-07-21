@@ -8,7 +8,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/comparison_ops.tapir
     [
       -1,
       15,
-      0,
+      5,
       6,
       15,
       83886091,
@@ -21,7 +21,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/comparison_ops.tapir
     [
       -1,
       20,
-      0,
+      5,
       20,
       15,
       83886105,
