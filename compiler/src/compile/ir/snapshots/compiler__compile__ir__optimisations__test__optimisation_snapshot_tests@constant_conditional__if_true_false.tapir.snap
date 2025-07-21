@@ -40,7 +40,7 @@ jmp 6
 return 
 
 
------------ optimised -------------
+----------- remove_constant_conditionals -------------
 =======================
 fn @toplevel() -> 
 

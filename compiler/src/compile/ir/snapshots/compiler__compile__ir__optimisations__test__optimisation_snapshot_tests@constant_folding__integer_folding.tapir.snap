@@ -23,7 +23,83 @@ storeprop temp.23, 0
 return 
 
 
------------ optimised -------------
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.13 = int 5
+y.14 = int 9
+temp.15 = x.13
+temp.16 = int 6
+z.17 = x.13 + temp.16
+temp.18 = y.14
+temp.19 = int 9
+w.20 = y.14 + temp.19
+temp.21 = z.17
+temp.22 = w.20
+temp.23 = z.17 + w.20
+storeprop temp.23, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.13 = int 5
+y.14 = int 9
+temp.16 = int 6
+z.17 = x.13 + temp.16
+temp.19 = int 9
+w.20 = y.14 + temp.19
+temp.23 = z.17 + w.20
+storeprop temp.23, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.13 = int 5
+y.14 = int 9
+temp.16 = int 6
+z.17 = int 11
+temp.19 = int 9
+w.20 = int 18
+temp.23 = z.17 + w.20
+storeprop temp.23, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+z.17 = int 11
+w.20 = int 18
+temp.23 = z.17 + w.20
+storeprop temp.23, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+z.17 = int 11
+w.20 = int 18
+temp.23 = int 29
+storeprop temp.23, 0
+return 
+
+
+----------- dead_store_elimination -------------
 =======================
 fn @toplevel() -> 
 

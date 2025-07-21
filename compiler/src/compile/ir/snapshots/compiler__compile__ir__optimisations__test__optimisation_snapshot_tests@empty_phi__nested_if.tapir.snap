@@ -36,7 +36,39 @@ x.12 = φ(x.7 from 4, x.7 from 5)
 jmp 2
 
 
------------ optimised -------------
+----------- empty_phi -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+x.7 = bool true
+y.8 = bool true
+temp.9 = x.7
+conditional_jump temp.9 0 1
+
+---- block 0 ----
+temp.10 = y.8
+conditional_jump temp.10 4 5
+
+---- block 1 ----
+jmp 2
+
+---- block 4 ----
+jmp 6
+
+---- block 5 ----
+jmp 6
+
+---- block 2 ----
+x.11 = φ(x.7 from 1, x.7 from 6)
+z.13 = x.11
+return 
+
+---- block 6 ----
+jmp 2
+
+
+----------- empty_phi -------------
 =======================
 fn @toplevel() -> 
 

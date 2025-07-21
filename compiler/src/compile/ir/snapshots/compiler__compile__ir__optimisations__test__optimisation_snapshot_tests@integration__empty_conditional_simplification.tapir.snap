@@ -39,7 +39,206 @@ x.14 = φ(x.12 from 4, x.7 from 5)
 jmp 2
 
 
------------ optimised -------------
+----------- remove_constant_conditionals -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+x.7 = int 5
+y.8 = int 19
+temp.9 = bool true
+jmp 0
+
+---- block 0 ----
+y.10 = int 19
+temp.11 = bool true
+jmp 4
+
+---- block 4 ----
+x.12 = y.10
+jmp 6
+
+---- block 6 ----
+x.14 = φ(x.12 from 4, x.7 from 5)
+jmp 2
+
+---- block 2 ----
+x.13 = φ(x.7 from 1, x.14 from 6)
+temp.15 = x.13
+storeprop temp.15, 0
+return 
+
+
+----------- unreferenced_blocks_in_phi -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+x.7 = int 5
+y.8 = int 19
+temp.9 = bool true
+jmp 0
+
+---- block 0 ----
+y.10 = int 19
+temp.11 = bool true
+jmp 4
+
+---- block 4 ----
+x.12 = y.10
+jmp 6
+
+---- block 6 ----
+x.14 = φ(x.12 from 4)
+jmp 2
+
+---- block 2 ----
+x.13 = φ(x.14 from 6)
+temp.15 = x.13
+storeprop temp.15, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+x.7 = int 5
+y.8 = int 19
+temp.9 = bool true
+jmp 0
+
+---- block 0 ----
+y.10 = int 19
+temp.11 = bool true
+jmp 4
+
+---- block 4 ----
+x.12 = y.10
+jmp 6
+
+---- block 6 ----
+x.14 = φ(y.10 from 4)
+jmp 2
+
+---- block 2 ----
+x.13 = φ(x.14 from 6)
+temp.15 = x.13
+storeprop x.13, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+jmp 0
+
+---- block 0 ----
+y.10 = int 19
+jmp 4
+
+---- block 4 ----
+jmp 6
+
+---- block 6 ----
+x.14 = φ(y.10 from 4)
+jmp 2
+
+---- block 2 ----
+x.13 = φ(x.14 from 6)
+storeprop x.13, 0
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+jmp 0
+
+---- block 0 ----
+y.10 = int 19
+jmp 6
+
+---- block 6 ----
+x.14 = φ(y.10 from 4, y.10 from 0)
+jmp 2
+
+---- block 2 ----
+x.13 = φ(x.14 from 6)
+storeprop x.13, 0
+return 
+
+
+----------- empty_phi -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+jmp 0
+
+---- block 0 ----
+y.10 = int 19
+jmp 6
+
+---- block 6 ----
+jmp 2
+
+---- block 2 ----
+storeprop y.10, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+y.10 = int 19
+jmp 0
+
+---- block 0 ----
+jmp 6
+
+---- block 6 ----
+storeprop y.10, 0
+jmp 2
+
+---- block 2 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+y.10 = int 19
+jmp 6
+
+---- block 6 ----
+storeprop y.10, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+y.10 = int 19
+storeprop y.10, 0
+jmp 6
+
+---- block 6 ----
+return 
+
+
+----------- empty_block -------------
 =======================
 fn @toplevel() -> 
 

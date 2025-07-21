@@ -20,7 +20,24 @@ storeprop temp.13, 0
 return 
 
 
------------ optimised -------------
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.8, 0
+temp.9 = int 0
+temp.10 = int 0
+storeprop temp.10, 0
+wait
+temp.11 = int 0
+getprop temp.12, 0
+temp.13 = int 0
+storeprop temp.13, 0
+return 
+
+
+----------- dead_store_elimination -------------
 =======================
 fn @toplevel() -> 
 

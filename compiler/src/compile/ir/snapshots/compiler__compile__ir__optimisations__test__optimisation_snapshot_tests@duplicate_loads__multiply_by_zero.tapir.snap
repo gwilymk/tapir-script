@@ -30,7 +30,88 @@ storeprop temp.25, 1
 return 
 
 
------------ optimised -------------
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.14, 0
+temp.15 = int 0
+temp.16 = int 0
+storeprop temp.16, 0
+wait
+temp.17 = int 0
+getprop temp.18, 0
+temp.19 = int 0
+storeprop temp.19, 0
+wait
+temp.20 = fix 0
+getprop temp.21, 1
+temp.22 = fix 0
+storeprop temp.22, 1
+wait
+getprop temp.23, 1
+temp.24 = fix 0
+temp.25 = fix 0
+storeprop temp.25, 1
+return 
+
+
+----------- duplicate_loads -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.14, 0
+temp.15 = int 0
+temp.16 = temp.15
+storeprop temp.16, 0
+wait
+temp.17 = temp.15
+getprop temp.18, 0
+temp.19 = temp.15
+storeprop temp.19, 0
+wait
+temp.20 = temp.15
+getprop temp.21, 1
+temp.22 = temp.15
+storeprop temp.22, 1
+wait
+getprop temp.23, 1
+temp.24 = temp.15
+temp.25 = temp.15
+storeprop temp.25, 1
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.14, 0
+temp.15 = int 0
+temp.16 = temp.15
+storeprop temp.15, 0
+wait
+temp.17 = temp.15
+getprop temp.18, 0
+temp.19 = temp.15
+storeprop temp.15, 0
+wait
+temp.20 = temp.15
+getprop temp.21, 1
+temp.22 = temp.15
+storeprop temp.15, 1
+wait
+getprop temp.23, 1
+temp.24 = temp.15
+temp.25 = temp.15
+storeprop temp.15, 1
+return 
+
+
+----------- dead_store_elimination -------------
 =======================
 fn @toplevel() -> 
 

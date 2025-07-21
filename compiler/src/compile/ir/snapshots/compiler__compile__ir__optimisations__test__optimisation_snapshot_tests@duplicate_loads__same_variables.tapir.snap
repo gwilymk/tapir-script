@@ -14,7 +14,7 @@ z.7 = int 6
 return 
 
 
------------ optimised -------------
+----------- duplicate_loads -------------
 =======================
 fn @toplevel() -> 
 

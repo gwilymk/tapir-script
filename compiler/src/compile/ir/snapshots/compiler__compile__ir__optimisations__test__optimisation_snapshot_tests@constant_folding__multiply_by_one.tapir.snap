@@ -17,7 +17,35 @@ storeprop temp.11, 0
 return 
 
 
------------ optimised -------------
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.7, 0
+getprop temp.8, 0
+temp.9 = int 1
+temp.10 = temp.8
+temp.11 = temp.7 + temp.10
+storeprop temp.11, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.7, 0
+getprop temp.8, 0
+temp.9 = int 1
+temp.10 = temp.8
+temp.11 = temp.7 + temp.8
+storeprop temp.11, 0
+return 
+
+
+----------- dead_store_elimination -------------
 =======================
 fn @toplevel() -> 
 

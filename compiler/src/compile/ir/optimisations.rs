@@ -323,13 +323,13 @@ mod test {
                     if enable_all_optimisations || enabled_optimisations.contains(name) {
                         let this_did_something = optimisation.optimise(&mut irs, &mut symtab);
 
-                        // if this_did_something == OptimisationResult::DidSomething {
-                        //     writeln!(&mut output, "\n----------- {name} -------------").unwrap();
-                        //     for ir in &irs {
-                        //         pretty_print::pretty_print_tapir_function(ir, &symtab, &mut output)
-                        //             .unwrap();
-                        //     }
-                        // }
+                        if this_did_something == OptimisationResult::DidSomething {
+                            writeln!(&mut output, "\n----------- {name} -------------").unwrap();
+                            for ir in &irs {
+                                pretty_print::pretty_print_tapir_function(ir, &symtab, &mut output)
+                                    .unwrap();
+                            }
+                        }
 
                         did_something |= this_did_something;
                     }
@@ -338,11 +338,6 @@ mod test {
                 if did_something == OptimisationResult::DidNothing {
                     break;
                 }
-            }
-
-            writeln!(&mut output, "\n----------- optimised -------------").unwrap();
-            for ir in &irs {
-                pretty_print::pretty_print_tapir_function(ir, &symtab, &mut output).unwrap();
             }
 
             assert_snapshot!(output);
