@@ -1,0 +1,15 @@
+# remove_unreferenced_functions
+
+event fn foo() {
+    int_prop = bar(5);
+}
+
+fn bar(x: int) -> int {
+    return x;
+}
+
+fn baz(x: int) -> int {
+    return x;
+}
+
+int_prop = 9;

@@ -1,0 +1,43 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/unreferenced_function/mutual_references_but_unused.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.13 = int 9
+storeprop temp.13, 0
+return 
+
+=======================
+fn bar(x.2) -> int
+
+---- block 0 ----
+temp.14 = x.2
+temp.15 = int 1
+temp.16 = temp.14 - temp.15
+temp.17 = baz(temp.16)
+return temp.17
+
+=======================
+fn baz(x.3) -> int
+
+---- block 0 ----
+temp.18 = x.3
+temp.19 = int 1
+temp.20 = temp.18 - temp.19
+temp.21 = bar(temp.20)
+return temp.21
+
+
+----------- remove_unreferenced_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.13 = int 9
+storeprop temp.13, 0
+return

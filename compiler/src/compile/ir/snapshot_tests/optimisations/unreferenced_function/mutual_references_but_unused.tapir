@@ -1,0 +1,11 @@
+# remove_unreferenced_functions
+
+fn bar(x: int) -> int {
+    return baz(x - 1);
+}
+
+fn baz(x: int) -> int {
+    return bar(x - 1);
+}
+
+int_prop = 9;

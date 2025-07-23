@@ -327,7 +327,9 @@ mod test {
             }
 
             let (enabled_optimisations, _) = input.split_once('\n').unwrap();
-            let (_, enabled_optimisations) = enabled_optimisations.split_once("# ").unwrap();
+            let (_, enabled_optimisations) = enabled_optimisations
+                .split_once("# ")
+                .unwrap_or_else(|| panic!("Missing optimisation comment in {}", path.display()));
 
             let enabled_optimisations = enabled_optimisations.split(", ").collect::<HashSet<_>>();
             let enable_all_optimisations = enabled_optimisations.contains("all");
