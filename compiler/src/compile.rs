@@ -118,7 +118,7 @@ impl Compiler {
             stack: vec![],
 
             jumps: vec![],
-            function_locations: HashMap::from([(FunctionId(0), Label(0))]),
+            function_locations: HashMap::from([(FunctionId::toplevel(), Label(0))]),
             bytecode: Bytecode::new(type_table.triggers()),
         }
     }
@@ -130,7 +130,7 @@ impl Compiler {
     ) {
         let function_id = function.id();
 
-        if function_id != FunctionId(0) {
+        if !function_id.is_toplevel() {
             // the stack will be arguments, then the return pointer. However, if we're at toplevel, then
             // the stack will be empty to start with
             for argument in function.arguments() {

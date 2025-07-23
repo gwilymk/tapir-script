@@ -1,0 +1,12 @@
+# remove_unreferenced_functions
+
+fn foo(x: int) -> int {
+    return x;
+}
+
+# Bar here is unreferenced, so should be removed by the optimisation
+fn bar(y: int) -> int {
+    return y;
+}
+
+int_prop = foo(5);

@@ -17,6 +17,16 @@ pub struct SymbolId(pub usize);
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]
 pub struct FunctionId(pub usize);
 
+impl FunctionId {
+    pub fn toplevel() -> Self {
+        Self(0)
+    }
+
+    pub fn is_toplevel(self) -> bool {
+        self == Self::toplevel()
+    }
+}
+
 pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]

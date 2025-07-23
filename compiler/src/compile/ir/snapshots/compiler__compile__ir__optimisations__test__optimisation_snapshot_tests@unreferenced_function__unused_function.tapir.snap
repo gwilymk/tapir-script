@@ -1,0 +1,46 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/unreferenced_function/unused_function.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.8 = int 5
+temp.9 = foo(temp.8)
+storeprop temp.9, 0
+return 
+
+=======================
+fn foo(x.2) -> int
+
+---- block 0 ----
+temp.10 = x.2
+return temp.10
+
+=======================
+fn bar(y.3) -> int
+
+---- block 0 ----
+temp.11 = y.3
+return temp.11
+
+
+----------- remove_unreferenced_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.8 = int 5
+temp.9 = foo(temp.8)
+storeprop temp.9, 0
+return 
+
+=======================
+fn foo(x.2) -> int
+
+---- block 0 ----
+temp.10 = x.2
+return temp.10

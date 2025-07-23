@@ -23,6 +23,7 @@ mod duplicate_loads;
 mod empty_block;
 mod empty_phi;
 mod unreferenced_blocks_in_phi;
+mod unreferenced_function;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum OptimisationResult {
@@ -176,7 +177,22 @@ impl Optimisation for fn(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisa
     }
 }
 
+impl Optimisation for fn(f: &mut Vec<TapIrFunction>) -> OptimisationResult {
+    fn optimise(
+        &self,
+        program: &mut Vec<TapIrFunction>,
+        _symtab: &mut SymTab,
+    ) -> OptimisationResult {
+        (self)(program)
+    }
+}
+
 static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
+    (
+        "remove_unreferenced_functions",
+        &(unreferenced_function::remove_unreferenced_functions
+            as fn(&mut Vec<TapIrFunction>) -> OptimisationResult),
+    ),
     (
         "empty_phi",
         &(empty_phi::remove_empty_phis as fn(&mut TapIrFunction) -> OptimisationResult),
