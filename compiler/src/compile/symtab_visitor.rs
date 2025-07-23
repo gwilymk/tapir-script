@@ -253,9 +253,6 @@ pub struct SymTab<'input> {
     properties: Vec<Property>,
 
     symbol_names: Vec<(Cow<'input, str>, Option<Span>)>,
-
-    // function names are only used in tests
-    #[cfg_attr(not(test), expect(dead_code))]
     function_names: Vec<&'input str>,
 }
 
