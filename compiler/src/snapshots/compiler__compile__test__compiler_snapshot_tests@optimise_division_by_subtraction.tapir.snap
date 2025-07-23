@@ -3,29 +3,21 @@ source: crates/tapir-script/compiler/src/compile.rs
 expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/optimise_division_by_subtraction.tapir
 ---
-00000000: loadk 2, 100
-00000002: getprop 3, 0
-00000003: mov 5, 2
-00000004: mov 6, 3
-00000005: call 4
-00000006: jmp 11
-00000007: mov 1, 5
-00000008: setprop 1, 0
-00000009: ret
-00000010: ret
-00000011: loadk 3, 0
-00000013: mov 6, 1
-00000014: mov 4, 3
-00000015: jmp 16
-00000016: lt 3, 6, 2
-00000017: jumpif 3
-00000018: jmp 20
-00000019: jmp 22
-00000020: mov 1, 4
-00000021: ret
-00000022: sub 5, 6, 2
-00000023: loadk 7, 1
-00000025: add 3, 4, 7
-00000026: mov 6, 5
-00000027: mov 4, 3
-00000028: jmp 16
+00000000: loadk 3, 100
+00000002: getprop 1, 0
+00000003: loadk 2, 0
+00000005: mov 4, 3
+00000006: jmp 7
+00000007: lt 3, 4, 1
+00000008: jumpif 3
+00000009: jmp 11
+00000010: jmp 13
+00000011: setprop 2, 0
+00000012: ret
+00000013: sub 3, 4, 1
+00000014: loadk 5, 1
+00000016: add 1, 2, 5
+00000017: mov 4, 3
+00000018: mov 2, 1
+00000019: jmp 7
+00000020: ret

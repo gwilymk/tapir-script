@@ -1,0 +1,6 @@
+# inline_small_functions
+fn foo(x: int) -> int {
+    return x + 5;
+}
+
+foo(6);

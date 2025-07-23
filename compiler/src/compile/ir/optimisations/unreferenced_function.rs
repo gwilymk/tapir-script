@@ -2,7 +2,7 @@ use petgraph::{prelude::DiGraphMap, visit::Dfs};
 
 use crate::{
     ast::FunctionId,
-    compile::ir::{TapIrFunction, TapIrInstr, optimisations::OptimisationResult},
+    compile::ir::{TapIrFunction, optimisations::OptimisationResult},
 };
 
 pub fn remove_unreferenced_functions(functions: &mut Vec<TapIrFunction>) -> OptimisationResult {
@@ -15,14 +15,8 @@ pub fn remove_unreferenced_functions(functions: &mut Vec<TapIrFunction>) -> Opti
             roots.push(f.id());
         }
 
-        for block in f.blocks() {
-            for instr in block.instrs() {
-                let TapIrInstr::Call { f: callee, .. } = instr.instr else {
-                    continue;
-                };
-
-                call_graph.add_edge(f.id(), callee, ());
-            }
+        for callee in f.callees() {
+            call_graph.add_edge(f.id(), callee, ());
         }
     }
 

@@ -1,0 +1,56 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/inline/basic_inline.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.8 = int 8
+temp.9 = small_fn(temp.8)
+storeprop temp.9, 0
+return 
+
+=======================
+fn small_fn(x.2) -> int
+
+---- block 0 ----
+temp.10 = x.2
+temp.11 = int 5
+temp.12 = temp.10 + temp.11
+return temp.12
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.8 = int 8
+jmp 2
+
+---- block 2 ----
+temp.14 = temp.8
+temp.15 = int 5
+temp.16 = temp.14 + temp.15
+jmp 4
+
+---- block 4 ----
+temp.13 = φ(temp.16 from 2)
+temp.9 = temp.13
+jmp 1
+
+---- block 1 ----
+storeprop temp.9, 0
+return 
+
+=======================
+fn small_fn(x.2) -> int
+
+---- block 0 ----
+temp.10 = x.2
+temp.11 = int 5
+temp.12 = temp.10 + temp.11
+return temp.12

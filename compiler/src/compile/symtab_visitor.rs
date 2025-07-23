@@ -310,7 +310,6 @@ impl<'input> SymTab<'input> {
         }
     }
 
-    #[cfg(test)]
     pub(crate) fn name_for_function(&self, function_id: FunctionId) -> &'input str {
         self.function_names[function_id.0]
     }

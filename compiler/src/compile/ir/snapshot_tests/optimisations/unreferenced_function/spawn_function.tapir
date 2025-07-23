@@ -1,0 +1,12 @@
+# remove_unreferenced_functions
+
+fn foo(x: int) -> int {
+    return x;
+}
+
+fn spawned(x: int) {
+    wait;
+    int_prop = x;
+}
+
+spawn spawned(5);

@@ -1,0 +1,13 @@
+# inline_small_functions, remove_unreferenced_functions
+
+fn foo(x: int) {
+    wait;
+    int_prop = x;
+}
+
+fn bar() {
+    spawn foo(5);
+    foo(8);
+}
+
+bar();

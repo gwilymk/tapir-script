@@ -1,0 +1,48 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/unreferenced_function/spawn_function.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.7 = int 5
+spawn spawned(temp.7)
+return 
+
+=======================
+fn foo(x.2) -> int
+
+---- block 0 ----
+temp.8 = x.2
+return temp.8
+
+=======================
+fn spawned(x.3) -> 
+
+---- block 0 ----
+wait
+temp.9 = x.3
+storeprop temp.9, 0
+return 
+
+
+----------- remove_unreferenced_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.7 = int 5
+spawn spawned(temp.7)
+return 
+
+=======================
+fn spawned(x.3) -> 
+
+---- block 0 ----
+wait
+temp.9 = x.3
+storeprop temp.9, 0
+return

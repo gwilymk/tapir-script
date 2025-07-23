@@ -22,6 +22,7 @@ mod dead_store_elimination;
 mod duplicate_loads;
 mod empty_block;
 mod empty_phi;
+mod inline;
 mod unreferenced_blocks_in_phi;
 mod unreferenced_function;
 
@@ -135,7 +136,7 @@ trait Optimisation: Sync {
     -> OptimisationResult;
 }
 
-impl Optimisation for fn(program: &mut [TapIrFunction]) -> OptimisationResult {
+impl Optimisation for fn(&mut [TapIrFunction]) -> OptimisationResult {
     fn optimise(
         &self,
         program: &mut Vec<TapIrFunction>,
@@ -145,7 +146,7 @@ impl Optimisation for fn(program: &mut [TapIrFunction]) -> OptimisationResult {
     }
 }
 
-impl Optimisation for fn(f: &mut TapIrFunction) -> OptimisationResult {
+impl Optimisation for fn(&mut TapIrFunction) -> OptimisationResult {
     fn optimise(
         &self,
         program: &mut Vec<TapIrFunction>,
@@ -161,7 +162,7 @@ impl Optimisation for fn(f: &mut TapIrFunction) -> OptimisationResult {
     }
 }
 
-impl Optimisation for fn(f: &mut TapIrFunction, symtab: &mut SymTab) -> OptimisationResult {
+impl Optimisation for fn(&mut TapIrFunction, &mut SymTab) -> OptimisationResult {
     fn optimise(
         &self,
         program: &mut Vec<TapIrFunction>,
@@ -177,13 +178,23 @@ impl Optimisation for fn(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisa
     }
 }
 
-impl Optimisation for fn(f: &mut Vec<TapIrFunction>) -> OptimisationResult {
+impl Optimisation for fn(&mut Vec<TapIrFunction>) -> OptimisationResult {
     fn optimise(
         &self,
         program: &mut Vec<TapIrFunction>,
         _symtab: &mut SymTab,
     ) -> OptimisationResult {
         (self)(program)
+    }
+}
+
+impl Optimisation for fn(&mut [TapIrFunction], &mut SymTab) -> OptimisationResult {
+    fn optimise(
+        &self,
+        program: &mut Vec<TapIrFunction>,
+        symtab: &mut SymTab,
+    ) -> OptimisationResult {
+        (self)(program, symtab)
     }
 }
 
@@ -232,6 +243,11 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
     (
         "empty_block",
         &(empty_block::remove_empty_blocks as fn(&mut TapIrFunction) -> OptimisationResult),
+    ),
+    (
+        "inline_small_functions",
+        &(inline::inline_small_functions
+            as fn(&mut [TapIrFunction], &mut SymTab) -> OptimisationResult),
     ),
 ];
 

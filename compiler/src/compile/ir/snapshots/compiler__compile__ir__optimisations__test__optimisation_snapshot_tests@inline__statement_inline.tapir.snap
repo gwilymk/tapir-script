@@ -1,0 +1,52 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/inline/statement_inline.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.7 = int 6
+foo(temp.7)
+return 
+
+=======================
+fn foo(x.2) -> int
+
+---- block 0 ----
+temp.8 = x.2
+temp.9 = int 5
+temp.10 = temp.8 + temp.9
+return temp.10
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.7 = int 6
+jmp 2
+
+---- block 2 ----
+temp.11 = temp.7
+temp.12 = int 5
+temp.13 = temp.11 + temp.12
+jmp 4
+
+---- block 4 ----
+jmp 1
+
+---- block 1 ----
+return 
+
+=======================
+fn foo(x.2) -> int
+
+---- block 0 ----
+temp.8 = x.2
+temp.9 = int 5
+temp.10 = temp.8 + temp.9
+return temp.10

@@ -25,6 +25,11 @@ pub fn simplify_blocks(f: &mut TapIrFunction) -> OptimisationResult {
 
         let next_block_id = *next_block_id;
 
+        if next_block_id == block_id {
+            // this block references itself, so we can't do any shuffling
+            continue;
+        }
+
         if full_graph
             .edges_directed(next_block_id, petgraph::Direction::Incoming)
             .count()

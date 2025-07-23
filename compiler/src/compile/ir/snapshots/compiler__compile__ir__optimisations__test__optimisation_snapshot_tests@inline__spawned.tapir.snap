@@ -1,0 +1,173 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/inline/spawned.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+bar()
+return 
+
+=======================
+fn foo(x.2) -> 
+
+---- block 0 ----
+wait
+temp.6 = x.2
+storeprop temp.6, 0
+return 
+
+=======================
+fn bar() -> 
+
+---- block 0 ----
+temp.7 = int 5
+spawn foo(temp.7)
+temp.8 = int 8
+foo(temp.8)
+return 
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+bar()
+return 
+
+=======================
+fn foo(x.2) -> 
+
+---- block 0 ----
+wait
+temp.6 = x.2
+storeprop temp.6, 0
+return 
+
+=======================
+fn bar() -> 
+
+---- block 0 ----
+temp.7 = int 5
+spawn foo(temp.7)
+temp.8 = int 8
+jmp 2
+
+---- block 2 ----
+wait
+temp.9 = temp.8
+storeprop temp.9, 0
+jmp 4
+
+---- block 4 ----
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 2
+
+---- block 2 ----
+temp.10 = int 5
+spawn foo(temp.10)
+temp.11 = int 8
+jmp 3
+
+---- block 3 ----
+wait
+temp.12 = temp.11
+storeprop temp.12, 0
+jmp 4
+
+---- block 4 ----
+jmp 5
+
+---- block 5 ----
+jmp 7
+
+---- block 7 ----
+jmp 1
+
+---- block 1 ----
+return 
+
+=======================
+fn foo(x.2) -> 
+
+---- block 0 ----
+wait
+temp.6 = x.2
+storeprop temp.6, 0
+return 
+
+=======================
+fn bar() -> 
+
+---- block 0 ----
+temp.7 = int 5
+spawn foo(temp.7)
+temp.8 = int 8
+jmp 2
+
+---- block 2 ----
+wait
+temp.9 = temp.8
+storeprop temp.9, 0
+jmp 4
+
+---- block 4 ----
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- remove_unreferenced_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 2
+
+---- block 2 ----
+temp.10 = int 5
+spawn foo(temp.10)
+temp.11 = int 8
+jmp 3
+
+---- block 3 ----
+wait
+temp.12 = temp.11
+storeprop temp.12, 0
+jmp 4
+
+---- block 4 ----
+jmp 5
+
+---- block 5 ----
+jmp 7
+
+---- block 7 ----
+jmp 1
+
+---- block 1 ----
+return 
+
+=======================
+fn foo(x.2) -> 
+
+---- block 0 ----
+wait
+temp.6 = x.2
+storeprop temp.6, 0
+return

@@ -1,7 +1,9 @@
 use std::{
     collections::{HashMap, HashSet},
     fmt::Display,
-    iter, slice,
+    iter,
+    ops::Add,
+    slice,
 };
 
 use agb_fixnum::Num;
@@ -130,10 +132,19 @@ pub struct BlockId(usize);
 
 impl BlockId {
     pub fn next(self) -> Self {
-        Self(self.0 + 1)
+        self + 1
     }
 }
 
+impl Add<usize> for BlockId {
+    type Output = Self;
+
+    fn add(self, rhs: usize) -> Self::Output {
+        Self(self.0 + rhs)
+    }
+}
+
+#[derive(Clone)]
 pub struct TapIrBlock {
     id: BlockId,
     instrs: Vec<TapIr>,
@@ -142,6 +153,7 @@ pub struct TapIrBlock {
     block_exit: BlockExitInstr,
 }
 
+#[derive(Clone)]
 pub struct Phi {
     target: SymbolId,
     sources: Vec<(BlockId, SymbolId)>,
@@ -698,6 +710,26 @@ impl TapIrFunction {
 
     pub fn next_block_id(&self) -> BlockId {
         BlockId(self.blocks.keys().max().unwrap().0).next()
+    }
+
+    /// An iterator over the `FunctionId`s that this function references
+    pub fn callees(&self) -> impl Iterator<Item = FunctionId> {
+        self.blocks().flat_map(|block| {
+            block.instrs().iter().filter_map(|instr| match instr.instr {
+                TapIrInstr::Call { f, .. } | TapIrInstr::Spawn { f, .. } => Some(f),
+                _ => None,
+            })
+        })
+    }
+
+    /// An iterator of the `FunctionId`s that this function calls. So not those which are spawned
+    pub fn direct_callees(&self) -> impl Iterator<Item = FunctionId> {
+        self.blocks().flat_map(|block| {
+            block.instrs().iter().filter_map(|instr| match instr.instr {
+                TapIrInstr::Call { f, .. } => Some(f),
+                _ => None,
+            })
+        })
     }
 
     pub(crate) fn return_types(&self) -> &[Type] {
