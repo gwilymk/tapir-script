@@ -1,0 +1,27 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir/ssa.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/overwrite_loop.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 2 ----
+x.3 = int 3
+jmp 0
+
+---- block 0 ----
+x.4 = φ(x.3 from 2, x.7 from 5)
+y.5 = x.4
+temp.6 = bool true
+conditional_jump temp.6 3 4
+
+---- block 3 ----
+jmp 5
+
+---- block 4 ----
+jmp 5
+
+---- block 5 ----
+x.7 = φ(x.4 from 3, x.4 from 4)
+jmp 0

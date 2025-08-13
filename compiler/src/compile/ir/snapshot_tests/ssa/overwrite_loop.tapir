@@ -1,0 +1,12 @@
+# Testing a register allocation bug.
+#
+# The register allocator will assign the same register
+# to x, y and `true` resulting in the value in y to be
+# overwritten with the number 1
+var x = 3;
+
+loop {
+    var y = x;
+
+    if true {}
+}

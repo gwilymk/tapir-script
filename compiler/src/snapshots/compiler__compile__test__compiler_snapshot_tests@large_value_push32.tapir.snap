@@ -3,8 +3,8 @@ source: crates/tapir-script/compiler/src/compile.rs
 expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/large_value_push32.tapir
 ---
-00000000: loadk 1, 8
-00000002: loadk 1, 1024
+00000000: loadk 3, 8
+00000002: loadk 2, 1024
 00000004: loadk 1, 2147483647
 00000006: ret
 00000007: ret

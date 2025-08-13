@@ -1,5 +1,7 @@
 use std::collections::{BTreeSet, HashMap};
 
+use petgraph::algo::dominators::{self, Dominators};
+
 use crate::{
     ast::SymbolId,
     compile::ir::{
@@ -11,6 +13,11 @@ use crate::{
 struct RegAllocator {
     register_allocations: HashMap<SymbolId, RegisterId>,
     available_registers: BTreeSet<RegisterId>,
+
+    // Sometimes a write happens in a block which is part of a loop. In that case, we need to ensure that
+    // the write is kept until we're outside of that loop.
+    dominators: Dominators<BlockId>,
+    phony_writes: HashMap<BlockId, Vec<SymbolId>>,
 }
 
 impl RegAllocator {
@@ -22,11 +29,24 @@ impl RegAllocator {
             .map(|(i, arg)| (*arg, RegisterId(i as u8 + 1)))
             .collect();
 
+        let dominators = dominators::simple_fast(function, function.root);
+
         Self {
             register_allocations,
             available_registers: ((function.arguments().len() as u8 + 1)..255)
                 .map(RegisterId)
                 .collect::<BTreeSet<_>>(),
+
+            dominators,
+            phony_writes: HashMap::new(),
+        }
+    }
+
+    fn start_block(&mut self, block_id: BlockId) {
+        if let Some(this_block_writes) = self.phony_writes.remove(&block_id) {
+            for symbol in this_block_writes {
+                self.write_symbol(symbol, block_id);
+            }
         }
     }
 
@@ -39,17 +59,14 @@ impl RegAllocator {
         });
     }
 
-    fn write_symbol(&mut self, symbol: SymbolId) {
+    fn write_symbol(&mut self, symbol: SymbolId, block_id: BlockId) {
         if let Some(register) = self.register_allocations.get(&symbol) {
             self.available_registers.insert(*register);
+        } else if let Some(idom) = self.dominators.immediate_dominator(block_id) {
+            self.read_symbol(symbol);
+            self.phony_writes.entry(idom).or_default().push(symbol);
         } else {
-            self.register_allocations.insert(
-                symbol,
-                *self
-                    .available_registers
-                    .first()
-                    .expect("Ran out of registers"),
-            );
+            self.read_symbol(symbol);
         }
     }
 
@@ -114,43 +131,27 @@ pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
             }
         }
 
-        // we need to insert these phony reads in because in the final phase we'll add fake
-        // move instructions here (breaking SSA form) which will read from this variable. So
-        // we need to ensure that it stays alive until that point, otherwise the register
-        // could get reused.
-        if let Some(phony_reads) = phony_reads.get(&block.id()) {
-            for phony_read in phony_reads.iter().rev() {
-                register_allocator.read_symbol(phony_read.source);
-
-                // We insert a fake read to the target too to ensure it has its own register
-                // independent of the source. We can't mark this as a write, because we're not
-                // really 'writing' to this symbol, we're really writing to the phi for this
-                // symbol. We just need a spare register allocated so that the eventual move
-                // instruction does the right thing.
-                register_allocator.read_symbol(phony_read.target);
-            }
-        }
-
         for instr in block.instrs().iter().rev() {
             for source in instr.sources() {
                 register_allocator.read_symbol(source);
             }
 
             for target in instr.targets() {
-                register_allocator.write_symbol(target);
+                register_allocator.write_symbol(target, block.id());
             }
         }
 
         for phi in block.block_entry().iter().rev() {
             let target = phi.target;
 
-            register_allocator.write_symbol(target);
-
             for &(_, source) in &phi.sources {
                 register_allocator.read_symbol(source);
             }
+
+            register_allocator.write_symbol(target, block.id());
         }
 
+        register_allocator.start_block(block.id());
         block.remove_block_entries();
     }
 

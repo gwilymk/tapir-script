@@ -4,17 +4,17 @@ expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/then.tapir
 ---
 00000000: loadk 1, 7
-00000002: mov 4, 1
-00000003: call 3
+00000002: mov 6, 1
+00000003: call 5
 00000004: jmp 17
-00000005: mov 2, 4
+00000005: mov 4, 6
 00000006: loadk 1, 77
-00000008: mov 2, 1
+00000008: mov 3, 1
 00000009: loadk 1, 2
-00000011: mov 4, 1
-00000012: call 3
+00000011: mov 6, 1
+00000012: call 5
 00000013: jmp 17
-00000014: mov 2, 4
+00000014: mov 2, 6
 00000015: ret
 00000016: ret
 00000017: loadk 2, 3
