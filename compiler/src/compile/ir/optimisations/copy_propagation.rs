@@ -38,12 +38,11 @@ pub fn copy_propagation(f: &mut TapIrFunction) -> OptimisationResult {
                 replace_source!(source);
             }
 
-            if let TapIrInstr::Move { source, target } = instr.instr {
-                if source != target && renames.insert(target, source).is_some() {
-                    panic!(
-                        "Should be in SSA so there should only ever be one definition of source"
-                    );
-                }
+            if let TapIrInstr::Move { source, target } = instr.instr
+                && source != target
+                && renames.insert(target, source).is_some()
+            {
+                panic!("Should be in SSA so there should only ever be one definition of source");
             }
         }
 

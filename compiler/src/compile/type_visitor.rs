@@ -138,23 +138,22 @@ impl<'input> TypeVisitor<'input> {
         if let FunctionModifiers {
             is_event_handler: Some(event_span),
         } = &function.modifiers
+            && !function.return_types.types.is_empty()
         {
-            if !function.return_types.types.is_empty() {
-                diagnostics.add_message(
-                    CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType {
-                        return_type_span: function.return_types.span,
-                        function_name: function.name.to_string(),
-                        event_span: *event_span,
-                    }
-                    .into_message(function.span),
-                );
+            diagnostics.add_message(
+                CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType {
+                    return_type_span: function.return_types.span,
+                    function_name: function.name.to_string(),
+                    event_span: *event_span,
+                }
+                .into_message(function.span),
+            );
 
-                // we've added an error, so compilation will fail
-                // but we also want to warn about invalid returns etc, so
-                // change to what the user intended and warn about everything else too
-                function.return_types.types.clear();
-                function.return_types.span = *event_span;
-            }
+            // we've added an error, so compilation will fail
+            // but we also want to warn about invalid returns etc, so
+            // change to what the user intended and warn about everything else too
+            function.return_types.types.clear();
+            function.return_types.span = *event_span;
         }
 
         let block_analysis_result = self.visit_block(
