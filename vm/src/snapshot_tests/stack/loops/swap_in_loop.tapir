@@ -1,0 +1,50 @@
+# Test for phi resolution with circular dependencies (swap pattern).
+#
+# This creates phi nodes at the loop header where the incoming values
+# from the back edge form a cycle:
+#   a_phi = phi(1 from entry, b_phi from back-edge)
+#   b_phi = phi(2 from entry, a_phi from back-edge)
+#
+# Correct phi resolution requires either:
+#   - A temporary register to break the cycle
+#   - Parallel move semantics
+#
+# If phi resolution incorrectly generates sequential moves like:
+#   a_new = b_old
+#   b_new = a_old  <-- but a_old was just overwritten!
+# Then both variables will end up with the same value.
+
+var a = 1;
+var b = 2;
+var i = 0;
+
+loop {
+    # Read both values BEFORE writing either.
+    # This forces the phi nodes to have circular dependencies.
+    var next_a = b;
+    var next_b = a;
+
+    a = next_a;
+    b = next_b;
+
+    i = i + 1;
+    if i >= 5 {
+        break;
+    }
+}
+
+# After 5 swaps (odd number), values should be swapped from initial:
+#   Start: a=1, b=2
+#   Swap 1: a=2, b=1
+#   Swap 2: a=1, b=2
+#   Swap 3: a=2, b=1
+#   Swap 4: a=1, b=2
+#   Swap 5: a=2, b=1
+#
+# So a=2, b=1, and a*10+b = 21
+#
+# If broken due to phi resolution or register allocation bugs,
+# the values will be corrupted.
+#
+# EXPECTED: int_prop = 21
+int_prop = a * 10 + b;

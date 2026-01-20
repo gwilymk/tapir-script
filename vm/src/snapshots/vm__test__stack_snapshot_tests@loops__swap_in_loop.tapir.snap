@@ -1,0 +1,10 @@
+---
+source: crates/tapir-script/vm/src/lib.rs
+expression: stack_at_waits
+input_file: crates/tapir-script/vm/src/snapshot_tests/stack/loops/swap_in_loop.tapir
+---
+[
+  ([], PropObj(
+    int_prop: 21,
+  )),
+]

@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use petgraph::algo::dominators::{self, Dominators};
 
@@ -18,6 +18,10 @@ struct RegAllocator {
     // the write is kept until we're outside of that loop.
     dominators: Dominators<BlockId>,
     phony_writes: HashMap<BlockId, Vec<SymbolId>>,
+
+    // Blocks that are inside a loop (dominated by a loop header).
+    // Used to determine when we need to propagate writes vs when we can free registers.
+    blocks_in_loops: HashSet<BlockId>,
 }
 
 impl RegAllocator {
@@ -30,6 +34,7 @@ impl RegAllocator {
             .collect();
 
         let dominators = dominators::simple_fast(function, function.root);
+        let blocks_in_loops = find_blocks_in_loops(function, &dominators);
 
         Self {
             register_allocations,
@@ -39,6 +44,7 @@ impl RegAllocator {
 
             dominators,
             phony_writes: HashMap::new(),
+            blocks_in_loops,
         }
     }
 
@@ -60,12 +66,19 @@ impl RegAllocator {
     }
 
     fn write_symbol(&mut self, symbol: SymbolId, block_id: BlockId) {
-        if let Some(register) = self.register_allocations.get(&symbol) {
-            self.available_registers.insert(*register);
-        } else if let Some(idom) = self.dominators.immediate_dominator(block_id) {
-            self.read_symbol(symbol);
+        if self.blocks_in_loops.contains(&block_id) {
+            // In a loop - propagate write to dominator to keep register alive
+            let idom = self
+                .dominators
+                .immediate_dominator(block_id)
+                .expect("Block in loop must have a dominator");
             self.phony_writes.entry(idom).or_default().push(symbol);
+            self.read_symbol(symbol);
+        } else if let Some(register) = self.register_allocations.get(&symbol) {
+            // Not in a loop, already allocated - safe to free the register
+            self.available_registers.insert(*register);
         } else {
+            // Not in a loop, not allocated - just allocate
             self.read_symbol(symbol);
         }
     }
@@ -252,4 +265,52 @@ impl PhonyRead {
             },
         }
     }
+}
+
+fn find_blocks_in_loops(
+    function: &TapIrFunction,
+    dominators: &Dominators<BlockId>,
+) -> HashSet<BlockId> {
+    use petgraph::visit::IntoNeighbors;
+
+    // Build predecessor map (reverse of the successor/neighbor relationship)
+    let mut predecessors: HashMap<BlockId, Vec<BlockId>> = HashMap::new();
+    for block in function.blocks() {
+        for successor in function.neighbors(block.id()) {
+            predecessors.entry(successor).or_default().push(block.id());
+        }
+    }
+
+    // Find all blocks that are inside loops.
+    // A block is in a loop if it's dominated by a loop header.
+    // A loop header is a block that has a predecessor it dominates (back edge).
+    let mut loop_headers: HashSet<BlockId> = HashSet::new();
+    for block in function.blocks() {
+        let block_id = block.id();
+        for pred in predecessors.get(&block_id).into_iter().flatten() {
+            // If this block dominates its predecessor, there's a back edge
+            // and this block is a loop header
+            if dominators
+                .dominators(*pred)
+                .is_some_and(|mut doms| doms.any(|d| d == block_id))
+            {
+                loop_headers.insert(block_id);
+                break;
+            }
+        }
+    }
+
+    // A block is "in a loop" if any of its dominators is a loop header
+    let mut blocks_in_loops: HashSet<BlockId> = HashSet::new();
+    for block in function.blocks() {
+        if let Some(doms) = dominators.dominators(block.id()) {
+            for dom in doms {
+                if loop_headers.contains(&dom) {
+                    blocks_in_loops.insert(block.id());
+                    break;
+                }
+            }
+        }
+    }
+    blocks_in_loops
 }

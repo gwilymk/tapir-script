@@ -3,10 +3,10 @@ source: crates/tapir-script/compiler/src/compile.rs
 expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/regalloc_loop.tapir
 ---
-00000000: loadk 4, 3
-00000002: mov 1, 4
+00000000: loadk 5, 3
+00000002: mov 1, 5
 00000003: jmp 4
-00000004: mov 3, 1
+00000004: mov 4, 1
 00000005: loadk 3, 1
 00000007: jumpif 3
 00000008: jmp 10
