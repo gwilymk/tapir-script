@@ -162,4 +162,8 @@ pub enum Token<'input> {
     OperatorLt,
     #[token("<=")]
     OperatorLtEq,
+    #[token("||")]
+    OperatorOr,
+    #[token("&&")]
+    OperatorAnd,
 }

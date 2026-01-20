@@ -384,6 +384,9 @@ impl Bytecode {
             BinaryOperator::Lt => Opcode::Lt,
             BinaryOperator::LtEq => Opcode::LtEq,
             BinaryOperator::Then => unreachable!("Shouldn't be compiling then binops"),
+            BinaryOperator::And | BinaryOperator::Or => {
+                unreachable!("Shouldn't be compiling binary && or ||")
+            }
         };
 
         self.data

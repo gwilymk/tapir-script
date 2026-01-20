@@ -65,6 +65,8 @@ extern {
         ">=" => Token::OperatorGtEq,
         "<" =>  Token::OperatorLt,
         "<=" => Token::OperatorLtEq,
+        "||" => Token::OperatorOr,
+        "&&" => Token::OperatorAnd,
     }
 }
 
@@ -185,10 +187,20 @@ Expression: Expression<'input> = {
 
     #[precedence(level="4")]
     #[assoc(side="none")]
-    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> => 
+    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> =>
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
+    #[precedence(level="5")]
+    #[assoc(side="left")]
+    <start: @L> <lhs: Expression> "&&" <rhs: Expression> <end: @R> =>
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::And, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+
     #[precedence(level="6")]
+    #[assoc(side="left")]
+    <start: @L> <lhs: Expression> "||" <rhs: Expression> <end: @R> =>
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::Or, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+
+    #[precedence(level="7")]
     #[assoc(side="none")]
     <start: @L> <lhs: Expression> <operator: then> <rhs: Expression> <end: @R> =>
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::Then, rhs: Box::new(rhs) }.with_span(file_id, start, end),

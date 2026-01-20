@@ -296,6 +296,9 @@ pub enum BinaryOperator {
     Lt,
     LtEq,
 
+    And,
+    Or,
+
     Then,
 }
 
@@ -325,11 +328,10 @@ impl BinaryOperator {
             | B::LtEq => {
                 matches!(lhs_type, Type::Fix | Type::Int)
             }
-
             B::FixMul | B::FixDiv => matches!(lhs_type, Type::Fix),
-
             B::EqEq | B::NeEq => !matches!(lhs_type, Type::Error),
             B::Then => true,
+            B::And | B::Or => matches!(lhs_type, Type::Bool),
         }
     }
 
@@ -347,7 +349,7 @@ impl BinaryOperator {
             | B::FixMul
             | B::FixDiv => lhs_type,
 
-            B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq => Type::Bool,
+            B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq | B::And | B::Or => Type::Bool,
             B::Then => rhs_type,
         }
     }
@@ -375,6 +377,8 @@ impl Display for BinaryOperator {
                 BinaryOperator::Lt => "<",
                 BinaryOperator::LtEq => "<=",
                 BinaryOperator::Then => "then",
+                BinaryOperator::And => "&&",
+                BinaryOperator::Or => "||",
             }
         )
     }

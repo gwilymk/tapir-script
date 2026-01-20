@@ -1,0 +1,28 @@
+# Arithmetic operators
+var a = 1 + 2 * 3;
+var b = (1 + 2) * 3;
+var c = 10 / 2 + 3;
+var d = 10 // 3 %% 2;
+
+# Comparison operators
+var cmp1 = 1 < 2;
+var cmp2 = 1 <= 2;
+var cmp3 = 1 > 2;
+var cmp4 = 1 >= 2;
+var cmp5 = 1 == 2;
+var cmp6 = 1 != 2;
+
+# Logical operators - && binds tighter than ||
+var logic1 = true && false;
+var logic2 = true || false;
+var logic3 = true || false && true;
+var logic4 = (true || false) && true;
+
+# Chained logical operators
+var chain1 = true && true && true;
+var chain2 = false || false || true;
+
+# Mixed precedence: comparison < && < ||
+var mixed1 = 1 < 2 && 3 < 4;
+var mixed2 = 1 < 2 || 3 < 4;
+var mixed3 = 1 < 2 && 3 < 4 || 5 < 6;

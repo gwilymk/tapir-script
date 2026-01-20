@@ -19,6 +19,8 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/lexer/binary_operato
   Ok(OperatorSub),
   Ok(Integer("3")),
   Ok(RParen),
+  Ok(OperatorAnd),
+  Ok(True),
   Ok(RParen),
   Ok(Semicolon),
 ]

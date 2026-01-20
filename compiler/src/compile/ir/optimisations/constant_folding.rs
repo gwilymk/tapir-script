@@ -189,7 +189,7 @@ fn int_op(i1: i32, op: BinaryOperator, i2: i32) -> Constant {
         BinaryOperator::Add => C::Int(i1 + i2),
         BinaryOperator::Sub => C::Int(i1 - i2),
         BinaryOperator::Mul => C::Int(i1 * i2),
-        BinaryOperator::Div => C::Int(i1 / i2), // FIXME: div_floor
+        BinaryOperator::Div => C::Int(i1 / i2),
         BinaryOperator::Mod => C::Int(i1.rem_euclid(i2)),
         BinaryOperator::RealDiv => C::Int(i1 / i2),
         BinaryOperator::RealMod => C::Int(i1 % i2),
@@ -202,6 +202,8 @@ fn int_op(i1: i32, op: BinaryOperator, i2: i32) -> Constant {
         BinaryOperator::Lt => C::Bool(i1 < i2),
         BinaryOperator::LtEq => C::Bool(i1 <= i2),
         BinaryOperator::Then => C::Int(i2),
+        BinaryOperator::And => panic!("Should never be &&ing two integers"),
+        BinaryOperator::Or => panic!("Should never be &&ing two integers"),
     }
 }
 
@@ -225,6 +227,8 @@ fn fix_op(n1: Num<i32, 8>, op: BinaryOperator, n2: Num<i32, 8>) -> Constant {
         BinaryOperator::Lt => C::Bool(n1 < n2),
         BinaryOperator::LtEq => C::Bool(n1 <= n2),
         BinaryOperator::Then => C::Fix(n2),
+        BinaryOperator::And => panic!("Should never be &&ing two fixnums"),
+        BinaryOperator::Or => panic!("Should never be &&ing two fixnums"),
     }
 }
 
