@@ -1,16 +1,18 @@
 use std::{collections::HashMap, error::Error};
 
 use compiler::{AnalysisResult, CompileSettings, SourceRange};
-use lsp_server::{Connection, Message, Notification, Request, Response};
+use lsp_server::{Connection, Message, Notification, Response};
 use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams,
     GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
     HoverProviderCapability, InitializeParams, Location, MarkupContent, MarkupKind, OneOf,
     ParameterInformation, ParameterLabel, Position, PublishDiagnosticsParams, Range,
-    ServerCapabilities, SignatureHelp, SignatureHelpOptions, SignatureHelpParams,
+    ReferenceParams, ServerCapabilities, SignatureHelp, SignatureHelpOptions, SignatureHelpParams,
     SignatureInformation, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
-    notification::{DidChangeTextDocument, DidOpenTextDocument, Notification as _, PublishDiagnostics},
-    request::{GotoDefinition, HoverRequest, Request as _, SignatureHelpRequest},
+    notification::{
+        DidChangeTextDocument, DidOpenTextDocument, Notification as _, PublishDiagnostics,
+    },
+    request::{GotoDefinition, HoverRequest, References, Request, SignatureHelpRequest},
 };
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -22,6 +24,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         text_document_sync: Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::FULL)),
         definition_provider: Some(OneOf::Left(true)),
         hover_provider: Some(HoverProviderCapability::Simple(true)),
+        references_provider: Some(OneOf::Left(true)),
         signature_help_provider: Some(SignatureHelpOptions {
             trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
             retrigger_characters: None,
@@ -73,7 +76,7 @@ fn main_loop(connection: Connection) -> Result<(), Box<dyn Error + Sync + Send>>
 
 fn handle_request(
     connection: &Connection,
-    request: Request,
+    request: lsp_server::Request,
     files: &mut HashMap<Url, FileState>,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     match request.method.as_str() {
@@ -103,6 +106,24 @@ fn handle_request(
 
             let response = if let Some(file_state) = files.get_mut(&uri) {
                 find_hover(file_state, position)
+            } else {
+                None
+            };
+
+            let result = serde_json::to_value(response)?;
+            connection
+                .sender
+                .send(Message::Response(Response::new_ok(id, result)))?;
+        }
+        References::METHOD => {
+            let (id, params): (_, ReferenceParams) = request.extract(References::METHOD)?;
+
+            let uri = params.text_document_position.text_document.uri;
+            let position = params.text_document_position.position;
+            let include_declaration = params.context.include_declaration;
+
+            let response = if let Some(file_state) = files.get_mut(&uri) {
+                find_references(file_state, &uri, position, include_declaration)
             } else {
                 None
             };
@@ -328,7 +349,7 @@ fn find_references(
         // If not found as usage, check if cursor is on a definition span
         if found_def.is_none() {
             // Check if any usage points to a definition that contains the cursor
-            for (_usage_span, def_span) in &file_state.analysis.references {
+            for def_span in file_state.analysis.references.values() {
                 if def_span.contains_offset(offset) {
                     found_def = Some(*def_span);
                     break;
@@ -343,34 +364,32 @@ fn find_references(
     let mut locations = Vec::new();
 
     // Optionally include the declaration itself
-    if include_declaration {
-        if let Some(range) = file_state
+    if include_declaration
+        && let Some(range) = file_state
             .analysis
             .diagnostics
             .span_to_range(def_span)
             .map(source_range_to_lsp_range)
+    {
+        locations.push(Location {
+            uri: uri.clone(),
+            range,
+        });
+    }
+
+    // Find all usages
+    for (usage_span, usage_def_span) in &file_state.analysis.references {
+        if *usage_def_span == def_span
+            && let Some(range) = file_state
+                .analysis
+                .diagnostics
+                .span_to_range(*usage_span)
+                .map(source_range_to_lsp_range)
         {
             locations.push(Location {
                 uri: uri.clone(),
                 range,
             });
-        }
-    }
-
-    // Find all usages
-    for (usage_span, usage_def_span) in &file_state.analysis.references {
-        if *usage_def_span == def_span {
-            if let Some(range) = file_state
-                .analysis
-                .diagnostics
-                .span_to_range(*usage_span)
-                .map(source_range_to_lsp_range)
-            {
-                locations.push(Location {
-                    uri: uri.clone(),
-                    range,
-                });
-            }
         }
     }
 
@@ -472,7 +491,13 @@ fn convert_diagnostics(result: &mut AnalysisResult) -> Vec<Diagnostic> {
     let diag_info: Vec<_> = result
         .diagnostics
         .iter()
-        .map(|diag| (diag.primary_span, diag.kind.code().to_string(), diag.message()))
+        .map(|diag| {
+            (
+                diag.primary_span,
+                diag.kind.code().to_string(),
+                diag.message(),
+            )
+        })
         .collect();
 
     diag_info

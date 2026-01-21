@@ -1,7 +1,7 @@
-use std::{collections::HashMap, path::Path};
+use std::{borrow::Cow, collections::HashMap, path::Path};
 
 use crate::{
-    ast::{Expression, ExpressionKind, Script, Statement, StatementKind, SymbolId},
+    ast::{Expression, ExpressionKind, MaybeResolved, Script, Statement, StatementKind, SymbolId},
     builtins::BuiltinVariable,
     grammar,
     lexer::Lexer,
@@ -18,6 +18,14 @@ use super::{
     type_visitor::{TypeTable, TypeVisitor},
     CompileSettings, Property,
 };
+
+/// Get the name from a MaybeResolved, using the symtab for resolved symbols.
+fn resolve_name<'a>(name: &'a MaybeResolved<'a>, symtab: &'a SymTab<'a>) -> Cow<'a, str> {
+    match name {
+        MaybeResolved::Unresolved(s) => Cow::Borrowed(*s),
+        MaybeResolved::Resolved(id) => symtab.name_for_symbol(*id),
+    }
+}
 
 /// Information about a symbol (local variable) in the script.
 #[derive(Clone, Debug)]
@@ -188,7 +196,7 @@ pub fn analyse(
     let properties = symtab.properties().iter().map(property_to_info).collect();
 
     // Extract function information
-    let functions = extract_functions(&ast);
+    let functions = extract_functions(&ast, &symtab);
 
     // Extract references from the AST
     let references = extract_references(&ast, &symtab);
@@ -197,7 +205,7 @@ pub fn analyse(
     let hover_info = extract_hover_info(&ast, &symtab, &type_table);
 
     // Extract signature help information
-    let (signatures, call_sites) = extract_signature_help(&ast);
+    let (signatures, call_sites) = extract_signature_help(&ast, &symtab);
 
     AnalysisResult {
         diagnostics,
@@ -239,7 +247,7 @@ fn extract_symbols(symtab: &SymTab<'_>, type_table: &super::type_visitor::TypeTa
     symbols
 }
 
-fn extract_functions(ast: &crate::ast::Script<'_>) -> Vec<FunctionInfo> {
+fn extract_functions<'a>(ast: &'a Script<'a>, symtab: &'a SymTab<'a>) -> Vec<FunctionInfo> {
     let mut functions = vec![];
 
     // Internal functions
@@ -252,20 +260,10 @@ fn extract_functions(ast: &crate::ast::Script<'_>) -> Vec<FunctionInfo> {
         let arguments = function
             .arguments
             .iter()
-            .map(|arg| {
-                let name = match &arg.name {
-                    crate::ast::MaybeResolved::Unresolved(s) => s.to_string(),
-                    crate::ast::MaybeResolved::Resolved(_) => {
-                        // The name was resolved to a symbol ID, but we still need the original name
-                        // This is a limitation - we'd need to look it up in the symtab
-                        String::new()
-                    }
-                };
-                FunctionArgumentInfo {
-                    name,
-                    ty: arg.t.t,
-                    span: arg.span,
-                }
+            .map(|arg| FunctionArgumentInfo {
+                name: resolve_name(&arg.name, symtab).into_owned(),
+                ty: arg.t.t,
+                span: arg.span,
             })
             .collect();
 
@@ -283,16 +281,10 @@ fn extract_functions(ast: &crate::ast::Script<'_>) -> Vec<FunctionInfo> {
         let arguments = function
             .arguments
             .iter()
-            .map(|arg| {
-                let name = match &arg.name {
-                    crate::ast::MaybeResolved::Unresolved(s) => s.to_string(),
-                    crate::ast::MaybeResolved::Resolved(_) => String::new(),
-                };
-                FunctionArgumentInfo {
-                    name,
-                    ty: arg.t.t,
-                    span: arg.span,
-                }
+            .map(|arg| FunctionArgumentInfo {
+                name: resolve_name(&arg.name, symtab).into_owned(),
+                ty: arg.t.t,
+                span: arg.span,
             })
             .collect();
 
@@ -347,13 +339,7 @@ fn extract_hover_info(
         let args: Vec<String> = function
             .arguments
             .iter()
-            .map(|arg| {
-                let name = match &arg.name {
-                    crate::ast::MaybeResolved::Unresolved(s) => *s,
-                    crate::ast::MaybeResolved::Resolved(_) => "",
-                };
-                format!("{}: {}", name, arg.t.t)
-            })
+            .map(|arg| format!("{}: {}", resolve_name(&arg.name, symtab), arg.t.t))
             .collect();
 
         let return_str = if function.return_types.types.is_empty() {
@@ -390,13 +376,7 @@ fn extract_hover_info(
         let args: Vec<String> = function
             .arguments
             .iter()
-            .map(|arg| {
-                let name = match &arg.name {
-                    crate::ast::MaybeResolved::Unresolved(s) => *s,
-                    crate::ast::MaybeResolved::Resolved(_) => "",
-                };
-                format!("{}: {}", name, arg.t.t)
-            })
+            .map(|arg| format!("{}: {}", resolve_name(&arg.name, symtab), arg.t.t))
             .collect();
 
         let return_str = if function.return_types.types.is_empty() {
@@ -595,7 +575,7 @@ fn extract_hover_from_expression(
     }
 }
 
-fn extract_signature_help(ast: &Script<'_>) -> (HashMap<String, SignatureInfo>, Vec<CallSiteInfo>) {
+fn extract_signature_help<'a>(ast: &'a Script<'a>, symtab: &'a SymTab<'a>) -> (HashMap<String, SignatureInfo>, Vec<CallSiteInfo>) {
     let mut signatures = HashMap::new();
     let mut call_sites = Vec::new();
 
@@ -608,14 +588,8 @@ fn extract_signature_help(ast: &Script<'_>) -> (HashMap<String, SignatureInfo>, 
         let params: Vec<ParameterInfo> = function
             .arguments
             .iter()
-            .map(|arg| {
-                let name = match &arg.name {
-                    crate::ast::MaybeResolved::Unresolved(s) => *s,
-                    crate::ast::MaybeResolved::Resolved(_) => "",
-                };
-                ParameterInfo {
-                    label: format!("{}: {}", name, arg.t.t),
-                }
+            .map(|arg| ParameterInfo {
+                label: format!("{}: {}", resolve_name(&arg.name, symtab), arg.t.t),
             })
             .collect();
 
@@ -655,14 +629,8 @@ fn extract_signature_help(ast: &Script<'_>) -> (HashMap<String, SignatureInfo>, 
         let params: Vec<ParameterInfo> = function
             .arguments
             .iter()
-            .map(|arg| {
-                let name = match &arg.name {
-                    crate::ast::MaybeResolved::Unresolved(s) => *s,
-                    crate::ast::MaybeResolved::Resolved(_) => "",
-                };
-                ParameterInfo {
-                    label: format!("{}: {}", name, arg.t.t),
-                }
+            .map(|arg| ParameterInfo {
+                label: format!("{}: {}", resolve_name(&arg.name, symtab), arg.t.t),
             })
             .collect();
 
