@@ -65,6 +65,18 @@ The VM uses a register-based model with a growable stack. Registers are addresse
 | `GetProp` | `r[target] = property[a]` |
 | `SetProp` | `property[a] = r[target]` |
 
+### Built-ins (Type 1)
+
+| Opcode       | Description               |
+| ------------ | ------------------------- |
+| `GetBuiltin` | `r[target] = builtin[a]`  |
+
+Built-in variables are runtime-provided values accessed by index:
+
+| Index | Name    | Description                                                                 |
+| ----- | ------- | --------------------------------------------------------------------------- |
+| 0     | `frame` | Global frame counter, starts at 0 and increments at the end of each `run()` |
+
 ### Control Flow
 
 | Opcode   | Format | Description                                            |
