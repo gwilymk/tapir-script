@@ -276,7 +276,7 @@ impl<'input> NameTable<'input> {
             .properties
             .iter()
             .enumerate()
-            .map(|(i, prop)| (Cow::Owned(prop.name.clone()), SymbolId(i)))
+            .map(|(i, prop)| (Cow::Owned(prop.name.clone()), SymbolId(i as u64)))
             .collect();
 
         Self {
@@ -342,23 +342,23 @@ impl<'input> SymTab<'input> {
 
     fn new_symbol(&mut self, ident: &'input str, span: Span) -> SymbolId {
         self.symbol_names.push((Cow::Borrowed(ident), Some(span)));
-        SymbolId(self.symbol_names.len() - 1)
+        SymbolId((self.symbol_names.len() - 1) as u64)
     }
 
     pub(crate) fn new_rename(&mut self, symbol_id: SymbolId) -> SymbolId {
         self.symbol_names
-            .push(self.symbol_names[symbol_id.0].clone());
-        SymbolId(self.symbol_names.len() - 1)
+            .push(self.symbol_names[symbol_id.0 as usize].clone());
+        SymbolId((self.symbol_names.len() - 1) as u64)
     }
 
     pub(crate) fn new_temporary(&mut self) -> SymbolId {
         let id = self.symbol_names.len();
         self.symbol_names.push((Cow::Borrowed(""), None));
-        SymbolId(id)
+        SymbolId(id as u64)
     }
 
     pub(crate) fn name_for_symbol(&self, symbol_id: SymbolId) -> Cow<'input, str> {
-        let name = self.symbol_names[symbol_id.0].0.clone();
+        let name = self.symbol_names[symbol_id.0 as usize].0.clone();
         if name.is_empty() {
             Cow::Owned(format!("temp.{}", symbol_id.0))
         } else {
@@ -368,7 +368,7 @@ impl<'input> SymTab<'input> {
 
     #[cfg(test)]
     pub(crate) fn debug_name_for_symbol(&self, symbol_id: SymbolId) -> String {
-        let name = self.symbol_names[symbol_id.0].0.clone();
+        let name = self.symbol_names[symbol_id.0 as usize].0.clone();
         if name.is_empty() {
             format!("temp.{}", symbol_id.0)
         } else {
@@ -386,7 +386,7 @@ impl<'input> SymTab<'input> {
     }
 
     pub(crate) fn span_for_symbol(&self, symbol_id: SymbolId) -> Span {
-        self.symbol_names[symbol_id.0]
+        self.symbol_names[symbol_id.0 as usize]
             .1
             .expect("Symbol should have a span")
     }
@@ -396,11 +396,11 @@ impl<'input> SymTab<'input> {
         self.symbol_names
             .iter()
             .enumerate()
-            .map(|(i, (name, _span))| (name.as_ref(), SymbolId(i)))
+            .map(|(i, (name, _span))| (name.as_ref(), SymbolId(i as u64)))
     }
 
     pub fn get_property(&self, symbol_id: SymbolId) -> Option<&Property> {
-        self.properties.get(symbol_id.0)
+        self.properties.get(symbol_id.0 as usize)
     }
 }
 

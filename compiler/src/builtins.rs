@@ -6,10 +6,10 @@ pub enum BuiltinVariable {
 }
 
 impl BuiltinVariable {
-    const RESERVED_BIT: usize = 1 << (usize::BITS - 1);
+    const RESERVED_BIT: u64 = 1 << 63;
 
     pub const fn symbol_id(self) -> SymbolId {
-        SymbolId(Self::RESERVED_BIT | (self as usize))
+        SymbolId(Self::RESERVED_BIT | (self as u64))
     }
 
     pub fn from_symbol_id(id: SymbolId) -> Option<Self> {

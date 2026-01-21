@@ -12,7 +12,7 @@ use serde::Serialize;
 mod metadata;
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]
-pub struct SymbolId(pub usize);
+pub struct SymbolId(pub u64);
 
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]
 pub struct FunctionId(pub usize);

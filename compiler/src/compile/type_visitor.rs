@@ -135,11 +135,11 @@ impl<'input> TypeVisitor<'input> {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) {
-        if self.type_table.len() <= symbol_id.0 {
-            self.type_table.resize(symbol_id.0 + 1, None);
+        if self.type_table.len() <= symbol_id.0 as usize {
+            self.type_table.resize(symbol_id.0 as usize + 1, None);
         }
 
-        if let Some((table_type, expected_span)) = self.type_table[symbol_id.0]
+        if let Some((table_type, expected_span)) = self.type_table[symbol_id.0 as usize]
             && table_type != ty
         {
             if ty == Type::Error {
@@ -168,7 +168,7 @@ impl<'input> TypeVisitor<'input> {
             return;
         }
 
-        self.type_table[symbol_id.0] = Some((ty, Some(ident_span)));
+        self.type_table[symbol_id.0 as usize] = Some((ty, Some(ident_span)));
     }
 
     pub fn get_type(
@@ -182,7 +182,7 @@ impl<'input> TypeVisitor<'input> {
             return builtin.ty();
         }
 
-        match self.type_table.get(symbol_id.0) {
+        match self.type_table.get(symbol_id.0 as usize) {
             Some(Some((ty, _))) => *ty,
             _ => {
                 diagnostics.add_message(
@@ -508,9 +508,9 @@ impl<'input> TypeVisitor<'input> {
             } else {
                 diagnostics.add_message(
                     CompilerErrorKind::UnknownType(
-                        symtab.name_for_symbol(SymbolId(i)).into_owned(),
+                        symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),
                     )
-                    .into_message(symtab.span_for_symbol(SymbolId(i))),
+                    .into_message(symtab.span_for_symbol(SymbolId(i as u64))),
                 );
             }
         }
@@ -702,7 +702,7 @@ impl TypeTable<'_> {
             return builtin.ty();
         }
 
-        self.types[symbol_id.0]
+        self.types[symbol_id.0 as usize]
     }
 
     pub fn triggers(&self) -> Box<[Trigger]> {
