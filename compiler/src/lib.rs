@@ -16,7 +16,7 @@ lalrpop_mod!(grammar);
 #[cfg(test)]
 mod grammar_test;
 
-pub use compile::analyse::{analyse, AnalysisResult, CallSiteInfo, FunctionArgumentInfo, FunctionInfo, HoverInfo, ParameterInfo, SignatureInfo, SymbolInfo};
+pub use compile::analyse::{analyse, AnalysisResult, CallSiteInfo, FunctionArgumentInfo, FunctionInfo, HoverInfo, InlayHintInfo, ParameterInfo, SignatureInfo, SymbolInfo};
 pub use compile::symtab_visitor::GlobalInfo;
 pub use compile::{CompileSettings, Property};
 pub use reporting::format::DiagnosticCache;

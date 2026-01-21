@@ -54,6 +54,9 @@ pub struct CallSiteInfo {
     pub function_name: String,
     /// The span covering the argument list (inside the parentheses).
     pub arguments_span: Span,
+    /// The start positions of each argument (used for parameter name inlay hints).
+    /// For `foo(a, b, c)`, this would be the positions before `a`, `b`, `c`.
+    pub argument_start_offsets: Vec<usize>,
     /// The end positions of each argument (used to determine active parameter).
     /// For `foo(a, b, c)`, this would be the positions after `a`, `b`, `c`.
     pub argument_end_offsets: Vec<usize>,
@@ -75,6 +78,14 @@ pub struct ParameterInfo {
     pub label: String,
 }
 
+/// Information for an inlay hint (inline type annotation).
+#[derive(Clone, Debug)]
+pub struct InlayHintInfo {
+    /// The position where the hint should appear (end of variable name).
+    pub position: usize,
+    /// The hint label, e.g., ": int"
+    pub label: String,
+}
 
 /// Information about a function argument.
 #[derive(Clone, Debug)]
@@ -134,6 +145,8 @@ pub struct AnalysisResult {
     pub call_sites: Vec<CallSiteInfo>,
     /// Function signatures for signature help.
     pub signatures: HashMap<String, SignatureInfo>,
+    /// Inlay hints for variable type annotations.
+    pub inlay_hints: Vec<InlayHintInfo>,
 }
 
 /// Analyse a tapir script and return semantic information.
@@ -166,6 +179,7 @@ pub fn analyse(
                 hover_info: HashMap::new(),
                 call_sites: vec![],
                 signatures: HashMap::new(),
+                inlay_hints: vec![],
             };
         }
     };
@@ -207,6 +221,9 @@ pub fn analyse(
     // Extract signature help information
     let (signatures, call_sites) = extract_signature_help(&ast, &symtab);
 
+    // Extract inlay hints for variable types
+    let inlay_hints = extract_inlay_hints(&ast, &symtab, &type_table);
+
     AnalysisResult {
         diagnostics,
         symbols,
@@ -217,6 +234,7 @@ pub fn analyse(
         hover_info,
         call_sites,
         signatures,
+        inlay_hints,
     }
 }
 
@@ -690,6 +708,10 @@ fn extract_call_sites_from_statements(
             }
             StatementKind::Call { name, arguments } | StatementKind::Spawn { name, arguments } => {
                 if signatures.contains_key(*name) {
+                    let argument_start_offsets: Vec<usize> = arguments
+                        .iter()
+                        .map(|arg| arg.span.start())
+                        .collect();
                     let argument_end_offsets: Vec<usize> = arguments
                         .iter()
                         .map(|arg| arg.span.end())
@@ -698,6 +720,7 @@ fn extract_call_sites_from_statements(
                     call_sites.push(CallSiteInfo {
                         function_name: name.to_string(),
                         arguments_span: stmt.span,
+                        argument_start_offsets,
                         argument_end_offsets,
                     });
                 }
@@ -732,6 +755,10 @@ fn extract_call_sites_from_expression(
     match &expr.kind {
         ExpressionKind::Call { name, arguments } => {
             if signatures.contains_key(*name) {
+                let argument_start_offsets: Vec<usize> = arguments
+                    .iter()
+                    .map(|arg| arg.span.start())
+                    .collect();
                 let argument_end_offsets: Vec<usize> = arguments
                     .iter()
                     .map(|arg| arg.span.end())
@@ -740,6 +767,7 @@ fn extract_call_sites_from_expression(
                 call_sites.push(CallSiteInfo {
                     function_name: name.to_string(),
                     arguments_span: expr.span,
+                    argument_start_offsets,
                     argument_end_offsets,
                 });
             }
@@ -757,6 +785,60 @@ fn extract_call_sites_from_expression(
         | ExpressionKind::Bool(_)
         | ExpressionKind::Error
         | ExpressionKind::Nop => {}
+    }
+}
+
+fn extract_inlay_hints(
+    ast: &Script<'_>,
+    symtab: &SymTab<'_>,
+    type_table: &TypeTable<'_>,
+) -> Vec<InlayHintInfo> {
+    let mut hints = Vec::new();
+
+    for func in &ast.functions {
+        extract_inlay_hints_from_statements(&func.statements, symtab, type_table, &mut hints);
+    }
+
+    hints
+}
+
+fn extract_inlay_hints_from_statements(
+    statements: &[Statement<'_>],
+    symtab: &SymTab<'_>,
+    type_table: &TypeTable<'_>,
+    hints: &mut Vec<InlayHintInfo>,
+) {
+    for stmt in statements {
+        match &stmt.kind {
+            StatementKind::VariableDeclaration { idents, .. } => {
+                // Add type hints for each declared variable
+                if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
+                    for (ident, symbol_id) in idents.iter().zip(symbol_ids.iter()) {
+                        // Skip if it's a property (properties have explicit types)
+                        if symtab.get_property(*symbol_id).is_some() {
+                            continue;
+                        }
+
+                        let ty = type_table.type_for_symbol(*symbol_id, symtab);
+                        // Don't show hints for error types
+                        if ty != Type::Error {
+                            hints.push(InlayHintInfo {
+                                position: ident.span.end(),
+                                label: format!(": {}", ty),
+                            });
+                        }
+                    }
+                }
+            }
+            StatementKind::If { true_block, false_block, .. } => {
+                extract_inlay_hints_from_statements(true_block, symtab, type_table, hints);
+                extract_inlay_hints_from_statements(false_block, symtab, type_table, hints);
+            }
+            StatementKind::Loop { block } | StatementKind::Block { block } => {
+                extract_inlay_hints_from_statements(block, symtab, type_table, hints);
+            }
+            _ => {}
+        }
     }
 }
 

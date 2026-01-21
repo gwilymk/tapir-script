@@ -5,14 +5,15 @@ use lsp_server::{Connection, Message, Notification, Response};
 use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams,
     GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
-    HoverProviderCapability, InitializeParams, Location, MarkupContent, MarkupKind, OneOf,
-    ParameterInformation, ParameterLabel, Position, PublishDiagnosticsParams, Range,
-    ReferenceParams, ServerCapabilities, SignatureHelp, SignatureHelpOptions, SignatureHelpParams,
-    SignatureInformation, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
+    HoverProviderCapability, InitializeParams, InlayHint, InlayHintLabel, InlayHintParams,
+    Location, MarkupContent, MarkupKind, OneOf, ParameterInformation, ParameterLabel, Position,
+    PublishDiagnosticsParams, Range, ReferenceParams, ServerCapabilities, SignatureHelp,
+    SignatureHelpOptions, SignatureHelpParams, SignatureInformation, TextDocumentSyncCapability,
+    TextDocumentSyncKind, Url,
     notification::{
         DidChangeTextDocument, DidOpenTextDocument, Notification as _, PublishDiagnostics,
     },
-    request::{GotoDefinition, HoverRequest, References, Request, SignatureHelpRequest},
+    request::{GotoDefinition, HoverRequest, InlayHintRequest, References, Request, SignatureHelpRequest},
 };
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -30,6 +31,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             retrigger_characters: None,
             work_done_progress_options: Default::default(),
         }),
+        inlay_hint_provider: Some(OneOf::Left(true)),
         ..Default::default()
     };
 
@@ -151,6 +153,22 @@ fn handle_request(
                 .sender
                 .send(Message::Response(Response::new_ok(id, result)))?;
         }
+        InlayHintRequest::METHOD => {
+            let (id, params): (_, InlayHintParams) = request.extract(InlayHintRequest::METHOD)?;
+
+            let uri = params.text_document.uri;
+
+            let response = if let Some(file_state) = files.get(&uri) {
+                Some(get_inlay_hints(file_state))
+            } else {
+                None
+            };
+
+            let result = serde_json::to_value(response)?;
+            connection
+                .sender
+                .send(Message::Response(Response::new_ok(id, result)))?;
+        }
         _ => {
             let response = Response::new_err(
                 request.id,
@@ -216,6 +234,52 @@ fn find_hover(file_state: &mut FileState, position: Position) -> Option<Hover> {
     }
 
     None
+}
+
+fn get_inlay_hints(file_state: &FileState) -> Vec<InlayHint> {
+    let mut hints = Vec::new();
+
+    // Type hints for variable declarations
+    for hint in &file_state.analysis.inlay_hints {
+        if let Some(position) = offset_to_position(&file_state.text, hint.position) {
+            hints.push(InlayHint {
+                position,
+                label: InlayHintLabel::String(hint.label.clone()),
+                kind: Some(lsp_types::InlayHintKind::TYPE),
+                text_edits: None,
+                tooltip: None,
+                padding_left: None,
+                padding_right: None,
+                data: None,
+            });
+        }
+    }
+
+    // Parameter name hints for function calls
+    for call_site in &file_state.analysis.call_sites {
+        if let Some(sig) = file_state.analysis.signatures.get(&call_site.function_name) {
+            for (i, &start_offset) in call_site.argument_start_offsets.iter().enumerate() {
+                // Get the parameter name (just the name, not the type)
+                if let Some(param) = sig.parameters.get(i) {
+                    let param_name = param.label.split(':').next().unwrap_or(&param.label).trim();
+                    if let Some(position) = offset_to_position(&file_state.text, start_offset) {
+                        hints.push(InlayHint {
+                            position,
+                            label: InlayHintLabel::String(format!("{}:", param_name)),
+                            kind: Some(lsp_types::InlayHintKind::PARAMETER),
+                            text_edits: None,
+                            tooltip: None,
+                            padding_left: None,
+                            padding_right: Some(true),
+                            data: None,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    hints
 }
 
 fn find_signature_help(file_state: &FileState, position: Position) -> Option<SignatureHelp> {
@@ -419,6 +483,34 @@ fn position_to_offset(text: &str, position: Position) -> Option<usize> {
     // Handle position at end of file
     if line == position.line && col == position.character {
         return Some(text.len());
+    }
+
+    None
+}
+
+fn offset_to_position(text: &str, offset: usize) -> Option<Position> {
+    if offset > text.len() {
+        return None;
+    }
+
+    let mut line = 0;
+    let mut col = 0;
+
+    for (i, ch) in text.char_indices() {
+        if i == offset {
+            return Some(Position::new(line, col));
+        }
+        if ch == '\n' {
+            line += 1;
+            col = 0;
+        } else {
+            col += 1;
+        }
+    }
+
+    // Handle offset at end of file
+    if offset == text.len() {
+        return Some(Position::new(line, col));
     }
 
     None
