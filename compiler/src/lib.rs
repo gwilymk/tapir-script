@@ -3,8 +3,6 @@ use std::path::Path;
 
 use lalrpop_util::lalrpop_mod;
 
-use reporting::Diagnostics;
-
 mod ast;
 mod builtins;
 mod compile;
@@ -20,6 +18,8 @@ mod grammar_test;
 
 pub use compile::{CompileSettings, Property};
 pub use reporting::format::DiagnosticCache;
+pub use reporting::{Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind, SourcePosition, SourceRange};
+pub use tokens::Span;
 pub use types::Type;
 
 pub fn compile(

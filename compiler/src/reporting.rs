@@ -1,10 +1,28 @@
 use std::path::Path;
 
+use ariadne::Cache;
+
 use crate::{
     DiagnosticCache,
     tokens::{self, FileId, LexicalError, LexicalErrorKind, Span},
     types::Type,
 };
+
+/// A position in source code (0-indexed line and column).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SourcePosition {
+    /// 0-indexed line number.
+    pub line: usize,
+    /// 0-indexed column (character offset within line).
+    pub column: usize,
+}
+
+/// A range in source code with start and end positions.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct SourceRange {
+    pub start: SourcePosition,
+    pub end: SourcePosition,
+}
 
 pub(crate) mod format;
 
@@ -696,7 +714,7 @@ impl ErrorKind {
     }
 
     /// Start building a diagnostic at the given span.
-    pub fn at(self, span: Span) -> DiagnosticBuilder {
+    pub(crate) fn at(self, span: Span) -> DiagnosticBuilder {
         DiagnosticBuilder {
             kind: self,
             primary_span: span,
@@ -709,7 +727,7 @@ impl ErrorKind {
 
 /// A diagnostic under construction.
 #[must_use = "diagnostics do nothing unless `.emit()`ed"]
-pub struct DiagnosticBuilder {
+pub(crate) struct DiagnosticBuilder {
     kind: ErrorKind,
     primary_span: Span,
     labels: Vec<(Span, DiagnosticMessage)>,
@@ -718,26 +736,26 @@ pub struct DiagnosticBuilder {
 }
 
 impl DiagnosticBuilder {
-    pub fn label(mut self, span: Span, message: DiagnosticMessage) -> Self {
+    pub(crate) fn label(mut self, span: Span, message: DiagnosticMessage) -> Self {
         self.labels.push((span, message));
         self
     }
 
-    pub fn note(mut self, message: DiagnosticMessage) -> Self {
+    pub(crate) fn note(mut self, message: DiagnosticMessage) -> Self {
         self.notes.push(message);
         self
     }
 
-    pub fn help(mut self, message: DiagnosticMessage) -> Self {
+    pub(crate) fn help(mut self, message: DiagnosticMessage) -> Self {
         self.help = Some(message);
         self
     }
 
-    pub fn emit(self, diagnostics: &mut Diagnostics) {
+    pub(crate) fn emit(self, diagnostics: &mut Diagnostics) {
         diagnostics.add(self.build());
     }
 
-    pub fn build(self) -> Diagnostic {
+    pub(crate) fn build(self) -> Diagnostic {
         Diagnostic {
             kind: self.kind,
             primary_span: self.primary_span,
@@ -765,7 +783,7 @@ impl Diagnostic {
     }
 
     /// Create a diagnostic from a lalrpop parse error.
-    pub fn from_lalrpop(
+    pub(crate) fn from_lalrpop(
         value: lalrpop_util::ParseError<usize, tokens::Token<'_>, LexicalError>,
         file_id: FileId,
     ) -> Self {
@@ -851,16 +869,42 @@ impl Diagnostics {
     }
 
     /// Add a diagnostic.
-    pub fn add(&mut self, diagnostic: Diagnostic) {
+    pub(crate) fn add(&mut self, diagnostic: Diagnostic) {
         self.diagnostics.push(diagnostic);
     }
 
-    pub fn add_lalrpop(
+    pub(crate) fn add_lalrpop(
         &mut self,
         value: lalrpop_util::ParseError<usize, tokens::Token<'_>, LexicalError>,
         file_id: FileId,
     ) {
         self.add(Diagnostic::from_lalrpop(value, file_id));
+    }
+
+    /// Get an iterator over the diagnostics.
+    pub fn iter(&self) -> impl Iterator<Item = &Diagnostic> {
+        self.diagnostics.iter()
+    }
+
+    /// Convert a span to a source range with line/column positions.
+    ///
+    /// Returns `None` if the span's file is not in the cache or the offsets are invalid.
+    pub fn span_to_range(&mut self, span: Span) -> Option<SourceRange> {
+        let source = self.cache.fetch(&span.file_id).ok()?;
+
+        let (_, start_line, start_col) = source.get_offset_line(span.start)?;
+        let (_, end_line, end_col) = source.get_offset_line(span.end)?;
+
+        Some(SourceRange {
+            start: SourcePosition {
+                line: start_line,
+                column: start_col,
+            },
+            end: SourcePosition {
+                line: end_line,
+                column: end_col,
+            },
+        })
     }
 
     pub fn pretty_string(&mut self, colourful: bool) -> String {
