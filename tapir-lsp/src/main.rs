@@ -13,7 +13,9 @@ use lsp_types::{
     notification::{
         DidChangeTextDocument, DidOpenTextDocument, Notification as _, PublishDiagnostics,
     },
-    request::{GotoDefinition, HoverRequest, InlayHintRequest, References, Request, SignatureHelpRequest},
+    request::{
+        GotoDefinition, HoverRequest, InlayHintRequest, References, Request, SignatureHelpRequest,
+    },
 };
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
