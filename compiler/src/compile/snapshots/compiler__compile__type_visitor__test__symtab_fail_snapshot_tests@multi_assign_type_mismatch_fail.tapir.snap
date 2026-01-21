@@ -4,16 +4,22 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/multi_assign_type_mismatch_fail.tapir
 ---
 Error: Incorrect type, expected int but got fix
-   ╭─[ multi_assign_type_mismatch_fail.tapir:3:1 ]
+   ╭─[ multi_assign_type_mismatch_fail.tapir:3:8 ]
    │
+ 2 │ var a, b = 1, 2;
+   │     ┬  
+   │     ╰── Defined as int
  3 │ a, b = 1.0, 2.0;
-   │ ────────┬───────  
-   │         ╰───────── Incorrect type
+   │        ─┬─  
+   │         ╰─── Assigning fix
 ───╯
 Error: Incorrect type, expected int but got fix
-   ╭─[ multi_assign_type_mismatch_fail.tapir:3:1 ]
+   ╭─[ multi_assign_type_mismatch_fail.tapir:3:13 ]
    │
+ 2 │ var a, b = 1, 2;
+   │        ┬  
+   │        ╰── Defined as int
  3 │ a, b = 1.0, 2.0;
-   │ ────────┬───────  
-   │         ╰───────── Incorrect type
+   │             ─┬─  
+   │              ╰─── Assigning fix
 ───╯

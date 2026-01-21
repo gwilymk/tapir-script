@@ -4,16 +4,22 @@ expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/booleans_fail.tapir
 ---
 Error: Incorrect type, expected bool but got int
-   ╭─[ booleans_fail.tapir:2:1 ]
+   ╭─[ booleans_fail.tapir:2:5 ]
    │
+ 1 │ var x = true;
+   │     ┬  
+   │     ╰── Defined as bool
  2 │ x = 4;
-   │ ───┬──  
-   │    ╰──── Incorrect type
+   │     ┬  
+   │     ╰── Assigning int
 ───╯
 Error: Incorrect type, expected bool but got int
-   ╭─[ booleans_fail.tapir:5:1 ]
+   ╭─[ booleans_fail.tapir:5:5 ]
    │
+ 4 │ var y = false;
+   │     ┬  
+   │     ╰── Defined as bool
  5 │ y = 8;
-   │ ───┬──  
-   │    ╰──── Incorrect type
+   │     ┬  
+   │     ╰── Assigning int
 ───╯

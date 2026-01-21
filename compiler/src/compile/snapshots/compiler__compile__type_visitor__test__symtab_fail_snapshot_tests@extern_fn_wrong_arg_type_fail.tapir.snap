@@ -6,14 +6,22 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor
 Error: Incorrect type, expected int but got fix
    ╭─[ extern_fn_wrong_arg_type_fail.tapir:3:17 ]
    │
+ 1 │ extern fn compute(a: int, b: fix) -> fix;
+   │           ───┬───  
+   │              ╰───── Defined as int
+   │ 
  3 │ var x = compute(3.5, 4);
    │                 ─┬─  
-   │                  ╰─── Incorrect type
+   │                  ╰─── Assigning fix
 ───╯
 Error: Incorrect type, expected fix but got int
    ╭─[ extern_fn_wrong_arg_type_fail.tapir:3:22 ]
    │
+ 1 │ extern fn compute(a: int, b: fix) -> fix;
+   │           ───┬───  
+   │              ╰───── Defined as fix
+   │ 
  3 │ var x = compute(3.5, 4);
    │                      ┬  
-   │                      ╰── Incorrect type
+   │                      ╰── Assigning int
 ───╯

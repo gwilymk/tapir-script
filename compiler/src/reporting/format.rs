@@ -169,11 +169,18 @@ fn compiler_error_report(
         CompilerErrorKind::UnknownVariable(var) => build_error_report(span)
             .with_label(Label::new(span).with_message("Unknown variable"))
             .with_message(format!("Unknown variable '{var}'")),
-        CompilerErrorKind::TypeError { expected, actual } => build_error_report(span)
-            .with_label(Label::new(span).with_message("Incorrect type"))
-            .with_message(format!(
-                "Incorrect type, expected {expected} but got {actual}",
-            )),
+        CompilerErrorKind::TypeError { expected, expected_span, actual, actual_span } => {
+            let report = build_error_report(span)
+                .with_label(Label::new(*actual_span).with_message(format!("Assigning {actual}")))
+                .with_message(format!(
+                    "Incorrect type, expected {expected} but got {actual}",
+                ));
+            if let Some(expected_span) = expected_span {
+                report.with_label(Label::new(*expected_span).with_message(format!("Defined as {expected}")))
+            } else {
+                report
+            }
+        }
         CompilerErrorKind::UnknownType(var) => build_error_report(span)
             .with_label(Label::new(span).with_message("Unknown type for variable"))
             .with_message(format!("Unknown type for variable '{var}'")),

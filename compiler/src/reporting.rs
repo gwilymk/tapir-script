@@ -158,7 +158,9 @@ pub enum CompilerErrorKind {
     UnknownVariable(String),
     TypeError {
         expected: Type,
+        expected_span: Option<Span>,
         actual: Type,
+        actual_span: Span,
     },
     UnknownType(String),
     BinaryOperatorTypeError {

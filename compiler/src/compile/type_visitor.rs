@@ -16,7 +16,7 @@ use crate::{
 use super::{CompileSettings, loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab};
 
 pub struct TypeVisitor<'input> {
-    type_table: Vec<Option<Type>>,
+    type_table: Vec<Option<(Type, Option<Span>)>>,
     functions: HashMap<InternalOrExternalFunctionId, FunctionInfo>,
 
     trigger_types: HashMap<&'input str, TriggerInfo>,
@@ -82,7 +82,7 @@ impl<'input> TypeVisitor<'input> {
             type_table: settings
                 .properties
                 .iter()
-                .map(|prop| Some(prop.ty))
+                .map(|prop| Some((prop.ty, None)))
                 .collect(),
 
             functions: resolved_functions,
@@ -90,35 +90,40 @@ impl<'input> TypeVisitor<'input> {
         }
     }
 
-    fn resolve_type(
+    fn resolve_type_with_spans(
         &mut self,
         symbol_id: SymbolId,
         ty: Type,
-        span: Span,
+        ident_span: Span,
+        value_span: Span,
         diagnostics: &mut Diagnostics,
     ) {
         if self.type_table.len() <= symbol_id.0 {
             self.type_table.resize(symbol_id.0 + 1, None);
         }
 
-        if self.type_table[symbol_id.0].is_some_and(|table_type| table_type != ty) {
-            if ty == Type::Error {
-                // the error should already be reported
+        if let Some((table_type, expected_span)) = self.type_table[symbol_id.0] {
+            if table_type != ty {
+                if ty == Type::Error {
+                    // the error should already be reported
+                    return;
+                }
+
+                diagnostics.add_message(
+                    CompilerErrorKind::TypeError {
+                        expected: table_type,
+                        expected_span,
+                        actual: ty,
+                        actual_span: value_span,
+                    }
+                    .into_message(value_span),
+                );
+
                 return;
             }
-
-            diagnostics.add_message(
-                CompilerErrorKind::TypeError {
-                    expected: self.type_table[symbol_id.0].unwrap(),
-                    actual: ty,
-                }
-                .into_message(span),
-            );
-
-            return;
         }
 
-        self.type_table[symbol_id.0] = Some(ty);
+        self.type_table[symbol_id.0] = Some((ty, Some(ident_span)));
     }
 
     pub fn get_type(
@@ -129,7 +134,7 @@ impl<'input> TypeVisitor<'input> {
         diagnostics: &mut Diagnostics,
     ) -> Type {
         match self.type_table.get(symbol_id.0) {
-            Some(Some(ty)) => *ty,
+            Some(Some((ty, _))) => *ty,
             _ => {
                 diagnostics.add_message(
                     CompilerErrorKind::UnknownType(symtab.name_for_symbol(symbol_id).into_owned())
@@ -152,7 +157,13 @@ impl<'input> TypeVisitor<'input> {
                 panic!("Should've resolved the symbol by now")
             };
 
-            self.resolve_type(symbol_id, argument.t.t, argument.span, diagnostics);
+            self.resolve_type_with_spans(
+                symbol_id,
+                argument.t.t,
+                argument.span,
+                argument.span,
+                diagnostics,
+            );
         }
 
         if let FunctionModifiers {
@@ -218,23 +229,31 @@ impl<'input> TypeVisitor<'input> {
                         .expect("Should've been resolved by symbol resolution");
 
                     // this is _only_ valid if it's a function call on the RHS
-                    let value_types = if values.len() == 1
+                    let value_types_and_spans: Vec<(Type, Span)> = if values.len() == 1
                         && idents.len() > 1
                         && let Some(fn_ret_types) =
                             self.return_types_for_maybe_call(&mut values[0], symtab, diagnostics)
                     {
-                        fn_ret_types
+                        // For multi-return function calls, use the call expression span for all
+                        let call_span = values[0].span;
+                        fn_ret_types.into_iter().map(|t| (t, call_span)).collect()
                     } else {
                         values
                             .iter_mut()
-                            .map(|v| self.type_for_expression(v, symtab, diagnostics))
+                            .map(|v| {
+                                let span = v.span;
+                                (self.type_for_expression(v, symtab, diagnostics), span)
+                            })
                             .collect()
                     };
 
-                    if value_types.len() != idents.len() {
-                        let extras = if idents.len() > value_types.len() {
+                    if value_types_and_spans.len() != idents.len() {
+                        let extras = if idents.len() > value_types_and_spans.len() {
                             CountMismatchExtras::Idents(
-                                idents[value_types.len()..].iter().map(|i| i.span).collect(),
+                                idents[value_types_and_spans.len()..]
+                                    .iter()
+                                    .map(|i| i.span)
+                                    .collect(),
                             )
                         } else {
                             CountMismatchExtras::Expressions(
@@ -245,15 +264,25 @@ impl<'input> TypeVisitor<'input> {
                         diagnostics.add_message(
                             CompilerErrorKind::CountMismatch {
                                 ident_count: idents.len(),
-                                expr_count: value_types.len(),
+                                expr_count: value_types_and_spans.len(),
                                 extras,
                             }
                             .into_message(statement.span),
                         );
                     }
 
-                    for (symbol, value) in symbol_ids.iter().zip(value_types) {
-                        self.resolve_type(*symbol, value, statement.span, diagnostics);
+                    for ((symbol, (value_type, value_span)), ident) in symbol_ids
+                        .iter()
+                        .zip(value_types_and_spans)
+                        .zip(idents.iter())
+                    {
+                        self.resolve_type_with_spans(
+                            *symbol,
+                            value_type,
+                            ident.span,
+                            value_span,
+                            diagnostics,
+                        );
                     }
                 }
                 ast::StatementKind::If {
@@ -423,7 +452,7 @@ impl<'input> TypeVisitor<'input> {
     ) -> TypeTable<'input> {
         let mut types = Vec::with_capacity(self.type_table.len());
         for (i, ty) in self.type_table.into_iter().enumerate() {
-            if let Some(ty) = ty {
+            if let Some((ty, _span)) = ty {
                 types.push(ty);
             } else {
                 diagnostics.add_message(
@@ -585,7 +614,9 @@ impl<'input> TypeVisitor<'input> {
                     diagnostics.add_message(
                         CompilerErrorKind::TypeError {
                             expected: *expected,
+                            expected_span: Some(function_info.span),
                             actual: *actual,
+                            actual_span: *actual_span,
                         }
                         .into_message(*actual_span),
                     );
