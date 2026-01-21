@@ -1,0 +1,7 @@
+extern fn get_x() -> int;
+extern fn get_y() -> int;
+extern fn combine(a: int, b: int) -> int;
+
+var x = get_x();
+var y = get_y();
+var result = combine(x, y);

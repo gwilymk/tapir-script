@@ -68,7 +68,7 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
 
             write!(
                 output,
-                "{targets}{}({args})",
+                "{targets}extern {}({args})",
                 symtab.name_for_function(InternalOrExternalFunctionId::External(*f))
             )
         }

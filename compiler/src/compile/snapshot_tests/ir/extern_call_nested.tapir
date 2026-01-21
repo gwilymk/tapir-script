@@ -1,0 +1,7 @@
+extern fn transform(x: int) -> int;
+
+fn double(x: int) -> int {
+    return x * 2;
+}
+
+var result = double(transform(5));

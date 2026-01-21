@@ -1,0 +1,15 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/extern_call_multiple_externs.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+x.0 = extern get_x()
+y.1 = extern get_y()
+temp.3 = x.0
+temp.4 = y.1
+result.2 = extern combine(temp.3, temp.4)
+return

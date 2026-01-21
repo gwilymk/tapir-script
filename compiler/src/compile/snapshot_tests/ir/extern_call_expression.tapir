@@ -1,0 +1,4 @@
+extern fn get_value(x: int) -> fix;
+
+var result = get_value(5);
+var doubled = result * 2.0;

@@ -1,0 +1,5 @@
+extern fn is_ready() -> bool;
+
+if is_ready() {
+    var x = 10;
+}

@@ -1,0 +1,21 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/extern_call_in_condition.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+temp.1 = extern is_ready()
+conditional_jump temp.1 0 1
+
+---- block 0 ----
+x.0 = int 10
+jmp 2
+
+---- block 1 ----
+jmp 2
+
+---- block 2 ----
+return

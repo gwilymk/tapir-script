@@ -1,0 +1,15 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/extern_call_in_binop.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.1 = extern get_value()
+temp.3 = extern get_value()
+temp.4 = int 2
+temp.2 = temp.3 * temp.4
+result.0 = temp.1 + temp.2
+return

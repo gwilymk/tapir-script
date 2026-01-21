@@ -1,0 +1,8 @@
+extern fn get_external() -> int;
+
+fn use_extern(x: int) -> int {
+    var ext = get_external();
+    return x + ext;
+}
+
+var result = use_extern(5);

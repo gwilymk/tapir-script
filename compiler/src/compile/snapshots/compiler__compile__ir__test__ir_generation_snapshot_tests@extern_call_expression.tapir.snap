@@ -1,0 +1,15 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/extern_call_expression.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2 = int 5
+result.0 = extern get_value(temp.2)
+temp.3 = result.0
+temp.4 = fix 2
+doubled.1 = temp.3 f* temp.4
+return
