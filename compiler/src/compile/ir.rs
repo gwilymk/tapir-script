@@ -282,7 +282,7 @@ impl BlockVisitor {
                     target_symbol
                 };
 
-                blocks_for_expression(value, expr_target, symtab, &mut self.current_block);
+                self.blocks_for_expression(value, expr_target, symtab);
 
                 if let Some(property) = symtab.get_property(target_symbol) {
                     self.current_block.push(TapIr {
@@ -324,7 +324,7 @@ impl BlockVisitor {
                 false_block,
             } => {
                 let condition_target = symtab.new_temporary();
-                blocks_for_expression(condition, condition_target, symtab, &mut self.current_block);
+                self.blocks_for_expression(condition, condition_target, symtab);
 
                 let true_block_id = self.next_block_id();
                 let false_block_id = self.next_block_id();
@@ -379,7 +379,7 @@ impl BlockVisitor {
                     .iter()
                     .map(|a| {
                         let symbol = symtab.new_temporary();
-                        blocks_for_expression(a, symbol, symtab, &mut self.current_block);
+                        self.blocks_for_expression(a, symbol, symtab);
                         symbol
                     })
                     .collect();
@@ -401,7 +401,7 @@ impl BlockVisitor {
                     .iter()
                     .map(|a| {
                         let symbol = symtab.new_temporary();
-                        blocks_for_expression(a, symbol, symtab, &mut self.current_block);
+                        self.blocks_for_expression(a, symbol, symtab);
                         symbol
                     })
                     .collect();
@@ -419,7 +419,7 @@ impl BlockVisitor {
                     .iter()
                     .map(|a| {
                         let symbol = symtab.new_temporary();
-                        blocks_for_expression(a, symbol, symtab, &mut self.current_block);
+                        self.blocks_for_expression(a, symbol, symtab);
                         symbol
                     })
                     .collect();
@@ -437,7 +437,7 @@ impl BlockVisitor {
                     .iter()
                     .map(|v| {
                         let return_symbol = symtab.new_temporary();
-                        blocks_for_expression(v, return_symbol, symtab, &mut self.current_block);
+                        self.blocks_for_expression(v, return_symbol, symtab);
                         return_symbol
                     })
                     .collect();
@@ -467,91 +467,94 @@ impl BlockVisitor {
 
         self.next_block_id = next_block_id;
     }
-}
 
-/// Sets the value of the expression to the symbol at target_symbol
-fn blocks_for_expression(
-    expr: &Expression<'_>,
-    target_symbol: SymbolId,
-    symtab: &mut SymTab,
-    current_block: &mut Vec<TapIr>,
-) {
-    match &expr.kind {
-        ast::ExpressionKind::Integer(i) => current_block.push(TapIr {
-            instr: TapIrInstr::Constant(target_symbol, Constant::Int(*i)),
-        }),
-        ast::ExpressionKind::Fix(num) => current_block.push(TapIr {
-            instr: TapIrInstr::Constant(target_symbol, Constant::Fix(*num)),
-        }),
-        ast::ExpressionKind::Bool(b) => current_block.push(TapIr {
-            instr: TapIrInstr::Constant(target_symbol, Constant::Bool(*b)),
-        }),
-        ast::ExpressionKind::Variable(_) => {
-            let source = *expr.meta.get().expect("Should've resolved variable");
-            if let Some(property) = symtab.get_property(source) {
-                current_block.push(TapIr {
-                    instr: TapIrInstr::GetProp {
-                        target: target_symbol,
-                        prop_index: property.index,
-                    },
-                });
-            } else {
-                current_block.push(TapIr {
-                    instr: TapIrInstr::Move {
-                        target: target_symbol,
-                        source,
+    /// Sets the value of the expression to the symbol at target_symbol
+    fn blocks_for_expression(
+        &mut self,
+        expr: &Expression<'_>,
+        target_symbol: SymbolId,
+        symtab: &mut SymTab,
+    ) {
+        match &expr.kind {
+            ast::ExpressionKind::Integer(i) => self.current_block.push(TapIr {
+                instr: TapIrInstr::Constant(target_symbol, Constant::Int(*i)),
+            }),
+            ast::ExpressionKind::Fix(num) => self.current_block.push(TapIr {
+                instr: TapIrInstr::Constant(target_symbol, Constant::Fix(*num)),
+            }),
+            ast::ExpressionKind::Bool(b) => self.current_block.push(TapIr {
+                instr: TapIrInstr::Constant(target_symbol, Constant::Bool(*b)),
+            }),
+            ast::ExpressionKind::Variable(_) => {
+                let source = *expr.meta.get().expect("Should've resolved variable");
+                if let Some(property) = symtab.get_property(source) {
+                    self.current_block.push(TapIr {
+                        instr: TapIrInstr::GetProp {
+                            target: target_symbol,
+                            prop_index: property.index,
+                        },
+                    });
+                } else {
+                    self.current_block.push(TapIr {
+                        instr: TapIrInstr::Move {
+                            target: target_symbol,
+                            source,
+                        },
+                    });
+                }
+            }
+            ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
+                let lhs_target = symtab.new_temporary();
+
+                match operator {
+                    BinaryOperator::Then => {
+                        self.blocks_for_expression(lhs, lhs_target, symtab);
+                        self.blocks_for_expression(rhs, target_symbol, symtab);
+                    }
+                    operator => {
+                        let rhs_target = symtab.new_temporary();
+
+                        self.blocks_for_expression(lhs, lhs_target, symtab);
+                        self.blocks_for_expression(rhs, rhs_target, symtab);
+
+                        self.current_block.push(TapIr {
+                            instr: TapIrInstr::BinOp {
+                                target: target_symbol,
+                                lhs: lhs_target,
+                                rhs: rhs_target,
+                                op: *operator,
+                            },
+                        });
+                    }
+                }
+            }
+            ast::ExpressionKind::Error => {
+                unreachable!("Shouldn't be creating IR if there is an error");
+            }
+            ast::ExpressionKind::Nop => {}
+            ast::ExpressionKind::Call { arguments, .. } => {
+                let function_id = *expr
+                    .meta
+                    .get()
+                    .expect("Should've assigned function IDs by now");
+
+                let args = arguments
+                    .iter()
+                    .map(|arg| {
+                        let arg_sym = symtab.new_temporary();
+                        self.blocks_for_expression(arg, arg_sym, symtab);
+                        arg_sym
+                    })
+                    .collect();
+
+                self.current_block.push(TapIr {
+                    instr: TapIrInstr::Call {
+                        target: Box::new([target_symbol]),
+                        f: function_id,
+                        args,
                     },
                 });
             }
-        }
-        ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
-            let lhs_target = symtab.new_temporary();
-
-            if !matches!(operator, BinaryOperator::Then) {
-                let rhs_target = symtab.new_temporary();
-
-                blocks_for_expression(lhs, lhs_target, symtab, current_block);
-                blocks_for_expression(rhs, rhs_target, symtab, current_block);
-
-                current_block.push(TapIr {
-                    instr: TapIrInstr::BinOp {
-                        target: target_symbol,
-                        lhs: lhs_target,
-                        rhs: rhs_target,
-                        op: *operator,
-                    },
-                });
-            } else {
-                blocks_for_expression(lhs, lhs_target, symtab, current_block);
-                blocks_for_expression(rhs, target_symbol, symtab, current_block);
-            }
-        }
-        ast::ExpressionKind::Error => {
-            unreachable!("Shouldn't be creating IR if there is an error");
-        }
-        ast::ExpressionKind::Nop => {}
-        ast::ExpressionKind::Call { arguments, .. } => {
-            let function_id = *expr
-                .meta
-                .get()
-                .expect("Should've assigned function IDs by now");
-
-            let args = arguments
-                .iter()
-                .map(|arg| {
-                    let arg_sym = symtab.new_temporary();
-                    blocks_for_expression(arg, arg_sym, symtab, current_block);
-                    arg_sym
-                })
-                .collect();
-
-            current_block.push(TapIr {
-                instr: TapIrInstr::Call {
-                    target: Box::new([target_symbol]),
-                    f: function_id,
-                    args,
-                },
-            });
         }
     }
 }
