@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{
     ast::SymbolId,
     compile::ir::{
-        BlockExitInstr, Constant, TapIrFunction, TapIrFunctionBlockIter, TapIrInstr,
+        BlockExitInstr, Constant, TapIr, TapIrFunction, TapIrFunctionBlockIter,
         optimisations::OptimisationResult,
     },
 };
@@ -16,7 +16,7 @@ pub fn remove_constant_conditionals(f: &mut TapIrFunction) -> OptimisationResult
     let mut reverse_post_order = TapIrFunctionBlockIter::new_reverse_post_order(f);
     while let Some(block) = reverse_post_order.next_mut(f) {
         for instr in block.instrs() {
-            if let TapIrInstr::Constant(target, Constant::Bool(value)) = instr.instr {
+            if let TapIr::Constant(target, Constant::Bool(value)) = *instr {
                 constants.insert(target, value);
             }
         }

@@ -5,7 +5,6 @@ use crate::{
 
 use super::{
     BlockExitInstr, BlockId, Constant, FunctionModifiers, TapIr, TapIrBlock, TapIrFunction,
-    TapIrInstr,
 };
 
 pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
@@ -118,21 +117,17 @@ impl BlockVisitor {
 
                     match f {
                         InternalOrExternalFunctionId::Internal(f) => {
-                            self.current_block.push(TapIr {
-                                instr: TapIrInstr::Call {
-                                    target: temps.clone().into_boxed_slice(),
-                                    f,
-                                    args,
-                                },
+                            self.current_block.push(TapIr::Call {
+                                target: temps.clone().into_boxed_slice(),
+                                f,
+                                args,
                             });
                         }
                         InternalOrExternalFunctionId::External(f) => {
-                            self.current_block.push(TapIr {
-                                instr: TapIrInstr::CallExternal {
-                                    target: temps.clone().into_boxed_slice(),
-                                    f,
-                                    args,
-                                },
+                            self.current_block.push(TapIr::CallExternal {
+                                target: temps.clone().into_boxed_slice(),
+                                f,
+                                args,
                             });
                         }
                     }
@@ -149,27 +144,21 @@ impl BlockVisitor {
                         target_symbol
                     };
 
-                    self.current_block.push(TapIr {
-                        instr: TapIrInstr::Move {
-                            target: expr_target,
-                            source: temp,
-                        },
+                    self.current_block.push(TapIr::Move {
+                        target: expr_target,
+                        source: temp,
                     });
 
                     if let Some(property) = symtab.get_property(target_symbol) {
-                        self.current_block.push(TapIr {
-                            instr: TapIrInstr::StoreProp {
-                                prop_index: property.index,
-                                value: expr_target,
-                            },
+                        self.current_block.push(TapIr::StoreProp {
+                            prop_index: property.index,
+                            value: expr_target,
                         });
                     }
                 }
             }
             ast::StatementKind::Wait => {
-                self.current_block.push(TapIr {
-                    instr: TapIrInstr::Wait,
-                });
+                self.current_block.push(TapIr::Wait);
             }
             ast::StatementKind::Block { block } => {
                 for statement in block {
@@ -264,21 +253,17 @@ impl BlockVisitor {
 
                 match f {
                     InternalOrExternalFunctionId::Internal(function_id) => {
-                        self.current_block.push(TapIr {
-                            instr: TapIrInstr::Call {
-                                target: Box::new([]),
-                                f: function_id,
-                                args,
-                            },
+                        self.current_block.push(TapIr::Call {
+                            target: Box::new([]),
+                            f: function_id,
+                            args,
                         });
                     }
                     InternalOrExternalFunctionId::External(external_function_id) => {
-                        self.current_block.push(TapIr {
-                            instr: TapIrInstr::CallExternal {
-                                target: Box::new([]),
-                                f: external_function_id,
-                                args,
-                            },
+                        self.current_block.push(TapIr::CallExternal {
+                            target: Box::new([]),
+                            f: external_function_id,
+                            args,
                         });
                     }
                 }
@@ -300,11 +285,9 @@ impl BlockVisitor {
 
                 match f {
                     InternalOrExternalFunctionId::Internal(function_id) => {
-                        self.current_block.push(TapIr {
-                            instr: TapIrInstr::Spawn {
-                                f: function_id,
-                                args,
-                            },
+                        self.current_block.push(TapIr::Spawn {
+                            f: function_id,
+                            args,
                         });
                     }
                     InternalOrExternalFunctionId::External(_) => {
@@ -326,9 +309,7 @@ impl BlockVisitor {
                     .meta
                     .get()
                     .expect("Should have function IDs by now");
-                self.current_block.push(TapIr {
-                    instr: TapIrInstr::Trigger { f, args },
-                });
+                self.current_block.push(TapIr::Trigger { f, args });
             }
             ast::StatementKind::Return { values } => {
                 let return_values = values
@@ -373,30 +354,29 @@ impl BlockVisitor {
         symtab: &mut SymTab,
     ) {
         match &expr.kind {
-            ast::ExpressionKind::Integer(i) => self.current_block.push(TapIr {
-                instr: TapIrInstr::Constant(target_symbol, Constant::Int(*i)),
-            }),
-            ast::ExpressionKind::Fix(num) => self.current_block.push(TapIr {
-                instr: TapIrInstr::Constant(target_symbol, Constant::Fix(*num)),
-            }),
-            ast::ExpressionKind::Bool(b) => self.current_block.push(TapIr {
-                instr: TapIrInstr::Constant(target_symbol, Constant::Bool(*b)),
-            }),
+            ast::ExpressionKind::Integer(i) => {
+                self.current_block
+                    .push(TapIr::Constant(target_symbol, Constant::Int(*i)));
+            }
+            ast::ExpressionKind::Fix(num) => {
+                self.current_block
+                    .push(TapIr::Constant(target_symbol, Constant::Fix(*num)));
+            }
+            ast::ExpressionKind::Bool(b) => {
+                self.current_block
+                    .push(TapIr::Constant(target_symbol, Constant::Bool(*b)));
+            }
             ast::ExpressionKind::Variable(_) => {
                 let source = *expr.meta.get().expect("Should've resolved variable");
                 if let Some(property) = symtab.get_property(source) {
-                    self.current_block.push(TapIr {
-                        instr: TapIrInstr::GetProp {
-                            target: target_symbol,
-                            prop_index: property.index,
-                        },
+                    self.current_block.push(TapIr::GetProp {
+                        target: target_symbol,
+                        prop_index: property.index,
                     });
                 } else {
-                    self.current_block.push(TapIr {
-                        instr: TapIrInstr::Move {
-                            target: target_symbol,
-                            source,
-                        },
+                    self.current_block.push(TapIr::Move {
+                        target: target_symbol,
+                        source,
                     });
                 }
             }
@@ -419,9 +399,8 @@ impl BlockVisitor {
 
                         // if it's &&, then we should start by assigning false to the target_symbol and jumping only
                         // if the initial lhs is true. For || it should be the other way around
-                        self.current_block.push(TapIr {
-                            instr: TapIrInstr::Constant(target_symbol, Constant::Bool(is_or)),
-                        });
+                        self.current_block
+                            .push(TapIr::Constant(target_symbol, Constant::Bool(is_or)));
 
                         self.finalize_block(
                             BlockExitInstr::ConditionalJump {
@@ -452,13 +431,11 @@ impl BlockVisitor {
                         self.blocks_for_expression(lhs, lhs_target, symtab);
                         self.blocks_for_expression(rhs, rhs_target, symtab);
 
-                        self.current_block.push(TapIr {
-                            instr: TapIrInstr::BinOp {
-                                target: target_symbol,
-                                lhs: lhs_target,
-                                rhs: rhs_target,
-                                op: *operator,
-                            },
+                        self.current_block.push(TapIr::BinOp {
+                            target: target_symbol,
+                            lhs: lhs_target,
+                            rhs: rhs_target,
+                            op: *operator,
                         });
                     }
                 }
@@ -484,21 +461,17 @@ impl BlockVisitor {
 
                 match function_id {
                     InternalOrExternalFunctionId::Internal(function_id) => {
-                        self.current_block.push(TapIr {
-                            instr: TapIrInstr::Call {
-                                target: Box::new([target_symbol]),
-                                f: function_id,
-                                args,
-                            },
+                        self.current_block.push(TapIr::Call {
+                            target: Box::new([target_symbol]),
+                            f: function_id,
+                            args,
                         });
                     }
                     InternalOrExternalFunctionId::External(external_function_id) => {
-                        self.current_block.push(TapIr {
-                            instr: TapIrInstr::CallExternal {
-                                target: Box::new([target_symbol]),
-                                f: external_function_id,
-                                args,
-                            },
+                        self.current_block.push(TapIr::CallExternal {
+                            target: Box::new([target_symbol]),
+                            f: external_function_id,
+                            args,
                         });
                     }
                 }

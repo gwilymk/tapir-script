@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{
     ast::SymbolId,
     compile::ir::{
-        TapIrFunction, TapIrFunctionBlockIter, TapIrInstr, optimisations::OptimisationResult,
+        TapIr, TapIrFunction, TapIrFunctionBlockIter, optimisations::OptimisationResult,
     },
 };
 
@@ -38,7 +38,7 @@ pub fn copy_propagation(f: &mut TapIrFunction) -> OptimisationResult {
                 replace_source!(source);
             }
 
-            if let TapIrInstr::Move { source, target } = instr.instr
+            if let TapIr::Move { source, target } = *instr
                 && source != target
                 && renames.insert(target, source).is_some()
             {

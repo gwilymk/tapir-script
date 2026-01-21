@@ -32,12 +32,7 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct TapIr {
-    pub instr: TapIrInstr,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TapIrInstr {
+pub enum TapIr {
     Constant(SymbolId, Constant),
     Move {
         target: SymbolId,
@@ -80,36 +75,36 @@ pub enum TapIrInstr {
 
 impl TapIr {
     pub fn targets(&self) -> impl Iterator<Item = SymbolId> {
-        SymbolIter::new_target(&self.instr)
+        SymbolIter::new_target(self)
     }
 
     pub fn sources(&self) -> impl Iterator<Item = SymbolId> {
-        SymbolIter::new_source(&self.instr)
+        SymbolIter::new_source(self)
     }
 
     pub fn targets_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
-        SymbolIterMut::new_target(&mut self.instr)
+        SymbolIterMut::new_target(self)
     }
 
     pub fn sources_mut(&mut self) -> impl Iterator<Item = &mut SymbolId> {
-        SymbolIterMut::new_source(&mut self.instr)
+        SymbolIterMut::new_source(self)
     }
 
     /// Returns whether this could be removed if `targets()` are all unused. So technically
     /// there could be a side effect, but the side effect would only be changing the value
     /// of one of the symbols in `targets()`.
     pub fn could_have_side_effects(&self) -> bool {
-        match &self.instr {
-            TapIrInstr::Constant(..)
-            | TapIrInstr::Move { .. }
-            | TapIrInstr::BinOp { .. }
-            | TapIrInstr::GetProp { .. } => false,
-            TapIrInstr::Wait
-            | TapIrInstr::Call { .. }
-            | TapIrInstr::CallExternal { .. }
-            | TapIrInstr::Spawn { .. }
-            | TapIrInstr::Trigger { .. }
-            | TapIrInstr::StoreProp { .. } => true,
+        match self {
+            TapIr::Constant(..)
+            | TapIr::Move { .. }
+            | TapIr::BinOp { .. }
+            | TapIr::GetProp { .. } => false,
+            TapIr::Wait
+            | TapIr::Call { .. }
+            | TapIr::CallExternal { .. }
+            | TapIr::Spawn { .. }
+            | TapIr::Trigger { .. }
+            | TapIr::StoreProp { .. } => true,
         }
     }
 }
@@ -191,29 +186,28 @@ impl TapIrBlock {
 
     fn symbols(&self, symbols: &mut HashSet<SymbolId>) {
         for instr in &self.instrs {
-            match &instr.instr {
-                TapIrInstr::Constant(symbol_id, ..)
-                | TapIrInstr::GetProp {
+            match instr {
+                TapIr::Constant(symbol_id, ..)
+                | TapIr::GetProp {
                     target: symbol_id, ..
                 }
-                | TapIrInstr::StoreProp {
+                | TapIr::StoreProp {
                     value: symbol_id, ..
                 } => {
                     symbols.insert(*symbol_id);
                 }
-                TapIrInstr::Move { target, source } => {
+                TapIr::Move { target, source } => {
                     symbols.extend([*target, *source]);
                 }
-                TapIrInstr::BinOp {
+                TapIr::BinOp {
                     target, lhs, rhs, ..
                 } => symbols.extend([*target, *lhs, *rhs]),
-                TapIrInstr::Wait => {}
-                TapIrInstr::Call { target, args, .. }
-                | TapIrInstr::CallExternal { target, args, .. } => {
+                TapIr::Wait => {}
+                TapIr::Call { target, args, .. } | TapIr::CallExternal { target, args, .. } => {
                     symbols.extend(target);
                     symbols.extend(args);
                 }
-                TapIrInstr::Trigger { args, .. } | TapIrInstr::Spawn { args, .. } => {
+                TapIr::Trigger { args, .. } | TapIr::Spawn { args, .. } => {
                     symbols.extend(args);
                 }
             }
@@ -365,8 +359,8 @@ impl TapIrFunction {
     /// An iterator over the `FunctionId`s that this function references
     pub fn callees(&self) -> impl Iterator<Item = FunctionId> {
         self.blocks().flat_map(|block| {
-            block.instrs().iter().filter_map(|instr| match instr.instr {
-                TapIrInstr::Call { f, .. } | TapIrInstr::Spawn { f, .. } => Some(f),
+            block.instrs().iter().filter_map(|instr| match instr {
+                TapIr::Call { f, .. } | TapIr::Spawn { f, .. } => Some(*f),
                 _ => None,
             })
         })
@@ -375,8 +369,8 @@ impl TapIrFunction {
     /// An iterator of the `FunctionId`s that this function calls. So not those which are spawned
     pub fn direct_callees(&self) -> impl Iterator<Item = FunctionId> {
         self.blocks().flat_map(|block| {
-            block.instrs().iter().filter_map(|instr| match instr.instr {
-                TapIrInstr::Call { f, .. } => Some(f),
+            block.instrs().iter().filter_map(|instr| match instr {
+                TapIr::Call { f, .. } => Some(*f),
                 _ => None,
             })
         })
@@ -546,28 +540,22 @@ mod test {
 
     #[test]
     fn test_targets_iter_wait() {
-        let instr = TapIr {
-            instr: TapIrInstr::Wait,
-        };
+        let instr = TapIr::Wait;
         assert_eq!(instr.targets().next(), None);
     }
 
     #[test]
     fn test_targets_iter_constant() {
-        let instr = TapIr {
-            instr: TapIrInstr::Constant(SymbolId(5), Constant::Bool(true)),
-        };
+        let instr = TapIr::Constant(SymbolId(5), Constant::Bool(true));
 
         assert_eq!(instr.targets().collect::<Vec<_>>(), vec![SymbolId(5)]);
     }
 
     #[test]
     fn test_targets_iter_move() {
-        let instr = TapIr {
-            instr: TapIrInstr::Move {
-                target: SymbolId(5),
-                source: SymbolId(6),
-            },
+        let instr = TapIr::Move {
+            target: SymbolId(5),
+            source: SymbolId(6),
         };
 
         assert_eq!(instr.targets().collect::<Vec<_>>(), vec![SymbolId(5)]);
@@ -575,12 +563,10 @@ mod test {
 
     #[test]
     fn test_targets_call() {
-        let instr = TapIr {
-            instr: TapIrInstr::Call {
-                target: Box::new([SymbolId(6), SymbolId(8)]),
-                f: FunctionId(3),
-                args: Box::new([SymbolId(1), SymbolId(2)]),
-            },
+        let instr = TapIr::Call {
+            target: Box::new([SymbolId(6), SymbolId(8)]),
+            f: FunctionId(3),
+            args: Box::new([SymbolId(1), SymbolId(2)]),
         };
 
         assert_eq!(
@@ -591,11 +577,9 @@ mod test {
 
     #[test]
     fn test_sources_move() {
-        let mut instr = TapIr {
-            instr: TapIrInstr::Move {
-                target: SymbolId(5),
-                source: SymbolId(55),
-            },
+        let mut instr = TapIr::Move {
+            target: SymbolId(5),
+            source: SymbolId(55),
         };
 
         for source in instr.sources_mut() {
@@ -603,8 +587,8 @@ mod test {
         }
 
         assert_eq!(
-            instr.instr,
-            TapIrInstr::Move {
+            instr,
+            TapIr::Move {
                 target: SymbolId(5),
                 source: SymbolId(60)
             }

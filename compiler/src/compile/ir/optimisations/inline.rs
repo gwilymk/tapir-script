@@ -10,7 +10,7 @@ use crate::{
     compile::{
         ir::{
             BlockExitInstr, BlockId, Phi, TapIr, TapIrBlock, TapIrFunction, TapIrFunctionBlockIter,
-            TapIrInstr, optimisations::OptimisationResult,
+            optimisations::OptimisationResult,
         },
         symtab_visitor::SymTab,
     },
@@ -119,7 +119,7 @@ pub fn inline_small_functions(
             let Some((block_id, call_idx, args, rets)) =
                 function_to_inline_into.blocks().find_map(|block| {
                     block.instrs().iter().enumerate().find_map(|(idx, instr)| {
-                        if let TapIrInstr::Call { f, target, args } = &instr.instr
+                        if let TapIr::Call { f, target, args } = instr
                             && *f == function_id_to_be_inlined
                         {
                             Some((block.id(), idx, args.clone(), target.clone()))
@@ -156,9 +156,7 @@ pub fn inline_small_functions(
             };
             assert!(matches!(
                 block_to_split.instrs.pop(),
-                Some(TapIr {
-                    instr: TapIrInstr::Call { .. }
-                })
+                Some(TapIr::Call { .. })
             )); // remove the actual call instruction
 
             function_to_inline_into.insert_block(after_call);
@@ -293,11 +291,9 @@ fn create_copy(
     let instrs = targets
         .iter()
         .enumerate()
-        .map(|(index, &target)| TapIr {
-            instr: TapIrInstr::Move {
-                target,
-                source: return_phi[index].target,
-            },
+        .map(|(index, &target)| TapIr::Move {
+            target,
+            source: return_phi[index].target,
         })
         .collect();
 

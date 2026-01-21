@@ -8,7 +8,7 @@ use crate::{
     EventHandler, ExternFunction, Trigger,
     ast::{BinaryOperator, FunctionId, SymbolId},
     compile::ir::{
-        BlockId, TapIrFunction, TapIrInstr, create_ir, make_ssa,
+        BlockId, TapIr, TapIrFunction, create_ir, make_ssa,
         regalloc::{self, RegisterAllocations},
     },
     grammar,
@@ -221,8 +221,8 @@ impl Compiler {
             block_entrypoints.insert(block.id(), entry_point);
 
             for instr in block.instrs() {
-                match &instr.instr {
-                    TapIrInstr::Constant(target, constant) => {
+                match instr {
+                    TapIr::Constant(target, constant) => {
                         let constant = match constant {
                             ir::Constant::Int(i) => *i as u32,
                             ir::Constant::Fix(num) => num.to_raw() as u32,
@@ -231,8 +231,8 @@ impl Compiler {
 
                         self.bytecode.constant(v(target), constant);
                     }
-                    TapIrInstr::Move { target, source } => self.bytecode.mov(v(target), v(source)),
-                    TapIrInstr::BinOp {
+                    TapIr::Move { target, source } => self.bytecode.mov(v(target), v(source)),
+                    TapIr::BinOp {
                         target,
                         lhs,
                         op,
@@ -240,8 +240,8 @@ impl Compiler {
                     } => {
                         self.bytecode.binop(v(target), v(lhs), *op, v(rhs));
                     }
-                    TapIrInstr::Wait => self.bytecode.wait(),
-                    TapIrInstr::Call { target, f, args } => {
+                    TapIr::Wait => self.bytecode.wait(),
+                    TapIr::Call { target, f, args } => {
                         put_args(&mut self.bytecode, args, false);
                         self.bytecode.call(first_argument);
                         self.jumps.push((*f, self.bytecode.new_jump()));
@@ -250,7 +250,7 @@ impl Compiler {
                             self.bytecode.mov(v(target), i as u8 + first_argument + 1);
                         }
                     }
-                    TapIrInstr::CallExternal { target, f, args } => {
+                    TapIr::CallExternal { target, f, args } => {
                         put_args(&mut self.bytecode, args, true);
                         self.bytecode.call_external(f.0 as u8, first_argument);
 
@@ -258,19 +258,19 @@ impl Compiler {
                             self.bytecode.mov(v(target), i as u8 + first_argument);
                         }
                     }
-                    TapIrInstr::Spawn { f, args } => {
+                    TapIr::Spawn { f, args } => {
                         put_args(&mut self.bytecode, args, false);
                         self.bytecode.spawn(first_argument, args.len() as u8);
                         self.jumps.push((*f, self.bytecode.new_jump()));
                     }
-                    TapIrInstr::Trigger { f, args } => {
+                    TapIr::Trigger { f, args } => {
                         put_args(&mut self.bytecode, args, false);
                         self.bytecode.trigger(f.0 as u8, first_argument);
                     }
-                    TapIrInstr::GetProp { target, prop_index } => {
+                    TapIr::GetProp { target, prop_index } => {
                         self.bytecode.get_prop(v(target), *prop_index as u8);
                     }
-                    TapIrInstr::StoreProp { prop_index, value } => {
+                    TapIr::StoreProp { prop_index, value } => {
                         self.bytecode.set_prop(v(value), *prop_index as u8);
                     }
                 }

@@ -3,8 +3,7 @@ use std::collections::{HashMap, hash_map::Entry};
 use crate::{
     ast::SymbolId,
     compile::ir::{
-        Constant, TapIrFunction, TapIrFunctionBlockIter, TapIrInstr,
-        optimisations::OptimisationResult,
+        Constant, TapIr, TapIrFunction, TapIrFunctionBlockIter, optimisations::OptimisationResult,
     },
 };
 
@@ -16,7 +15,7 @@ pub fn duplicate_loads(f: &mut TapIrFunction) -> OptimisationResult {
         let mut constants_in_block: HashMap<Constant, SymbolId> = HashMap::new();
 
         for instr in block.instrs_mut() {
-            if let TapIrInstr::Constant(t, value) = &instr.instr {
+            if let TapIr::Constant(t, value) = instr {
                 let mut value = *value;
                 if let Constant::Fix(n) = value
                     && n.frac() == 0
@@ -31,7 +30,7 @@ pub fn duplicate_loads(f: &mut TapIrFunction) -> OptimisationResult {
                     Entry::Occupied(occupied_entry) => {
                         did_something = OptimisationResult::DidSomething;
 
-                        instr.instr = TapIrInstr::Move {
+                        *instr = TapIr::Move {
                             target,
                             source: *occupied_entry.get(),
                         }

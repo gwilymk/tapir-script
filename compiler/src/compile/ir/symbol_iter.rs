@@ -2,7 +2,7 @@ use std::slice;
 
 use crate::ast::SymbolId;
 
-use super::{BlockExitInstr, TapIrInstr};
+use super::{BlockExitInstr, TapIr};
 
 pub(super) enum SymbolIter<'a> {
     None,
@@ -12,27 +12,27 @@ pub(super) enum SymbolIter<'a> {
 }
 
 impl<'a> SymbolIter<'a> {
-    pub fn new_source(instr: &'a TapIrInstr) -> Self {
+    pub fn new_source(instr: &'a TapIr) -> Self {
         match instr {
-            TapIrInstr::Move { source, .. } | TapIrInstr::StoreProp { value: source, .. } => {
+            TapIr::Move { source, .. } | TapIr::StoreProp { value: source, .. } => {
                 Self::One(Some(*source))
             }
-            TapIrInstr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
-            TapIrInstr::Call { args, .. }
-            | TapIrInstr::CallExternal { args, .. }
-            | TapIrInstr::Trigger { args, .. }
-            | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter()),
+            TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
+            TapIr::Call { args, .. }
+            | TapIr::CallExternal { args, .. }
+            | TapIr::Trigger { args, .. }
+            | TapIr::Spawn { args, .. } => Self::Many(args.iter()),
             _ => Self::None,
         }
     }
 
-    pub fn new_target(instr: &'a TapIrInstr) -> Self {
+    pub fn new_target(instr: &'a TapIr) -> Self {
         match instr {
-            TapIrInstr::Constant(target, _)
-            | TapIrInstr::Move { target, .. }
-            | TapIrInstr::GetProp { target, .. }
-            | TapIrInstr::BinOp { target, .. } => Self::One(Some(*target)),
-            TapIrInstr::Call { target, .. } | TapIrInstr::CallExternal { target, .. } => {
+            TapIr::Constant(target, _)
+            | TapIr::Move { target, .. }
+            | TapIr::GetProp { target, .. }
+            | TapIr::BinOp { target, .. } => Self::One(Some(*target)),
+            TapIr::Call { target, .. } | TapIr::CallExternal { target, .. } => {
                 Self::Many(target.iter())
             }
             _ => Self::None,
@@ -71,27 +71,27 @@ pub(super) enum SymbolIterMut<'a> {
 }
 
 impl<'a> SymbolIterMut<'a> {
-    pub fn new_source(instr: &'a mut TapIrInstr) -> Self {
+    pub fn new_source(instr: &'a mut TapIr) -> Self {
         match instr {
-            TapIrInstr::Move { source, .. } | TapIrInstr::StoreProp { value: source, .. } => {
+            TapIr::Move { source, .. } | TapIr::StoreProp { value: source, .. } => {
                 Self::One(Some(source))
             }
-            TapIrInstr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
-            TapIrInstr::Call { args, .. }
-            | TapIrInstr::CallExternal { args, .. }
-            | TapIrInstr::Trigger { args, .. }
-            | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter_mut()),
+            TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
+            TapIr::Call { args, .. }
+            | TapIr::CallExternal { args, .. }
+            | TapIr::Trigger { args, .. }
+            | TapIr::Spawn { args, .. } => Self::Many(args.iter_mut()),
             _ => Self::None,
         }
     }
 
-    pub fn new_target(instr: &'a mut TapIrInstr) -> Self {
+    pub fn new_target(instr: &'a mut TapIr) -> Self {
         match instr {
-            TapIrInstr::Constant(target, _)
-            | TapIrInstr::Move { target, .. }
-            | TapIrInstr::GetProp { target, .. }
-            | TapIrInstr::BinOp { target, .. } => Self::One(Some(target)),
-            TapIrInstr::Call { target, .. } | TapIrInstr::CallExternal { target, .. } => {
+            TapIr::Constant(target, _)
+            | TapIr::Move { target, .. }
+            | TapIr::GetProp { target, .. }
+            | TapIr::BinOp { target, .. } => Self::One(Some(target)),
+            TapIr::Call { target, .. } | TapIr::CallExternal { target, .. } => {
                 Self::Many(target.iter_mut())
             }
             _ => Self::None,

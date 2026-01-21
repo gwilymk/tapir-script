@@ -5,19 +5,19 @@ use crate::ast::InternalOrExternalFunctionId;
 use super::*;
 
 fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -> std::fmt::Result {
-    match &ir.instr {
-        TapIrInstr::Constant(symbol_id, constant) => write!(
+    match ir {
+        TapIr::Constant(symbol_id, constant) => write!(
             output,
             "{} = {constant}",
             symtab.debug_name_for_symbol(*symbol_id)
         ),
-        TapIrInstr::Move { target, source } => write!(
+        TapIr::Move { target, source } => write!(
             output,
             "{} = {}",
             symtab.debug_name_for_symbol(*target),
             symtab.debug_name_for_symbol(*source)
         ),
-        TapIrInstr::BinOp {
+        TapIr::BinOp {
             target,
             lhs,
             op,
@@ -29,8 +29,8 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
             symtab.debug_name_for_symbol(*lhs),
             symtab.debug_name_for_symbol(*rhs)
         ),
-        TapIrInstr::Wait => write!(output, "wait"),
-        TapIrInstr::Call { target, f, args } => {
+        TapIr::Wait => write!(output, "wait"),
+        TapIr::Call { target, f, args } => {
             let mut targets = target
                 .iter()
                 .map(|t| symtab.debug_name_for_symbol(*t))
@@ -52,7 +52,7 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 symtab.name_for_function(InternalOrExternalFunctionId::Internal(*f))
             )
         }
-        TapIrInstr::CallExternal { target, f, args } => {
+        TapIr::CallExternal { target, f, args } => {
             let mut targets = target
                 .iter()
                 .map(|t| symtab.debug_name_for_symbol(*t))
@@ -74,7 +74,7 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 symtab.name_for_function(InternalOrExternalFunctionId::External(*f))
             )
         }
-        TapIrInstr::Spawn { f, args } => {
+        TapIr::Spawn { f, args } => {
             let args = args
                 .iter()
                 .map(|t| symtab.debug_name_for_symbol(*t))
@@ -87,7 +87,7 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 symtab.name_for_function(InternalOrExternalFunctionId::Internal(*f))
             )
         }
-        TapIrInstr::Trigger { f, args } => {
+        TapIr::Trigger { f, args } => {
             let args = args
                 .iter()
                 .map(|t| symtab.debug_name_for_symbol(*t))
@@ -96,14 +96,14 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
 
             write!(output, "trigger {f:?}({args})")
         }
-        TapIrInstr::GetProp { target, prop_index } => {
+        TapIr::GetProp { target, prop_index } => {
             write!(
                 output,
                 "getprop {}, {prop_index}",
                 symtab.debug_name_for_symbol(*target)
             )
         }
-        TapIrInstr::StoreProp { prop_index, value } => {
+        TapIr::StoreProp { prop_index, value } => {
             write!(
                 output,
                 "storeprop {}, {prop_index}",

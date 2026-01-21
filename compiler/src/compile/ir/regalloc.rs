@@ -6,7 +6,6 @@ use crate::{
     ast::SymbolId,
     compile::ir::{
         BlockExitInstr, BlockId, TapIr, TapIrBlock, TapIrFunction, TapIrFunctionBlockIter,
-        TapIrInstr,
     },
 };
 
@@ -258,11 +257,9 @@ fn get_phony_reads(function: &mut TapIrFunction) -> HashMap<BlockId, Vec<PhonyRe
 
 impl PhonyRead {
     fn as_tapir(&self) -> TapIr {
-        TapIr {
-            instr: TapIrInstr::Move {
-                target: self.target,
-                source: self.source,
-            },
+        TapIr::Move {
+            target: self.target,
+            source: self.source,
         }
     }
 }

@@ -6,7 +6,7 @@ use crate::{
     ast::BinaryOperator,
     compile::{
         ir::{
-            Constant, TapIr, TapIrFunction, TapIrFunctionBlockIter, TapIrInstr,
+            Constant, TapIr, TapIrFunction, TapIrFunctionBlockIter,
             optimisations::OptimisationResult,
         },
         symtab_visitor::SymTab,
@@ -19,7 +19,7 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
     let mut dfs = TapIrFunctionBlockIter::new_dfs(f);
     while let Some(block) = dfs.next(f) {
         for instr in block.instrs() {
-            let TapIrInstr::Constant(target, value) = instr.instr else {
+            let TapIr::Constant(target, value) = *instr else {
                 continue;
             };
 
@@ -40,12 +40,12 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
             let instr = &mut instrs[index];
             index += 1;
 
-            let TapIrInstr::BinOp {
+            let TapIr::BinOp {
                 target,
                 lhs,
                 op,
                 rhs,
-            } = &mut instr.instr
+            } = instr
             else {
                 continue;
             };
@@ -60,11 +60,11 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
 
             let f0 = Num::new(0);
 
-            let take_lhs = TapIrInstr::Move {
+            let take_lhs = TapIr::Move {
                 target: t,
                 source: *lhs,
             };
-            let take_rhs = TapIrInstr::Move {
+            let take_rhs = TapIr::Move {
                 target: t,
                 source: *rhs,
             };
@@ -73,22 +73,18 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
                 // ==================
                 // Integer operations
                 // ==================
-                (Some(C::Int(i1)), op, Some(C::Int(i2))) => {
-                    TapIrInstr::Constant(t, int_op(i1, op, i2))
-                }
+                (Some(C::Int(i1)), op, Some(C::Int(i2))) => TapIr::Constant(t, int_op(i1, op, i2)),
 
                 // ==============
                 // Fix operations
                 // ==============
-                (Some(C::Fix(n1)), op, Some(C::Fix(n2))) => {
-                    TapIrInstr::Constant(t, fix_op(n1, op, n2))
-                }
+                (Some(C::Fix(n1)), op, Some(C::Fix(n2))) => TapIr::Constant(t, fix_op(n1, op, n2)),
 
                 // ====================
                 // Fix / int operations
                 // ====================
                 (Some(C::Fix(n1)), op, Some(C::Int(i2))) => {
-                    TapIrInstr::Constant(t, fix_int_op(n1, op, i2))
+                    TapIr::Constant(t, fix_int_op(n1, op, i2))
                 }
 
                 // ===================
@@ -102,21 +98,21 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
                 // ================
                 // Multiply by zero
                 // ================
-                (_, B::Mul | B::FixMul, Some(C::Int(0))) => TapIrInstr::Constant(t, C::Int(0)),
-                (Some(C::Int(0)), B::Mul | B::FixMul, _) => TapIrInstr::Constant(t, C::Int(0)),
+                (_, B::Mul | B::FixMul, Some(C::Int(0))) => TapIr::Constant(t, C::Int(0)),
+                (Some(C::Int(0)), B::Mul | B::FixMul, _) => TapIr::Constant(t, C::Int(0)),
 
                 (_, B::Mul | B::FixMul, Some(C::Fix(n))) if n == f0 => {
-                    TapIrInstr::Constant(t, C::Fix(f0))
+                    TapIr::Constant(t, C::Fix(f0))
                 }
                 (Some(C::Fix(n)), B::Mul | B::FixMul, _) if n == f0 => {
-                    TapIrInstr::Constant(t, C::Fix(f0))
+                    TapIr::Constant(t, C::Fix(f0))
                 }
 
                 (Some(C::Int(0)), B::Div | B::RealDiv | B::FixDiv, _) => {
-                    TapIrInstr::Constant(t, C::Int(0))
+                    TapIr::Constant(t, C::Int(0))
                 }
                 (Some(C::Fix(n)), B::Div | B::RealDiv | B::FixDiv, _) if n == f0 => {
-                    TapIrInstr::Constant(t, C::Fix(f0))
+                    TapIr::Constant(t, C::Fix(f0))
                 }
 
                 // ======================
@@ -133,19 +129,14 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
                 (_, op @ (B::FixMul | B::FixDiv), Some(C::Fix(n))) if n.frac() == 0 => {
                     let temp = symtab.new_temporary();
 
-                    instr.instr = TapIrInstr::BinOp {
+                    *instr = TapIr::BinOp {
                         target: t,
                         lhs: *lhs,
                         op: if op == B::FixMul { B::Mul } else { B::Div },
                         rhs: temp,
                     };
 
-                    instrs.insert(
-                        index - 1,
-                        TapIr {
-                            instr: TapIrInstr::Constant(temp, C::Int(n.floor())),
-                        },
-                    );
+                    instrs.insert(index - 1, TapIr::Constant(temp, C::Int(n.floor())));
 
                     did_something = OptimisationResult::DidSomething;
                     continue;
@@ -153,19 +144,14 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
                 (Some(C::Fix(n)), op @ (B::FixMul | B::FixDiv), _) if n.frac() == 0 => {
                     let temp = symtab.new_temporary();
 
-                    instr.instr = TapIrInstr::BinOp {
+                    *instr = TapIr::BinOp {
                         target: t,
                         lhs: temp,
                         op: if op == B::FixMul { B::Mul } else { B::Div },
                         rhs: *rhs,
                     };
 
-                    instrs.insert(
-                        index - 1,
-                        TapIr {
-                            instr: TapIrInstr::Constant(temp, C::Int(n.floor())),
-                        },
-                    );
+                    instrs.insert(index - 1, TapIr::Constant(temp, C::Int(n.floor())));
 
                     did_something = OptimisationResult::DidSomething;
                     continue;
@@ -175,7 +161,7 @@ pub fn constant_folding(f: &mut TapIrFunction, symtab: &mut SymTab) -> Optimisat
             };
 
             did_something = OptimisationResult::DidSomething;
-            instr.instr = replacement;
+            *instr = replacement;
         }
     }
 
