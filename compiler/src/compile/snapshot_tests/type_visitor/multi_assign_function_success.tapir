@@ -1,0 +1,11 @@
+# Multi-return function unpacking
+fn returns_int_fix() -> (int, fix) {
+    return 1, 2.0;
+}
+
+fn returns_three_ints() -> (int, int, int) {
+    return 1, 2, 3;
+}
+
+var a, b = returns_int_fix();
+var x, y, z = returns_three_ints();

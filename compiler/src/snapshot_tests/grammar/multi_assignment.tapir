@@ -1,0 +1,33 @@
+# Paired assignment - multiple expressions
+var a, b = 1, 2;
+var x, y, z = 1.0, 2.0, 3.0;
+
+# Multi-return function unpacking
+fn returns_two() -> (int, fix) {
+    return 1, 2.0;
+}
+
+fn returns_three() -> (int, int, int) {
+    return 1, 2, 3;
+}
+
+var p, q = returns_two();
+var i, j, k = returns_three();
+
+# Assignment to existing variables
+a, b = 3, 4;
+p, q = returns_two();
+
+# Swap idiom
+a, b = b, a;
+
+# Mixed expressions
+var m, n = foo(), bar();
+
+fn foo() -> int {
+    return 1;
+}
+
+fn bar() -> int {
+    return 2;
+}

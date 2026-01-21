@@ -1,0 +1,8 @@
+# optimise
+# Multi-return then use the values
+fn get_stats() -> (int, int) {
+    return 10, 20;
+}
+
+var hp, mp = get_stats();
+int_prop = hp + mp;

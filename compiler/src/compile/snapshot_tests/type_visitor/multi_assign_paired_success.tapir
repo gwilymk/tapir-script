@@ -1,0 +1,7 @@
+# Paired assignment with type inference
+var a, b = 1, 2;
+var x, y = 1.0, 2.0;
+var p, q = true, false;
+
+# Mixed types
+var i, f = 1, 2.0;

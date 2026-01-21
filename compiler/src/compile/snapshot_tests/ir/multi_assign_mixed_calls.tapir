@@ -1,0 +1,10 @@
+# Paired assignment with function calls
+fn foo() -> int {
+    return 1;
+}
+
+fn bar() -> int {
+    return 2;
+}
+
+var a, b = foo(), bar();

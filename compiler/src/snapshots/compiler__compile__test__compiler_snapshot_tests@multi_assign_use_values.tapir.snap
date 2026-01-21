@@ -1,0 +1,9 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/multi_assign_use_values.tapir
+---
+00000000: loadk 1, 30
+00000002: setprop 1, 0
+00000003: ret
+00000004: ret

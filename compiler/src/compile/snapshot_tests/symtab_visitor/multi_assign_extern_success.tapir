@@ -1,0 +1,7 @@
+# Extern function with multiple returns
+extern fn get_position() -> (fix, fix);
+
+var x, y = get_position();
+
+# Assignment to existing variables
+x, y = get_position();

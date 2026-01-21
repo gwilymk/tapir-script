@@ -315,7 +315,7 @@ impl BlockVisitor {
                         .collect::<Vec<_>>()
                         .into_boxed_slice();
 
-                    let f: InternalOrExternalFunctionId = *statement
+                    let f: InternalOrExternalFunctionId = *values[0]
                         .meta
                         .get()
                         .expect("Should have function IDs by now");
@@ -1110,7 +1110,7 @@ mod test {
     use insta::{assert_snapshot, glob};
 
     use crate::{
-        CompileSettings,
+        CompileSettings, Property,
         compile::{
             loop_visitor::visit_loop_check, symtab_visitor::SymTabVisitor,
             type_visitor::TypeVisitor,
@@ -1137,7 +1137,11 @@ mod test {
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let compile_settings = CompileSettings {
-                properties: Vec::new(),
+                properties: vec![Property {
+                    ty: Type::Int,
+                    index: 3,
+                    name: "int_prop".to_string(),
+                }],
                 enable_optimisations: true,
             };
 
@@ -1163,7 +1167,11 @@ mod test {
                 );
             }
 
-            assert!(!diagnostics.has_any());
+            assert!(
+                !diagnostics.has_any(),
+                "{}",
+                diagnostics.pretty_string(true)
+            );
 
             let mut symtab = symtab_visitor.into_symtab();
 

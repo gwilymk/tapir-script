@@ -1,0 +1,16 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/multi_assign_extern.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.3, temp.4 = extern get_position()
+x.1 = temp.3
+y.2 = temp.4
+temp.5, temp.6 = extern get_position()
+x.1 = temp.5
+y.2 = temp.6
+return

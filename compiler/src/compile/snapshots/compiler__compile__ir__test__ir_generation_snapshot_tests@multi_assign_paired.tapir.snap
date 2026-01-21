@@ -1,0 +1,20 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/multi_assign_paired.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.6 = int 1
+temp.7 = int 2
+a.1 = temp.6
+b.2 = temp.7
+temp.8 = fix 1
+temp.9 = fix 2
+temp.10 = fix 3
+x.3 = temp.8
+y.4 = temp.9
+z.5 = temp.10
+return

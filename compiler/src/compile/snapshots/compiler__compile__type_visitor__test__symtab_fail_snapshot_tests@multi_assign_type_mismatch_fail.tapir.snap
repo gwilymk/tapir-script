@@ -1,0 +1,19 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/multi_assign_type_mismatch_fail.tapir
+---
+Error: Incorrect type, expected int but got fix
+   ╭─[ multi_assign_type_mismatch_fail.tapir:3:1 ]
+   │
+ 3 │ a, b = 1.0, 2.0;
+   │ ────────┬───────  
+   │         ╰───────── Incorrect type
+───╯
+Error: Incorrect type, expected int but got fix
+   ╭─[ multi_assign_type_mismatch_fail.tapir:3:1 ]
+   │
+ 3 │ a, b = 1.0, 2.0;
+   │ ────────┬───────  
+   │         ╰───────── Incorrect type
+───╯

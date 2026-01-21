@@ -1,0 +1,33 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/multi_assign_complex.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.7 = int 1
+temp.8 = int 2
+temp.6 = temp.7 + temp.8
+temp.10 = int 3
+temp.11 = int 4
+temp.9 = temp.10 * temp.11
+a.1 = temp.6
+b.2 = temp.9
+temp.12, temp.13 = get_values()
+x.3 = temp.12
+y.4 = temp.13
+temp.15 = x.3
+temp.16 = y.4
+temp.14 = temp.15 + temp.16
+sum.5 = temp.14
+return 
+
+=======================
+fn get_values() -> int, int
+
+---- block 0 ----
+temp.17 = int 10
+temp.18 = int 20
+return temp.17, temp.18

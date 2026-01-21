@@ -1,0 +1,5 @@
+# optimise
+# Swap idiom
+var a, b = 1, 2;
+a, b = b, a;
+int_prop = a + b;

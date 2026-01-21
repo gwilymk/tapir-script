@@ -1,0 +1,24 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/multi_assign_with_prop.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2 = int 3
+x.1 = temp.2
+temp.3, temp.4 = returns_two()
+x.1 = temp.3
+temp.5 = temp.4
+storeprop temp.5, 3
+return 
+
+=======================
+fn returns_two() -> int, int
+
+---- block 0 ----
+temp.6 = int 10
+temp.7 = int 20
+return temp.6, temp.7

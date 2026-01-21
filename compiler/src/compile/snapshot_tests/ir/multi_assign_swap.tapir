@@ -1,0 +1,3 @@
+# Swap idiom - should evaluate all RHS before assignment
+var a, b = 1, 2;
+a, b = b, a;

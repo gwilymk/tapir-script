@@ -1,0 +1,4 @@
+# Extern function count mismatch
+extern fn get_position() -> (fix, fix);
+
+var x, y, z = get_position();

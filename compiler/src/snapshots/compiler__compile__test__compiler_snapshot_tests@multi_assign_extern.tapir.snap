@@ -1,0 +1,12 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/multi_assign_extern.tapir
+---
+00000000: extern call 0, 4
+00000001: mov 2, 4
+00000002: mov 3, 5
+00000003: add 1, 2, 3
+00000004: setprop 1, 0
+00000005: ret
+00000006: ret

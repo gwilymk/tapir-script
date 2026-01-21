@@ -7,18 +7,18 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/extern_ca
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.4 = int 5
-temp.3 = use_extern(temp.4)
-result.0 = temp.3
+temp.5 = int 5
+temp.4 = use_extern(temp.5)
+result.1 = temp.4
 return 
 
 =======================
-fn use_extern(x.1) -> int
+fn use_extern(x.2) -> int
 
 ---- block 0 ----
-temp.5 = extern get_external()
-ext.2 = temp.5
-temp.7 = x.1
-temp.8 = ext.2
-temp.6 = temp.7 + temp.8
-return temp.6
+temp.6 = extern get_external()
+ext.3 = temp.6
+temp.8 = x.2
+temp.9 = ext.3
+temp.7 = temp.8 + temp.9
+return temp.7

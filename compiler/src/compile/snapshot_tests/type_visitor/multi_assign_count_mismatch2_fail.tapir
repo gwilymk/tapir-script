@@ -1,0 +1,2 @@
+# Count mismatch: 3 targets, 2 expressions
+var a, b, c = 1, 2;

@@ -1,0 +1,8 @@
+# optimise
+# Multi-return function unpacking
+fn returns_two() -> (int, int) {
+    return 1, 2;
+}
+
+var a, b = returns_two();
+int_prop = a + b;

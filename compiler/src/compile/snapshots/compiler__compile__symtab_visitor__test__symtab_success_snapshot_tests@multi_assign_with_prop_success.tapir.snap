@@ -1,0 +1,113 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/multi_assign_with_prop_success.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            idents: [
+              "x",
+              "int_prop",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "returns_two",
+                  arguments: [],
+                ),
+                meta: {
+                  "compiler::ast::InternalOrExternalFunctionId": "Internal(FunctionId(1))",
+                },
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1), SymbolId(0)]",
+          },
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+      },
+    ),
+    Function(
+      name: "returns_two",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(10),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(20),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(1)",
+      },
+    ),
+  ],
+  extern_functions: [],
+)

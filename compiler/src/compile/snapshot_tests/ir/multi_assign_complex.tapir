@@ -1,0 +1,9 @@
+# Complex multi-assignment with expressions
+var a, b = 1 + 2, 3 * 4;
+
+fn get_values() -> (int, int) {
+    return 10, 20;
+}
+
+var x, y = get_values();
+var sum = x + y;

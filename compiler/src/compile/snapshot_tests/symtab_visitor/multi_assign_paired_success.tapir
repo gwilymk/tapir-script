@@ -1,0 +1,9 @@
+# Paired assignment - declares multiple variables
+var a, b = 1, 2;
+var x, y, z = 1.0, 2.0, 3.0;
+
+# Assignment to existing variables
+a, b = 3, 4;
+
+# Swap idiom
+a, b = b, a;

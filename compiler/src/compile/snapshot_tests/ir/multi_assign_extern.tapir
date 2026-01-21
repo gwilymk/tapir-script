@@ -1,0 +1,5 @@
+# Extern function with multiple returns
+extern fn get_position() -> (fix, fix);
+
+var x, y = get_position();
+x, y = get_position();

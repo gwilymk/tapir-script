@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/multi_assign_extern_count_mismatch_fail.tapir
+---
+Error: Expected 3 expressions, but got 2 of them
+   ╭─[ multi_assign_extern_count_mismatch_fail.tapir:4:1 ]
+   │
+ 4 │ var x, y, z = get_position();
+   │ ──────────────┬──────────────  
+   │               ╰──────────────── This assignment
+   │ 
+   │ Help: When assigning to multiple variables, both sides of the '=' must have the same number of arguments
+───╯

@@ -1,0 +1,6 @@
+# Extern function with multiple returns
+extern fn get_position() -> (fix, fix);
+extern fn get_stats() -> (int, int, fix);
+
+var x, y = get_position();
+var hp, mp, speed = get_stats();

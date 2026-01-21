@@ -1,0 +1,367 @@
+---
+source: crates/tapir-script/compiler/src/grammar_test.rs
+expression: ast
+input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/multi_assignment.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "a",
+              "b",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(1),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(2),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "x",
+              "y",
+              "z",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Fix,
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Fix,
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Fix,
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "p",
+              "q",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "returns_two",
+                  arguments: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "i",
+              "j",
+              "k",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "returns_three",
+                  arguments: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            idents: [
+              "a",
+              "b",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(4),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            idents: [
+              "p",
+              "q",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "returns_two",
+                  arguments: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            idents: [
+              "a",
+              "b",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Variable("b"),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Variable("a"),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "m",
+              "n",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "foo",
+                  arguments: [],
+                ),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "bar",
+                  arguments: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      name: "returns_two",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(1),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Fix,
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      name: "returns_three",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(1),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(2),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      name: "foo",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(1),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      name: "bar",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(2),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+)

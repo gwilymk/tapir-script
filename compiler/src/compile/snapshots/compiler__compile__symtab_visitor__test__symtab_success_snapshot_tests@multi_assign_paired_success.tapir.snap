@@ -1,0 +1,133 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/multi_assign_paired_success.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "a",
+              "b",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(1),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(2),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1), SymbolId(2)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "x",
+              "y",
+              "z",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Fix,
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Fix,
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Fix,
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3), SymbolId(4), SymbolId(5)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            idents: [
+              "a",
+              "b",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Integer(4),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1), SymbolId(2)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            idents: [
+              "a",
+              "b",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Variable("b"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(2)",
+                },
+              ),
+              Expression(
+                span: "[span]",
+                kind: Variable("a"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(1)",
+                },
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1), SymbolId(2)]",
+          },
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+      },
+    ),
+  ],
+  extern_functions: [],
+)

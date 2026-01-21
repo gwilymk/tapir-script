@@ -1,0 +1,2 @@
+# Single non-call expression cannot satisfy multiple targets
+var a, b = 5;

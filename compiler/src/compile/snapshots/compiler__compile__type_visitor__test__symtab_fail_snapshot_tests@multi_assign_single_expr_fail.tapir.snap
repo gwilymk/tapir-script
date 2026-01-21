@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/multi_assign_single_expr_fail.tapir
+---
+Error: Expected 2 expressions, but got 1 of them
+   ╭─[ multi_assign_single_expr_fail.tapir:2:1 ]
+   │
+ 2 │ var a, b = 5;
+   │ ──────┬──────  
+   │       ╰──────── This assignment
+   │ 
+   │ Help: When assigning to multiple variables, both sides of the '=' must have the same number of arguments
+───╯

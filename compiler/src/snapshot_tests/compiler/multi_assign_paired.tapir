@@ -1,0 +1,4 @@
+# optimise
+# Paired assignment
+var a, b = 1, 2;
+int_prop = a + b;

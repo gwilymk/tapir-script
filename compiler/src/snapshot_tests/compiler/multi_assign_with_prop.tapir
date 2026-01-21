@@ -1,0 +1,8 @@
+# optimise
+# Multi-assignment where one target is a property
+fn returns_two() -> (int, int) {
+    return 10, 20;
+}
+
+var x = 3;
+x, int_prop = returns_two();

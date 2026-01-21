@@ -1,0 +1,9 @@
+# Multi-return function unpacking
+fn returns_two() -> (int, fix) {
+    return 1, 2.0;
+}
+
+var a, b = returns_two();
+
+# Assignment to existing variables with multi-return
+a, b = returns_two();

@@ -1,0 +1,3 @@
+# One declared, one undeclared should fail
+var a = 1;
+a, b = 2, 3;

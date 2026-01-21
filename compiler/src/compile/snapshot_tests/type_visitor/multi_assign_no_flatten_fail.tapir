@@ -1,0 +1,6 @@
+# No flattening: multi-return call counts as 1 expression
+fn returns_two() -> (int, fix) {
+    return 1, 2.0;
+}
+
+var a, b, c = returns_two(), 3;

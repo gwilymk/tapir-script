@@ -7,17 +7,17 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/extern_ca
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.4 = int 5
-temp.3 = extern transform(temp.4)
-temp.2 = double(temp.3)
-result.0 = temp.2
+temp.5 = int 5
+temp.4 = extern transform(temp.5)
+temp.3 = double(temp.4)
+result.1 = temp.3
 return 
 
 =======================
-fn double(x.1) -> int
+fn double(x.2) -> int
 
 ---- block 0 ----
-temp.6 = x.1
-temp.7 = int 2
-temp.5 = temp.6 * temp.7
-return temp.5
+temp.7 = x.2
+temp.8 = int 2
+temp.6 = temp.7 * temp.8
+return temp.6

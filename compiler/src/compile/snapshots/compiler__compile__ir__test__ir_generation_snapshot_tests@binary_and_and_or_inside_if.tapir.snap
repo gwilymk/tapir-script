@@ -7,28 +7,28 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/binary_an
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.3 = bool true
-temp.2 = bool false
-conditional_jump temp.3 0 1
+temp.4 = bool true
+temp.3 = bool false
+conditional_jump temp.4 0 1
 
 ---- block 0 ----
-temp.2 = bool true
+temp.3 = bool true
 jmp 1
 
 ---- block 1 ----
-temp.1 = bool true
-conditional_jump temp.2 4 3
+temp.2 = bool true
+conditional_jump temp.3 4 3
 
 ---- block 4 ----
-conditional_jump temp.1 5 6
+conditional_jump temp.2 5 6
 
 ---- block 3 ----
-temp.1 = bool false
+temp.2 = bool false
 jmp 4
 
 ---- block 5 ----
-temp.4 = bool true
-x.0 = temp.4
+temp.5 = bool true
+x.1 = temp.5
 jmp 7
 
 ---- block 6 ----

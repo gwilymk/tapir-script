@@ -1,0 +1,6 @@
+# Swap idiom should work and preserve types
+var a, b = 1, 2;
+a, b = b, a;
+
+var x, y = 1.0, 2.0;
+x, y = y, x;

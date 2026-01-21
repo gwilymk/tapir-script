@@ -1,0 +1,6 @@
+# Count mismatch: function returns 2, but 3 targets
+fn returns_two() -> (int, fix) {
+    return 1, 2.0;
+}
+
+var a, b, c = returns_two();
