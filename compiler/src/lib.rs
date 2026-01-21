@@ -28,14 +28,14 @@ pub fn compile(
     compile_settings: CompileSettings,
 ) -> Result<CompileResult, Diagnostics> {
     let bytecode = compile::compile(filename, input, &compile_settings)?;
-    let (bytecode, globals, event_handlers, triggers, extern_functions) = bytecode.into_parts();
+    let parts = bytecode.into_parts();
 
     Ok(CompileResult {
-        bytecode,
-        globals,
-        event_handlers,
-        triggers,
-        extern_functions,
+        bytecode: parts.bytecode,
+        globals: parts.globals,
+        event_handlers: parts.event_handlers,
+        triggers: parts.triggers,
+        extern_functions: parts.extern_functions,
     })
 }
 

@@ -340,6 +340,14 @@ impl Compiler {
     }
 }
 
+pub struct BytecodeParts {
+    pub bytecode: Box<[u32]>,
+    pub globals: Box<[i32]>,
+    pub event_handlers: Box<[EventHandler]>,
+    pub triggers: Box<[Trigger]>,
+    pub extern_functions: Box<[ExternFunction]>,
+}
+
 pub struct Bytecode {
     data: Vec<u32>,
     globals: Box<[i32]>,
@@ -368,22 +376,14 @@ impl Bytecode {
     }
 
     /// Finalize and decompose the bytecode into its parts
-    pub fn into_parts(
-        self,
-    ) -> (
-        Box<[u32]>,
-        Box<[i32]>,
-        Box<[EventHandler]>,
-        Box<[Trigger]>,
-        Box<[ExternFunction]>,
-    ) {
-        (
-            self.data.into_boxed_slice(),
-            self.globals,
-            self.event_handlers.into_boxed_slice(),
-            self.triggers,
-            self.extern_functions,
-        )
+    pub fn into_parts(self) -> BytecodeParts {
+        BytecodeParts {
+            bytecode: self.data.into_boxed_slice(),
+            globals: self.globals,
+            event_handlers: self.event_handlers.into_boxed_slice(),
+            triggers: self.triggers,
+            extern_functions: self.extern_functions,
+        }
     }
 
     fn offset(&self) -> usize {
