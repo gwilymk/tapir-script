@@ -107,16 +107,16 @@ fn extract_properties_from_ast(
         }
 
         // Validate property exists in available fields (if provided)
-        if let Some(fields) = available_fields {
-            if !fields.iter().any(|f| f == name) {
-                ErrorKind::PropertyNotInStruct {
-                    name: name.to_string(),
-                }
-                .at(decl.name.span)
-                .label(decl.name.span, DiagnosticMessage::PropertyNotInStructLabel)
-                .emit(diagnostics);
-                // Continue anyway to report more errors
+        if let Some(fields) = available_fields
+            && !fields.iter().any(|f| f == name)
+        {
+            ErrorKind::PropertyNotInStruct {
+                name: name.to_string(),
             }
+            .at(decl.name.span)
+            .label(decl.name.span, DiagnosticMessage::PropertyNotInStructLabel)
+            .emit(diagnostics);
+            // Continue anyway to report more errors
         }
 
         properties.push(Property {
@@ -720,8 +720,7 @@ mod test {
         let lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
-        let mut diagnostics =
-            Diagnostics::new(file_id, "property_not_in_struct.tapir", &input);
+        let mut diagnostics = Diagnostics::new(file_id, "property_not_in_struct.tapir", &input);
 
         let mut script = parser
             .parse(FileId::new(0), &mut diagnostics, lexer)
