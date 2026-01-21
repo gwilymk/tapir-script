@@ -6,10 +6,11 @@ use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams,
     GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
     HoverProviderCapability, InitializeParams, Location, MarkupContent, MarkupKind, OneOf,
-    Position, PublishDiagnosticsParams, Range, ReferenceParams, ServerCapabilities,
-    TextDocumentSyncCapability, TextDocumentSyncKind, Url,
+    ParameterInformation, ParameterLabel, Position, PublishDiagnosticsParams, Range,
+    ServerCapabilities, SignatureHelp, SignatureHelpOptions, SignatureHelpParams,
+    SignatureInformation, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
     notification::{DidChangeTextDocument, DidOpenTextDocument, Notification as _, PublishDiagnostics},
-    request::{GotoDefinition, HoverRequest, References, Request as _},
+    request::{GotoDefinition, HoverRequest, Request as _, SignatureHelpRequest},
 };
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -21,7 +22,11 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
         text_document_sync: Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::FULL)),
         definition_provider: Some(OneOf::Left(true)),
         hover_provider: Some(HoverProviderCapability::Simple(true)),
-        references_provider: Some(OneOf::Left(true)),
+        signature_help_provider: Some(SignatureHelpOptions {
+            trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
+            retrigger_characters: None,
+            work_done_progress_options: Default::default(),
+        }),
         ..Default::default()
     };
 
@@ -107,15 +112,15 @@ fn handle_request(
                 .sender
                 .send(Message::Response(Response::new_ok(id, result)))?;
         }
-        References::METHOD => {
-            let (id, params): (_, ReferenceParams) = request.extract(References::METHOD)?;
+        SignatureHelpRequest::METHOD => {
+            let (id, params): (_, SignatureHelpParams) =
+                request.extract(SignatureHelpRequest::METHOD)?;
 
-            let uri = params.text_document_position.text_document.uri;
-            let position = params.text_document_position.position;
-            let include_declaration = params.context.include_declaration;
+            let uri = params.text_document_position_params.text_document.uri;
+            let position = params.text_document_position_params.position;
 
-            let response = if let Some(file_state) = files.get_mut(&uri) {
-                find_references(file_state, &uri, position, include_declaration)
+            let response = if let Some(file_state) = files.get(&uri) {
+                find_signature_help(file_state, position)
             } else {
                 None
             };
@@ -190,6 +195,114 @@ fn find_hover(file_state: &mut FileState, position: Position) -> Option<Hover> {
     }
 
     None
+}
+
+fn find_signature_help(file_state: &FileState, position: Position) -> Option<SignatureHelp> {
+    let offset = position_to_offset(&file_state.text, position)?;
+
+    // Use text-based scanning to find function call context
+    // This works even when the code doesn't parse yet
+    let (function_name, active_parameter) = find_call_context(&file_state.text, offset)?;
+
+    // Look up the signature
+    let sig_info = file_state.analysis.signatures.get(&function_name)?;
+
+    let parameters: Vec<ParameterInformation> = sig_info
+        .parameters
+        .iter()
+        .map(|p| ParameterInformation {
+            label: ParameterLabel::Simple(p.label.clone()),
+            documentation: None,
+        })
+        .collect();
+
+    let active_param = active_parameter.min(sig_info.parameters.len().saturating_sub(1)) as u32;
+
+    Some(SignatureHelp {
+        signatures: vec![SignatureInformation {
+            label: sig_info.label.clone(),
+            documentation: None,
+            parameters: Some(parameters),
+            active_parameter: Some(active_param),
+        }],
+        active_signature: Some(0),
+        active_parameter: Some(active_param),
+    })
+}
+
+/// Scan backwards from cursor to find function call context.
+/// Returns (function_name, parameter_index) if inside a function call.
+fn find_call_context(text: &str, offset: usize) -> Option<(String, usize)> {
+    let bytes = text.as_bytes();
+    if offset > bytes.len() {
+        return None;
+    }
+
+    let mut paren_depth = 0;
+    let mut comma_count = 0;
+    let mut pos = offset;
+
+    // Scan backwards to find the opening parenthesis
+    while pos > 0 {
+        pos -= 1;
+        let ch = bytes[pos] as char;
+
+        match ch {
+            ')' => paren_depth += 1,
+            '(' => {
+                if paren_depth == 0 {
+                    // Found the opening paren, now find the function name
+                    let name = extract_identifier_before(text, pos)?;
+                    return Some((name, comma_count));
+                }
+                paren_depth -= 1;
+            }
+            ',' if paren_depth == 0 => comma_count += 1,
+            // Stop at statement boundaries
+            ';' | '{' | '}' => return None,
+            _ => {}
+        }
+    }
+
+    None
+}
+
+/// Extract an identifier immediately before the given position (skipping whitespace).
+fn extract_identifier_before(text: &str, pos: usize) -> Option<String> {
+    let bytes = text.as_bytes();
+    let mut end = pos;
+
+    // Skip whitespace backwards
+    while end > 0 && (bytes[end - 1] as char).is_whitespace() {
+        end -= 1;
+    }
+
+    if end == 0 {
+        return None;
+    }
+
+    // Find the start of the identifier
+    let mut start = end;
+    while start > 0 {
+        let ch = bytes[start - 1] as char;
+        if ch.is_alphanumeric() || ch == '_' {
+            start -= 1;
+        } else {
+            break;
+        }
+    }
+
+    if start == end {
+        return None;
+    }
+
+    // Check that the first character is valid for an identifier (not a digit)
+    let first_char = bytes[start] as char;
+    if first_char.is_ascii_digit() {
+        return None;
+    }
+
+    Some(text[start..end].to_string())
 }
 
 fn find_references(

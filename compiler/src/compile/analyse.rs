@@ -39,6 +39,34 @@ pub struct HoverInfo {
     pub description: String,
 }
 
+/// Information about a function call site for signature help.
+#[derive(Clone, Debug)]
+pub struct CallSiteInfo {
+    /// The name of the function being called.
+    pub function_name: String,
+    /// The span covering the argument list (inside the parentheses).
+    pub arguments_span: Span,
+    /// The end positions of each argument (used to determine active parameter).
+    /// For `foo(a, b, c)`, this would be the positions after `a`, `b`, `c`.
+    pub argument_end_offsets: Vec<usize>,
+}
+
+/// Signature information for a function.
+#[derive(Clone, Debug)]
+pub struct SignatureInfo {
+    /// The full signature label, e.g., "fn add(a: int, b: int) -> int"
+    pub label: String,
+    /// Parameter labels and their positions within the label string.
+    pub parameters: Vec<ParameterInfo>,
+}
+
+/// Information about a function parameter for signature help.
+#[derive(Clone, Debug)]
+pub struct ParameterInfo {
+    /// The parameter label, e.g., "a: int"
+    pub label: String,
+}
+
 
 /// Information about a function argument.
 #[derive(Clone, Debug)]
@@ -94,6 +122,10 @@ pub struct AnalysisResult {
     pub references: HashMap<Span, Span>,
     /// Map from spans to hover information.
     pub hover_info: HashMap<Span, HoverInfo>,
+    /// Function call sites for signature help.
+    pub call_sites: Vec<CallSiteInfo>,
+    /// Function signatures for signature help.
+    pub signatures: HashMap<String, SignatureInfo>,
 }
 
 /// Analyse a tapir script and return semantic information.
@@ -124,6 +156,8 @@ pub fn analyse(
                 functions: vec![],
                 references: HashMap::new(),
                 hover_info: HashMap::new(),
+                call_sites: vec![],
+                signatures: HashMap::new(),
             };
         }
     };
@@ -162,6 +196,9 @@ pub fn analyse(
     // Extract hover information
     let hover_info = extract_hover_info(&ast, &symtab, &type_table);
 
+    // Extract signature help information
+    let (signatures, call_sites) = extract_signature_help(&ast);
+
     AnalysisResult {
         diagnostics,
         symbols,
@@ -170,6 +207,8 @@ pub fn analyse(
         functions,
         references,
         hover_info,
+        call_sites,
+        signatures,
     }
 }
 
@@ -549,6 +588,203 @@ fn extract_hover_from_expression(
             extract_hover_from_expression(rhs, symtab, type_table, function_signatures, hover_info);
         }
         ExpressionKind::Integer(_)
+        | ExpressionKind::Fix(_)
+        | ExpressionKind::Bool(_)
+        | ExpressionKind::Error
+        | ExpressionKind::Nop => {}
+    }
+}
+
+fn extract_signature_help(ast: &Script<'_>) -> (HashMap<String, SignatureInfo>, Vec<CallSiteInfo>) {
+    let mut signatures = HashMap::new();
+    let mut call_sites = Vec::new();
+
+    // Build signature info for internal functions
+    for function in &ast.functions {
+        if function.name == "@toplevel" {
+            continue;
+        }
+
+        let params: Vec<ParameterInfo> = function
+            .arguments
+            .iter()
+            .map(|arg| {
+                let name = match &arg.name {
+                    crate::ast::MaybeResolved::Unresolved(s) => *s,
+                    crate::ast::MaybeResolved::Resolved(_) => "",
+                };
+                ParameterInfo {
+                    label: format!("{}: {}", name, arg.t.t),
+                }
+            })
+            .collect();
+
+        let params_str: Vec<_> = params.iter().map(|p| p.label.as_str()).collect();
+
+        let return_str = if function.return_types.types.is_empty() {
+            String::new()
+        } else if function.return_types.types.len() == 1 {
+            format!(" -> {}", function.return_types.types[0].t)
+        } else {
+            let types: Vec<String> = function
+                .return_types
+                .types
+                .iter()
+                .map(|t| t.t.to_string())
+                .collect();
+            format!(" -> ({})", types.join(", "))
+        };
+
+        let prefix = if function.modifiers.is_event_handler.is_some() {
+            "event fn"
+        } else {
+            "fn"
+        };
+
+        signatures.insert(
+            function.name.to_string(),
+            SignatureInfo {
+                label: format!("{} {}({}){}", prefix, function.name, params_str.join(", "), return_str),
+                parameters: params,
+            },
+        );
+    }
+
+    // Build signature info for extern functions
+    for function in &ast.extern_functions {
+        let params: Vec<ParameterInfo> = function
+            .arguments
+            .iter()
+            .map(|arg| {
+                let name = match &arg.name {
+                    crate::ast::MaybeResolved::Unresolved(s) => *s,
+                    crate::ast::MaybeResolved::Resolved(_) => "",
+                };
+                ParameterInfo {
+                    label: format!("{}: {}", name, arg.t.t),
+                }
+            })
+            .collect();
+
+        let params_str: Vec<_> = params.iter().map(|p| p.label.as_str()).collect();
+
+        let return_str = if function.return_types.types.is_empty() {
+            String::new()
+        } else if function.return_types.types.len() == 1 {
+            format!(" -> {}", function.return_types.types[0].t)
+        } else {
+            let types: Vec<String> = function
+                .return_types
+                .types
+                .iter()
+                .map(|t| t.t.to_string())
+                .collect();
+            format!(" -> ({})", types.join(", "))
+        };
+
+        signatures.insert(
+            function.name.to_string(),
+            SignatureInfo {
+                label: format!("extern fn {}({}){}", function.name, params_str.join(", "), return_str),
+                parameters: params,
+            },
+        );
+    }
+
+    // Walk all functions to extract call sites
+    for func in &ast.functions {
+        extract_call_sites_from_statements(&func.statements, &signatures, &mut call_sites);
+    }
+
+    (signatures, call_sites)
+}
+
+fn extract_call_sites_from_statements(
+    statements: &[Statement<'_>],
+    signatures: &HashMap<String, SignatureInfo>,
+    call_sites: &mut Vec<CallSiteInfo>,
+) {
+    for stmt in statements {
+        match &stmt.kind {
+            StatementKind::VariableDeclaration { values, .. }
+            | StatementKind::Assignment { values, .. } => {
+                for expr in values {
+                    extract_call_sites_from_expression(expr, signatures, call_sites);
+                }
+            }
+            StatementKind::If { condition, true_block, false_block } => {
+                extract_call_sites_from_expression(condition, signatures, call_sites);
+                extract_call_sites_from_statements(true_block, signatures, call_sites);
+                extract_call_sites_from_statements(false_block, signatures, call_sites);
+            }
+            StatementKind::Loop { block } | StatementKind::Block { block } => {
+                extract_call_sites_from_statements(block, signatures, call_sites);
+            }
+            StatementKind::Call { name, arguments } | StatementKind::Spawn { name, arguments } => {
+                if signatures.contains_key(*name) {
+                    let argument_end_offsets: Vec<usize> = arguments
+                        .iter()
+                        .map(|arg| arg.span.end())
+                        .collect();
+
+                    call_sites.push(CallSiteInfo {
+                        function_name: name.to_string(),
+                        arguments_span: stmt.span,
+                        argument_end_offsets,
+                    });
+                }
+                for expr in arguments {
+                    extract_call_sites_from_expression(expr, signatures, call_sites);
+                }
+            }
+            StatementKind::Trigger { arguments, .. } => {
+                for expr in arguments {
+                    extract_call_sites_from_expression(expr, signatures, call_sites);
+                }
+            }
+            StatementKind::Return { values } => {
+                for expr in values {
+                    extract_call_sites_from_expression(expr, signatures, call_sites);
+                }
+            }
+            StatementKind::Wait
+            | StatementKind::Break
+            | StatementKind::Continue
+            | StatementKind::Nop
+            | StatementKind::Error => {}
+        }
+    }
+}
+
+fn extract_call_sites_from_expression(
+    expr: &Expression<'_>,
+    signatures: &HashMap<String, SignatureInfo>,
+    call_sites: &mut Vec<CallSiteInfo>,
+) {
+    match &expr.kind {
+        ExpressionKind::Call { name, arguments } => {
+            if signatures.contains_key(*name) {
+                let argument_end_offsets: Vec<usize> = arguments
+                    .iter()
+                    .map(|arg| arg.span.end())
+                    .collect();
+
+                call_sites.push(CallSiteInfo {
+                    function_name: name.to_string(),
+                    arguments_span: expr.span,
+                    argument_end_offsets,
+                });
+            }
+            for arg in arguments {
+                extract_call_sites_from_expression(arg, signatures, call_sites);
+            }
+        }
+        ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
+            extract_call_sites_from_expression(lhs, signatures, call_sites);
+            extract_call_sites_from_expression(rhs, signatures, call_sites);
+        }
+        ExpressionKind::Variable(_)
+        | ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)
         | ExpressionKind::Error
