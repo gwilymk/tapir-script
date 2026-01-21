@@ -6,6 +6,10 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor
 [E0003] Error: Incorrect type, property 'int_prop' is declared as int but got fix
    ╭─[ incorrect_type_property_fail.tapir:3:12 ]
    │
+ 1 │ property int_prop: int;
+   │ ───────────┬───────────  
+   │            ╰───────────── Defined as int
+   │ 
  3 │ int_prop = 3.5;
    │            ─┬─  
    │             ╰─── Assigning fix

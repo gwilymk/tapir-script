@@ -14,18 +14,19 @@ use crate::{
     grammar,
     lexer::Lexer,
     reporting::Diagnostics,
-    tokens::FileId,
+    tokens::{FileId, Span},
     types::Type,
 };
 
 use self::symtab_visitor::SymTab;
 
+pub mod analyse;
 #[cfg(test)]
 mod disassemble;
 mod ir;
 mod loop_visitor;
-mod symtab_visitor;
-mod type_visitor;
+pub(crate) mod symtab_visitor;
+pub(crate) mod type_visitor;
 
 use bytecode::Opcode;
 
@@ -34,6 +35,7 @@ pub struct Property {
     pub ty: Type,
     pub index: usize,
     pub name: String,
+    pub span: Span,
 }
 
 pub struct CompileSettings {
@@ -375,6 +377,7 @@ impl Bytecode {
                 name: p.name.clone(),
                 ty: p.ty,
                 index: p.index,
+                span: p.span,
             })
             .collect();
 

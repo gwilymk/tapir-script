@@ -16,6 +16,8 @@ lalrpop_mod!(grammar);
 #[cfg(test)]
 mod grammar_test;
 
+pub use compile::analyse::{analyse, AnalysisResult, FunctionArgumentInfo, FunctionInfo, SymbolInfo};
+pub use compile::symtab_visitor::GlobalInfo;
 pub use compile::{CompileSettings, Property};
 pub use reporting::format::DiagnosticCache;
 pub use reporting::{Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind, SourcePosition, SourceRange};
@@ -57,6 +59,8 @@ pub struct PropertyInfo {
     pub ty: Type,
     /// The index into the property array (matches declaration order).
     pub index: usize,
+    /// The span where the property was declared.
+    pub span: Span,
 }
 
 pub struct ExternFunction {

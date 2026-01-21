@@ -164,6 +164,10 @@ impl<'input> TypeVisitor<'input> {
                 }
                 .at(value_span)
                 .label(value_span, DiagnosticMessage::AssigningType { ty })
+                .label(
+                    property.span,
+                    DiagnosticMessage::DefinedAs { ty: table_type },
+                )
                 .emit(diagnostics);
             } else {
                 let builder = ErrorKind::TypeError {

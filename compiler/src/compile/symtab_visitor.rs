@@ -123,6 +123,7 @@ fn extract_properties_from_ast(
             ty: decl.ty.t,
             index,
             name: name.to_string(),
+            span: decl.span,
         });
     }
 
