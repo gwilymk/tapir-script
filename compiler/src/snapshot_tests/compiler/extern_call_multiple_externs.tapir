@@ -1,0 +1,8 @@
+extern fn first() -> int;
+extern fn second() -> int;
+extern fn third(a: int, b: int) -> int;
+
+var a = first();
+var b = second();
+var c = third(a, b);
+wait;

@@ -31,6 +31,7 @@ pub enum Opcode {
     SetProp,
 
     Call,
+    ExternCall,
     Spawn,
     Trigger,
 
@@ -156,6 +157,10 @@ impl Type1 {
 
     pub const fn call(first_arg: u8) -> Self {
         Self::new1(Opcode::Call, first_arg)
+    }
+
+    pub const fn extern_call(extern_id: u8, first_arg: u8) -> Self {
+        Self::new2(Opcode::ExternCall, extern_id, first_arg)
     }
 
     pub const fn spawn(first_arg: u8, num_args: u8) -> Self {

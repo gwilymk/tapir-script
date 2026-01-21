@@ -219,6 +219,14 @@ impl Compiler {
                             self.bytecode.mov(v(target), i as u8 + first_argument + 1);
                         }
                     }
+                    TapIrInstr::CallExternal { target, f, args } => {
+                        put_args(&mut self.bytecode, args);
+                        self.bytecode.call_external(f.0 as u8, first_argument);
+
+                        for (i, target) in target.iter().enumerate() {
+                            self.bytecode.mov(v(target), i as u8 + first_argument);
+                        }
+                    }
                     TapIrInstr::Spawn { f, args } => {
                         put_args(&mut self.bytecode, args);
                         self.bytecode.spawn(first_argument, args.len() as u8);
@@ -234,7 +242,6 @@ impl Compiler {
                     TapIrInstr::StoreProp { prop_index, value } => {
                         self.bytecode.set_prop(v(value), *prop_index as u8);
                     }
-                    TapIrInstr::CallExternal { target, f, args } => todo!(),
                 }
             }
 
@@ -350,6 +357,11 @@ impl Bytecode {
 
     fn call(&mut self, first_arg: u8) {
         self.data.push(Type1::call(first_arg).encode());
+    }
+
+    fn call_external(&mut self, extern_id: u8, first_arg: u8) {
+        self.data
+            .push(Type1::extern_call(extern_id, first_arg).encode());
     }
 
     fn spawn(&mut self, first_arg: u8, num_args: u8) {

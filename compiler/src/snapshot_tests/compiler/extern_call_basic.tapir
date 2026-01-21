@@ -1,0 +1,4 @@
+extern fn get_value() -> int;
+
+var x = get_value();
+wait;

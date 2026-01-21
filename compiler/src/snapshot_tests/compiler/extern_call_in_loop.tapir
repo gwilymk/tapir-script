@@ -1,0 +1,8 @@
+extern fn should_continue() -> bool;
+
+loop {
+    if should_continue() == false {
+        break;
+    }
+    wait;
+}

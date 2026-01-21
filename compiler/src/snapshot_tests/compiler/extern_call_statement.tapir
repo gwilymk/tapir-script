@@ -1,0 +1,4 @@
+extern fn do_side_effect(x: int);
+
+do_side_effect(42);
+wait;

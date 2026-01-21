@@ -928,6 +928,7 @@ impl<'a> SymbolIter<'a> {
             }
             TapIrInstr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
             TapIrInstr::Call { args, .. }
+            | TapIrInstr::CallExternal { args, .. }
             | TapIrInstr::Trigger { args, .. }
             | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter()),
             _ => Self::None,
@@ -940,7 +941,8 @@ impl<'a> SymbolIter<'a> {
             | TapIrInstr::Move { target, .. }
             | TapIrInstr::GetProp { target, .. }
             | TapIrInstr::BinOp { target, .. } => Self::One(Some(*target)),
-            TapIrInstr::Call { target, .. } => Self::Many(target.iter()),
+            TapIrInstr::Call { target, .. }
+            | TapIrInstr::CallExternal { target, .. } => Self::Many(target.iter()),
             _ => Self::None,
         }
     }
@@ -984,6 +986,7 @@ impl<'a> SymbolIterMut<'a> {
             }
             TapIrInstr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
             TapIrInstr::Call { args, .. }
+            | TapIrInstr::CallExternal { args, .. }
             | TapIrInstr::Trigger { args, .. }
             | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter_mut()),
             _ => Self::None,
@@ -996,7 +999,8 @@ impl<'a> SymbolIterMut<'a> {
             | TapIrInstr::Move { target, .. }
             | TapIrInstr::GetProp { target, .. }
             | TapIrInstr::BinOp { target, .. } => Self::One(Some(target)),
-            TapIrInstr::Call { target, .. } => Self::Many(target.iter_mut()),
+            TapIrInstr::Call { target, .. }
+            | TapIrInstr::CallExternal { target, .. } => Self::Many(target.iter_mut()),
             _ => Self::None,
         }
     }

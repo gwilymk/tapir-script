@@ -1,0 +1,19 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/extern_call_in_loop.tapir
+---
+00000000: jmp 1
+00000001: extern call 0, 4
+00000002: mov 2, 4
+00000003: loadk 3, 0
+00000005: eq 1, 2, 3
+00000006: jumpif 1
+00000007: jmp 9
+00000008: jmp 10
+00000009: jmp 11
+00000010: jmp 12
+00000011: ret
+00000012: wait
+00000013: jmp 1
+00000014: ret

@@ -1,0 +1,9 @@
+extern fn get_external() -> int;
+
+fn double(x: int) -> int {
+    return x * 2;
+}
+
+var ext = get_external();
+var result = double(ext);
+wait;

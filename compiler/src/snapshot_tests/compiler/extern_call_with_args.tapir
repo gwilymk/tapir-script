@@ -1,0 +1,4 @@
+extern fn compute(a: int, b: int) -> int;
+
+var result = compute(3, 5);
+wait;

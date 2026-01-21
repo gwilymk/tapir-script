@@ -1,0 +1,18 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/extern_call_multiple_externs.tapir
+---
+00000000: extern call 0, 5
+00000001: mov 2, 5
+00000002: extern call 1, 5
+00000003: mov 4, 5
+00000004: mov 1, 2
+00000005: mov 2, 4
+00000006: mov 6, 1
+00000007: mov 7, 2
+00000008: extern call 2, 5
+00000009: mov 3, 5
+00000010: wait
+00000011: ret
+00000012: ret
