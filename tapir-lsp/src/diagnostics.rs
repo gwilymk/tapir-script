@@ -5,7 +5,7 @@ use std::time::Instant;
 use compiler::{AnalysisResult, CompileSettings};
 use lsp_server::{Connection, Message, Notification};
 use lsp_types::{
-    Diagnostic, DiagnosticSeverity, PublishDiagnosticsParams, Url,
+    Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, PublishDiagnosticsParams, Url,
     notification::{Notification as _, PublishDiagnostics},
 };
 
@@ -31,7 +31,7 @@ pub fn analyse_and_publish(
 
     eprintln!("[tapir-lsp] Analysed {filename} in {elapsed:?}");
 
-    let diagnostics = convert_diagnostics(&mut analysis);
+    let diagnostics = convert_diagnostics(uri.clone(), &mut analysis);
 
     files.insert(uri.clone(), FileState { text, analysis });
 
@@ -49,7 +49,7 @@ pub fn analyse_and_publish(
     Ok(())
 }
 
-fn convert_diagnostics(result: &mut AnalysisResult) -> Vec<Diagnostic> {
+fn convert_diagnostics(uri: Url, result: &mut AnalysisResult) -> Vec<Diagnostic> {
     // Collect diagnostic info first to avoid borrow conflicts
     let diag_info: Vec<_> = result
         .diagnostics
@@ -59,13 +59,14 @@ fn convert_diagnostics(result: &mut AnalysisResult) -> Vec<Diagnostic> {
                 diag.primary_span,
                 diag.kind.code().to_string(),
                 diag.message(),
+                diag.labels.clone(),
             )
         })
         .collect();
 
     diag_info
         .into_iter()
-        .filter_map(|(span, code, message)| {
+        .filter_map(|(span, code, message, labels)| {
             let range = result
                 .diagnostics
                 .span_to_range(span)
@@ -77,7 +78,27 @@ fn convert_diagnostics(result: &mut AnalysisResult) -> Vec<Diagnostic> {
                 code: Some(lsp_types::NumberOrString::String(code)),
                 source: Some("tapir".to_string()),
                 message,
-                related_information: None,
+                related_information: if labels.is_empty() {
+                    None
+                } else {
+                    Some(
+                        labels
+                            .iter()
+                            .filter_map(|(span, info)| {
+                                Some(DiagnosticRelatedInformation {
+                                    location: lsp_types::Location {
+                                        range: result
+                                            .diagnostics
+                                            .span_to_range(*span)
+                                            .map(source_range_to_lsp_range)?,
+                                        uri: uri.clone(),
+                                    },
+                                    message: info.render(),
+                                })
+                            })
+                            .collect(),
+                    )
+                },
                 tags: None,
                 code_description: None,
                 data: None,
