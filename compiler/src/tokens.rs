@@ -13,7 +13,7 @@ impl FileId {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 pub struct Span {
     pub(crate) file_id: FileId,
     pub(crate) start: usize,
@@ -28,6 +28,18 @@ impl Span {
             start,
             end,
         }
+    }
+
+    pub fn start(&self) -> usize {
+        self.start
+    }
+
+    pub fn end(&self) -> usize {
+        self.end
+    }
+
+    pub fn contains_offset(&self, offset: usize) -> bool {
+        offset >= self.start && offset <= self.end
     }
 }
 

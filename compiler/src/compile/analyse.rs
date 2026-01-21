@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 use crate::{
     grammar,
@@ -11,6 +11,7 @@ use crate::{
 
 use super::{
     loop_visitor,
+    references::extract_references,
     symtab_visitor::{GlobalInfo, SymTab, SymTabVisitor},
     type_visitor::TypeVisitor,
     CompileSettings, Property,
@@ -26,6 +27,7 @@ pub struct SymbolInfo {
     /// The span where this symbol was defined.
     pub definition_span: Span,
 }
+
 
 /// Information about a function argument.
 #[derive(Clone, Debug)]
@@ -77,6 +79,8 @@ pub struct AnalysisResult {
     pub properties: Vec<PropertyInfo>,
     /// Information about functions (both internal and extern).
     pub functions: Vec<FunctionInfo>,
+    /// Map from usage spans to definition spans (for go-to-definition).
+    pub references: HashMap<Span, Span>,
 }
 
 /// Analyse a tapir script and return semantic information.
@@ -105,6 +109,7 @@ pub fn analyse(
                 globals: vec![],
                 properties: vec![],
                 functions: vec![],
+                references: HashMap::new(),
             };
         }
     };
@@ -137,12 +142,16 @@ pub fn analyse(
     // Extract function information
     let functions = extract_functions(&ast);
 
+    // Extract references from the AST
+    let references = extract_references(&ast, &symtab);
+
     AnalysisResult {
         diagnostics,
         symbols,
         globals,
         properties,
         functions,
+        references,
     }
 }
 

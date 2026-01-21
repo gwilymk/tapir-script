@@ -608,10 +608,10 @@ impl<'input> TypeVisitor<'input> {
             ast::ExpressionKind::Fix(_) => Type::Fix,
             ast::ExpressionKind::Bool(_) => Type::Bool,
             ast::ExpressionKind::Variable(_) => {
-                let symbol_id: &SymbolId = expression
-                    .meta
-                    .get()
-                    .expect("Should have a symbol id from symbol resolution");
+                // If symbol resolution failed (unknown variable), there won't be a SymbolId
+                let Some(symbol_id) = expression.meta.get::<SymbolId>() else {
+                    return Type::Error;
+                };
                 self.get_type(*symbol_id, expression.span, symtab, diagnostics)
             }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {

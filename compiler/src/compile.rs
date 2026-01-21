@@ -25,6 +25,7 @@ pub mod analyse;
 mod disassemble;
 mod ir;
 mod loop_visitor;
+mod references;
 pub(crate) mod symtab_visitor;
 pub(crate) mod type_visitor;
 

@@ -1,14 +1,14 @@
 use std::{collections::HashMap, error::Error};
 
-use compiler::{CompileSettings, SourceRange};
-use lsp_server::{Connection, Message, Notification, Response};
+use compiler::{AnalysisResult, CompileSettings, SourceRange};
+use lsp_server::{Connection, Message, Notification, Request, Response};
 use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams,
-    InitializeParams, Position, PublishDiagnosticsParams, Range, ServerCapabilities,
-    TextDocumentSyncCapability, TextDocumentSyncKind, Url,
-    notification::{
-        DidChangeTextDocument, DidOpenTextDocument, Notification as _, PublishDiagnostics,
-    },
+    GotoDefinitionParams, GotoDefinitionResponse, InitializeParams, Location, OneOf, Position,
+    PublishDiagnosticsParams, Range, ServerCapabilities, TextDocumentSyncCapability,
+    TextDocumentSyncKind, Url,
+    notification::{DidChangeTextDocument, DidOpenTextDocument, Notification as _, PublishDiagnostics},
+    request::{GotoDefinition, Request as _},
 };
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -18,6 +18,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
 
     let caps = ServerCapabilities {
         text_document_sync: Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::FULL)),
+        definition_provider: Some(OneOf::Left(true)),
         ..Default::default()
     };
 
@@ -34,8 +35,13 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     Ok(())
 }
 
+struct FileState {
+    text: String,
+    analysis: AnalysisResult,
+}
+
 fn main_loop(connection: Connection) -> Result<(), Box<dyn Error + Sync + Send>> {
-    let mut files: HashMap<Url, String> = HashMap::new();
+    let mut files: HashMap<Url, FileState> = HashMap::new();
 
     for msg in &connection.receiver {
         match msg {
@@ -43,13 +49,7 @@ fn main_loop(connection: Connection) -> Result<(), Box<dyn Error + Sync + Send>>
                 if connection.handle_shutdown(&request)? {
                     break;
                 }
-                // We don't handle any requests yet, just shutdown
-                let response = Response::new_err(
-                    request.id,
-                    lsp_server::ErrorCode::MethodNotFound as i32,
-                    format!("Method not found: {}", request.method),
-                );
-                connection.sender.send(Message::Response(response))?;
+                handle_request(&connection, request, &mut files)?;
             }
             Message::Response(_response) => {
                 // We don't send requests, so we shouldn't get responses
@@ -63,10 +63,99 @@ fn main_loop(connection: Connection) -> Result<(), Box<dyn Error + Sync + Send>>
     Ok(())
 }
 
+fn handle_request(
+    connection: &Connection,
+    request: Request,
+    files: &mut HashMap<Url, FileState>,
+) -> Result<(), Box<dyn Error + Sync + Send>> {
+    match request.method.as_str() {
+        GotoDefinition::METHOD => {
+            let (id, params): (_, GotoDefinitionParams) =
+                request.extract(GotoDefinition::METHOD)?;
+
+            let uri = params.text_document_position_params.text_document.uri;
+            let position = params.text_document_position_params.position;
+
+            let response = if let Some(file_state) = files.get_mut(&uri) {
+                find_definition(file_state, &uri, position)
+            } else {
+                None
+            };
+
+            let result = serde_json::to_value(response)?;
+            connection
+                .sender
+                .send(Message::Response(Response::new_ok(id, result)))?;
+        }
+        _ => {
+            let response = Response::new_err(
+                request.id,
+                lsp_server::ErrorCode::MethodNotFound as i32,
+                format!("Method not found: {}", request.method),
+            );
+            connection.sender.send(Message::Response(response))?;
+        }
+    }
+
+    Ok(())
+}
+
+fn find_definition(
+    file_state: &mut FileState,
+    uri: &Url,
+    position: Position,
+) -> Option<GotoDefinitionResponse> {
+    // Convert position to byte offset
+    let offset = position_to_offset(&file_state.text, position)?;
+
+    // Find which reference span contains this offset
+    for (usage_span, def_span) in &file_state.analysis.references {
+        if usage_span.contains_offset(offset) {
+            // Found the reference, convert definition span to location
+            let range = file_state
+                .analysis
+                .diagnostics
+                .span_to_range(*def_span)
+                .map(source_range_to_lsp_range)?;
+
+            return Some(GotoDefinitionResponse::Scalar(Location {
+                uri: uri.clone(),
+                range,
+            }));
+        }
+    }
+
+    None
+}
+
+fn position_to_offset(text: &str, position: Position) -> Option<usize> {
+    let mut line = 0;
+    let mut col = 0;
+
+    for (i, ch) in text.char_indices() {
+        if line == position.line && col == position.character {
+            return Some(i);
+        }
+        if ch == '\n' {
+            line += 1;
+            col = 0;
+        } else {
+            col += 1;
+        }
+    }
+
+    // Handle position at end of file
+    if line == position.line && col == position.character {
+        return Some(text.len());
+    }
+
+    None
+}
+
 fn handle_notification(
     connection: &Connection,
     notification: Notification,
-    files: &mut HashMap<Url, String>,
+    files: &mut HashMap<Url, FileState>,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     match notification.method.as_str() {
         DidOpenTextDocument::METHOD => {
@@ -74,8 +163,7 @@ fn handle_notification(
             let uri = params.text_document.uri;
             let text = params.text_document.text;
 
-            files.insert(uri.clone(), text.clone());
-            publish_diagnostics(connection, uri, &text)?;
+            analyse_and_publish(connection, uri, text, files)?;
         }
         DidChangeTextDocument::METHOD => {
             let params: DidChangeTextDocumentParams = serde_json::from_value(notification.params)?;
@@ -83,8 +171,7 @@ fn handle_notification(
 
             // We use full sync, so there's exactly one change with the full text
             if let Some(change) = params.content_changes.into_iter().next() {
-                files.insert(uri.clone(), change.text.clone());
-                publish_diagnostics(connection, uri, &change.text)?;
+                analyse_and_publish(connection, uri, change.text, files)?;
             }
         }
         _ => {
@@ -95,10 +182,11 @@ fn handle_notification(
     Ok(())
 }
 
-fn publish_diagnostics(
+fn analyse_and_publish(
     connection: &Connection,
     uri: Url,
-    text: &str,
+    text: String,
+    files: &mut HashMap<Url, FileState>,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     let filename = uri.path();
 
@@ -107,9 +195,10 @@ fn publish_diagnostics(
         enable_optimisations: false,
     };
 
-    let mut result = compiler::analyse(filename, text, &settings);
+    let mut analysis = compiler::analyse(filename, &text, &settings);
+    let diagnostics = convert_diagnostics(&mut analysis);
 
-    let diagnostics = convert_diagnostics(&mut result.diagnostics);
+    files.insert(uri.clone(), FileState { text, analysis });
 
     let params = PublishDiagnosticsParams {
         uri,
@@ -125,28 +214,23 @@ fn publish_diagnostics(
     Ok(())
 }
 
-fn convert_diagnostics(diagnostics: &mut compiler::Diagnostics) -> Vec<Diagnostic> {
+fn convert_diagnostics(result: &mut AnalysisResult) -> Vec<Diagnostic> {
     // Collect diagnostic info first to avoid borrow conflicts
-    let diag_info: Vec<_> = diagnostics
+    let diag_info: Vec<_> = result
+        .diagnostics
         .iter()
-        .map(|diag| {
-            (
-                diag.primary_span,
-                diag.kind.code().to_string(),
-                diag.message(),
-            )
-        })
+        .map(|diag| (diag.primary_span, diag.kind.code().to_string(), diag.message()))
         .collect();
 
     diag_info
         .into_iter()
-        .map(|(span, code, message)| {
-            let range = diagnostics
+        .filter_map(|(span, code, message)| {
+            let range = result
+                .diagnostics
                 .span_to_range(span)
-                .map(source_range_to_lsp_range)
-                .unwrap_or_default();
+                .map(source_range_to_lsp_range)?;
 
-            Diagnostic {
+            Some(Diagnostic {
                 range,
                 severity: Some(DiagnosticSeverity::ERROR),
                 code: Some(lsp_types::NumberOrString::String(code)),
@@ -156,7 +240,7 @@ fn convert_diagnostics(diagnostics: &mut compiler::Diagnostics) -> Vec<Diagnosti
                 tags: None,
                 code_description: None,
                 data: None,
-            }
+            })
         })
         .collect()
 }
