@@ -4,11 +4,12 @@ use compiler::{AnalysisResult, CompileSettings, SourceRange};
 use lsp_server::{Connection, Message, Notification, Request, Response};
 use lsp_types::{
     Diagnostic, DiagnosticSeverity, DidChangeTextDocumentParams, DidOpenTextDocumentParams,
-    GotoDefinitionParams, GotoDefinitionResponse, InitializeParams, Location, OneOf, Position,
-    PublishDiagnosticsParams, Range, ServerCapabilities, TextDocumentSyncCapability,
+    GotoDefinitionParams, GotoDefinitionResponse, Hover, HoverContents, HoverParams,
+    HoverProviderCapability, InitializeParams, Location, MarkupContent, MarkupKind, OneOf,
+    Position, PublishDiagnosticsParams, Range, ServerCapabilities, TextDocumentSyncCapability,
     TextDocumentSyncKind, Url,
     notification::{DidChangeTextDocument, DidOpenTextDocument, Notification as _, PublishDiagnostics},
-    request::{GotoDefinition, Request as _},
+    request::{GotoDefinition, HoverRequest, Request as _},
 };
 
 fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -19,6 +20,7 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
     let caps = ServerCapabilities {
         text_document_sync: Some(TextDocumentSyncCapability::Kind(TextDocumentSyncKind::FULL)),
         definition_provider: Some(OneOf::Left(true)),
+        hover_provider: Some(HoverProviderCapability::Simple(true)),
         ..Default::default()
     };
 
@@ -87,6 +89,23 @@ fn handle_request(
                 .sender
                 .send(Message::Response(Response::new_ok(id, result)))?;
         }
+        HoverRequest::METHOD => {
+            let (id, params): (_, HoverParams) = request.extract(HoverRequest::METHOD)?;
+
+            let uri = params.text_document_position_params.text_document.uri;
+            let position = params.text_document_position_params.position;
+
+            let response = if let Some(file_state) = files.get_mut(&uri) {
+                find_hover(file_state, position)
+            } else {
+                None
+            };
+
+            let result = serde_json::to_value(response)?;
+            connection
+                .sender
+                .send(Message::Response(Response::new_ok(id, result)))?;
+        }
         _ => {
             let response = Response::new_err(
                 request.id,
@@ -122,6 +141,32 @@ fn find_definition(
                 uri: uri.clone(),
                 range,
             }));
+        }
+    }
+
+    None
+}
+
+fn find_hover(file_state: &mut FileState, position: Position) -> Option<Hover> {
+    // Convert position to byte offset
+    let offset = position_to_offset(&file_state.text, position)?;
+
+    // Find which span contains this offset
+    for (span, info) in &file_state.analysis.hover_info {
+        if span.contains_offset(offset) {
+            let range = file_state
+                .analysis
+                .diagnostics
+                .span_to_range(*span)
+                .map(source_range_to_lsp_range);
+
+            return Some(Hover {
+                contents: HoverContents::Markup(MarkupContent {
+                    kind: MarkupKind::Markdown,
+                    value: format!("```tapir\n{}\n```", info.description),
+                }),
+                range,
+            });
         }
     }
 

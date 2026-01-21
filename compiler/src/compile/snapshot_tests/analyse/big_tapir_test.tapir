@@ -1,0 +1,268 @@
+# Complex character animation controller
+# Controls a player character with multiple animation states, effects, and interactions
+
+property x: int;
+property y: int;
+property sprite_frame: int;
+property facing_direction: int;
+property health: int;
+property is_invincible: bool;
+property opacity: fix;
+property scale: fix;
+
+global animation_speed = 4;
+global idle_frame_count = 0;
+global attack_combo = 0;
+global is_attacking = false;
+
+extern fn play_sound(sound_id: int);
+extern fn spawn_particle(x: int, y: int, particle_type: int);
+extern fn get_input_x() -> int;
+extern fn get_input_y() -> int;
+extern fn is_button_pressed(button: int) -> bool;
+
+# Main animation loop
+spawn idle_animation();
+spawn handle_movement();
+
+loop {
+    # Check for attack input
+    if is_button_pressed(0) && is_attacking == false {
+        spawn attack_sequence();
+    }
+
+    # Update idle counter when not moving
+    if get_input_x() == 0 && get_input_y() == 0 {
+        idle_frame_count = idle_frame_count + 1;
+
+        # Trigger idle fidget after 120 frames
+        if idle_frame_count > 120 {
+            trigger IdleFidget;
+            idle_frame_count = 0;
+        }
+    } else {
+        idle_frame_count = 0;
+    }
+
+    wait;
+}
+
+fn idle_animation() {
+    var frame = 0;
+    loop {
+        if is_attacking {
+            wait;
+            continue;
+        }
+
+        sprite_frame = frame;
+        frame = (frame + 1) % 4;
+
+        var i = 0;
+        loop {
+            if i >= animation_speed {
+                break;
+            }
+            wait;
+            i = i + 1;
+        }
+    }
+}
+
+fn handle_movement() {
+    loop {
+        var dx = get_input_x();
+        var dy = get_input_y();
+
+        x = x + dx * 2;
+        y = y + dy * 2;
+
+        # Update facing direction
+        if dx > 0 {
+            facing_direction = 1;
+        } else {
+            if dx < 0 {
+                facing_direction = -1;
+            }
+        }
+
+        # ERROR: Type mismatch - trying to assign int to fix property
+        if dx != 0 || dy != 0 {
+            scale = 105;  # Should be 1.05 for fix type
+        }
+
+        wait;
+    }
+}
+
+fn attack_sequence() {
+    is_attacking = true;
+    attack_combo = attack_combo + 1;
+
+    play_sound(1);
+
+    # Attack animation frames
+    sprite_frame = 10;
+    wait;
+    wait;
+    sprite_frame = 11;
+    spawn_particle(x, y, 0);
+    wait;
+    wait;
+    sprite_frame = 12;
+
+    # ERROR: Missing semicolon
+    trigger AttackHit(attack_combo)
+
+    wait;
+    wait;
+    wait;
+
+    # Combo window
+    var combo_window = 0;
+    loop {
+        if combo_window >= 15 {
+            break;
+        }
+
+        if is_button_pressed(0) && attack_combo < 3 {
+            spawn attack_sequence();
+            return;
+        }
+
+        combo_window = combo_window + 1;
+        wait;
+    }
+
+    attack_combo = 0;
+    is_attacking = false;
+}
+
+event fn on_damage(amount: int) {
+    if is_invincible {
+        return;
+    }
+
+    health = health - amount;
+    play_sound(2);
+
+    # ERROR: Undeclared variable 'damage_taken'
+    trigger DamageTaken(damage_taken);
+
+    if health <= 0 {
+        spawn death_sequence();
+    } else {
+        spawn invincibility_frames();
+    }
+}
+
+fn invincibility_frames() {
+    is_invincible = true;
+
+    # Flash effect
+    var flashes = 0;
+    loop {
+        if flashes >= 5 {
+            break;
+        }
+
+        opacity = 0.3;
+        wait;
+        wait;
+        wait;
+        opacity = 1.0;
+        wait;
+        wait;
+        wait;
+
+        flashes = flashes + 1;
+    }
+
+    is_invincible = false;
+}
+
+fn death_sequence() {
+    is_attacking = false;
+    play_sound(3);
+
+    # Dramatic pause
+    wait;
+    wait;
+    wait;
+
+    # Fall and fade
+    var fall_frames = 0;
+    loop {
+        if fall_frames >= 30 {
+            break;
+        }
+
+        y = y + 1;
+        # ERROR: Binary operation between incompatible types (fix - int)
+        opacity = opacity - 3;
+        scale = scale - 0.02;
+
+        fall_frames = fall_frames + 1;
+        wait;
+    }
+
+    trigger PlayerDied;
+}
+
+event fn on_heal(amount: int) {
+    var new_health = health + amount;
+
+    # Cap at max health (100)
+    if new_health > 100 {
+        new_health = 100;
+    }
+
+    health = new_health;
+
+    # Healing effect
+    spawn_particle(x, y - 10, 1);
+    play_sound(4);
+
+    # Brief scale pulse
+    scale = 1.1;
+    wait;
+    wait;
+    scale = 1.0;
+}
+
+fn charge_attack() {
+    var charge_level = 0;
+
+    loop {
+        if is_button_pressed(0) == false {
+            break;
+        }
+
+        charge_level = charge_level + 1;
+
+        # Visual feedback for charge levels
+        if charge_level == 30 {
+            scale = 1.1;
+            spawn_particle(x, y, 2);
+        }
+        if charge_level == 60 {
+            scale = 1.2;
+            spawn_particle(x, y, 3);
+        }
+
+        wait;
+    }
+
+    # Release attack based on charge
+    if charge_level >= 60 {
+        trigger ChargedAttack(2);
+        play_sound(6);
+    } else {
+        if charge_level >= 30 {
+            trigger ChargedAttack(1);
+            play_sound(5);
+        }
+    }
+
+    scale = 1.0;
+}

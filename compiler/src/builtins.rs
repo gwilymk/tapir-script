@@ -30,7 +30,6 @@ impl BuiltinVariable {
         }
     }
 
-    #[cfg(test)]
     pub fn name(self) -> &'static str {
         match self {
             BuiltinVariable::Frame => "frame",

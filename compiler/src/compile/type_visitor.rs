@@ -791,7 +791,6 @@ pub struct TypeTable<'input> {
 }
 
 impl TypeTable<'_> {
-    #[cfg(test)]
     pub fn type_for_symbol(&self, symbol_id: SymbolId, symtab: &SymTab) -> Type {
         use crate::builtins::BuiltinVariable;
 
@@ -803,7 +802,16 @@ impl TypeTable<'_> {
             return symtab.get_global(global_id).ty;
         }
 
-        self.types[symbol_id.0 as usize]
+        // Check if it's a property
+        if let Some(property) = symtab.get_property(symbol_id) {
+            return property.ty;
+        }
+
+        // Handle case where type wasn't recorded (e.g., due to errors)
+        self.types
+            .get(symbol_id.0 as usize)
+            .copied()
+            .unwrap_or(Type::Error)
     }
 
     pub fn triggers(&self) -> Box<[Trigger]> {

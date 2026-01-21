@@ -1,6 +1,8 @@
 use std::{collections::HashMap, path::Path};
 
 use crate::{
+    ast::{Expression, ExpressionKind, Script, Statement, StatementKind, SymbolId},
+    builtins::BuiltinVariable,
     grammar,
     lexer::Lexer,
     reporting::Diagnostics,
@@ -12,8 +14,8 @@ use crate::{
 use super::{
     loop_visitor,
     references::extract_references,
-    symtab_visitor::{GlobalInfo, SymTab, SymTabVisitor},
-    type_visitor::TypeVisitor,
+    symtab_visitor::{GlobalId, GlobalInfo, SymTab, SymTabVisitor},
+    type_visitor::{TypeTable, TypeVisitor},
     CompileSettings, Property,
 };
 
@@ -26,6 +28,15 @@ pub struct SymbolInfo {
     pub ty: Type,
     /// The span where this symbol was defined.
     pub definition_span: Span,
+}
+
+/// Information for displaying on hover.
+#[derive(Clone, Debug)]
+pub struct HoverInfo {
+    /// The name of the symbol/function.
+    pub name: String,
+    /// A description of the symbol (e.g., type or signature).
+    pub description: String,
 }
 
 
@@ -81,6 +92,8 @@ pub struct AnalysisResult {
     pub functions: Vec<FunctionInfo>,
     /// Map from usage spans to definition spans (for go-to-definition).
     pub references: HashMap<Span, Span>,
+    /// Map from spans to hover information.
+    pub hover_info: HashMap<Span, HoverInfo>,
 }
 
 /// Analyse a tapir script and return semantic information.
@@ -110,6 +123,7 @@ pub fn analyse(
                 properties: vec![],
                 functions: vec![],
                 references: HashMap::new(),
+                hover_info: HashMap::new(),
             };
         }
     };
@@ -145,6 +159,9 @@ pub fn analyse(
     // Extract references from the AST
     let references = extract_references(&ast, &symtab);
 
+    // Extract hover information
+    let hover_info = extract_hover_info(&ast, &symtab, &type_table);
+
     AnalysisResult {
         diagnostics,
         symbols,
@@ -152,6 +169,7 @@ pub fn analyse(
         properties,
         functions,
         references,
+        hover_info,
     }
 }
 
@@ -251,6 +269,270 @@ fn extract_functions(ast: &crate::ast::Script<'_>) -> Vec<FunctionInfo> {
     functions
 }
 
+fn extract_hover_info(
+    ast: &Script<'_>,
+    symtab: &SymTab<'_>,
+    type_table: &TypeTable<'_>,
+) -> HashMap<Span, HoverInfo> {
+    let mut hover_info = HashMap::new();
+
+    // Add hover info for properties
+    for prop in symtab.properties() {
+        hover_info.insert(
+            prop.span,
+            HoverInfo {
+                name: prop.name.clone(),
+                description: format!("property {}: {}", prop.name, prop.ty),
+            },
+        );
+    }
+
+    // Add hover info for globals
+    for global in symtab.globals() {
+        hover_info.insert(
+            global.span,
+            HoverInfo {
+                name: global.name.clone(),
+                description: format!("global {}: {}", global.name, global.ty),
+            },
+        );
+    }
+
+    // Add hover info for functions
+    for function in &ast.functions {
+        if function.name == "@toplevel" {
+            continue;
+        }
+
+        let args: Vec<String> = function
+            .arguments
+            .iter()
+            .map(|arg| {
+                let name = match &arg.name {
+                    crate::ast::MaybeResolved::Unresolved(s) => *s,
+                    crate::ast::MaybeResolved::Resolved(_) => "",
+                };
+                format!("{}: {}", name, arg.t.t)
+            })
+            .collect();
+
+        let return_str = if function.return_types.types.is_empty() {
+            String::new()
+        } else if function.return_types.types.len() == 1 {
+            format!(" -> {}", function.return_types.types[0].t)
+        } else {
+            let types: Vec<String> = function
+                .return_types
+                .types
+                .iter()
+                .map(|t| t.t.to_string())
+                .collect();
+            format!(" -> ({})", types.join(", "))
+        };
+
+        let prefix = if function.modifiers.is_event_handler.is_some() {
+            "event fn"
+        } else {
+            "fn"
+        };
+
+        hover_info.insert(
+            function.span,
+            HoverInfo {
+                name: function.name.to_string(),
+                description: format!("{} {}({}){}", prefix, function.name, args.join(", "), return_str),
+            },
+        );
+    }
+
+    // Add hover info for extern functions
+    for function in &ast.extern_functions {
+        let args: Vec<String> = function
+            .arguments
+            .iter()
+            .map(|arg| {
+                let name = match &arg.name {
+                    crate::ast::MaybeResolved::Unresolved(s) => *s,
+                    crate::ast::MaybeResolved::Resolved(_) => "",
+                };
+                format!("{}: {}", name, arg.t.t)
+            })
+            .collect();
+
+        let return_str = if function.return_types.types.is_empty() {
+            String::new()
+        } else if function.return_types.types.len() == 1 {
+            format!(" -> {}", function.return_types.types[0].t)
+        } else {
+            let types: Vec<String> = function
+                .return_types
+                .types
+                .iter()
+                .map(|t| t.t.to_string())
+                .collect();
+            format!(" -> ({})", types.join(", "))
+        };
+
+        hover_info.insert(
+            function.span,
+            HoverInfo {
+                name: function.name.to_string(),
+                description: format!("extern fn {}({}){}", function.name, args.join(", "), return_str),
+            },
+        );
+    }
+
+    // Walk all functions to extract hover info for variables
+    for func in &ast.functions {
+        extract_hover_from_statements(&func.statements, symtab, type_table, &mut hover_info);
+    }
+
+    hover_info
+}
+
+fn extract_hover_from_statements(
+    statements: &[Statement<'_>],
+    symtab: &SymTab<'_>,
+    type_table: &TypeTable<'_>,
+    hover_info: &mut HashMap<Span, HoverInfo>,
+) {
+    for stmt in statements {
+        match &stmt.kind {
+            StatementKind::VariableDeclaration { idents, values } => {
+                // Get symbol IDs for the declared variables
+                if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
+                    for (ident, symbol_id) in idents.iter().zip(symbol_ids.iter()) {
+                        add_symbol_hover(ident.span, *symbol_id, symtab, type_table, hover_info);
+                    }
+                }
+                for expr in values {
+                    extract_hover_from_expression(expr, symtab, type_table, hover_info);
+                }
+            }
+            StatementKind::Assignment { idents, values } => {
+                if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
+                    for (ident, symbol_id) in idents.iter().zip(symbol_ids.iter()) {
+                        add_symbol_hover(ident.span, *symbol_id, symtab, type_table, hover_info);
+                    }
+                }
+                for expr in values {
+                    extract_hover_from_expression(expr, symtab, type_table, hover_info);
+                }
+            }
+            StatementKind::If { condition, true_block, false_block } => {
+                extract_hover_from_expression(condition, symtab, type_table, hover_info);
+                extract_hover_from_statements(true_block, symtab, type_table, hover_info);
+                extract_hover_from_statements(false_block, symtab, type_table, hover_info);
+            }
+            StatementKind::Loop { block } | StatementKind::Block { block } => {
+                extract_hover_from_statements(block, symtab, type_table, hover_info);
+            }
+            StatementKind::Call { arguments, .. }
+            | StatementKind::Spawn { arguments, .. }
+            | StatementKind::Trigger { arguments, .. } => {
+                for expr in arguments {
+                    extract_hover_from_expression(expr, symtab, type_table, hover_info);
+                }
+            }
+            StatementKind::Return { values } => {
+                for expr in values {
+                    extract_hover_from_expression(expr, symtab, type_table, hover_info);
+                }
+            }
+            StatementKind::Wait
+            | StatementKind::Break
+            | StatementKind::Continue
+            | StatementKind::Nop
+            | StatementKind::Error => {}
+        }
+    }
+}
+
+fn add_symbol_hover(
+    span: Span,
+    symbol_id: SymbolId,
+    symtab: &SymTab<'_>,
+    type_table: &TypeTable<'_>,
+    hover_info: &mut HashMap<Span, HoverInfo>,
+) {
+    // Skip builtins - they have separate documentation
+    if let Some(builtin) = BuiltinVariable::from_symbol_id(symbol_id) {
+        hover_info.insert(
+            span,
+            HoverInfo {
+                name: builtin.name().to_string(),
+                description: format!("builtin {}: {}", builtin.name(), builtin.ty()),
+            },
+        );
+        return;
+    }
+
+    // Check if it's a global
+    if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
+        let global = symtab.get_global(global_id);
+        hover_info.insert(
+            span,
+            HoverInfo {
+                name: global.name.clone(),
+                description: format!("global {}: {}", global.name, global.ty),
+            },
+        );
+        return;
+    }
+
+    // Check if it's a property
+    if let Some(property) = symtab.get_property(symbol_id) {
+        hover_info.insert(
+            span,
+            HoverInfo {
+                name: property.name.clone(),
+                description: format!("property {}: {}", property.name, property.ty),
+            },
+        );
+        return;
+    }
+
+    // It's a local variable
+    let ty = type_table.type_for_symbol(symbol_id, symtab);
+    let name = symtab.name_for_symbol(symbol_id);
+    hover_info.insert(
+        span,
+        HoverInfo {
+            name: name.to_string(),
+            description: format!("var {}: {}", name, ty),
+        },
+    );
+}
+
+fn extract_hover_from_expression(
+    expr: &Expression<'_>,
+    symtab: &SymTab<'_>,
+    type_table: &TypeTable<'_>,
+    hover_info: &mut HashMap<Span, HoverInfo>,
+) {
+    match &expr.kind {
+        ExpressionKind::Variable(_) => {
+            if let Some(symbol_id) = expr.meta.get::<SymbolId>() {
+                add_symbol_hover(expr.span, *symbol_id, symtab, type_table, hover_info);
+            }
+        }
+        ExpressionKind::Call { arguments, .. } => {
+            for arg in arguments {
+                extract_hover_from_expression(arg, symtab, type_table, hover_info);
+            }
+        }
+        ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
+            extract_hover_from_expression(lhs, symtab, type_table, hover_info);
+            extract_hover_from_expression(rhs, symtab, type_table, hover_info);
+        }
+        ExpressionKind::Integer(_)
+        | ExpressionKind::Fix(_)
+        | ExpressionKind::Bool(_)
+        | ExpressionKind::Error
+        | ExpressionKind::Nop => {}
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -317,5 +599,49 @@ mod test {
         // But we should still have extracted the function
         assert_eq!(result.functions.len(), 1);
         assert_eq!(result.functions[0].name, "test");
+    }
+
+    #[test]
+    fn analyse_big_tapir_test() {
+        let input = include_str!("snapshot_tests/analyse/big_tapir_test.tapir");
+
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+        };
+
+        let result = analyse("big_tapir_test.tapir", input, &settings);
+
+        // The file has intentional errors, but we should still extract information
+        assert!(result.diagnostics.has_any(), "Expected errors in big_tapir_test.tapir");
+
+        // Should have extracted properties
+        assert!(!result.properties.is_empty(), "Expected properties");
+        assert!(result.properties.iter().any(|p| p.name == "x"));
+        assert!(result.properties.iter().any(|p| p.name == "health"));
+
+        // Should have extracted globals
+        assert!(!result.globals.is_empty(), "Expected globals");
+        assert!(result.globals.iter().any(|g| g.name == "animation_speed"));
+
+        // Should have extracted functions
+        assert!(!result.functions.is_empty(), "Expected functions");
+        let function_names: Vec<_> = result.functions.iter().map(|f| &f.name).collect();
+        assert!(
+            result.functions.iter().any(|f| f.name == "idle_animation"),
+            "Expected idle_animation, got: {:?}",
+            function_names
+        );
+        assert!(
+            result.functions.iter().any(|f| f.name == "handle_movement"),
+            "Expected handle_movement, got: {:?}",
+            function_names
+        );
+
+        // Should have extracted references for go-to-definition
+        assert!(!result.references.is_empty(), "Expected references");
+
+        // Should have extracted hover info
+        assert!(!result.hover_info.is_empty(), "Expected hover info");
     }
 }
