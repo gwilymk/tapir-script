@@ -13,8 +13,14 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "a",
-              "b",
+              Ident(
+                span: "[span]",
+                ident: "a",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "b",
+              ),
             ],
             values: [
               Expression(
@@ -35,9 +41,18 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "x",
-              "y",
-              "z",
+              Ident(
+                span: "[span]",
+                ident: "x",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "y",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "z",
+              ),
             ],
             values: [
               Expression(
@@ -63,8 +78,14 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "p",
-              "q",
+              Ident(
+                span: "[span]",
+                ident: "p",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "q",
+              ),
             ],
             values: [
               Expression(
@@ -83,9 +104,18 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "i",
-              "j",
-              "k",
+              Ident(
+                span: "[span]",
+                ident: "i",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "j",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "k",
+              ),
             ],
             values: [
               Expression(
@@ -104,8 +134,14 @@ Script(
           span: "[span]",
           kind: Assignment(
             idents: [
-              "a",
-              "b",
+              Ident(
+                span: "[span]",
+                ident: "a",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "b",
+              ),
             ],
             values: [
               Expression(
@@ -126,8 +162,14 @@ Script(
           span: "[span]",
           kind: Assignment(
             idents: [
-              "p",
-              "q",
+              Ident(
+                span: "[span]",
+                ident: "p",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "q",
+              ),
             ],
             values: [
               Expression(
@@ -146,8 +188,14 @@ Script(
           span: "[span]",
           kind: Assignment(
             idents: [
-              "a",
-              "b",
+              Ident(
+                span: "[span]",
+                ident: "a",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "b",
+              ),
             ],
             values: [
               Expression(
@@ -168,8 +216,14 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "m",
-              "n",
+              Ident(
+                span: "[span]",
+                ident: "m",
+              ),
+              Ident(
+                span: "[span]",
+                ident: "n",
+              ),
             ],
             values: [
               Expression(

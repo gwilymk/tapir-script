@@ -7,6 +7,6 @@ Error: Unknown variable 'y'
    ╭─[ if_blocks_are_scoped_fail.tapir:5:1 ]
    │
  5 │ y = 4;
-   │ ───┬──  
-   │    ╰──── Unknown variable
+   │ ┬  
+   │ ╰── Unknown variable
 ───╯

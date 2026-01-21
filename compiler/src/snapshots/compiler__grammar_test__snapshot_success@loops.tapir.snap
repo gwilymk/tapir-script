@@ -13,7 +13,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "i",
+              Ident(
+                span: "[span]",
+                ident: "i",
+              ),
             ],
             values: [
               Expression(
@@ -33,7 +36,10 @@ Script(
                 span: "[span]",
                 kind: VariableDeclaration(
                   idents: [
-                    "x",
+                    Ident(
+                      span: "[span]",
+                      ident: "x",
+                    ),
                   ],
                   values: [
                     Expression(
@@ -80,7 +86,10 @@ Script(
                 span: "[span]",
                 kind: Assignment(
                   idents: [
-                    "i",
+                    Ident(
+                      span: "[span]",
+                      ident: "i",
+                    ),
                   ],
                   values: [
                     Expression(

@@ -13,7 +13,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "a",
+              Ident(
+                span: "[span]",
+                ident: "a",
+              ),
             ],
             values: [
               Expression(
@@ -53,7 +56,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "b",
+              Ident(
+                span: "[span]",
+                ident: "b",
+              ),
             ],
             values: [
               Expression(
@@ -93,7 +99,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "c",
+              Ident(
+                span: "[span]",
+                ident: "c",
+              ),
             ],
             values: [
               Expression(
@@ -133,7 +142,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "d",
+              Ident(
+                span: "[span]",
+                ident: "d",
+              ),
             ],
             values: [
               Expression(
@@ -173,7 +185,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "cmp1",
+              Ident(
+                span: "[span]",
+                ident: "cmp1",
+              ),
             ],
             values: [
               Expression(
@@ -201,7 +216,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "cmp2",
+              Ident(
+                span: "[span]",
+                ident: "cmp2",
+              ),
             ],
             values: [
               Expression(
@@ -229,7 +247,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "cmp3",
+              Ident(
+                span: "[span]",
+                ident: "cmp3",
+              ),
             ],
             values: [
               Expression(
@@ -257,7 +278,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "cmp4",
+              Ident(
+                span: "[span]",
+                ident: "cmp4",
+              ),
             ],
             values: [
               Expression(
@@ -285,7 +309,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "cmp5",
+              Ident(
+                span: "[span]",
+                ident: "cmp5",
+              ),
             ],
             values: [
               Expression(
@@ -313,7 +340,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "cmp6",
+              Ident(
+                span: "[span]",
+                ident: "cmp6",
+              ),
             ],
             values: [
               Expression(
@@ -341,7 +371,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "logic1",
+              Ident(
+                span: "[span]",
+                ident: "logic1",
+              ),
             ],
             values: [
               Expression(
@@ -369,7 +402,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "logic2",
+              Ident(
+                span: "[span]",
+                ident: "logic2",
+              ),
             ],
             values: [
               Expression(
@@ -397,7 +433,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "logic3",
+              Ident(
+                span: "[span]",
+                ident: "logic3",
+              ),
             ],
             values: [
               Expression(
@@ -437,7 +476,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "logic4",
+              Ident(
+                span: "[span]",
+                ident: "logic4",
+              ),
             ],
             values: [
               Expression(
@@ -477,7 +519,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "chain1",
+              Ident(
+                span: "[span]",
+                ident: "chain1",
+              ),
             ],
             values: [
               Expression(
@@ -517,7 +562,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "chain2",
+              Ident(
+                span: "[span]",
+                ident: "chain2",
+              ),
             ],
             values: [
               Expression(
@@ -557,7 +605,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "mixed1",
+              Ident(
+                span: "[span]",
+                ident: "mixed1",
+              ),
             ],
             values: [
               Expression(
@@ -609,7 +660,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "mixed2",
+              Ident(
+                span: "[span]",
+                ident: "mixed2",
+              ),
             ],
             values: [
               Expression(
@@ -661,7 +715,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "mixed3",
+              Ident(
+                span: "[span]",
+                ident: "mixed3",
+              ),
             ],
             values: [
               Expression(

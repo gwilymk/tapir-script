@@ -120,8 +120,8 @@ impl<'input> SymTabVisitor<'input> {
                     // no need to do counting checks, that's done in type checking
                     let mut statement_meta = vec![];
                     for ident in idents {
-                        let symbol_id = self.symtab.new_symbol(ident, statement.span);
-                        self.symbol_names.insert(ident, symbol_id);
+                        let symbol_id = self.symtab.new_symbol(ident.ident, ident.span);
+                        self.symbol_names.insert(ident.ident, symbol_id);
 
                         statement_meta.push(symbol_id);
                     }
@@ -137,16 +137,16 @@ impl<'input> SymTabVisitor<'input> {
                     // no need to do counting checks, that's done in type checking
                     let mut statement_meta = vec![];
                     for ident in idents {
-                        if let Some(symbol_id) = self.symbol_names.get(ident) {
+                        if let Some(symbol_id) = self.symbol_names.get(ident.ident) {
                             statement_meta.push(symbol_id);
                         } else {
                             diagnostics.add_message(
-                                CompilerErrorKind::UnknownVariable(ident.to_string())
-                                    .into_message(statement.span),
+                                CompilerErrorKind::UnknownVariable(ident.ident.to_string())
+                                    .into_message(ident.span),
                             );
 
                             // create a dummy symbol to ensure that the meta stays correct
-                            statement_meta.push(self.symtab.new_symbol(ident, statement.span));
+                            statement_meta.push(self.symtab.new_symbol(ident.ident, ident.span));
                         }
                     }
 

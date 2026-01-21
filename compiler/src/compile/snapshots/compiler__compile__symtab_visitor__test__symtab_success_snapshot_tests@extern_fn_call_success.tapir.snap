@@ -13,7 +13,10 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              "result",
+              Ident(
+                span: "[span]",
+                ident: "result",
+              ),
             ],
             values: [
               Expression(

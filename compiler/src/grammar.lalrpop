@@ -141,8 +141,8 @@ Statement: Statement<'input> =
     <start: @L> <kind: StatementKind> <end: @R> => kind.with_span(file_id, start, end);
 
 StatementKind: StatementKind<'input> = {
-    var <idents: CommaSeparated<identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::VariableDeclaration { <> },
-    <idents: CommaSeparated<identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
+    var <idents: CommaSeparated<Identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::VariableDeclaration { <> },
+    <idents: CommaSeparated<Identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
     break ";" => StatementKind::Break,
     continue ";" => StatementKind::Continue,
@@ -165,8 +165,10 @@ StatementKind: StatementKind<'input> = {
         diagnostics.add_lalrpop(<>.error, file_id);
         StatementKind::Error
     }
-
 }
+
+Identifier: Ident<'input> =
+    <start: @L> <ident: identifier> <end: @R> => Ident { ident, span: Span::new(file_id, start, end) };
 
 Block: Vec<Statement<'input>> = "{" <Statement*> "}";
 ElseBlock = "else" <Block>;

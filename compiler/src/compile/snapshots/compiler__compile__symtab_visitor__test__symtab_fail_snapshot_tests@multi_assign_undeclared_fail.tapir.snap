@@ -7,13 +7,13 @@ Error: Unknown variable 'a'
    ╭─[ multi_assign_undeclared_fail.tapir:2:1 ]
    │
  2 │ a, b = 1, 2;
-   │ ──────┬─────  
-   │       ╰─────── Unknown variable
+   │ ┬  
+   │ ╰── Unknown variable
 ───╯
 Error: Unknown variable 'b'
-   ╭─[ multi_assign_undeclared_fail.tapir:2:1 ]
+   ╭─[ multi_assign_undeclared_fail.tapir:2:4 ]
    │
  2 │ a, b = 1, 2;
-   │ ──────┬─────  
-   │       ╰─────── Unknown variable
+   │    ┬  
+   │    ╰── Unknown variable
 ───╯

@@ -168,15 +168,21 @@ pub struct Statement<'input> {
     pub(crate) meta: Metadata,
 }
 
+#[derive(Clone, Debug, Serialize)]
+pub struct Ident<'input> {
+    pub span: Span,
+    pub ident: &'input str,
+}
+
 #[derive(Clone, Debug, Default, Serialize)]
 pub enum StatementKind<'input> {
     Error,
     VariableDeclaration {
-        idents: Vec<&'input str>,
+        idents: Vec<Ident<'input>>,
         values: Vec<Expression<'input>>,
     },
     Assignment {
-        idents: Vec<&'input str>,
+        idents: Vec<Ident<'input>>,
         values: Vec<Expression<'input>>,
     },
     Wait,
