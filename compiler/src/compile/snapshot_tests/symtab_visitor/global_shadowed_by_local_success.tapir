@@ -1,3 +1,5 @@
+property int_prop: int;
+
 global counter = 0;
 
 var counter = 10;

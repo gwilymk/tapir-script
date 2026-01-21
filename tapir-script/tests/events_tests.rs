@@ -3,7 +3,6 @@ use tapir_script::TapirScript;
 #[derive(TapirScript)]
 #[tapir("tests/basic_event.tapir")]
 struct Events {
-    #[tapir(int)]
     int_prop: i32,
 }
 

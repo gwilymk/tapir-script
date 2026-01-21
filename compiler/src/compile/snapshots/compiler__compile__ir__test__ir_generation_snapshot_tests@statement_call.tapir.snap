@@ -7,14 +7,14 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/statement
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.2 = int 8
-foo(temp.2)
+temp.1 = int 8
+foo(temp.1)
 return 
 
 =======================
-fn foo(x.1) -> int, int
+fn foo(x.0) -> int, int
 
 ---- block 0 ----
-temp.3 = int 3
-temp.4 = x.1
-return temp.3, temp.4
+temp.2 = int 3
+temp.3 = x.0
+return temp.2, temp.3

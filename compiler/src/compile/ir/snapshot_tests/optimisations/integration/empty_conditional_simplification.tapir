@@ -1,5 +1,7 @@
 # all
 
+property int_prop: int;
+
 var x = 5;
 var y = 19;
 

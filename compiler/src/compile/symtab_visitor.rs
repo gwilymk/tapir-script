@@ -3,7 +3,8 @@ use std::{borrow::Cow, collections::HashMap};
 use crate::{
     ast::{
         Expression, ExpressionKind, ExternalFunctionId, Function, FunctionId,
-        InternalOrExternalFunctionId, MaybeResolved, Script, Statement, StatementKind, SymbolId,
+        InternalOrExternalFunctionId, MaybeResolved, PropertyDeclaration, Script, Statement,
+        StatementKind, SymbolId,
     },
     builtins::BuiltinVariable,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
@@ -44,6 +45,88 @@ pub struct GlobalInfo {
     pub ty: Type,
     pub initial_value: i32,
     pub span: Span,
+}
+
+use crate::ast::GlobalDeclaration;
+
+/// Extract properties from AST property declarations with validation.
+fn extract_properties_from_ast(
+    declarations: &[PropertyDeclaration<'_>],
+    globals: &[GlobalDeclaration<'_>],
+    available_fields: Option<&[String]>,
+    diagnostics: &mut Diagnostics,
+) -> Vec<Property> {
+    let mut properties = Vec::new();
+    let mut seen_names: HashMap<&str, Span> = HashMap::new();
+
+    for (index, decl) in declarations.iter().enumerate() {
+        // Skip properties with parse errors in type
+        if decl.ty.t == Type::Error {
+            continue;
+        }
+
+        let name = decl.name.ident;
+
+        // Check for duplicate property names
+        if let Some(first_span) = seen_names.get(name) {
+            ErrorKind::DuplicatePropertyDeclaration {
+                name: name.to_string(),
+            }
+            .at(decl.name.span)
+            .label(*first_span, DiagnosticMessage::OriginallyDeclaredHere)
+            .label(decl.name.span, DiagnosticMessage::PropertyAlreadyDeclared)
+            .emit(diagnostics);
+            continue;
+        }
+        seen_names.insert(name, decl.name.span);
+
+        // Check for conflicts with globals
+        if let Some(global) = globals.iter().find(|g| g.name.ident == name) {
+            ErrorKind::PropertyConflictsWithGlobal {
+                name: name.to_string(),
+            }
+            .at(decl.name.span)
+            .label(global.name.span, DiagnosticMessage::OriginallyDeclaredHere)
+            .label(decl.name.span, DiagnosticMessage::ConflictsWithGlobal)
+            .emit(diagnostics);
+            // Continue anyway to report more errors
+        }
+
+        // Check for conflicts with built-ins
+        if BuiltinVariable::from_name(name).is_some() {
+            ErrorKind::CannotShadowBuiltin {
+                name: name.to_string(),
+            }
+            .at(decl.name.span)
+            .label(decl.name.span, DiagnosticMessage::CannotShadowBuiltinLabel)
+            .note(DiagnosticMessage::BuiltinVariableNote {
+                name: name.to_string(),
+            })
+            .emit(diagnostics);
+            // Continue anyway to report more errors
+        }
+
+        // Validate property exists in available fields (if provided)
+        if let Some(fields) = available_fields {
+            if !fields.iter().any(|f| f == name) {
+                ErrorKind::PropertyNotInStruct {
+                    name: name.to_string(),
+                }
+                .at(decl.name.span)
+                .label(decl.name.span, DiagnosticMessage::PropertyNotInStructLabel)
+                .emit(diagnostics);
+                // Continue anyway to report more errors
+            }
+        }
+
+        properties.push(Property {
+            ty: decl.ty.t,
+            index,
+            name: name.to_string(),
+        });
+    }
+
+    properties
 }
 
 /// Evaluate a constant initializer expression for a global variable.
@@ -124,20 +207,24 @@ impl<'input> SymTabVisitor<'input> {
             function_names.insert(InternalOrExternalFunctionId::Internal(fid), function.name);
         }
 
+        // Extract properties from AST property declarations
+        let properties = extract_properties_from_ast(
+            &script.property_declarations,
+            &script.globals,
+            settings.available_fields.as_deref(),
+            diagnostics,
+        );
+
         let mut visitor = Self {
-            symtab: SymTab::new(settings, function_names),
-            symbol_names: NameTable::new(settings),
+            symtab: SymTab::new(&properties, function_names),
+            symbol_names: NameTable::new(&properties),
             function_names: functions_map,
         };
 
         // Process global declarations
         for (index, global) in script.globals.iter().enumerate() {
             // Check for conflicts with properties
-            if settings
-                .properties
-                .iter()
-                .any(|p| p.name == global.name.ident)
-            {
+            if properties.iter().any(|p| p.name == global.name.ident) {
                 ErrorKind::GlobalConflictsWithProperty {
                     name: global.name.ident.to_string(),
                 }
@@ -389,9 +476,8 @@ struct NameTable<'input> {
 }
 
 impl<'input> NameTable<'input> {
-    pub fn new(settings: &CompileSettings) -> Self {
-        let property_symbols = settings
-            .properties
+    pub fn new(properties: &[Property]) -> Self {
+        let property_symbols = properties
             .iter()
             .enumerate()
             .map(|(i, prop)| (Cow::Owned(prop.name.clone()), SymbolId(i as u64)))
@@ -452,10 +538,10 @@ pub struct SymTab<'input> {
 
 impl<'input> SymTab<'input> {
     fn new(
-        settings: &CompileSettings,
+        properties: &[Property],
         function_names: HashMap<InternalOrExternalFunctionId, &'input str>,
     ) -> Self {
-        let properties = settings.properties.clone();
+        let properties = properties.to_vec();
         let symbol_names = properties
             .iter()
             .map(|prop| (Cow::Owned(prop.name.clone()), None))
@@ -533,6 +619,10 @@ impl<'input> SymTab<'input> {
         self.properties.get(symbol_id.0 as usize)
     }
 
+    pub fn properties(&self) -> &[Property] {
+        &self.properties
+    }
+
     pub fn get_global_by_name(&self, name: &str) -> Option<&GlobalInfo> {
         self.global_names.get(name).map(|id| &self.globals[id.0])
     }
@@ -557,7 +647,7 @@ mod test {
 
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
-    use crate::{grammar, lexer::Lexer, tokens::FileId, types::Type};
+    use crate::{grammar, lexer::Lexer, tokens::FileId};
 
     use super::*;
 
@@ -576,11 +666,7 @@ mod test {
 
             let mut visitor = SymTabVisitor::new(
                 &CompileSettings {
-                    properties: vec![Property {
-                        ty: Type::Int,
-                        index: 0,
-                        name: "int_prop".to_string(),
-                    }],
+                    available_fields: None,
                     enable_optimisations: false,
                 },
                 &mut script,
@@ -614,11 +700,7 @@ mod test {
 
             let mut visitor = SymTabVisitor::new(
                 &CompileSettings {
-                    properties: vec![Property {
-                        ty: Type::Int,
-                        index: 0,
-                        name: "int_prop".to_string(),
-                    }],
+                    available_fields: None,
                     enable_optimisations: false,
                 },
                 &mut script,

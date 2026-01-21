@@ -4,6 +4,7 @@ expression: script
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/symbols_in_return_success.tapir
 ---
 Script(
+  property_declarations: [],
   globals: [],
   functions: [
     Function(
@@ -44,7 +45,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
           },
         ),
         Statement(
@@ -58,7 +59,7 @@ Script(
                     span: "[span]",
                     kind: Variable("x"),
                     meta: {
-                      "compiler::ast::SymbolId": "SymbolId(3)",
+                      "compiler::ast::SymbolId": "SymbolId(2)",
                     },
                   ),
                   operator: Add,
@@ -66,7 +67,7 @@ Script(
                     span: "[span]",
                     kind: Variable("a"),
                     meta: {
-                      "compiler::ast::SymbolId": "SymbolId(1)",
+                      "compiler::ast::SymbolId": "SymbolId(0)",
                     },
                   ),
                 ),
@@ -79,7 +80,7 @@ Script(
                     span: "[span]",
                     kind: Variable("b"),
                     meta: {
-                      "compiler::ast::SymbolId": "SymbolId(2)",
+                      "compiler::ast::SymbolId": "SymbolId(1)",
                     },
                   ),
                   operator: Add,
@@ -103,7 +104,7 @@ Script(
             t: Int,
             span: "[span]",
           ),
-          name: Resolved(SymbolId(1)),
+          name: Resolved(SymbolId(0)),
         ),
         FunctionArgument(
           span: "[span]",
@@ -111,7 +112,7 @@ Script(
             t: Fix,
             span: "[span]",
           ),
-          name: Resolved(SymbolId(2)),
+          name: Resolved(SymbolId(1)),
         ),
       ],
       return_types: FunctionReturn(

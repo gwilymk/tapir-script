@@ -1,3 +1,4 @@
+property int_prop: int;
 # Test for phi resolution with circular dependencies (swap pattern).
 #
 # This creates phi nodes at the loop header where the incoming values

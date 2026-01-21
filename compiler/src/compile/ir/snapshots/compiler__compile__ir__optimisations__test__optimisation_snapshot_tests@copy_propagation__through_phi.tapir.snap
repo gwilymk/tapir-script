@@ -8,18 +8,18 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.12 = int 5
-x.13 = temp.12
+temp.10 = int 5
+x.11 = temp.10
 jmp 0
 
 ---- block 0 ----
-x.14 = φ(x.13 from 2, x.23 from 5)
-temp.15 = x.14
-y.16 = temp.15
-temp.17 = x.14
-temp.18 = int 3
-temp.19 = temp.17 > temp.18
-conditional_jump temp.19 3 4
+x.12 = φ(x.11 from 2, x.21 from 5)
+temp.13 = x.12
+y.14 = temp.13
+temp.15 = x.12
+temp.16 = int 3
+temp.17 = temp.15 > temp.16
+conditional_jump temp.17 3 4
 
 ---- block 3 ----
 jmp 1
@@ -31,10 +31,10 @@ jmp 5
 return 
 
 ---- block 5 ----
-temp.20 = y.16
-temp.21 = int 1
-temp.22 = temp.20 - temp.21
-x.23 = temp.22
+temp.18 = y.14
+temp.19 = int 1
+temp.20 = temp.18 - temp.19
+x.21 = temp.20
 jmp 0
 
 
@@ -43,18 +43,18 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.12 = int 5
-x.13 = temp.12
+temp.10 = int 5
+x.11 = temp.10
 jmp 0
 
 ---- block 0 ----
-x.14 = φ(temp.12 from 2, x.23 from 5)
-temp.15 = x.14
-y.16 = x.14
-temp.17 = x.14
-temp.18 = int 3
-temp.19 = x.14 > temp.18
-conditional_jump temp.19 3 4
+x.12 = φ(temp.10 from 2, x.21 from 5)
+temp.13 = x.12
+y.14 = x.12
+temp.15 = x.12
+temp.16 = int 3
+temp.17 = x.12 > temp.16
+conditional_jump temp.17 3 4
 
 ---- block 3 ----
 jmp 1
@@ -66,8 +66,8 @@ jmp 5
 return 
 
 ---- block 5 ----
-temp.20 = x.14
-temp.21 = int 1
-temp.22 = x.14 - temp.21
-x.23 = temp.22
+temp.18 = x.12
+temp.19 = int 1
+temp.20 = x.12 - temp.19
+x.21 = temp.20
 jmp 0

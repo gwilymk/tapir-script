@@ -7,22 +7,22 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/multi_ass
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.3 = foo()
-temp.4 = bar()
-a.1 = temp.3
-b.2 = temp.4
+temp.2 = foo()
+temp.3 = bar()
+a.0 = temp.2
+b.1 = temp.3
 return 
 
 =======================
 fn foo() -> int
 
 ---- block 0 ----
-temp.5 = int 1
-return temp.5
+temp.4 = int 1
+return temp.4
 
 =======================
 fn bar() -> int
 
 ---- block 0 ----
-temp.6 = int 2
-return temp.6
+temp.5 = int 2
+return temp.5

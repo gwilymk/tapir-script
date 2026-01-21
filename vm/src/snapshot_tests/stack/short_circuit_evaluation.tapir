@@ -1,3 +1,4 @@
+property int_prop: int;
 # Test that && and || short-circuit correctly
 # We use side effects (incrementing int_prop) to verify evaluation order
 

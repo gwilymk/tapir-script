@@ -8,14 +8,14 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.10 = int 4
-x.11 = temp.10
-temp.12 = x.11
-y.13 = temp.12
-temp.14 = y.13
-z.15 = temp.14
-temp.16 = x.11
-w.17 = temp.16
+temp.8 = int 4
+x.9 = temp.8
+temp.10 = x.9
+y.11 = temp.10
+temp.12 = y.11
+z.13 = temp.12
+temp.14 = x.9
+w.15 = temp.14
 return 
 
 
@@ -24,12 +24,12 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.10 = int 4
-x.11 = temp.10
-temp.12 = temp.10
-y.13 = temp.10
-temp.14 = temp.10
-z.15 = temp.10
-temp.16 = temp.10
-w.17 = temp.10
+temp.8 = int 4
+x.9 = temp.8
+temp.10 = temp.8
+y.11 = temp.8
+temp.12 = temp.8
+z.13 = temp.8
+temp.14 = temp.8
+w.15 = temp.8
 return

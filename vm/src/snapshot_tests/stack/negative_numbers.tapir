@@ -1,1 +1,2 @@
+property int_prop: int;
 int_prop = -1;

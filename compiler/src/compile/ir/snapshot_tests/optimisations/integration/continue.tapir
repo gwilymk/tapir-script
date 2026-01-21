@@ -1,5 +1,7 @@
 # all
 
+property int_prop: int;
+
 var i = 0;
 
 loop {

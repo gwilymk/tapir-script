@@ -224,14 +224,24 @@ Called the same way as regular functions.
 
 ## Properties
 
-Properties are variables that persist across script execution and are shared with Rust. They are accessed by name without declaration:
+Properties are variables shared between the script and Rust host. They must be declared at the top level:
 
 ```tapir
-my_property = 42;           # set property
-var x = my_property;        # read property
+property health: int;
+property position: fix;
+property alive: bool;
 ```
 
-Properties must be defined in the Rust `#[derive(TapirScript)]` struct.
+Properties persist across frames and can be read/written from both script and Rust:
+
+```tapir
+property counter: int;
+
+counter = counter + 1;      # set property
+var x = counter;            # read property
+```
+
+Each declared property must have a corresponding field in the Rust `#[derive(TapirScript)]` struct with a compatible type.
 
 ## Event Handlers
 
@@ -331,14 +341,23 @@ counter2
 
 ```
 break continue else event extern false fn global if int fix bool
-loop return spawn then trigger true var wait
+loop property return spawn then trigger true var wait
 ```
 
 ## Rust Integration
 
 ### Basic Setup
 
-Use the `#[derive(TapirScript)]` macro on a struct to create a script host:
+Use the `#[derive(TapirScript)]` macro on a struct to create a script host. The struct fields must match the property declarations in the .tapir file:
+
+```tapir
+# script.tapir
+property health: int;
+property position: fix;
+property alive: bool;
+
+# ... script code ...
+```
 
 ```rust
 use tapir_script::TapirScript;
@@ -346,12 +365,9 @@ use tapir_script::TapirScript;
 #[derive(TapirScript)]
 #[tapir("path/to/script.tapir")]
 struct MyScript {
-    #[tapir(int)]
-    health: i32,
-    #[tapir(fix)]
-    position: Fix,
-    #[tapir(bool)]
-    alive: bool,
+    health: i32,      // matches property health: int
+    position: Fix,    // matches property position: fix
+    alive: bool,      // matches property alive: bool
 }
 ```
 
@@ -377,24 +393,33 @@ loop {
 }
 ```
 
-### Property Attributes
+### Rust-Only Fields
 
-| Attribute        | Rust Type | Script Type   |
-| ---------------- | --------- | ------------- |
-| `#[tapir(int)]`  | `i32`     | `int`         |
-| `#[tapir(fix)]`  | `Fix`     | `fix`         |
-| `#[tapir(bool)]` | `bool`    | `bool`        |
-| `#[tapir(skip)]` | any       | (not exposed) |
+Fields without a corresponding property declaration in the .tapir file are simply not accessible from the script:
 
-Use `#[tapir(skip)]` for Rust-only fields that shouldn't be accessible from script.
+```rust
+#[derive(TapirScript)]
+#[tapir("script.tapir")]  // declares: property health: int;
+struct MyScript {
+    health: i32,          // accessible from script
+    internal_state: i32,  // not declared in .tapir, not accessible
+}
+```
+
+This allows you to have Rust-only fields for internal state that the script cannot see or modify.
 
 ### External Functions
 
 Declare in script:
 
 ```tapir
+property result: int;
+
 extern fn add_numbers(a: int, b: int) -> int;
 extern fn side_effect(value: int);
+
+result = add_numbers(3, 5);
+side_effect(result);
 ```
 
 Implement as methods on the struct:
@@ -403,7 +428,6 @@ Implement as methods on the struct:
 #[derive(TapirScript)]
 #[tapir("script.tapir")]
 struct MyScript {
-    #[tapir(int)]
     result: i32,
 }
 

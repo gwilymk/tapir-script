@@ -37,7 +37,10 @@ pub struct Property {
 }
 
 pub struct CompileSettings {
-    pub properties: Vec<Property>,
+    /// Field names available in the Rust struct. If `Some`, the compiler validates
+    /// that declared properties exist in this list. If `None`, validation is skipped
+    /// (useful for LSP/tooling where the Rust struct info isn't available).
+    pub available_fields: Option<Vec<String>>,
     pub enable_optimisations: bool,
 }
 
@@ -63,7 +66,6 @@ pub fn compile(
 
     let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast, &mut diagnostics);
     let mut type_visitor = TypeVisitor::new(
-        settings,
         &ast.functions,
         &ast.extern_functions,
         sym_tab_visitor.get_symtab(),
@@ -343,6 +345,7 @@ impl Compiler {
 pub struct BytecodeParts {
     pub bytecode: Box<[u32]>,
     pub globals: Box<[i32]>,
+    pub properties: Box<[crate::PropertyInfo]>,
     pub event_handlers: Box<[EventHandler]>,
     pub triggers: Box<[Trigger]>,
     pub extern_functions: Box<[ExternFunction]>,
@@ -351,6 +354,7 @@ pub struct BytecodeParts {
 pub struct Bytecode {
     data: Vec<u32>,
     globals: Box<[i32]>,
+    properties: Box<[crate::PropertyInfo]>,
 
     pub event_handlers: Vec<EventHandler>,
     pub triggers: Box<[Trigger]>,
@@ -364,10 +368,20 @@ impl Bytecode {
         symtab: &SymTab,
     ) -> Self {
         let globals = symtab.globals().iter().map(|g| g.initial_value).collect();
+        let properties = symtab
+            .properties()
+            .iter()
+            .map(|p| crate::PropertyInfo {
+                name: p.name.clone(),
+                ty: p.ty,
+                index: p.index,
+            })
+            .collect();
 
         Self {
             data: vec![],
             globals,
+            properties,
 
             event_handlers: vec![],
             triggers,
@@ -380,6 +394,7 @@ impl Bytecode {
         BytecodeParts {
             bytecode: self.data.into_boxed_slice(),
             globals: self.globals,
+            properties: self.properties,
             event_handlers: self.event_handlers.into_boxed_slice(),
             triggers: self.triggers,
             extern_functions: self.extern_functions,
@@ -526,11 +541,7 @@ mod test {
             let enable_optimisations = input.starts_with("# optimise\n");
 
             let compiler_settings = CompileSettings {
-                properties: vec![Property {
-                    ty: Type::Int,
-                    index: 0,
-                    name: "int_prop".to_string(),
-                }],
+                available_fields: None,
                 enable_optimisations,
             };
 

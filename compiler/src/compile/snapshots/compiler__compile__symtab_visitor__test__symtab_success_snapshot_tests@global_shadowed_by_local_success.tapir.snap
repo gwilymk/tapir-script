@@ -4,6 +4,19 @@ expression: script
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/global_shadowed_by_local_success.tapir
 ---
 Script(
+  property_declarations: [
+    PropertyDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "int_prop",
+      ),
+      ty: TypeWithLocation(
+        t: Int,
+        span: "[span]",
+      ),
+      span: "[span]",
+    ),
+  ],
   globals: [
     GlobalDeclaration(
       name: Ident(

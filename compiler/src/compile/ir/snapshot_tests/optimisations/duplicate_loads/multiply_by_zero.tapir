@@ -1,5 +1,8 @@
 # copy_propagation, dead_store_elimination, constant_folding, duplicate_loads
 
+property int_prop: int;
+property fix_prop: fix;
+
 int_prop = int_prop * 0;
 wait;
 int_prop = 0 * int_prop;

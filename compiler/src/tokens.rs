@@ -106,6 +106,8 @@ pub enum Token<'input> {
     KeywordTrigger,
     #[token("global")]
     KeywordGlobal,
+    #[token("property")]
+    KeywordProperty,
 
     #[token("true")]
     True,

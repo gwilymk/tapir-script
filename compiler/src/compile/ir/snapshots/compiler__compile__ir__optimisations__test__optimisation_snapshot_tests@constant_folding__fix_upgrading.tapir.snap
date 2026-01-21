@@ -8,17 +8,17 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-getprop temp.10, 1
-temp.11 = fix 5
-temp.12 = temp.10 f* temp.11
-temp.13 = temp.12
-storeprop temp.13, 1
+getprop temp.9, 0
+temp.10 = fix 5
+temp.11 = temp.9 f* temp.10
+temp.12 = temp.11
+storeprop temp.12, 0
 wait
-temp.14 = fix 5
-getprop temp.15, 1
-temp.16 = temp.14 f* temp.15
-temp.17 = temp.16
-storeprop temp.17, 1
+temp.13 = fix 5
+getprop temp.14, 0
+temp.15 = temp.13 f* temp.14
+temp.16 = temp.15
+storeprop temp.16, 0
 return 
 
 
@@ -27,17 +27,17 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-getprop temp.10, 1
-temp.11 = fix 5
-temp.12 = temp.10 f* temp.11
-temp.13 = temp.12
-storeprop temp.12, 1
+getprop temp.9, 0
+temp.10 = fix 5
+temp.11 = temp.9 f* temp.10
+temp.12 = temp.11
+storeprop temp.11, 0
 wait
-temp.14 = fix 5
-getprop temp.15, 1
-temp.16 = temp.14 f* temp.15
-temp.17 = temp.16
-storeprop temp.16, 1
+temp.13 = fix 5
+getprop temp.14, 0
+temp.15 = temp.13 f* temp.14
+temp.16 = temp.15
+storeprop temp.15, 0
 return 
 
 
@@ -46,15 +46,15 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-getprop temp.10, 1
-temp.11 = fix 5
-temp.12 = temp.10 f* temp.11
-storeprop temp.12, 1
+getprop temp.9, 0
+temp.10 = fix 5
+temp.11 = temp.9 f* temp.10
+storeprop temp.11, 0
 wait
-temp.14 = fix 5
-getprop temp.15, 1
-temp.16 = temp.14 f* temp.15
-storeprop temp.16, 1
+temp.13 = fix 5
+getprop temp.14, 0
+temp.15 = temp.13 f* temp.14
+storeprop temp.15, 0
 return 
 
 
@@ -63,17 +63,17 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-getprop temp.10, 1
-temp.11 = fix 5
-temp.18 = int 5
-temp.12 = temp.10 * temp.18
-storeprop temp.12, 1
+getprop temp.9, 0
+temp.10 = fix 5
+temp.17 = int 5
+temp.11 = temp.9 * temp.17
+storeprop temp.11, 0
 wait
-temp.14 = fix 5
-getprop temp.15, 1
-temp.19 = int 5
-temp.16 = temp.19 * temp.15
-storeprop temp.16, 1
+temp.13 = fix 5
+getprop temp.14, 0
+temp.18 = int 5
+temp.15 = temp.18 * temp.14
+storeprop temp.15, 0
 return 
 
 
@@ -82,13 +82,13 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-getprop temp.10, 1
-temp.18 = int 5
-temp.12 = temp.10 * temp.18
-storeprop temp.12, 1
+getprop temp.9, 0
+temp.17 = int 5
+temp.11 = temp.9 * temp.17
+storeprop temp.11, 0
 wait
-getprop temp.15, 1
-temp.19 = int 5
-temp.16 = temp.19 * temp.15
-storeprop temp.16, 1
+getprop temp.14, 0
+temp.18 = int 5
+temp.15 = temp.18 * temp.14
+storeprop temp.15, 0
 return

@@ -33,6 +33,7 @@ pub fn compile(
     Ok(CompileResult {
         bytecode: parts.bytecode,
         globals: parts.globals,
+        properties: parts.properties,
         event_handlers: parts.event_handlers,
         triggers: parts.triggers,
         extern_functions: parts.extern_functions,
@@ -42,9 +43,20 @@ pub fn compile(
 pub struct CompileResult {
     pub bytecode: Box<[u32]>,
     pub globals: Box<[i32]>,
+    pub properties: Box<[PropertyInfo]>,
     pub event_handlers: Box<[EventHandler]>,
     pub triggers: Box<[Trigger]>,
     pub extern_functions: Box<[ExternFunction]>,
+}
+
+/// Information about a declared property in the compiled script.
+pub struct PropertyInfo {
+    /// The name of the property as declared in the script.
+    pub name: String,
+    /// The type of the property.
+    pub ty: Type,
+    /// The index into the property array (matches declaration order).
+    pub index: usize,
 }
 
 pub struct ExternFunction {

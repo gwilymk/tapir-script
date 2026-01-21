@@ -1,5 +1,7 @@
 # optimise
 # Swap idiom
+property int_prop: int;
+
 var a, b = 1, 2;
 a, b = b, a;
 int_prop = a + b;

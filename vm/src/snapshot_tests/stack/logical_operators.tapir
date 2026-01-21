@@ -1,3 +1,4 @@
+property int_prop: int;
 # Test logical operators && and ||
 # Encode results as: and_tt*1000 + and_tf*100 + or_ft*10 + or_ff
 

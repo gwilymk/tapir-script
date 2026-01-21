@@ -92,6 +92,15 @@ pub enum DiagnosticMessage {
     GlobalConflictsWithProperty {
         name: String,
     },
+    DuplicatePropertyDeclaration {
+        name: String,
+    },
+    PropertyConflictsWithGlobal {
+        name: String,
+    },
+    PropertyNotInStruct {
+        name: String,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -168,6 +177,9 @@ pub enum DiagnosticMessage {
     ConflictsWithProperty,
     OriginallyDeclaredHere,
     AlsoDeclaredHere,
+    PropertyAlreadyDeclared,
+    ConflictsWithGlobal,
+    PropertyNotInStructLabel,
 
     // Parse error labels
     EndOfFileNotExpectedHere,
@@ -270,6 +282,15 @@ impl DiagnosticMessage {
             DiagnosticMessage::GlobalConflictsWithProperty { name } => {
                 format!("Global variable '{name}' conflicts with an existing property")
             }
+            DiagnosticMessage::DuplicatePropertyDeclaration { name } => {
+                format!("Property '{name}' is already declared")
+            }
+            DiagnosticMessage::PropertyConflictsWithGlobal { name } => {
+                format!("Property '{name}' conflicts with an existing global variable")
+            }
+            DiagnosticMessage::PropertyNotInStruct { name } => {
+                format!("Property '{name}' is declared but no corresponding field exists in the Rust struct")
+            }
 
             // Parse errors
             DiagnosticMessage::UnrecognizedEof => "Unexpected end of file".into(),
@@ -325,6 +346,9 @@ impl DiagnosticMessage {
             DiagnosticMessage::ConflictsWithProperty => "Conflicts with property".into(),
             DiagnosticMessage::OriginallyDeclaredHere => "Originally declared here".into(),
             DiagnosticMessage::AlsoDeclaredHere => "Also declared here".into(),
+            DiagnosticMessage::PropertyAlreadyDeclared => "Property already declared".into(),
+            DiagnosticMessage::ConflictsWithGlobal => "Conflicts with global variable".into(),
+            DiagnosticMessage::PropertyNotInStructLabel => "No corresponding field in struct".into(),
 
             // Parse error labels
             DiagnosticMessage::EndOfFileNotExpectedHere => "End of file not expected here".into(),
@@ -460,6 +484,15 @@ pub enum ErrorKind {
     GlobalConflictsWithProperty {
         name: String,
     },
+    DuplicatePropertyDeclaration {
+        name: String,
+    },
+    PropertyConflictsWithGlobal {
+        name: String,
+    },
+    PropertyNotInStruct {
+        name: String,
+    },
 
     // Parse errors
     UnrecognizedEof {
@@ -514,6 +547,9 @@ impl ErrorKind {
             Self::CannotShadowBuiltin { .. } => "E0022",
             Self::GlobalInitializerNotConstant { .. } => "E0023",
             Self::GlobalConflictsWithProperty { .. } => "E0024",
+            Self::DuplicatePropertyDeclaration { .. } => "E0033",
+            Self::PropertyConflictsWithGlobal { .. } => "E0034",
+            Self::PropertyNotInStruct { .. } => "E0035",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -631,6 +667,15 @@ impl ErrorKind {
             }
             Self::GlobalConflictsWithProperty { name } => {
                 DiagnosticMessage::GlobalConflictsWithProperty { name: name.clone() }
+            }
+            Self::DuplicatePropertyDeclaration { name } => {
+                DiagnosticMessage::DuplicatePropertyDeclaration { name: name.clone() }
+            }
+            Self::PropertyConflictsWithGlobal { name } => {
+                DiagnosticMessage::PropertyConflictsWithGlobal { name: name.clone() }
+            }
+            Self::PropertyNotInStruct { name } => {
+                DiagnosticMessage::PropertyNotInStruct { name: name.clone() }
             }
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {

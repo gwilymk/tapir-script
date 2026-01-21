@@ -7,18 +7,18 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/multi_ass
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.3, temp.4 = returns_two()
-a.1 = temp.3
-b.2 = temp.4
-temp.5, temp.6 = returns_two()
-a.1 = temp.5
-b.2 = temp.6
+temp.2, temp.3 = returns_two()
+a.0 = temp.2
+b.1 = temp.3
+temp.4, temp.5 = returns_two()
+a.0 = temp.4
+b.1 = temp.5
 return 
 
 =======================
 fn returns_two() -> int, fix
 
 ---- block 0 ----
-temp.7 = int 1
-temp.8 = fix 2
-return temp.7, temp.8
+temp.6 = int 1
+temp.7 = fix 2
+return temp.6, temp.7

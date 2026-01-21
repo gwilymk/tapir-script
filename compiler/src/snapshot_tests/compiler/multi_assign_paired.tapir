@@ -1,4 +1,6 @@
 # optimise
 # Paired assignment
+property int_prop: int;
+
 var a, b = 1, 2;
 int_prop = a + b;

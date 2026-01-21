@@ -4,17 +4,12 @@ use tapir_script::{Fix, TapirScript};
 #[derive(TapirScript)]
 #[tapir("tests/extern_fn.tapir")]
 struct ExternFnTest {
-    #[tapir(int)]
     result: i32,
-    #[tapir(fix)]
     fix_result: Fix,
-    #[tapir(int)]
     constant: i32,
-    #[tapir(bool)]
     threshold_passed: bool,
 
-    // Track side effect calls
-    #[tapir(skip)]
+    // Track side effect calls (not declared in .tapir, so not accessible from script)
     side_effect_called_with: Option<i32>,
 }
 

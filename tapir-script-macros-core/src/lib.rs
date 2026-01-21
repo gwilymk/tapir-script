@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use compiler::{CompileSettings, Property, Type};
+use compiler::{CompileSettings, Type};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{parse2, DeriveInput, Ident, LitStr, Token};
@@ -21,20 +21,17 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let file_content = fs::read_to_string(&reduced_filename)
         .unwrap_or_else(|e| panic!("Failed to read file {}: {e}", reduced_filename.display()));
 
-    let properties = if let syn::Fields::Named(named) = &data.fields {
-        extract_properties(named)
+    let available_fields = if let syn::Fields::Named(named) = &data.fields {
+        Some(extract_field_names(named))
     } else {
-        vec![]
+        None
     };
 
     let compiled_content = match compiler::compile(
         &reduced_filename,
         &file_content,
         CompileSettings {
-            properties: properties
-                .iter()
-                .map(|property| property.property.clone())
-                .collect(),
+            available_fields,
             enable_optimisations: true,
         },
     ) {
@@ -97,8 +94,23 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
             }
         });
 
-    let setters = properties.iter().map(|property| &property.setter);
-    let getters = properties.iter().map(|property| &property.getter);
+    let (setters, getters): (Vec<_>, Vec<_>) = compiled_content
+        .properties
+        .iter()
+        .map(|property| {
+            let field_ident = format_ident!("{}", property.name);
+            let index = property.index as u8;
+
+            let setter = quote! {
+                #index => { ::tapir_script::TapirProperty::set_from_i32(&mut self.#field_ident, value); }
+            };
+            let getter = quote! {
+                #index => ::tapir_script::TapirProperty::to_i32(&self.#field_ident)
+            };
+
+            (setter, getter)
+        })
+        .unzip();
 
     let extern_functions = compiled_content.extern_functions.iter().enumerate().map(
         |(extern_fn_index, extern_function)| {
@@ -348,61 +360,11 @@ impl syn::parse::Parse for TopLevelTapirArgs {
     }
 }
 
-struct DeriveProperty {
-    property: Property,
-    getter: TokenStream,
-    setter: TokenStream,
-}
-
-fn extract_properties(named: &syn::FieldsNamed) -> Vec<DeriveProperty> {
+/// Extract field names from the struct.
+fn extract_field_names(named: &syn::FieldsNamed) -> Vec<String> {
     named
         .named
         .iter()
-        .enumerate()
-        .filter_map(|(i, field)| {
-            let field_ident = field.ident.as_ref().unwrap();
-            let prop_name = field_ident.to_string();
-
-            let ty = field
-                .attrs
-                .iter()
-                .find(|attr| attr.meta.path().is_ident("tapir"))
-                .map(|attr| {
-                    attr.parse_args::<syn::Ident>()
-                        .unwrap_or_else(|_| {
-                            panic!("tapir attribute on property {prop_name} is invalid",)
-                        })
-                        .to_string()
-                });
-
-            let ty = match ty.as_deref() {
-                None => {
-                    panic!("Must specify the type for every property, missing on {prop_name}")
-                }
-                Some("int") => Type::Int,
-                Some("bool") => Type::Bool,
-                Some("fix") => Type::Fix,
-                Some("skip") => {
-                    return None;
-                }
-                Some(unknown) => panic!("Unknown type {unknown} on property {prop_name}"),
-            };
-
-            let i_u8 = i as u8;
-
-            Some(DeriveProperty {
-                property: Property {
-                    ty,
-                    index: i,
-                    name: prop_name,
-                },
-                setter: quote! {
-                    #i_u8 => { ::tapir_script::TapirProperty::set_from_i32(&mut self.#field_ident, value); }
-                },
-                getter: quote! {
-                    #i_u8 => ::tapir_script::TapirProperty::to_i32(&self.#field_ident)
-                },
-            })
-        })
+        .map(|field| field.ident.as_ref().unwrap().to_string())
         .collect()
 }

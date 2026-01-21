@@ -1,3 +1,4 @@
+property int_prop: int;
 global counter = 0;
 
 fn counter_updater() {

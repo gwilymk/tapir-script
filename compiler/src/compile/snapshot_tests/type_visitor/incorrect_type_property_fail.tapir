@@ -1,1 +1,3 @@
+property int_prop: int;
+
 int_prop = 3.5;

@@ -15,7 +15,6 @@ use crate::{
 };
 
 use super::{
-    CompileSettings,
     loop_visitor::LoopContainsNoBreak,
     symtab_visitor::{GlobalId, SymTab},
 };
@@ -53,7 +52,6 @@ struct TriggerInfo {
 
 impl<'input> TypeVisitor<'input> {
     pub fn new(
-        settings: &CompileSettings,
         functions: &[Function<'input>],
         extern_functions: &[ExternFunctionDefinition<'input>],
         symtab: &SymTab<'input>,
@@ -119,8 +117,8 @@ impl<'input> TypeVisitor<'input> {
         }
 
         Self {
-            type_table: settings
-                .properties
+            type_table: symtab
+                .properties()
                 .iter()
                 .map(|prop| Some((prop.ty, None)))
                 .collect(),
@@ -829,11 +827,10 @@ mod test {
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
     use crate::{
-        compile::{Property, loop_visitor, symtab_visitor::SymTabVisitor},
+        compile::{CompileSettings, loop_visitor, symtab_visitor::SymTabVisitor},
         grammar,
         lexer::Lexer,
         tokens::FileId,
-        types::Type,
     };
 
     use super::*;
@@ -855,17 +852,12 @@ mod test {
                 .unwrap();
 
             let settings = CompileSettings {
-                properties: vec![Property {
-                    ty: Type::Int,
-                    index: 0,
-                    name: "int_prop".to_string(),
-                }],
+                available_fields: None,
                 enable_optimisations: false,
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings, &mut script, &mut diagnostics);
 
             let mut type_visitor = TypeVisitor::new(
-                &settings,
                 &script.functions,
                 &script.extern_functions,
                 symtab_visitor.get_symtab(),
@@ -916,16 +908,11 @@ mod test {
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let settings = CompileSettings {
-                properties: vec![Property {
-                    ty: Type::Int,
-                    index: 0,
-                    name: "int_prop".to_string(),
-                }],
+                available_fields: None,
                 enable_optimisations: false,
             };
             let mut symtab_visitor = SymTabVisitor::new(&settings, &mut script, &mut diagnostics);
             let mut type_visitor = TypeVisitor::new(
-                &settings,
                 &script.functions,
                 &script.extern_functions,
                 symtab_visitor.get_symtab(),

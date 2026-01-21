@@ -7,47 +7,47 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/recursive
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.4 = int 10
-temp.3 = factorial(temp.4)
-x.1 = temp.3
+temp.3 = int 10
+temp.2 = factorial(temp.3)
+x.0 = temp.2
 wait
 return 
 
 =======================
-fn factorial(x.2) -> int
+fn factorial(x.1) -> int
 
 ---- block 3 ----
-temp.6 = x.2
-temp.7 = int 0
-temp.5 = temp.6 == temp.7
-conditional_jump temp.5 0 1
+temp.5 = x.1
+temp.6 = int 0
+temp.4 = temp.5 == temp.6
+conditional_jump temp.4 0 1
 
 ---- block 0 ----
-temp.8 = int 1
-return temp.8
+temp.7 = int 1
+return temp.7
 
 ---- block 1 ----
 jmp 2
 
 ---- block 2 ----
-temp.10 = x.2
-temp.11 = int 1
-temp.9 = temp.10 == temp.11
-conditional_jump temp.9 5 6
+temp.9 = x.1
+temp.10 = int 1
+temp.8 = temp.9 == temp.10
+conditional_jump temp.8 5 6
 
 ---- block 5 ----
-temp.12 = int 1
-return temp.12
+temp.11 = int 1
+return temp.11
 
 ---- block 6 ----
 jmp 7
 
 ---- block 7 ----
 wait
-temp.14 = x.2
-temp.17 = x.2
-temp.18 = int 1
-temp.16 = temp.17 - temp.18
-temp.15 = factorial(temp.16)
-temp.13 = temp.14 * temp.15
-return temp.13
+temp.13 = x.1
+temp.16 = x.1
+temp.17 = int 1
+temp.15 = temp.16 - temp.17
+temp.14 = factorial(temp.15)
+temp.12 = temp.13 * temp.14
+return temp.12

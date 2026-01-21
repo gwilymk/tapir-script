@@ -7,40 +7,40 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/loop_fact
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.5 = int 10
-temp.4 = factorial(temp.5)
-x.1 = temp.4
+temp.4 = int 10
+temp.3 = factorial(temp.4)
+x.0 = temp.3
 wait
 return 
 
 =======================
-fn factorial(x.2) -> int
+fn factorial(x.1) -> int
 
 ---- block 2 ----
-temp.6 = int 1
-result.3 = temp.6
+temp.5 = int 1
+result.2 = temp.5
 jmp 0
 
 ---- block 0 ----
-temp.8 = x.2
-temp.9 = int 0
-temp.7 = temp.8 == temp.9
-conditional_jump temp.7 3 4
+temp.7 = x.1
+temp.8 = int 0
+temp.6 = temp.7 == temp.8
+conditional_jump temp.6 3 4
 
 ---- block 3 ----
-temp.10 = result.3
-return temp.10
+temp.9 = result.2
+return temp.9
 
 ---- block 4 ----
 jmp 5
 
 ---- block 5 ----
-temp.12 = result.3
-temp.13 = x.2
-temp.11 = temp.12 * temp.13
-result.3 = temp.11
-temp.15 = x.2
-temp.16 = int 1
-temp.14 = temp.15 - temp.16
-x.2 = temp.14
+temp.11 = result.2
+temp.12 = x.1
+temp.10 = temp.11 * temp.12
+result.2 = temp.10
+temp.14 = x.1
+temp.15 = int 1
+temp.13 = temp.14 - temp.15
+x.1 = temp.13
 jmp 0

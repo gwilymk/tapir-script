@@ -1,5 +1,7 @@
 # optimise
 # Extern function with multiple returns
+property int_prop: int;
+
 extern fn get_position() -> (int, int);
 
 var x, y = get_position();

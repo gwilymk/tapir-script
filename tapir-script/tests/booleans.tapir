@@ -1,1 +1,5 @@
+property input1: int;
+property input2: int;
+property output: bool;
+
 output = input1 == input2;

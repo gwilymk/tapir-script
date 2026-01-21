@@ -1,3 +1,4 @@
+property int_prop: int;
 var x = int_prop;
 x = x + 3;
 wait;

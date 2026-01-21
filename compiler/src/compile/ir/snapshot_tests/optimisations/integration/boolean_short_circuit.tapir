@@ -1,5 +1,7 @@
 # all
 
+property int_prop: int;
+
 # Test short-circuit with runtime values
 var a = int_prop > 0;
 

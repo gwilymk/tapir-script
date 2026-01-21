@@ -1,5 +1,7 @@
 # copy_propagation, dead_store_elimination, constant_folding
 
+property int_prop: int;
+
 var x = 5;
 var y = 9;
 

@@ -4,6 +4,5 @@ expression: all_types
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/extern_fn_no_args_success.tapir
 ---
 [
-  ("int_prop", Int),
   ("frame_count", Int),
 ]

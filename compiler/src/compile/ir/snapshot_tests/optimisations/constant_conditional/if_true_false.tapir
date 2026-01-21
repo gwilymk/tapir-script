@@ -1,5 +1,7 @@
 # copy_propagation, remove_constant_conditionals
 
+property int_prop: int;
+
 if true {
     int_prop = 5;
 } else {

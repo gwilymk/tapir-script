@@ -112,7 +112,7 @@ mod test {
     use std::fs;
 
     use alloc::string::ToString;
-    use compiler::{CompileSettings, Property, Type};
+    use compiler::CompileSettings;
     use insta::{assert_ron_snapshot, glob};
     use serde::Serialize;
 
@@ -126,11 +126,7 @@ mod test {
             let input = fs::read_to_string(path).unwrap();
 
             let compiler_settings = CompileSettings {
-                properties: vec![Property {
-                    ty: Type::Int,
-                    index: 0,
-                    name: "int_prop".to_string(),
-                }],
+                available_fields: Some(vec!["int_prop".to_string()]),
                 enable_optimisations: true,
             };
 
@@ -176,24 +172,29 @@ mod test {
                 paste::paste! {
                     #[test]
                     fn [< binop_test_ $name >]() {
+                        let type_str = match stringify!($type) {
+                            "Int" => "int",
+                            "Bool" => "bool",
+                            "Fix" => "fix",
+                            _ => panic!("Unknown type"),
+                        };
+
                         let compile_settings = CompileSettings {
-                            properties: vec![Property {
-                                ty: Type::$type,
-                                index: 0,
-                                name: "prop".to_string(),
-                            }],
+                            available_fields: Some(vec!["prop".to_string()]),
                             enable_optimisations: false,
                         };
 
+                        let source = std::format!("property prop: {};\nprop = {};", type_str, $code);
                         let compile_result = compiler::compile(
                             concat!(stringify!($name), ".tapir"),
-                            concat!("prop = ", $code, ";"),
+                            &source,
                             compile_settings
                         ).unwrap();
 
                         let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+                        // For Int tests, use 5; for Bool tests, use 1 (true)
                         let mut prop_object = PropObj {
-                            int_prop: if Type::$type == Type::Int { 5 } else { 1 },
+                            int_prop: if type_str == "int" { 5 } else { 1 },
                         };
 
                         while !vm.states.is_empty() {
@@ -295,17 +296,13 @@ mod test {
     #[test]
     fn frame_starts_at_zero() {
         let compile_settings = CompileSettings {
-            properties: vec![Property {
-                ty: Type::Int,
-                index: 0,
-                name: "int_prop".to_string(),
-            }],
+            available_fields: Some(vec!["int_prop".to_string()]),
             enable_optimisations: false,
         };
 
         let bytecode = compiler::compile(
             "frame_test.tapir",
-            "int_prop = frame;",
+            "property int_prop: int;\nint_prop = frame;",
             compile_settings,
         )
         .unwrap()
@@ -327,17 +324,13 @@ mod test {
     #[test]
     fn frame_increments_each_run() {
         let compile_settings = CompileSettings {
-            properties: vec![Property {
-                ty: Type::Int,
-                index: 0,
-                name: "int_prop".to_string(),
-            }],
+            available_fields: Some(vec!["int_prop".to_string()]),
             enable_optimisations: false,
         };
 
         let bytecode = compiler::compile(
             "frame_test.tapir",
-            "int_prop = frame; wait; int_prop = frame; wait; int_prop = frame;",
+            "property int_prop: int;\nint_prop = frame; wait; int_prop = frame; wait; int_prop = frame;",
             compile_settings,
         )
         .unwrap()
@@ -380,17 +373,13 @@ mod test {
     #[test]
     fn frame_in_expression() {
         let compile_settings = CompileSettings {
-            properties: vec![Property {
-                ty: Type::Int,
-                index: 0,
-                name: "int_prop".to_string(),
-            }],
+            available_fields: Some(vec!["int_prop".to_string()]),
             enable_optimisations: false,
         };
 
         let bytecode = compiler::compile(
             "frame_test.tapir",
-            "var start = frame; wait; wait; int_prop = frame - start;",
+            "property int_prop: int;\nvar start = frame; wait; wait; int_prop = frame - start;",
             compile_settings,
         )
         .unwrap()
@@ -414,17 +403,13 @@ mod test {
     #[test]
     fn frame_in_loop_condition() {
         let compile_settings = CompileSettings {
-            properties: vec![Property {
-                ty: Type::Int,
-                index: 0,
-                name: "int_prop".to_string(),
-            }],
+            available_fields: Some(vec!["int_prop".to_string()]),
             enable_optimisations: false,
         };
 
         let bytecode = compiler::compile(
             "frame_test.tapir",
-            "loop { if frame >= 5 { break; } wait; } int_prop = frame;",
+            "property int_prop: int;\nloop { if frame >= 5 { break; } wait; } int_prop = frame;",
             compile_settings,
         )
         .unwrap()

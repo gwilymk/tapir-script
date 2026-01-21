@@ -4,6 +4,7 @@ expression: script
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/variable_success.tapir
 ---
 Script(
+  property_declarations: [],
   globals: [],
   functions: [
     Function(
@@ -28,7 +29,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0)]",
           },
         ),
         Statement(
@@ -49,7 +50,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0)]",
           },
         ),
         Statement(
@@ -69,7 +70,7 @@ Script(
                     span: "[span]",
                     kind: Variable("x"),
                     meta: {
-                      "compiler::ast::SymbolId": "SymbolId(1)",
+                      "compiler::ast::SymbolId": "SymbolId(0)",
                     },
                   ),
                   operator: Add,
@@ -84,7 +85,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
           },
         ),
       ],

@@ -3,7 +3,6 @@ use tapir_script::TapirScript;
 #[derive(TapirScript)]
 #[tapir("tests/factorial.tapir")]
 struct FactorialCalculation {
-    #[tapir(int)]
     io: i32,
 }
 
@@ -20,11 +19,8 @@ struct NumberProperties(i32);
 #[derive(TapirScript)]
 #[tapir("tests/booleans.tapir")]
 struct ManyProperties {
-    #[tapir(int)]
     input1: i32,
-    #[tapir(int)]
     input2: i32,
-    #[tapir(bool)]
     output: bool,
 }
 

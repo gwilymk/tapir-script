@@ -12,7 +12,7 @@ x.1 = temp.2
 temp.3, temp.4 = returns_two()
 x.1 = temp.3
 temp.5 = temp.4
-storeprop temp.5, 3
+storeprop temp.5, 0
 return 
 
 =======================

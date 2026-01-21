@@ -8,20 +8,20 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.9 = int 8
-temp.10 = small_fn(temp.9)
-temp.11 = temp.10
-storeprop temp.11, 0
+temp.8 = int 8
+temp.9 = small_fn(temp.8)
+temp.10 = temp.9
+storeprop temp.10, 0
 return 
 
 =======================
-fn small_fn(x.2) -> int
+fn small_fn(x.1) -> int
 
 ---- block 0 ----
-temp.12 = x.2
-temp.13 = int 5
-temp.14 = temp.12 + temp.13
-return temp.14
+temp.11 = x.1
+temp.12 = int 5
+temp.13 = temp.11 + temp.12
+return temp.13
 
 
 ----------- inline_small_functions -------------
@@ -29,30 +29,30 @@ return temp.14
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.9 = int 8
+temp.8 = int 8
 jmp 2
 
 ---- block 2 ----
-temp.16 = temp.9
-temp.17 = int 5
-temp.18 = temp.16 + temp.17
+temp.15 = temp.8
+temp.16 = int 5
+temp.17 = temp.15 + temp.16
 jmp 4
 
 ---- block 4 ----
-temp.15 = φ(temp.18 from 2)
-temp.10 = temp.15
+temp.14 = φ(temp.17 from 2)
+temp.9 = temp.14
 jmp 1
 
 ---- block 1 ----
-temp.11 = temp.10
-storeprop temp.11, 0
+temp.10 = temp.9
+storeprop temp.10, 0
 return 
 
 =======================
-fn small_fn(x.2) -> int
+fn small_fn(x.1) -> int
 
 ---- block 0 ----
-temp.12 = x.2
-temp.13 = int 5
-temp.14 = temp.12 + temp.13
-return temp.14
+temp.11 = x.1
+temp.12 = int 5
+temp.13 = temp.11 + temp.12
+return temp.13

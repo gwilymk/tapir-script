@@ -1,3 +1,4 @@
+property int_prop: int;
 fn foo() -> int {
     wait;
     return 33;

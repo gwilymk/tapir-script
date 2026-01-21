@@ -4,6 +4,7 @@ expression: script
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/multi_assign_paired_success.tapir
 ---
 Script(
+  property_declarations: [],
   globals: [],
   functions: [
     Function(
@@ -37,7 +38,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1), SymbolId(2)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0), SymbolId(1)]",
           },
         ),
         Statement(
@@ -76,7 +77,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3), SymbolId(4), SymbolId(5)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2), SymbolId(3), SymbolId(4)]",
           },
         ),
         Statement(
@@ -106,7 +107,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1), SymbolId(2)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0), SymbolId(1)]",
           },
         ),
         Statement(
@@ -127,20 +128,20 @@ Script(
                 span: "[span]",
                 kind: Variable("b"),
                 meta: {
-                  "compiler::ast::SymbolId": "SymbolId(2)",
+                  "compiler::ast::SymbolId": "SymbolId(1)",
                 },
               ),
               Expression(
                 span: "[span]",
                 kind: Variable("a"),
                 meta: {
-                  "compiler::ast::SymbolId": "SymbolId(1)",
+                  "compiler::ast::SymbolId": "SymbolId(0)",
                 },
               ),
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1), SymbolId(2)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0), SymbolId(1)]",
           },
         ),
       ],

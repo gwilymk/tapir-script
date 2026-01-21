@@ -1,5 +1,7 @@
 # remove_unreferenced_functions
 
+property int_prop: int;
+
 fn foo(x: int) -> int {
     return x;
 }

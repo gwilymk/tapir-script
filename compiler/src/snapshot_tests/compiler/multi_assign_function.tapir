@@ -1,5 +1,7 @@
 # optimise
 # Multi-return function unpacking
+property int_prop: int;
+
 fn returns_two() -> (int, int) {
     return 1, 2;
 }

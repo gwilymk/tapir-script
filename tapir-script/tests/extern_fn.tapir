@@ -1,3 +1,8 @@
+property result: int;
+property fix_result: fix;
+property constant: int;
+property threshold_passed: bool;
+
 extern fn add_numbers(a: int, b: int) -> int;
 extern fn multiply_fix(a: fix, b: fix) -> fix;
 extern fn side_effect(value: int);

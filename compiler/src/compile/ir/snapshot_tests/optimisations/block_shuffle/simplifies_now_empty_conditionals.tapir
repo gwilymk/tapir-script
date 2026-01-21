@@ -1,4 +1,5 @@
 # copy_propagation, remove_constant_conditionals, simplify_blocks
+property int_prop: int;
 
 var x = 5;
 var y = 19;

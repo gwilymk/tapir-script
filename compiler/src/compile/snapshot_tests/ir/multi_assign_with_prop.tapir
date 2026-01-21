@@ -1,4 +1,6 @@
 # Multi-assignment where one target is a property
+property int_prop: int;
+
 fn returns_two() -> (int, int) {
     return 10, 20;
 }

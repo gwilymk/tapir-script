@@ -1,2 +1,4 @@
+property int_prop: int;
+
 var x = frame;
 int_prop = frame + 1;

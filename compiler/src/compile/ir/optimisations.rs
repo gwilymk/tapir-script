@@ -258,7 +258,7 @@ mod test {
     use insta::{assert_snapshot, glob};
 
     use crate::{
-        CompileSettings, Property, Type,
+        CompileSettings,
         compile::{
             ir::{create_ir, make_ssa, pretty_print},
             loop_visitor::visit_loop_check,
@@ -287,25 +287,13 @@ mod test {
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
             let compile_settings = CompileSettings {
-                properties: vec![
-                    Property {
-                        ty: Type::Int,
-                        index: 0,
-                        name: "int_prop".to_string(),
-                    },
-                    Property {
-                        ty: Type::Fix,
-                        index: 1,
-                        name: "fix_prop".to_string(),
-                    },
-                ],
+                available_fields: None,
                 enable_optimisations: true,
             };
 
             let mut symtab_visitor =
                 SymTabVisitor::new(&compile_settings, &mut script, &mut diagnostics);
             let mut type_visitor = TypeVisitor::new(
-                &compile_settings,
                 &script.functions,
                 &script.extern_functions,
                 symtab_visitor.get_symtab(),

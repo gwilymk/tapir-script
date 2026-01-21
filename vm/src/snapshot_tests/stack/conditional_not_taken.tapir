@@ -1,3 +1,4 @@
+property int_prop: int;
 var x = int_prop;
 
 if x == 3 {

@@ -1,4 +1,7 @@
 # all
+
+property int_prop: int;
+
 fn divide(n: int, d: int) -> int {
     var r = n;
     var q = 0;

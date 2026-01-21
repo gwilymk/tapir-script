@@ -3,7 +3,6 @@ use tapir_script::TapirScript;
 #[derive(TapirScript, Debug)]
 #[tapir("examples/basic_properties.tapir")]
 struct SomeProperties {
-    #[tapir(int)]
     int_prop: i32,
 }
 

@@ -1,5 +1,7 @@
 # optimise
 # Multi-return then use the values
+property int_prop: int;
+
 fn get_stats() -> (int, int) {
     return 10, 20;
 }

@@ -1,4 +1,7 @@
 # all
+
+property int_prop: int;
+
 var a = int_prop;
 var b = 6;
 

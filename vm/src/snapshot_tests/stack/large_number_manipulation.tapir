@@ -1,3 +1,4 @@
+property int_prop: int;
 var x = 1024;
 int_prop = x + 2000;
 
