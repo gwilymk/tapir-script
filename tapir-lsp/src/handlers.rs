@@ -99,11 +99,7 @@ pub fn handle_request(
 
             let uri = params.text_document.uri;
 
-            let response = if let Some(file_state) = files.get(&uri) {
-                Some(get_inlay_hints(file_state))
-            } else {
-                None
-            };
+            let response = files.get(&uri).map(get_inlay_hints);
 
             let result = serde_json::to_value(response)?;
             connection

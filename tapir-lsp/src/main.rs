@@ -1,3 +1,4 @@
+#![warn(clippy::all)]
 mod diagnostics;
 mod features;
 mod handlers;
