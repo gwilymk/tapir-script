@@ -1,0 +1,41 @@
+# Test that && and || short-circuit correctly
+# We use side effects (incrementing int_prop) to verify evaluation order
+
+int_prop = 0;
+
+# For &&: if first is false, second should NOT be evaluated
+# false && side_effect() should NOT call side_effect
+var a = false && increment_and_return_true();
+wait;
+# int_prop should still be 0
+var after_and_short = int_prop;
+
+# For &&: if first is true, second SHOULD be evaluated
+# true && side_effect() SHOULD call side_effect
+var b = true && increment_and_return_true();
+wait;
+# int_prop should now be 1
+var after_and_eval = int_prop;
+
+# For ||: if first is true, second should NOT be evaluated
+# true || side_effect() should NOT call side_effect
+var c = true || increment_and_return_true();
+wait;
+# int_prop should still be 1
+var after_or_short = int_prop;
+
+# For ||: if first is false, second SHOULD be evaluated
+# false || side_effect() SHOULD call side_effect
+var d = false || increment_and_return_true();
+wait;
+# int_prop should now be 2
+var after_or_eval = int_prop;
+
+# Encode final result: after_and_short*1000 + after_and_eval*100 + after_or_short*10 + after_or_eval
+# Expected: 0*1000 + 1*100 + 1*10 + 2 = 112
+int_prop = after_and_short * 1000 + after_and_eval * 100 + after_or_short * 10 + after_or_eval;
+
+fn increment_and_return_true() -> bool {
+    int_prop = int_prop + 1;
+    return true;
+}

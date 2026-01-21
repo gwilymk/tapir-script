@@ -1,0 +1,24 @@
+# Test logical operators && and ||
+# Encode results as: and_tt*1000 + and_tf*100 + or_ft*10 + or_ff
+
+var and_tt = true && true;
+var and_tf = true && false;
+var or_ft = false || true;
+var or_ff = false || false;
+
+var result = 0;
+if and_tt {
+    result = result + 1000;
+}
+if and_tf {
+    result = result + 100;
+}
+if or_ft {
+    result = result + 10;
+}
+if or_ff {
+    result = result + 1;
+}
+
+wait;
+int_prop = result;

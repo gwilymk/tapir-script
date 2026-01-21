@@ -1,0 +1,12 @@
+# all
+
+# Test short-circuit with runtime values
+var a = int_prop > 0;
+
+if a && int_prop < 100 {
+    int_prop = 1;
+}
+
+if a || int_prop < 100 {
+    int_prop = 2;
+}
