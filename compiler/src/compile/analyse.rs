@@ -7,25 +7,19 @@ mod util;
 use std::{collections::HashMap, path::Path};
 
 use crate::{
-    ast::Script,
-    grammar,
-    lexer::Lexer,
-    reporting::Diagnostics,
-    tokens::FileId,
-    PropertyInfo,
+    PropertyInfo, ast::Script, grammar, lexer::Lexer, reporting::Diagnostics, tokens::FileId,
 };
 
 use super::{
-    loop_visitor,
+    CompileSettings, Property, loop_visitor,
     references::extract_references,
     symtab_visitor::{SymTab, SymTabVisitor},
     type_visitor::{TypeTable, TypeVisitor},
-    CompileSettings, Property,
 };
 
 pub use types::{
-    AnalysisResult, CallSiteInfo, FunctionArgumentInfo, FunctionInfo, HoverInfo,
-    InlayHintInfo, ParameterInfo, SignatureInfo, SymbolInfo,
+    AnalysisResult, CallSiteInfo, FunctionArgumentInfo, FunctionInfo, HoverInfo, InlayHintInfo,
+    ParameterInfo, SignatureInfo, SymbolInfo,
 };
 
 use hover::extract_hover_info;
@@ -229,7 +223,11 @@ mod test {
         assert_eq!(add_fn.return_types.len(), 1);
         assert!(!add_fn.is_event_handler);
 
-        let on_start_fn = result.functions.iter().find(|f| f.name == "on_start").unwrap();
+        let on_start_fn = result
+            .functions
+            .iter()
+            .find(|f| f.name == "on_start")
+            .unwrap();
         assert!(on_start_fn.is_event_handler);
     }
 
@@ -258,7 +256,7 @@ mod test {
 
     #[test]
     fn analyse_big_tapir_test() {
-        let input = include_str!("../snapshot_tests/analyse/big_tapir_test.tapir");
+        let input = include_str!("snapshot_tests/analyse/big_tapir_test.tapir");
 
         let settings = CompileSettings {
             available_fields: None,
@@ -268,7 +266,10 @@ mod test {
         let result = analyse("big_tapir_test.tapir", input, &settings);
 
         // The file has intentional errors, but we should still extract information
-        assert!(result.diagnostics.has_any(), "Expected errors in big_tapir_test.tapir");
+        assert!(
+            result.diagnostics.has_any(),
+            "Expected errors in big_tapir_test.tapir"
+        );
 
         // Should have extracted properties
         assert!(!result.properties.is_empty(), "Expected properties");

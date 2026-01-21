@@ -24,7 +24,12 @@ pub fn extract_references(ast: &Script<'_>, symtab: &SymTab<'_>) -> HashMap<Span
 
     // Walk all functions
     for func in &ast.functions {
-        extract_references_from_statements(&func.statements, symtab, &function_spans, &mut references);
+        extract_references_from_statements(
+            &func.statements,
+            symtab,
+            &function_spans,
+            &mut references,
+        );
     }
 
     references
@@ -61,7 +66,11 @@ fn extract_references_from_statements(
                     extract_references_from_expression(expr, symtab, function_spans, references);
                 }
             }
-            StatementKind::If { condition, true_block, false_block } => {
+            StatementKind::If {
+                condition,
+                true_block,
+                false_block,
+            } => {
                 extract_references_from_expression(condition, symtab, function_spans, references);
                 extract_references_from_statements(true_block, symtab, function_spans, references);
                 extract_references_from_statements(false_block, symtab, function_spans, references);

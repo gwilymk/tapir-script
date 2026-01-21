@@ -51,7 +51,11 @@ fn extract_from_statements(
                     }
                 }
             }
-            StatementKind::If { true_block, false_block, .. } => {
+            StatementKind::If {
+                true_block,
+                false_block,
+                ..
+            } => {
                 extract_from_statements(true_block, symtab, type_table, hints);
                 extract_from_statements(false_block, symtab, type_table, hints);
             }

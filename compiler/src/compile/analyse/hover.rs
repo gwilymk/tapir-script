@@ -12,7 +12,7 @@ use super::{
         type_visitor::TypeTable,
     },
     types::HoverInfo,
-    util::{format_arguments, format_return_types, symbol_description, SymbolKind},
+    util::{SymbolKind, format_arguments, format_return_types, symbol_description},
 };
 
 /// Extract hover information from the AST.
@@ -86,7 +86,13 @@ pub fn extract_hover_info(
 
     // Walk all functions to extract hover info for variables and function calls
     for func in &ast.functions {
-        extract_from_statements(&func.statements, symtab, type_table, &function_signatures, &mut hover_info);
+        extract_from_statements(
+            &func.statements,
+            symtab,
+            type_table,
+            &function_signatures,
+            &mut hover_info,
+        );
     }
 
     hover_info
@@ -108,7 +114,13 @@ fn extract_from_statements(
                     }
                 }
                 for expr in values {
-                    extract_from_expression(expr, symtab, type_table, function_signatures, hover_info);
+                    extract_from_expression(
+                        expr,
+                        symtab,
+                        type_table,
+                        function_signatures,
+                        hover_info,
+                    );
                 }
             }
             StatementKind::Assignment { idents, values } => {
@@ -118,13 +130,41 @@ fn extract_from_statements(
                     }
                 }
                 for expr in values {
-                    extract_from_expression(expr, symtab, type_table, function_signatures, hover_info);
+                    extract_from_expression(
+                        expr,
+                        symtab,
+                        type_table,
+                        function_signatures,
+                        hover_info,
+                    );
                 }
             }
-            StatementKind::If { condition, true_block, false_block } => {
-                extract_from_expression(condition, symtab, type_table, function_signatures, hover_info);
-                extract_from_statements(true_block, symtab, type_table, function_signatures, hover_info);
-                extract_from_statements(false_block, symtab, type_table, function_signatures, hover_info);
+            StatementKind::If {
+                condition,
+                true_block,
+                false_block,
+            } => {
+                extract_from_expression(
+                    condition,
+                    symtab,
+                    type_table,
+                    function_signatures,
+                    hover_info,
+                );
+                extract_from_statements(
+                    true_block,
+                    symtab,
+                    type_table,
+                    function_signatures,
+                    hover_info,
+                );
+                extract_from_statements(
+                    false_block,
+                    symtab,
+                    type_table,
+                    function_signatures,
+                    hover_info,
+                );
             }
             StatementKind::Loop { block } | StatementKind::Block { block } => {
                 extract_from_statements(block, symtab, type_table, function_signatures, hover_info);
@@ -134,7 +174,13 @@ fn extract_from_statements(
                     hover_info.insert(stmt.span, sig.clone());
                 }
                 for expr in arguments {
-                    extract_from_expression(expr, symtab, type_table, function_signatures, hover_info);
+                    extract_from_expression(
+                        expr,
+                        symtab,
+                        type_table,
+                        function_signatures,
+                        hover_info,
+                    );
                 }
             }
             StatementKind::Spawn { name, arguments } => {
@@ -142,17 +188,35 @@ fn extract_from_statements(
                     hover_info.insert(stmt.span, sig.clone());
                 }
                 for expr in arguments {
-                    extract_from_expression(expr, symtab, type_table, function_signatures, hover_info);
+                    extract_from_expression(
+                        expr,
+                        symtab,
+                        type_table,
+                        function_signatures,
+                        hover_info,
+                    );
                 }
             }
             StatementKind::Trigger { arguments, .. } => {
                 for expr in arguments {
-                    extract_from_expression(expr, symtab, type_table, function_signatures, hover_info);
+                    extract_from_expression(
+                        expr,
+                        symtab,
+                        type_table,
+                        function_signatures,
+                        hover_info,
+                    );
                 }
             }
             StatementKind::Return { values } => {
                 for expr in values {
-                    extract_from_expression(expr, symtab, type_table, function_signatures, hover_info);
+                    extract_from_expression(
+                        expr,
+                        symtab,
+                        type_table,
+                        function_signatures,
+                        hover_info,
+                    );
                 }
             }
             StatementKind::Wait

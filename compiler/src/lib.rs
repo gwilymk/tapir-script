@@ -16,11 +16,16 @@ lalrpop_mod!(grammar);
 #[cfg(test)]
 mod grammar_test;
 
-pub use compile::analyse::{analyse, AnalysisResult, CallSiteInfo, FunctionArgumentInfo, FunctionInfo, HoverInfo, InlayHintInfo, ParameterInfo, SignatureInfo, SymbolInfo};
+pub use compile::analyse::{
+    AnalysisResult, CallSiteInfo, FunctionArgumentInfo, FunctionInfo, HoverInfo, InlayHintInfo,
+    ParameterInfo, SignatureInfo, SymbolInfo, analyse,
+};
 pub use compile::symtab_visitor::GlobalInfo;
 pub use compile::{CompileSettings, Property};
 pub use reporting::format::DiagnosticCache;
-pub use reporting::{Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind, SourcePosition, SourceRange};
+pub use reporting::{
+    Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind, SourcePosition, SourceRange,
+};
 pub use tokens::Span;
 pub use types::Type;
 

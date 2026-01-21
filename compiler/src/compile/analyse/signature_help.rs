@@ -42,7 +42,13 @@ pub fn extract_signature_help<'a>(
         signatures.insert(
             function.name.to_string(),
             SignatureInfo {
-                label: format!("{} {}({}){}", prefix, function.name, params_str.join(", "), return_str),
+                label: format!(
+                    "{} {}({}){}",
+                    prefix,
+                    function.name,
+                    params_str.join(", "),
+                    return_str
+                ),
                 parameters: params,
             },
         );
@@ -64,7 +70,12 @@ pub fn extract_signature_help<'a>(
         signatures.insert(
             function.name.to_string(),
             SignatureInfo {
-                label: format!("extern fn {}({}){}", function.name, params_str.join(", "), return_str),
+                label: format!(
+                    "extern fn {}({}){}",
+                    function.name,
+                    params_str.join(", "),
+                    return_str
+                ),
                 parameters: params,
             },
         );
@@ -91,7 +102,11 @@ fn extract_from_statements(
                     extract_from_expression(expr, signatures, call_sites);
                 }
             }
-            StatementKind::If { condition, true_block, false_block } => {
+            StatementKind::If {
+                condition,
+                true_block,
+                false_block,
+            } => {
                 extract_from_expression(condition, signatures, call_sites);
                 extract_from_statements(true_block, signatures, call_sites);
                 extract_from_statements(false_block, signatures, call_sites);
@@ -101,14 +116,10 @@ fn extract_from_statements(
             }
             StatementKind::Call { name, arguments } | StatementKind::Spawn { name, arguments } => {
                 if signatures.contains_key(*name) {
-                    let argument_start_offsets: Vec<usize> = arguments
-                        .iter()
-                        .map(|arg| arg.span.start())
-                        .collect();
-                    let argument_end_offsets: Vec<usize> = arguments
-                        .iter()
-                        .map(|arg| arg.span.end())
-                        .collect();
+                    let argument_start_offsets: Vec<usize> =
+                        arguments.iter().map(|arg| arg.span.start()).collect();
+                    let argument_end_offsets: Vec<usize> =
+                        arguments.iter().map(|arg| arg.span.end()).collect();
 
                     call_sites.push(CallSiteInfo {
                         function_name: name.to_string(),
@@ -148,14 +159,10 @@ fn extract_from_expression(
     match &expr.kind {
         ExpressionKind::Call { name, arguments } => {
             if signatures.contains_key(*name) {
-                let argument_start_offsets: Vec<usize> = arguments
-                    .iter()
-                    .map(|arg| arg.span.start())
-                    .collect();
-                let argument_end_offsets: Vec<usize> = arguments
-                    .iter()
-                    .map(|arg| arg.span.end())
-                    .collect();
+                let argument_start_offsets: Vec<usize> =
+                    arguments.iter().map(|arg| arg.span.start()).collect();
+                let argument_end_offsets: Vec<usize> =
+                    arguments.iter().map(|arg| arg.span.end()).collect();
 
                 call_sites.push(CallSiteInfo {
                     function_name: name.to_string(),

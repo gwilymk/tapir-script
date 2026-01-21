@@ -1,11 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{
-    reporting::Diagnostics,
-    tokens::Span,
-    types::Type,
-    PropertyInfo,
-};
+use crate::{PropertyInfo, reporting::Diagnostics, tokens::Span, types::Type};
 
 use super::super::symtab_visitor::GlobalInfo;
 
