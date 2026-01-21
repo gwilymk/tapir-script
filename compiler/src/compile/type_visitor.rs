@@ -8,7 +8,7 @@ use crate::{
         self, BinaryOperator, Expression, ExpressionKind, ExternFunctionDefinition, Function,
         FunctionModifiers, FunctionReturn, InternalOrExternalFunctionId, MaybeResolved, SymbolId,
     },
-    reporting::{CompilerErrorKind, Diagnostics},
+    reporting::{CompilerErrorKind, CountMismatchExtras, Diagnostics},
     tokens::Span,
     types::{FunctionType, Type},
 };
@@ -210,9 +210,9 @@ impl<'input> TypeVisitor<'input> {
                 | ast::StatementKind::Continue
                 | ast::StatementKind::Nop
                 | ast::StatementKind::Error => {}
-                ast::StatementKind::VariableDeclaration { values, .. }
-                | ast::StatementKind::Assignment { values, .. } => {
-                    let idents: &Vec<SymbolId> = statement
+                ast::StatementKind::VariableDeclaration { idents, values }
+                | ast::StatementKind::Assignment { idents, values } => {
+                    let symbol_ids: &Vec<SymbolId> = statement
                         .meta
                         .get()
                         .expect("Should've been resolved by symbol resolution");
@@ -232,16 +232,27 @@ impl<'input> TypeVisitor<'input> {
                     };
 
                     if value_types.len() != idents.len() {
+                        let extras = if idents.len() > value_types.len() {
+                            CountMismatchExtras::Idents(
+                                idents[value_types.len()..].iter().map(|i| i.span).collect(),
+                            )
+                        } else {
+                            CountMismatchExtras::Expressions(
+                                values[idents.len()..].iter().map(|v| v.span).collect(),
+                            )
+                        };
+
                         diagnostics.add_message(
                             CompilerErrorKind::CountMismatch {
                                 ident_count: idents.len(),
                                 expr_count: value_types.len(),
+                                extras,
                             }
                             .into_message(statement.span),
                         );
                     }
 
-                    for (symbol, value) in idents.iter().zip(value_types) {
+                    for (symbol, value) in symbol_ids.iter().zip(value_types) {
                         self.resolve_type(*symbol, value, statement.span, diagnostics);
                     }
                 }

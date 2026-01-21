@@ -223,7 +223,14 @@ pub enum CompilerErrorKind {
     CountMismatch {
         ident_count: usize,
         expr_count: usize,
+        extras: CountMismatchExtras,
     },
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub enum CountMismatchExtras {
+    Idents(Vec<Span>),
+    Expressions(Vec<Span>),
 }
 
 impl CompilerErrorKind {

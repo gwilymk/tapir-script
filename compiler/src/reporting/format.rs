@@ -10,7 +10,7 @@ use ariadne::{Cache, Label, Source};
 
 use crate::tokens::{FileId, LexicalErrorKind, Span};
 
-use super::{CompilerErrorKind, Message, MessageKind, ParseError};
+use super::{CompilerErrorKind, CountMismatchExtras, Message, MessageKind, ParseError};
 
 impl Message {
     pub fn write_diagnostic<W: Write>(
@@ -239,9 +239,15 @@ fn compiler_error_report(
             .with_label(Label::new(span).with_message(format!("This is called with types {}", second_definition_args.iter().map(|a| a.to_string()).collect::<Vec<_>>().join(", "))))
             .with_message(format!("Trigger '{name}' has been called with inconsistent arguments"))
             .with_help("`trigger` calls must be made with the same argument types"),
-        CompilerErrorKind::CountMismatch { ident_count, expr_count } => build_error_report(span)
-            .with_message(format!("Expected {ident_count} expressions, but got {expr_count} of them"))
-            .with_label(Label::new(span).with_message("This assignment"))
-            .with_help("When assigning to multiple variables, both sides of the '=' must have the same number of arguments"),
+        CompilerErrorKind::CountMismatch { ident_count, expr_count, extras } => {
+            let (spans, message) = match extras {
+                CountMismatchExtras::Idents(spans) => (spans, "No value for this variable"),
+                CountMismatchExtras::Expressions(spans) => (spans, "No variable to receive this value"),
+            };
+            build_error_report(span)
+                .with_message(format!("Expected {ident_count} expressions, but got {expr_count} of them"))
+                .with_labels(spans.iter().map(|s| Label::new(*s).with_message(message)))
+                .with_help("When assigning to multiple variables, both sides of the '=' must have the same number of arguments")
+        }
     }
 }

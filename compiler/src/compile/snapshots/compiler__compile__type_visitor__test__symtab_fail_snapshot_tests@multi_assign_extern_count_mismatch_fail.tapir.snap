@@ -7,8 +7,8 @@ Error: Expected 3 expressions, but got 2 of them
    ╭─[ multi_assign_extern_count_mismatch_fail.tapir:4:1 ]
    │
  4 │ var x, y, z = get_position();
-   │ ──────────────┬──────────────  
-   │               ╰──────────────── This assignment
+   │           ┬  
+   │           ╰── No value for this variable
    │ 
    │ Help: When assigning to multiple variables, both sides of the '=' must have the same number of arguments
 ───╯
