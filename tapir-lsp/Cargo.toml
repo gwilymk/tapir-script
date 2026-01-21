@@ -1,0 +1,10 @@
+[package]
+name = "tapir-lsp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+compiler = { path = "../compiler" }
+lsp-types = "0.95"
+lsp-server = "0.7.9"
+serde_json = "1.0.149"

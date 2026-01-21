@@ -1,0 +1,63 @@
+{
+  "name": "tapir-script",
+  "displayName": "Tapir Script",
+  "description": "Language support for Tapir Script",
+  "version": "0.0.1",
+  "publisher": "tapir",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:tapir"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "tapir",
+        "aliases": [
+          "Tapir Script",
+          "tapir"
+        ],
+        "extensions": [
+          ".tapir"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tapir",
+        "scopeName": "source.tapir",
+        "path": "./syntaxes/tapir.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Tapir Script",
+      "properties": {
+        "tapir.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the tapir-lsp executable. If empty, searches in PATH."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^5.0.0"
+  }
+}
