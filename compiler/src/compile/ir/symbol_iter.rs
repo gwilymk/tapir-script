@@ -1,0 +1,123 @@
+use std::slice;
+
+use crate::ast::SymbolId;
+
+use super::{BlockExitInstr, TapIrInstr};
+
+pub(super) enum SymbolIter<'a> {
+    None,
+    One(Option<SymbolId>),
+    Two(Option<SymbolId>, Option<SymbolId>),
+    Many(slice::Iter<'a, SymbolId>),
+}
+
+impl<'a> SymbolIter<'a> {
+    pub fn new_source(instr: &'a TapIrInstr) -> Self {
+        match instr {
+            TapIrInstr::Move { source, .. } | TapIrInstr::StoreProp { value: source, .. } => {
+                Self::One(Some(*source))
+            }
+            TapIrInstr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
+            TapIrInstr::Call { args, .. }
+            | TapIrInstr::CallExternal { args, .. }
+            | TapIrInstr::Trigger { args, .. }
+            | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter()),
+            _ => Self::None,
+        }
+    }
+
+    pub fn new_target(instr: &'a TapIrInstr) -> Self {
+        match instr {
+            TapIrInstr::Constant(target, _)
+            | TapIrInstr::Move { target, .. }
+            | TapIrInstr::GetProp { target, .. }
+            | TapIrInstr::BinOp { target, .. } => Self::One(Some(*target)),
+            TapIrInstr::Call { target, .. } | TapIrInstr::CallExternal { target, .. } => {
+                Self::Many(target.iter())
+            }
+            _ => Self::None,
+        }
+    }
+
+    pub fn new_source_exit(instr: &'a BlockExitInstr) -> Self {
+        match instr {
+            BlockExitInstr::JumpToBlock(_) => Self::None,
+            BlockExitInstr::ConditionalJump { test, .. } => Self::One(Some(*test)),
+            BlockExitInstr::Return(symbol_ids) => Self::Many(symbol_ids.iter()),
+        }
+    }
+}
+
+impl<'a> Iterator for SymbolIter<'a> {
+    type Item = SymbolId;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            SymbolIter::None => None,
+            SymbolIter::One(symbol_id) => symbol_id.take(),
+            SymbolIter::Two(symbol_id1, symbol_id2) => {
+                symbol_id1.take().or_else(|| symbol_id2.take())
+            }
+            SymbolIter::Many(iter) => iter.next().copied(),
+        }
+    }
+}
+
+pub(super) enum SymbolIterMut<'a> {
+    None,
+    One(Option<&'a mut SymbolId>),
+    Two(Option<&'a mut SymbolId>, Option<&'a mut SymbolId>),
+    Many(slice::IterMut<'a, SymbolId>),
+}
+
+impl<'a> SymbolIterMut<'a> {
+    pub fn new_source(instr: &'a mut TapIrInstr) -> Self {
+        match instr {
+            TapIrInstr::Move { source, .. } | TapIrInstr::StoreProp { value: source, .. } => {
+                Self::One(Some(source))
+            }
+            TapIrInstr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
+            TapIrInstr::Call { args, .. }
+            | TapIrInstr::CallExternal { args, .. }
+            | TapIrInstr::Trigger { args, .. }
+            | TapIrInstr::Spawn { args, .. } => Self::Many(args.iter_mut()),
+            _ => Self::None,
+        }
+    }
+
+    pub fn new_target(instr: &'a mut TapIrInstr) -> Self {
+        match instr {
+            TapIrInstr::Constant(target, _)
+            | TapIrInstr::Move { target, .. }
+            | TapIrInstr::GetProp { target, .. }
+            | TapIrInstr::BinOp { target, .. } => Self::One(Some(target)),
+            TapIrInstr::Call { target, .. } | TapIrInstr::CallExternal { target, .. } => {
+                Self::Many(target.iter_mut())
+            }
+            _ => Self::None,
+        }
+    }
+
+    pub fn new_source_exit(instr: &'a mut BlockExitInstr) -> Self {
+        match instr {
+            BlockExitInstr::JumpToBlock(_) => Self::None,
+            BlockExitInstr::ConditionalJump { test, .. } => Self::One(Some(test)),
+            BlockExitInstr::Return(symbol_ids) => Self::Many(symbol_ids.iter_mut()),
+        }
+    }
+}
+
+impl<'a> Iterator for SymbolIterMut<'a> {
+    type Item = &'a mut SymbolId;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self {
+            SymbolIterMut::None => None,
+            SymbolIterMut::One(symbol_id) => symbol_id.take(),
+            SymbolIterMut::Two(symbol_id1, symbol_id2) => {
+                symbol_id1.take().or_else(|| symbol_id2.take())
+            }
+            SymbolIterMut::Many(many) => many.next(),
+        }
+    }
+}

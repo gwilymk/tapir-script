@@ -1,5 +1,7 @@
 use std::fmt::Write;
 
+use crate::ast::InternalOrExternalFunctionId;
+
 use super::*;
 
 fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -> std::fmt::Result {
