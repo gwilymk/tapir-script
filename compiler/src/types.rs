@@ -22,9 +22,3 @@ impl Display for Type {
         }
     }
 }
-
-#[derive(Clone, Debug)]
-pub struct FunctionType {
-    pub args: Vec<Type>,
-    pub rets: Vec<Type>,
-}

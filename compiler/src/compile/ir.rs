@@ -1155,6 +1155,7 @@ mod test {
                 &compile_settings,
                 &script.functions,
                 &script.extern_functions,
+                symtab_visitor.get_symtab(),
             );
 
             for function in &mut script.functions {

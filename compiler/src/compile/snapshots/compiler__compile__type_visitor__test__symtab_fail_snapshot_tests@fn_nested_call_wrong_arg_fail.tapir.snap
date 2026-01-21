@@ -1,0 +1,16 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/fn_nested_call_wrong_arg_fail.tapir
+---
+Error: Incorrect type for argument 'x' of function 'needs_int', expected int but got fix
+   ╭─[ fn_nested_call_wrong_arg_fail.tapir:9:24 ]
+   │
+ 5 │ fn needs_int(x: int) -> int {
+   │              ┬  
+   │              ╰── Expected int
+   │ 
+ 9 │ var result = needs_int(get_fix());
+   │                        ────┬────  
+   │                            ╰────── Passing fix
+───╯

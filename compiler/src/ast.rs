@@ -143,7 +143,7 @@ pub enum MaybeResolved<'input> {
     Resolved(SymbolId),
 }
 
-impl MaybeResolved<'_> {
+impl<'input> MaybeResolved<'input> {
     pub(crate) fn symbol_id(&self) -> Option<SymbolId> {
         match self {
             MaybeResolved::Unresolved(_) => None,

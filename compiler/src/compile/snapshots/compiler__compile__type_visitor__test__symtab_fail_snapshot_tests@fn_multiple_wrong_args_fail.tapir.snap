@@ -1,0 +1,38 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/fn_multiple_wrong_args_fail.tapir
+---
+Error: Incorrect type for argument 'x' of function 'process', expected int but got bool
+   ╭─[ fn_multiple_wrong_args_fail.tapir:5:22 ]
+   │
+ 1 │ fn process(x: int, y: bool, z: fix) -> int {
+   │            ┬  
+   │            ╰── Expected int
+   │ 
+ 5 │ var result = process(true, 42, false);
+   │                      ──┬─  
+   │                        ╰─── Passing bool
+───╯
+Error: Incorrect type for argument 'y' of function 'process', expected bool but got int
+   ╭─[ fn_multiple_wrong_args_fail.tapir:5:28 ]
+   │
+ 1 │ fn process(x: int, y: bool, z: fix) -> int {
+   │                    ┬  
+   │                    ╰── Expected bool
+   │ 
+ 5 │ var result = process(true, 42, false);
+   │                            ─┬  
+   │                             ╰── Passing int
+───╯
+Error: Incorrect type for argument 'z' of function 'process', expected fix but got bool
+   ╭─[ fn_multiple_wrong_args_fail.tapir:5:32 ]
+   │
+ 1 │ fn process(x: int, y: bool, z: fix) -> int {
+   │                             ┬  
+   │                             ╰── Expected fix
+   │ 
+ 5 │ var result = process(true, 42, false);
+   │                                ──┬──  
+   │                                  ╰──── Passing bool
+───╯

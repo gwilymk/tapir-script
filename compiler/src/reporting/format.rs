@@ -188,6 +188,14 @@ fn compiler_error_report(
                     "Incorrect type, property '{property_name}' is declared as {expected} but got {actual}",
                 ))
         }
+        CompilerErrorKind::FunctionArgumentTypeError { function_name, argument_name, expected, expected_span, actual, actual_span } => {
+            build_error_report(span)
+                .with_label(Label::new(*expected_span).with_message(format!("Expected {expected}")))
+                .with_label(Label::new(*actual_span).with_message(format!("Passing {actual}")))
+                .with_message(format!(
+                    "Incorrect type for argument '{argument_name}' of function '{function_name}', expected {expected} but got {actual}",
+                ))
+        }
         CompilerErrorKind::UnknownType(var) => build_error_report(span)
             .with_label(Label::new(span).with_message("Unknown type for variable"))
             .with_message(format!("Unknown type for variable '{var}'")),

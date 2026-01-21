@@ -65,7 +65,12 @@ pub fn compile(
         &mut ast.extern_functions,
         &mut diagnostics,
     );
-    let mut type_visitor = TypeVisitor::new(settings, &ast.functions, &ast.extern_functions);
+    let mut type_visitor = TypeVisitor::new(
+        settings,
+        &ast.functions,
+        &ast.extern_functions,
+        sym_tab_visitor.get_symtab(),
+    );
 
     for function in &mut ast.functions {
         sym_tab_visitor.visit_function(function, &mut diagnostics);

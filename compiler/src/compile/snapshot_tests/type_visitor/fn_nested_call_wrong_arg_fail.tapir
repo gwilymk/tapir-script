@@ -1,0 +1,9 @@
+fn get_fix() -> fix {
+    return 1.5;
+}
+
+fn needs_int(x: int) -> int {
+    return x;
+}
+
+var result = needs_int(get_fix());

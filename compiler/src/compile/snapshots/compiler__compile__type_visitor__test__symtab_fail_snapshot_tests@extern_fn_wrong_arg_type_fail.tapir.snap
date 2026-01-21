@@ -3,25 +3,25 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/extern_fn_wrong_arg_type_fail.tapir
 ---
-Error: Incorrect type, expected int but got fix
+Error: Incorrect type for argument 'a' of function 'compute', expected int but got fix
    ╭─[ extern_fn_wrong_arg_type_fail.tapir:3:17 ]
    │
  1 │ extern fn compute(a: int, b: fix) -> fix;
-   │           ───┬───  
-   │              ╰───── Defined as int
+   │                   ┬  
+   │                   ╰── Expected int
    │ 
  3 │ var x = compute(3.5, 4);
    │                 ─┬─  
-   │                  ╰─── Assigning fix
+   │                  ╰─── Passing fix
 ───╯
-Error: Incorrect type, expected fix but got int
+Error: Incorrect type for argument 'b' of function 'compute', expected fix but got int
    ╭─[ extern_fn_wrong_arg_type_fail.tapir:3:22 ]
    │
  1 │ extern fn compute(a: int, b: fix) -> fix;
-   │           ───┬───  
-   │              ╰───── Defined as fix
+   │                           ┬  
+   │                           ╰── Expected fix
    │ 
  3 │ var x = compute(3.5, 4);
    │                      ┬  
-   │                      ╰── Assigning int
+   │                      ╰── Passing int
 ───╯

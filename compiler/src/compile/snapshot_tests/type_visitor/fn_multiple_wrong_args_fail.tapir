@@ -1,0 +1,5 @@
+fn process(x: int, y: bool, z: fix) -> int {
+    return x;
+}
+
+var result = process(true, 42, false);

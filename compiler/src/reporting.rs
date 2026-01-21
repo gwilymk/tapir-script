@@ -168,6 +168,14 @@ pub enum CompilerErrorKind {
         actual: Type,
         actual_span: Span,
     },
+    FunctionArgumentTypeError {
+        function_name: String,
+        argument_name: String,
+        expected: Type,
+        expected_span: Span,
+        actual: Type,
+        actual_span: Span,
+    },
     UnknownType(String),
     BinaryOperatorTypeError {
         lhs_type: Type,

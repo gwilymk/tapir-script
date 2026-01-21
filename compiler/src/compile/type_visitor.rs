@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{borrow::Cow, collections::HashMap};
 
 use serde::Serialize;
 
@@ -10,14 +10,14 @@ use crate::{
     },
     reporting::{CompilerErrorKind, CountMismatchExtras, Diagnostics},
     tokens::Span,
-    types::{FunctionType, Type},
+    types::Type,
 };
 
 use super::{CompileSettings, loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab};
 
 pub struct TypeVisitor<'input> {
     type_table: Vec<Option<(Type, Option<Span>)>>,
-    functions: HashMap<InternalOrExternalFunctionId, FunctionInfo>,
+    functions: HashMap<InternalOrExternalFunctionId, FunctionInfo<'input>>,
 
     trigger_types: HashMap<&'input str, TriggerInfo>,
 }
@@ -25,10 +25,18 @@ pub struct TypeVisitor<'input> {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TriggerId(pub usize);
 
-struct FunctionInfo {
+struct FunctionInfo<'input> {
+    name: &'input str,
     span: Span,
-    ty: FunctionType,
+    args: Vec<FunctionArgumentInfo<'input>>,
+    rets: Vec<Type>,
     modifiers: FunctionModifiers,
+}
+
+struct FunctionArgumentInfo<'input> {
+    name: Cow<'input, str>,
+    ty: Type,
+    span: Span,
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -43,36 +51,63 @@ impl<'input> TypeVisitor<'input> {
         settings: &CompileSettings,
         functions: &[Function<'input>],
         extern_functions: &[ExternFunctionDefinition<'input>],
+        symtab: &SymTab<'input>,
     ) -> Self {
         let mut resolved_functions = HashMap::new();
 
         for function in functions {
-            let function_type = FunctionType {
-                args: function.arguments.iter().map(|t| t.t.t).collect(),
-                rets: function.return_types.types.iter().map(|t| t.t).collect(),
-            };
+            let args = function
+                .arguments
+                .iter()
+                .map(|arg| {
+                    let name = match &arg.name {
+                        MaybeResolved::Unresolved(s) => Cow::Borrowed(*s),
+                        MaybeResolved::Resolved(id) => symtab.name_for_symbol(*id),
+                    };
+                    FunctionArgumentInfo {
+                        name,
+                        ty: arg.t.t,
+                        span: arg.span,
+                    }
+                })
+                .collect();
 
             resolved_functions.insert(
                 InternalOrExternalFunctionId::Internal(*function.meta.get().unwrap()),
                 FunctionInfo {
+                    name: function.name,
                     span: function.span,
-                    ty: function_type,
+                    args,
+                    rets: function.return_types.types.iter().map(|t| t.t).collect(),
                     modifiers: function.modifiers.clone(),
                 },
             );
         }
 
         for function in extern_functions {
-            let function_type = FunctionType {
-                args: function.arguments.iter().map(|t| t.t.t).collect(),
-                rets: function.return_types.types.iter().map(|t| t.t).collect(),
-            };
+            let args = function
+                .arguments
+                .iter()
+                .map(|arg| {
+                    let name = match &arg.name {
+                        MaybeResolved::Unresolved(s) => Cow::Borrowed(*s),
+                        MaybeResolved::Resolved(id) => symtab.name_for_symbol(*id),
+                    };
+                    FunctionArgumentInfo {
+                        name,
+                        ty: arg.t.t,
+                        span: arg.span,
+                    }
+                })
+                .collect();
 
             resolved_functions.insert(
                 InternalOrExternalFunctionId::External(*function.meta.get().unwrap()),
                 FunctionInfo {
+                    name: function.name,
                     span: function.span,
-                    ty: function_type,
+                    args,
+                    rets: function.return_types.types.iter().map(|t| t.t).collect(),
                     modifiers: FunctionModifiers::default(),
                 },
             );
@@ -103,33 +138,33 @@ impl<'input> TypeVisitor<'input> {
             self.type_table.resize(symbol_id.0 + 1, None);
         }
 
-        if let Some((table_type, expected_span)) = self.type_table[symbol_id.0] {
-            if table_type != ty {
-                if ty == Type::Error {
-                    // the error should already be reported
-                    return;
-                }
-
-                let error = if let Some(property) = symtab.get_property(symbol_id) {
-                    CompilerErrorKind::PropertyTypeError {
-                        property_name: property.name.clone(),
-                        expected: table_type,
-                        actual: ty,
-                        actual_span: value_span,
-                    }
-                } else {
-                    CompilerErrorKind::TypeError {
-                        expected: table_type,
-                        expected_span,
-                        actual: ty,
-                        actual_span: value_span,
-                    }
-                };
-
-                diagnostics.add_message(error.into_message(value_span));
-
+        if let Some((table_type, expected_span)) = self.type_table[symbol_id.0]
+            && table_type != ty
+        {
+            if ty == Type::Error {
+                // the error should already be reported
                 return;
             }
+
+            let error = if let Some(property) = symtab.get_property(symbol_id) {
+                CompilerErrorKind::PropertyTypeError {
+                    property_name: property.name.clone(),
+                    expected: table_type,
+                    actual: ty,
+                    actual_span: value_span,
+                }
+            } else {
+                CompilerErrorKind::TypeError {
+                    expected: table_type,
+                    expected_span,
+                    actual: ty,
+                    actual_span: value_span,
+                }
+            };
+
+            diagnostics.add_message(error.into_message(value_span));
+
+            return;
         }
 
         self.type_table[symbol_id.0] = Some((ty, Some(ident_span)));
@@ -607,10 +642,10 @@ impl<'input> TypeVisitor<'input> {
             );
 
             return vec![Type::Error];
-        } else if argument_types.len() != function_info.ty.args.len() {
+        } else if argument_types.len() != function_info.args.len() {
             diagnostics.add_message(
                 CompilerErrorKind::IncorrectNumberOfArguments {
-                    expected: function_info.ty.args.len(),
+                    expected: function_info.args.len(),
                     actual: argument_types.len(),
                     function_span: function_info.span,
                     function_name: name.to_string(),
@@ -618,14 +653,15 @@ impl<'input> TypeVisitor<'input> {
                 .into_message(span),
             );
         } else {
-            for ((actual, actual_span), expected) in
-                argument_types.iter().zip(&function_info.ty.args)
+            for ((actual, actual_span), arg_info) in argument_types.iter().zip(&function_info.args)
             {
-                if actual != expected && *actual != Type::Error && *expected != Type::Error {
+                if *actual != arg_info.ty && *actual != Type::Error && arg_info.ty != Type::Error {
                     diagnostics.add_message(
-                        CompilerErrorKind::TypeError {
-                            expected: *expected,
-                            expected_span: Some(function_info.span),
+                        CompilerErrorKind::FunctionArgumentTypeError {
+                            function_name: function_info.name.to_string(),
+                            argument_name: arg_info.name.to_string(),
+                            expected: arg_info.ty,
+                            expected_span: arg_info.span,
                             actual: *actual,
                             actual_span: *actual_span,
                         }
@@ -635,7 +671,7 @@ impl<'input> TypeVisitor<'input> {
             }
         }
 
-        function_info.ty.rets.clone()
+        function_info.rets.clone()
     }
 }
 
@@ -723,8 +759,12 @@ mod test {
                 &mut diagnostics,
             );
 
-            let mut type_visitor =
-                TypeVisitor::new(&settings, &script.functions, &script.extern_functions);
+            let mut type_visitor = TypeVisitor::new(
+                &settings,
+                &script.functions,
+                &script.extern_functions,
+                symtab_visitor.get_symtab(),
+            );
 
             for function in &mut script.functions {
                 loop_visitor::visit_loop_check(function, &mut diagnostics);
@@ -778,8 +818,12 @@ mod test {
                 &mut script.extern_functions,
                 &mut diagnostics,
             );
-            let mut type_visitor =
-                TypeVisitor::new(&settings, &script.functions, &script.extern_functions);
+            let mut type_visitor = TypeVisitor::new(
+                &settings,
+                &script.functions,
+                &script.extern_functions,
+                symtab_visitor.get_symtab(),
+            );
 
             for function in &mut script.functions {
                 loop_visitor::visit_loop_check(function, &mut diagnostics);
