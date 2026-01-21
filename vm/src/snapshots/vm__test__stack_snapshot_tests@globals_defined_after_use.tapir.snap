@@ -1,0 +1,18 @@
+---
+source: crates/tapir-script/vm/src/lib.rs
+expression: stack_at_waits
+input_file: crates/tapir-script/vm/src/snapshot_tests/stack/globals_defined_after_use.tapir
+---
+[
+  ([
+    [
+      -1,
+      5,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([], PropObj(
+    int_prop: 15,
+  )),
+]

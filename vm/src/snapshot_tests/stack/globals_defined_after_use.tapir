@@ -1,0 +1,6 @@
+int_prop = counter;
+wait;
+counter = counter + 10;
+int_prop = counter;
+
+global counter = 5;
