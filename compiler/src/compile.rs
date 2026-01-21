@@ -5,7 +5,7 @@ use symtab_visitor::SymTabVisitor;
 use type_visitor::{TypeTable, TypeVisitor};
 
 use crate::{
-    EventHandler, Trigger,
+    EventHandler, ExternFunction, Trigger,
     ast::{BinaryOperator, FunctionId, SymbolId},
     compile::ir::{
         BlockId, TapIrFunction, TapIrInstr, create_ir, make_ssa,
@@ -80,7 +80,26 @@ pub fn compile(
         return Err(diagnostics);
     }
 
-    let mut compiler = Compiler::new(&type_table);
+    let extern_functions = ast
+        .extern_functions
+        .iter()
+        .map(|extern_function| ExternFunction {
+            name: extern_function.name.to_string(),
+            arguments: extern_function
+                .arguments
+                .iter()
+                .map(|arg| arg.t.t)
+                .collect(),
+            returns: extern_function
+                .return_types
+                .types
+                .iter()
+                .map(|ret| ret.t)
+                .collect(),
+        })
+        .collect();
+
+    let mut compiler = Compiler::new(&type_table, extern_functions);
     let mut symtab = sym_tab_visitor.into_symtab();
 
     let ir_functions = ast
@@ -118,13 +137,13 @@ struct Compiler {
 }
 
 impl Compiler {
-    pub fn new(type_table: &TypeTable<'_>) -> Self {
+    pub fn new(type_table: &TypeTable<'_>, extern_functions: Box<[ExternFunction]>) -> Self {
         Self {
             stack: vec![],
 
             jumps: vec![],
             function_locations: HashMap::from([(FunctionId::toplevel(), Label(0))]),
-            bytecode: Bytecode::new(type_table.triggers()),
+            bytecode: Bytecode::new(type_table.triggers(), extern_functions),
         }
     }
 
@@ -179,9 +198,16 @@ impl Compiler {
 
         let first_argument = register_allocations.first_free_register().0;
 
-        let put_args = |bytecode: &mut Bytecode, args: &[SymbolId]| {
+        let put_args = |bytecode: &mut Bytecode, args: &[SymbolId], is_for_extern: bool| {
+            let arg_offset = if is_for_extern {
+                0
+            } else {
+                // first argument is actually the return location, and we should start populating arguments one off
+                1
+            };
+
             for (i, arg) in args.iter().enumerate() {
-                bytecode.mov(i as u8 + first_argument + 1, v(arg));
+                bytecode.mov(i as u8 + first_argument + arg_offset, v(arg));
             }
         };
 
@@ -211,7 +237,7 @@ impl Compiler {
                     }
                     TapIrInstr::Wait => self.bytecode.wait(),
                     TapIrInstr::Call { target, f, args } => {
-                        put_args(&mut self.bytecode, args);
+                        put_args(&mut self.bytecode, args, false);
                         self.bytecode.call(first_argument);
                         self.jumps.push((*f, self.bytecode.new_jump()));
 
@@ -220,7 +246,7 @@ impl Compiler {
                         }
                     }
                     TapIrInstr::CallExternal { target, f, args } => {
-                        put_args(&mut self.bytecode, args);
+                        put_args(&mut self.bytecode, args, true);
                         self.bytecode.call_external(f.0 as u8, first_argument);
 
                         for (i, target) in target.iter().enumerate() {
@@ -228,12 +254,12 @@ impl Compiler {
                         }
                     }
                     TapIrInstr::Spawn { f, args } => {
-                        put_args(&mut self.bytecode, args);
+                        put_args(&mut self.bytecode, args, false);
                         self.bytecode.spawn(first_argument, args.len() as u8);
                         self.jumps.push((*f, self.bytecode.new_jump()));
                     }
                     TapIrInstr::Trigger { f, args } => {
-                        put_args(&mut self.bytecode, args);
+                        put_args(&mut self.bytecode, args, false);
                         self.bytecode.trigger(f.0 as u8, first_argument);
                     }
                     TapIrInstr::GetProp { target, prop_index } => {
@@ -298,15 +324,17 @@ pub struct Bytecode {
 
     pub event_handlers: Vec<EventHandler>,
     pub triggers: Box<[Trigger]>,
+    pub extern_functions: Box<[ExternFunction]>,
 }
 
 impl Bytecode {
-    fn new(triggers: Box<[Trigger]>) -> Self {
+    fn new(triggers: Box<[Trigger]>, extern_functions: Box<[ExternFunction]>) -> Self {
         Self {
             data: vec![],
 
             event_handlers: vec![],
             triggers,
+            extern_functions,
         }
     }
 

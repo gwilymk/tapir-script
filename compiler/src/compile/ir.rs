@@ -20,7 +20,7 @@ pub mod optimisations;
 pub use ssa::make_ssa;
 
 use crate::{
-    EventHandlerArgument, Type,
+    FunctionArgument, Type,
     ast::{
         self, BinaryOperator, Expression, ExternalFunctionId, FunctionId,
         InternalOrExternalFunctionId, SymbolId,
@@ -191,7 +191,7 @@ impl FunctionModifiers {
                 arg_names: f
                     .arguments
                     .iter()
-                    .map(|a| EventHandlerArgument {
+                    .map(|a| FunctionArgument {
                         name: symtab
                             .name_for_symbol(
                                 a.name
@@ -213,7 +213,7 @@ impl FunctionModifiers {
 
 pub struct EventHandlerData {
     pub name: String,
-    pub arg_names: Box<[EventHandlerArgument]>,
+    pub arg_names: Box<[FunctionArgument]>,
 }
 
 pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
@@ -941,8 +941,9 @@ impl<'a> SymbolIter<'a> {
             | TapIrInstr::Move { target, .. }
             | TapIrInstr::GetProp { target, .. }
             | TapIrInstr::BinOp { target, .. } => Self::One(Some(*target)),
-            TapIrInstr::Call { target, .. }
-            | TapIrInstr::CallExternal { target, .. } => Self::Many(target.iter()),
+            TapIrInstr::Call { target, .. } | TapIrInstr::CallExternal { target, .. } => {
+                Self::Many(target.iter())
+            }
             _ => Self::None,
         }
     }
@@ -999,8 +1000,9 @@ impl<'a> SymbolIterMut<'a> {
             | TapIrInstr::Move { target, .. }
             | TapIrInstr::GetProp { target, .. }
             | TapIrInstr::BinOp { target, .. } => Self::One(Some(target)),
-            TapIrInstr::Call { target, .. }
-            | TapIrInstr::CallExternal { target, .. } => Self::Many(target.iter_mut()),
+            TapIrInstr::Call { target, .. } | TapIrInstr::CallExternal { target, .. } => {
+                Self::Many(target.iter_mut())
+            }
             _ => Self::None,
         }
     }

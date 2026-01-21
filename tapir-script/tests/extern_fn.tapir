@@ -1,0 +1,25 @@
+extern fn add_numbers(a: int, b: int) -> int;
+extern fn multiply_fix(a: fix, b: fix) -> fix;
+extern fn side_effect(value: int);
+extern fn get_constant() -> int;
+extern fn check_threshold(value: int) -> bool;
+
+# Test basic extern call with return value
+var r = add_numbers(3, 5);
+result = r;
+
+# Test extern call with fix types
+var fr = multiply_fix(2.5, 4.0);
+fix_result = fr;
+
+# Test extern call as statement (no return)
+side_effect(42);
+
+# Test extern call with no arguments
+var c = get_constant();
+constant = c;
+
+# Test extern call returning bool in condition
+if check_threshold(result) {
+    threshold_passed = true;
+}

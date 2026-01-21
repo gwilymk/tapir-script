@@ -100,6 +100,72 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let setters = properties.iter().map(|property| &property.setter);
     let getters = properties.iter().map(|property| &property.getter);
 
+    let extern_functions = compiled_content.extern_functions.iter().enumerate().map(
+        |(extern_fn_index, extern_function)| {
+            let fn_name_ident = format_ident!("{}", extern_function.name);
+
+            let (arg_idents, arg_definitions): (Vec<_>, Vec<_>) = extern_function
+                .arguments
+                .iter()
+                .enumerate()
+                .map(|(i, ty)| {
+                    let arg_ident = format_ident!("arg{}", i);
+
+                    let value = quote!(stack[first_arg + #i]);
+                    let value = match *ty {
+                        Type::Int => quote! { #value },
+                        Type::Fix => quote! { ::tapir_script::Fix::from_raw(#value) },
+                        Type::Bool => quote! { #value != 0 },
+                        _ => panic!("Unknown type {ty}"),
+                    };
+
+                    (arg_ident.clone(), quote! { let #arg_ident = #value })
+                })
+                .unzip();
+
+            let args = quote! { (#(#arg_idents,)*) };
+
+            let (ret_idents, ret_handling): (Vec<_>, Vec<_>) = extern_function
+                .returns
+                .iter()
+                .enumerate()
+                .map(|(i, ty)| {
+                    let ret_ident = format_ident!("ret{}", i);
+                    let target = quote!(stack[first_arg + #i]);
+
+                    let target_writer = match *ty {
+                        Type::Int => quote! { #target = #ret_ident },
+                        Type::Fix => quote! { #target = #ret_ident.to_raw() },
+                        Type::Bool => quote! { #target = #ret_ident as i32 },
+                        _ => panic!("Unknown type {ty}"),
+                    };
+
+                    (ret_ident, target_writer)
+                })
+                .unzip();
+
+            let function_call = if ret_idents.is_empty() {
+                quote! { self.#fn_name_ident #args; }
+            } else if ret_idents.len() == 1 {
+                let ret_ident = &ret_idents[0];
+                quote! { let #ret_ident = self.#fn_name_ident #args; }
+            } else {
+                quote! {
+                    let (#(#ret_idents,)*) = self.#fn_name_ident #args;
+                }
+            };
+
+            quote! {
+                #extern_fn_index => {
+                    #(#arg_definitions;)*
+
+                    #function_call
+                    #(#ret_handling;)*
+                }
+            }
+        },
+    );
+
     let struct_name = ast.ident;
     let visibility = ast.vis;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
@@ -143,6 +209,13 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 match index {
                     #(#getters,)*
                     _ => unreachable!("Invalid index {index}"),
+                }
+            }
+
+            fn extern_call(&mut self, id: usize, stack: &mut Vec<i32>, first_arg: usize) {
+                match id {
+                    #(#extern_functions,)*
+                    _ => unreachable!("Invalid extern function id {id}"),
                 }
             }
         }

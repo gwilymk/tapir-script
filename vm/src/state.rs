@@ -109,6 +109,14 @@ impl State {
                     self.set_reg(first_arg, reg_value as i32);
                     self.stack_offset += first_arg as usize;
                 }
+                O::ExternCall => {
+                    type1!(extern_id, first_arg);
+                    properties.extern_call(
+                        usize::from(extern_id),
+                        &mut self.stack,
+                        self.stack_offset + usize::from(first_arg),
+                    );
+                }
                 O::Spawn => {
                     type1!(first_arg, num_args);
                     let mut new_stack = Vec::with_capacity(num_args as usize + 1);
@@ -198,6 +206,8 @@ pub(crate) trait ObjectSafeProperties {
     fn get_prop(&self, index: u8) -> i32;
 
     fn add_event(&mut self, index: u8, args: &[i32]);
+
+    fn extern_call(&mut self, id: usize, stack: &mut Vec<i32>, first_arg: usize);
 }
 
 pub(crate) struct ObjectSafePropertiesImpl<'a, T, U>
@@ -222,5 +232,9 @@ where
 
     fn add_event(&mut self, index: u8, args: &[i32]) {
         self.events.push(self.properties.create_event(index, args));
+    }
+
+    fn extern_call(&mut self, id: usize, stack: &mut Vec<i32>, first_arg: usize) {
+        self.properties.extern_call(id, stack, first_arg);
     }
 }

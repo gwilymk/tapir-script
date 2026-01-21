@@ -54,6 +54,8 @@ pub unsafe trait TapirScript {
     fn get_prop(&self, index: u8) -> i32;
 
     fn create_event(&self, index: u8, args: &[i32]) -> Self::EventType;
+
+    fn extern_call(&mut self, id: usize, stack: &mut Vec<i32>, first_arg: usize);
 }
 
 pub struct Script<T: TapirScript> {
@@ -274,5 +276,9 @@ mod test {
         }
 
         fn create_event(&self, _index: u8, _args: &[i32]) -> Self::EventType {}
+
+        fn extern_call(&mut self, _id: usize, _stack: &mut Vec<i32>, _first_arg: usize) {
+            unimplemented!("Should never make an extern call")
+        }
     }
 }

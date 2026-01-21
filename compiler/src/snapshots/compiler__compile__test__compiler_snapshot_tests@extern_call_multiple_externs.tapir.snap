@@ -9,8 +9,8 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/extern_call
 00000003: mov 4, 5
 00000004: mov 1, 2
 00000005: mov 2, 4
-00000006: mov 6, 1
-00000007: mov 7, 2
+00000006: mov 5, 1
+00000007: mov 6, 2
 00000008: extern call 2, 5
 00000009: mov 3, 5
 00000010: wait
