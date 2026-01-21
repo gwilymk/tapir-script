@@ -275,6 +275,7 @@ fn extract_hover_info(
     type_table: &TypeTable<'_>,
 ) -> HashMap<Span, HoverInfo> {
     let mut hover_info = HashMap::new();
+    let mut function_signatures: HashMap<&str, HoverInfo> = HashMap::new();
 
     // Add hover info for properties
     for prop in symtab.properties() {
@@ -298,7 +299,7 @@ fn extract_hover_info(
         );
     }
 
-    // Add hover info for functions
+    // Add hover info for functions and build signature map
     for function in &ast.functions {
         if function.name == "@toplevel" {
             continue;
@@ -336,16 +337,16 @@ fn extract_hover_info(
             "fn"
         };
 
-        hover_info.insert(
-            function.span,
-            HoverInfo {
-                name: function.name.to_string(),
-                description: format!("{} {}({}){}", prefix, function.name, args.join(", "), return_str),
-            },
-        );
+        let info = HoverInfo {
+            name: function.name.to_string(),
+            description: format!("{} {}({}){}", prefix, function.name, args.join(", "), return_str),
+        };
+
+        hover_info.insert(function.span, info.clone());
+        function_signatures.insert(function.name, info);
     }
 
-    // Add hover info for extern functions
+    // Add hover info for extern functions and build signature map
     for function in &ast.extern_functions {
         let args: Vec<String> = function
             .arguments
@@ -373,18 +374,18 @@ fn extract_hover_info(
             format!(" -> ({})", types.join(", "))
         };
 
-        hover_info.insert(
-            function.span,
-            HoverInfo {
-                name: function.name.to_string(),
-                description: format!("extern fn {}({}){}", function.name, args.join(", "), return_str),
-            },
-        );
+        let info = HoverInfo {
+            name: function.name.to_string(),
+            description: format!("extern fn {}({}){}", function.name, args.join(", "), return_str),
+        };
+
+        hover_info.insert(function.span, info.clone());
+        function_signatures.insert(function.name, info);
     }
 
-    // Walk all functions to extract hover info for variables
+    // Walk all functions to extract hover info for variables and function calls
     for func in &ast.functions {
-        extract_hover_from_statements(&func.statements, symtab, type_table, &mut hover_info);
+        extract_hover_from_statements(&func.statements, symtab, type_table, &function_signatures, &mut hover_info);
     }
 
     hover_info
@@ -394,6 +395,7 @@ fn extract_hover_from_statements(
     statements: &[Statement<'_>],
     symtab: &SymTab<'_>,
     type_table: &TypeTable<'_>,
+    function_signatures: &HashMap<&str, HoverInfo>,
     hover_info: &mut HashMap<Span, HoverInfo>,
 ) {
     for stmt in statements {
@@ -406,7 +408,7 @@ fn extract_hover_from_statements(
                     }
                 }
                 for expr in values {
-                    extract_hover_from_expression(expr, symtab, type_table, hover_info);
+                    extract_hover_from_expression(expr, symtab, type_table, function_signatures, hover_info);
                 }
             }
             StatementKind::Assignment { idents, values } => {
@@ -416,27 +418,43 @@ fn extract_hover_from_statements(
                     }
                 }
                 for expr in values {
-                    extract_hover_from_expression(expr, symtab, type_table, hover_info);
+                    extract_hover_from_expression(expr, symtab, type_table, function_signatures, hover_info);
                 }
             }
             StatementKind::If { condition, true_block, false_block } => {
-                extract_hover_from_expression(condition, symtab, type_table, hover_info);
-                extract_hover_from_statements(true_block, symtab, type_table, hover_info);
-                extract_hover_from_statements(false_block, symtab, type_table, hover_info);
+                extract_hover_from_expression(condition, symtab, type_table, function_signatures, hover_info);
+                extract_hover_from_statements(true_block, symtab, type_table, function_signatures, hover_info);
+                extract_hover_from_statements(false_block, symtab, type_table, function_signatures, hover_info);
             }
             StatementKind::Loop { block } | StatementKind::Block { block } => {
-                extract_hover_from_statements(block, symtab, type_table, hover_info);
+                extract_hover_from_statements(block, symtab, type_table, function_signatures, hover_info);
             }
-            StatementKind::Call { arguments, .. }
-            | StatementKind::Spawn { arguments, .. }
-            | StatementKind::Trigger { arguments, .. } => {
+            StatementKind::Call { name, arguments } => {
+                // Add hover info for the function call
+                if let Some(sig) = function_signatures.get(name) {
+                    hover_info.insert(stmt.span, sig.clone());
+                }
                 for expr in arguments {
-                    extract_hover_from_expression(expr, symtab, type_table, hover_info);
+                    extract_hover_from_expression(expr, symtab, type_table, function_signatures, hover_info);
+                }
+            }
+            StatementKind::Spawn { name, arguments } => {
+                // Add hover info for the spawned function
+                if let Some(sig) = function_signatures.get(name) {
+                    hover_info.insert(stmt.span, sig.clone());
+                }
+                for expr in arguments {
+                    extract_hover_from_expression(expr, symtab, type_table, function_signatures, hover_info);
+                }
+            }
+            StatementKind::Trigger { arguments, .. } => {
+                for expr in arguments {
+                    extract_hover_from_expression(expr, symtab, type_table, function_signatures, hover_info);
                 }
             }
             StatementKind::Return { values } => {
                 for expr in values {
-                    extract_hover_from_expression(expr, symtab, type_table, hover_info);
+                    extract_hover_from_expression(expr, symtab, type_table, function_signatures, hover_info);
                 }
             }
             StatementKind::Wait
@@ -508,6 +526,7 @@ fn extract_hover_from_expression(
     expr: &Expression<'_>,
     symtab: &SymTab<'_>,
     type_table: &TypeTable<'_>,
+    function_signatures: &HashMap<&str, HoverInfo>,
     hover_info: &mut HashMap<Span, HoverInfo>,
 ) {
     match &expr.kind {
@@ -516,14 +535,18 @@ fn extract_hover_from_expression(
                 add_symbol_hover(expr.span, *symbol_id, symtab, type_table, hover_info);
             }
         }
-        ExpressionKind::Call { arguments, .. } => {
+        ExpressionKind::Call { name, arguments } => {
+            // Add hover info for the function call
+            if let Some(sig) = function_signatures.get(name) {
+                hover_info.insert(expr.span, sig.clone());
+            }
             for arg in arguments {
-                extract_hover_from_expression(arg, symtab, type_table, hover_info);
+                extract_hover_from_expression(arg, symtab, type_table, function_signatures, hover_info);
             }
         }
         ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
-            extract_hover_from_expression(lhs, symtab, type_table, hover_info);
-            extract_hover_from_expression(rhs, symtab, type_table, hover_info);
+            extract_hover_from_expression(lhs, symtab, type_table, function_signatures, hover_info);
+            extract_hover_from_expression(rhs, symtab, type_table, function_signatures, hover_info);
         }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)

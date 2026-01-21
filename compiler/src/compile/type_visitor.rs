@@ -581,13 +581,20 @@ impl<'input> TypeVisitor<'input> {
             if let Some((ty, _span)) = ty {
                 types.push(ty);
             } else {
-                let span = symtab.span_for_symbol(SymbolId(i as u64));
-                ErrorKind::UnknownType {
-                    name: symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),
+                // Push Error to maintain correct indexing
+                types.push(Type::Error);
+
+                // Only emit error for non-property symbols that should have types
+                // Properties are at the start and get their types from the symtab
+                if symtab.get_property(SymbolId(i as u64)).is_none() {
+                    let span = symtab.span_for_symbol(SymbolId(i as u64));
+                    ErrorKind::UnknownType {
+                        name: symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),
+                    }
+                    .at(span)
+                    .label(span, DiagnosticMessage::UnknownTypeLabel)
+                    .emit(diagnostics);
                 }
-                .at(span)
-                .label(span, DiagnosticMessage::UnknownTypeLabel)
-                .emit(diagnostics);
             }
         }
 
