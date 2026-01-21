@@ -12,43 +12,51 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Variable("int_prop"),
-                  meta: {
-                    "compiler::ast::SymbolId": "SymbolId(0)",
-                  },
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Variable("int_prop"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(0)",
+                    },
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
+                  ),
                 ),
-                operator: Add,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
+                meta: {},
               ),
-              meta: {},
-            ),
+            ],
           ),
           meta: {
-            "compiler::ast::SymbolId": "SymbolId(1)",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
           },
         ),
         Statement(
           span: "[span]",
           kind: Assignment(
-            ident: "int_prop",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(3),
-              meta: {},
-            ),
+            idents: [
+              "int_prop",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+                meta: {},
+              ),
+            ],
           ),
           meta: {
-            "compiler::ast::SymbolId": "SymbolId(0)",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0)]",
           },
         ),
       ],

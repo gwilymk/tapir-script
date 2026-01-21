@@ -28,15 +28,19 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(5),
-              meta: {},
-            ),
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(5),
+                meta: {},
+              ),
+            ],
           ),
           meta: {
-            "compiler::ast::SymbolId": "SymbolId(3)",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3)]",
           },
         ),
         Statement(

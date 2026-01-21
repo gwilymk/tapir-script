@@ -7,17 +7,19 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/then.tapi
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.4 = int 7
-temp.3 = foo(temp.4)
-x.0 = int 77
-temp.5 = x.0
-temp.6 = int 2
-y.1 = foo(temp.6)
+temp.5 = int 7
+temp.4 = foo(temp.5)
+temp.3 = int 77
+x.0 = temp.3
+temp.7 = x.0
+temp.8 = int 2
+temp.6 = foo(temp.8)
+y.1 = temp.6
 return 
 
 =======================
 fn foo(x.2) -> int
 
 ---- block 0 ----
-temp.7 = int 3
-return temp.7
+temp.9 = int 3
+return temp.9

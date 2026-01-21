@@ -7,15 +7,16 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/funct
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.6 = int 5
-x.7 = foo(temp.6)
+temp.7 = int 5
+temp.8 = foo(temp.7)
+x.9 = temp.8
 return 
 
 =======================
 fn foo(x.1) -> int
 
 ---- block 0 ----
-temp.8 = x.1
-temp.9 = int 8
-temp.10 = temp.8 + temp.9
-return temp.10
+temp.10 = x.1
+temp.11 = int 8
+temp.12 = temp.10 + temp.11
+return temp.12

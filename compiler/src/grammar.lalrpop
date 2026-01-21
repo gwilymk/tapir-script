@@ -141,8 +141,8 @@ Statement: Statement<'input> =
     <start: @L> <kind: StatementKind> <end: @R> => kind.with_span(file_id, start, end);
 
 StatementKind: StatementKind<'input> = {
-    var <ident: identifier> "=" <value: Expression> ";" => StatementKind::VariableDeclaration { <> },
-    <ident: identifier> "=" <value: Expression> ";" => StatementKind::Assignment { <> },
+    var <idents: CommaSeparated<identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::VariableDeclaration { <> },
+    <idents: CommaSeparated<identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
     break ";" => StatementKind::Break,
     continue ";" => StatementKind::Continue,

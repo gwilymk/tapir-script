@@ -7,9 +7,12 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/extern_ca
 fn @toplevel() -> 
 
 ---- block 0 ----
-x.0 = extern get_x()
-y.1 = extern get_y()
-temp.3 = x.0
-temp.4 = y.1
-result.2 = extern combine(temp.3, temp.4)
+temp.3 = extern get_x()
+x.0 = temp.3
+temp.4 = extern get_y()
+y.1 = temp.4
+temp.6 = x.0
+temp.7 = y.1
+temp.5 = extern combine(temp.6, temp.7)
+result.2 = temp.5
 return

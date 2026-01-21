@@ -172,12 +172,12 @@ pub struct Statement<'input> {
 pub enum StatementKind<'input> {
     Error,
     VariableDeclaration {
-        ident: &'input str,
-        value: Expression<'input>,
+        idents: Vec<&'input str>,
+        values: Vec<Expression<'input>>,
     },
     Assignment {
-        ident: &'input str,
-        value: Expression<'input>,
+        idents: Vec<&'input str>,
+        values: Vec<Expression<'input>>,
     },
     Wait,
     Block {

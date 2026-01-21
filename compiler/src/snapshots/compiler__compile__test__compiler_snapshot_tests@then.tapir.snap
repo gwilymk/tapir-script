@@ -6,17 +6,19 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/then.tapir
 00000000: loadk 1, 7
 00000002: mov 6, 1
 00000003: call 5
-00000004: jmp 17
+00000004: jmp 19
 00000005: mov 4, 6
-00000006: loadk 1, 77
-00000008: mov 3, 1
-00000009: loadk 1, 2
-00000011: mov 6, 1
-00000012: call 5
-00000013: jmp 17
-00000014: mov 2, 6
-00000015: ret
-00000016: ret
-00000017: loadk 2, 3
-00000019: mov 1, 2
-00000020: ret
+00000006: loadk 4, 77
+00000008: mov 1, 4
+00000009: mov 3, 1
+00000010: loadk 3, 2
+00000012: mov 6, 3
+00000013: call 5
+00000014: jmp 19
+00000015: mov 1, 6
+00000016: mov 2, 1
+00000017: ret
+00000018: ret
+00000019: loadk 2, 3
+00000021: mov 1, 2
+00000022: ret

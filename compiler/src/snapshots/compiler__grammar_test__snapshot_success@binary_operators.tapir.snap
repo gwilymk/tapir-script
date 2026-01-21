@@ -12,648 +12,724 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "a",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Integer(1),
-                  meta: {},
-                ),
-                operator: Add,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(2),
-                      meta: {},
-                    ),
-                    operator: Mul,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(3),
-                      meta: {},
-                    ),
+            idents: [
+              "a",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
                   ),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "b",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(1),
-                      meta: {},
-                    ),
-                    operator: Add,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(2),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-                operator: Mul,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(3),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "c",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(10),
-                      meta: {},
-                    ),
-                    operator: Div,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(2),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-                operator: Add,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(3),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "d",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(10),
-                      meta: {},
-                    ),
-                    operator: RealDiv,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(3),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-                operator: RealMod,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "cmp1",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Integer(1),
-                  meta: {},
-                ),
-                operator: Lt,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "cmp2",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Integer(1),
-                  meta: {},
-                ),
-                operator: LtEq,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "cmp3",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Integer(1),
-                  meta: {},
-                ),
-                operator: Gt,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "cmp4",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Integer(1),
-                  meta: {},
-                ),
-                operator: GtEq,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "cmp5",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Integer(1),
-                  meta: {},
-                ),
-                operator: EqEq,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "cmp6",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Integer(1),
-                  meta: {},
-                ),
-                operator: NeEq,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "logic1",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Bool(true),
-                  meta: {},
-                ),
-                operator: And,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Bool(false),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "logic2",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Bool(true),
-                  meta: {},
-                ),
-                operator: Or,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Bool(false),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "logic3",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Bool(true),
-                  meta: {},
-                ),
-                operator: Or,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Bool(false),
-                      meta: {},
-                    ),
-                    operator: And,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Bool(true),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "logic4",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Bool(true),
-                      meta: {},
-                    ),
-                    operator: Or,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Bool(false),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-                operator: And,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Bool(true),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "chain1",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Bool(true),
-                      meta: {},
-                    ),
-                    operator: And,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Bool(true),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-                operator: And,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Bool(true),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "chain2",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Bool(false),
-                      meta: {},
-                    ),
-                    operator: Or,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Bool(false),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-                operator: Or,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Bool(true),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "mixed1",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(1),
-                      meta: {},
-                    ),
-                    operator: Lt,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(2),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-                operator: And,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(3),
-                      meta: {},
-                    ),
-                    operator: Lt,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(4),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "mixed2",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(1),
-                      meta: {},
-                    ),
-                    operator: Lt,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(2),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-                operator: Or,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(3),
-                      meta: {},
-                    ),
-                    operator: Lt,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(4),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
-              ),
-              meta: {},
-            ),
-          ),
-          meta: {},
-        ),
-        Statement(
-          span: "[span]",
-          kind: VariableDeclaration(
-            ident: "mixed3",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: BinaryOperation(
-                        lhs: Expression(
-                          span: "[span]",
-                          kind: Integer(1),
-                          meta: {},
-                        ),
-                        operator: Lt,
-                        rhs: Expression(
-                          span: "[span]",
-                          kind: Integer(2),
-                          meta: {},
-                        ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(2),
+                        meta: {},
                       ),
-                      meta: {},
-                    ),
-                    operator: And,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: BinaryOperation(
-                        lhs: Expression(
-                          span: "[span]",
-                          kind: Integer(3),
-                          meta: {},
-                        ),
-                        operator: Lt,
-                        rhs: Expression(
-                          span: "[span]",
-                          kind: Integer(4),
-                          meta: {},
-                        ),
+                      operator: Mul,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
                       ),
-                      meta: {},
                     ),
+                    meta: {},
                   ),
-                  meta: {},
                 ),
-                operator: Or,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(5),
-                      meta: {},
-                    ),
-                    operator: Lt,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(6),
-                      meta: {},
-                    ),
-                  ),
-                  meta: {},
-                ),
+                meta: {},
               ),
-              meta: {},
-            ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "b",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(1),
+                        meta: {},
+                      ),
+                      operator: Add,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(2),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Mul,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(3),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "c",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(10),
+                        meta: {},
+                      ),
+                      operator: Div,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(2),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(3),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "d",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(10),
+                        meta: {},
+                      ),
+                      operator: RealDiv,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: RealMod,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "cmp1",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
+                  ),
+                  operator: Lt,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "cmp2",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
+                  ),
+                  operator: LtEq,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "cmp3",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
+                  ),
+                  operator: Gt,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "cmp4",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
+                  ),
+                  operator: GtEq,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "cmp5",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
+                  ),
+                  operator: EqEq,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "cmp6",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
+                  ),
+                  operator: NeEq,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "logic1",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                  operator: And,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Bool(false),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "logic2",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                  operator: Or,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Bool(false),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "logic3",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                  operator: Or,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Bool(false),
+                        meta: {},
+                      ),
+                      operator: And,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Bool(true),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "logic4",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Bool(true),
+                        meta: {},
+                      ),
+                      operator: Or,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Bool(false),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: And,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "chain1",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Bool(true),
+                        meta: {},
+                      ),
+                      operator: And,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Bool(true),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: And,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "chain2",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Bool(false),
+                        meta: {},
+                      ),
+                      operator: Or,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Bool(false),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Or,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "mixed1",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(1),
+                        meta: {},
+                      ),
+                      operator: Lt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(2),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: And,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                      operator: Lt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(4),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "mixed2",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(1),
+                        meta: {},
+                      ),
+                      operator: Lt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(2),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Or,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                      operator: Lt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(4),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              "mixed3",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: BinaryOperation(
+                          lhs: Expression(
+                            span: "[span]",
+                            kind: Integer(1),
+                            meta: {},
+                          ),
+                          operator: Lt,
+                          rhs: Expression(
+                            span: "[span]",
+                            kind: Integer(2),
+                            meta: {},
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: And,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: BinaryOperation(
+                          lhs: Expression(
+                            span: "[span]",
+                            kind: Integer(3),
+                            meta: {},
+                          ),
+                          operator: Lt,
+                          rhs: Expression(
+                            span: "[span]",
+                            kind: Integer(4),
+                            meta: {},
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Or,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
+                      operator: Lt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(6),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
           ),
           meta: {},
         ),

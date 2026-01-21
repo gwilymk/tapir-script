@@ -18,8 +18,9 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/spawn.tapir
 00000016: jmp 19
 00000017: ret
 00000018: ret
-00000019: mov 3, 1
-00000020: setprop 3, 0
-00000021: wait
-00000022: ret
+00000019: mov 4, 1
+00000020: mov 3, 4
+00000021: setprop 3, 0
+00000022: wait
 00000023: ret
+00000024: ret

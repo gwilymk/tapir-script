@@ -4,20 +4,26 @@ expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/wait.tapir
 ---
 00000000: loadk 2, 5
-00000002: loadk 1, 3
-00000004: setprop 1, 0
-00000005: wait
-00000006: mov 1, 2
-00000007: loadk 3, 1
-00000009: add 2, 1, 3
-00000010: mov 1, 2
-00000011: setprop 1, 0
-00000012: wait
-00000013: mov 1, 2
-00000014: loadk 3, 1
-00000016: add 2, 1, 3
+00000002: mov 1, 2
+00000003: loadk 3, 3
+00000005: mov 2, 3
+00000006: setprop 2, 0
+00000007: wait
+00000008: mov 2, 1
+00000009: loadk 3, 1
+00000011: add 1, 2, 3
+00000012: mov 2, 1
+00000013: mov 3, 2
+00000014: mov 1, 3
+00000015: setprop 1, 0
+00000016: wait
 00000017: mov 1, 2
-00000018: setprop 1, 0
-00000019: wait
-00000020: ret
-00000021: ret
+00000018: loadk 3, 1
+00000020: add 2, 1, 3
+00000021: mov 1, 2
+00000022: mov 2, 1
+00000023: mov 1, 2
+00000024: setprop 1, 0
+00000025: wait
+00000026: ret
+00000027: ret

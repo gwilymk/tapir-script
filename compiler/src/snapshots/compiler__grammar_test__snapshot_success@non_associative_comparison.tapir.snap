@@ -12,36 +12,40 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Integer(3),
-                      meta: {},
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                      operator: EqEq,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
                     ),
-                    operator: EqEq,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(5),
-                      meta: {},
-                    ),
+                    meta: {},
                   ),
-                  meta: {},
+                  operator: EqEq,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
                 ),
-                operator: EqEq,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: Bool(true),
-                  meta: {},
-                ),
+                meta: {},
               ),
-              meta: {},
-            ),
+            ],
           ),
           meta: {},
         ),

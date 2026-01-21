@@ -26,12 +26,16 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            ident: "int_prop",
-            value: Expression(
-              span: "[span]",
-              kind: Variable("x"),
-              meta: {},
-            ),
+            idents: [
+              "int_prop",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Variable("x"),
+                meta: {},
+              ),
+            ],
           ),
           meta: {},
         ),

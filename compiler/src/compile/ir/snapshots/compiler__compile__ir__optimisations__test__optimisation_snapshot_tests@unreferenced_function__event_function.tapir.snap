@@ -8,32 +8,34 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.9 = int 9
-storeprop temp.9, 0
+temp.11 = int 9
+temp.12 = temp.11
+storeprop temp.12, 0
 return 
 
 =======================
 event fn foo() -> 
 
 ---- block 0 ----
-temp.10 = int 5
-temp.11 = bar(temp.10)
-storeprop temp.11, 0
+temp.13 = int 5
+temp.14 = bar(temp.13)
+temp.15 = temp.14
+storeprop temp.15, 0
 return 
 
 =======================
 fn bar(x.2) -> int
 
 ---- block 0 ----
-temp.12 = x.2
-return temp.12
+temp.16 = x.2
+return temp.16
 
 =======================
 fn baz(x.3) -> int
 
 ---- block 0 ----
-temp.13 = x.3
-return temp.13
+temp.17 = x.3
+return temp.17
 
 
 ----------- remove_unreferenced_functions -------------
@@ -41,22 +43,24 @@ return temp.13
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.9 = int 9
-storeprop temp.9, 0
+temp.11 = int 9
+temp.12 = temp.11
+storeprop temp.12, 0
 return 
 
 =======================
 event fn foo() -> 
 
 ---- block 0 ----
-temp.10 = int 5
-temp.11 = bar(temp.10)
-storeprop temp.11, 0
+temp.13 = int 5
+temp.14 = bar(temp.13)
+temp.15 = temp.14
+storeprop temp.15, 0
 return 
 
 =======================
 fn bar(x.2) -> int
 
 ---- block 0 ----
-temp.12 = x.2
-return temp.12
+temp.16 = x.2
+return temp.16

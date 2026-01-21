@@ -8,34 +8,39 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 3 ----
-x.7 = int 5
-y.8 = int 19
-temp.9 = bool true
-conditional_jump temp.9 0 1
+temp.12 = int 5
+x.13 = temp.12
+temp.14 = int 19
+y.15 = temp.14
+temp.16 = bool true
+conditional_jump temp.16 0 1
 
 ---- block 0 ----
-y.10 = int 19
-temp.11 = bool true
-conditional_jump temp.11 4 5
+temp.17 = int 19
+y.18 = temp.17
+temp.19 = bool true
+conditional_jump temp.19 4 5
 
 ---- block 1 ----
 jmp 2
 
 ---- block 4 ----
-x.12 = y.10
+temp.20 = y.18
+x.21 = temp.20
 jmp 6
 
 ---- block 5 ----
 jmp 6
 
 ---- block 2 ----
-x.13 = φ(x.7 from 1, x.14 from 6)
-temp.15 = x.13
-storeprop temp.15, 0
+x.22 = φ(x.13 from 1, x.23 from 6)
+temp.24 = x.22
+temp.25 = temp.24
+storeprop temp.25, 0
 return 
 
 ---- block 6 ----
-x.14 = φ(x.12 from 4, x.7 from 5)
+x.23 = φ(x.21 from 4, x.13 from 5)
 jmp 2
 
 
@@ -44,28 +49,33 @@ jmp 2
 fn @toplevel() -> 
 
 ---- block 3 ----
-x.7 = int 5
-y.8 = int 19
-temp.9 = bool true
+temp.12 = int 5
+x.13 = temp.12
+temp.14 = int 19
+y.15 = temp.14
+temp.16 = bool true
 jmp 0
 
 ---- block 0 ----
-y.10 = int 19
-temp.11 = bool true
+temp.17 = int 19
+y.18 = temp.17
+temp.19 = bool true
 jmp 4
 
 ---- block 4 ----
-x.12 = y.10
+temp.20 = y.18
+x.21 = temp.20
 jmp 6
 
 ---- block 6 ----
-x.14 = φ(x.12 from 4, x.7 from 5)
+x.23 = φ(x.21 from 4, x.13 from 5)
 jmp 2
 
 ---- block 2 ----
-x.13 = φ(x.7 from 1, x.14 from 6)
-temp.15 = x.13
-storeprop temp.15, 0
+x.22 = φ(x.13 from 1, x.23 from 6)
+temp.24 = x.22
+temp.25 = temp.24
+storeprop temp.25, 0
 return 
 
 
@@ -74,28 +84,33 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-x.7 = int 5
-y.8 = int 19
-temp.9 = bool true
+temp.12 = int 5
+x.13 = temp.12
+temp.14 = int 19
+y.15 = temp.14
+temp.16 = bool true
 jmp 0
 
 ---- block 0 ----
-y.10 = int 19
-temp.11 = bool true
+temp.17 = int 19
+y.18 = temp.17
+temp.19 = bool true
 jmp 4
 
 ---- block 4 ----
-x.12 = y.10
+temp.20 = y.18
+x.21 = temp.20
 jmp 6
 
 ---- block 6 ----
-x.14 = φ(x.12 from 4)
+x.23 = φ(x.21 from 4)
 jmp 2
 
 ---- block 2 ----
-x.13 = φ(x.14 from 6)
-temp.15 = x.13
-storeprop temp.15, 0
+x.22 = φ(x.23 from 6)
+temp.24 = x.22
+temp.25 = temp.24
+storeprop temp.25, 0
 return 
 
 
@@ -104,28 +119,33 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-x.7 = int 5
-y.8 = int 19
-temp.9 = bool true
+temp.12 = int 5
+x.13 = temp.12
+temp.14 = int 19
+y.15 = temp.14
+temp.16 = bool true
 jmp 0
 
 ---- block 0 ----
-y.10 = int 19
-temp.11 = bool true
+temp.17 = int 19
+y.18 = temp.17
+temp.19 = bool true
 jmp 4
 
 ---- block 4 ----
-x.12 = y.10
+temp.20 = temp.17
+x.21 = temp.17
 jmp 6
 
 ---- block 6 ----
-x.14 = φ(y.10 from 4)
+x.23 = φ(temp.17 from 4)
 jmp 2
 
 ---- block 2 ----
-x.13 = φ(x.14 from 6)
-temp.15 = x.13
-storeprop x.13, 0
+x.22 = φ(x.23 from 6)
+temp.24 = x.22
+temp.25 = x.22
+storeprop x.22, 0
 return 
 
 
@@ -134,22 +154,24 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
+temp.12 = int 5
+temp.14 = int 19
 jmp 0
 
 ---- block 0 ----
-y.10 = int 19
+temp.17 = int 19
 jmp 4
 
 ---- block 4 ----
 jmp 6
 
 ---- block 6 ----
-x.14 = φ(y.10 from 4)
+x.23 = φ(temp.17 from 4)
 jmp 2
 
 ---- block 2 ----
-x.13 = φ(x.14 from 6)
-storeprop x.13, 0
+x.22 = φ(x.23 from 6)
+storeprop x.22, 0
 return 
 
 
@@ -158,19 +180,21 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
+temp.12 = int 5
+temp.14 = int 19
 jmp 0
 
 ---- block 0 ----
-y.10 = int 19
+temp.17 = int 19
 jmp 6
 
 ---- block 6 ----
-x.14 = φ(y.10 from 4, y.10 from 0)
+x.23 = φ(temp.17 from 4, temp.17 from 0)
 jmp 2
 
 ---- block 2 ----
-x.13 = φ(x.14 from 6)
-storeprop x.13, 0
+x.22 = φ(x.23 from 6)
+storeprop x.22, 0
 return 
 
 
@@ -179,17 +203,19 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
+temp.12 = int 5
+temp.14 = int 19
 jmp 0
 
 ---- block 0 ----
-y.10 = int 19
+temp.17 = int 19
 jmp 6
 
 ---- block 6 ----
 jmp 2
 
 ---- block 2 ----
-storeprop y.10, 0
+storeprop temp.17, 0
 return 
 
 
@@ -198,14 +224,35 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-y.10 = int 19
+temp.12 = int 5
+temp.14 = int 19
+temp.17 = int 19
 jmp 0
 
 ---- block 0 ----
 jmp 6
 
 ---- block 6 ----
-storeprop y.10, 0
+storeprop temp.17, 0
+jmp 2
+
+---- block 2 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+temp.17 = int 19
+jmp 0
+
+---- block 0 ----
+jmp 6
+
+---- block 6 ----
+storeprop temp.17, 0
 jmp 2
 
 ---- block 2 ----
@@ -217,11 +264,11 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-y.10 = int 19
+temp.17 = int 19
 jmp 6
 
 ---- block 6 ----
-storeprop y.10, 0
+storeprop temp.17, 0
 return 
 
 
@@ -230,8 +277,8 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-y.10 = int 19
-storeprop y.10, 0
+temp.17 = int 19
+storeprop temp.17, 0
 jmp 6
 
 ---- block 6 ----
@@ -243,6 +290,6 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-y.10 = int 19
-storeprop y.10, 0
+temp.17 = int 19
+storeprop temp.17, 0
 return

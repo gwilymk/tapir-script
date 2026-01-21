@@ -3,9 +3,9 @@ use std::path::Path;
 use serde::Serialize;
 
 use crate::{
+    DiagnosticCache,
     tokens::{self, FileId, LexicalError, LexicalErrorKind, Span},
     types::Type,
-    DiagnosticCache,
 };
 
 pub(crate) mod format;
@@ -219,6 +219,10 @@ pub enum CompilerErrorKind {
         first_definition_span: Span,
         first_definition_args: Box<[Type]>,
         second_definition_args: Box<[Type]>,
+    },
+    CountMismatch {
+        ident_count: usize,
+        expr_count: usize,
     },
 }
 

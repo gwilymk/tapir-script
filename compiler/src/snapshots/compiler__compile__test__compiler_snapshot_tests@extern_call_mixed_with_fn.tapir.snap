@@ -6,15 +6,17 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/extern_call
 00000000: extern call 0, 4
 00000001: mov 3, 4
 00000002: mov 1, 3
-00000003: mov 5, 1
-00000004: call 4
-00000005: jmp 10
-00000006: mov 2, 5
-00000007: wait
-00000008: ret
-00000009: ret
-00000010: mov 3, 1
-00000011: loadk 4, 2
-00000013: mul 2, 3, 4
-00000014: mov 1, 2
-00000015: ret
+00000003: mov 3, 1
+00000004: mov 5, 3
+00000005: call 4
+00000006: jmp 12
+00000007: mov 1, 5
+00000008: mov 2, 1
+00000009: wait
+00000010: ret
+00000011: ret
+00000012: mov 3, 1
+00000013: loadk 4, 2
+00000015: mul 2, 3, 4
+00000016: mov 1, 2
+00000017: ret

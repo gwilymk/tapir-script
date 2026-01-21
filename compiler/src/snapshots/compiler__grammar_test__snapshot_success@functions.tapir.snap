@@ -12,12 +12,16 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(3),
-              meta: {},
-            ),
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+                meta: {},
+              ),
+            ],
           ),
           meta: {},
         ),

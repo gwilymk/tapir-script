@@ -8,43 +8,48 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-temp.19 = divide(temp.17, temp.18)
-storeprop temp.19, 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.24 = divide(temp.22, temp.23)
+temp.25 = temp.24
+storeprop temp.25, 0
 return 
 
 =======================
 fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-r.20 = n.2
-q.21 = int 0
+temp.26 = n.2
+r.27 = temp.26
+temp.28 = int 0
+q.29 = temp.28
 jmp 0
 
 ---- block 0 ----
-r.22 = φ(r.20 from 2, r.31 from 5)
-d.24 = φ(d.3 from 2, d.24 from 5)
-q.27 = φ(q.21 from 2, q.34 from 5)
-temp.23 = r.22
-temp.25 = d.24
-temp.26 = temp.23 < temp.25
-conditional_jump temp.26 3 4
+r.30 = φ(r.27 from 2, r.40 from 5)
+d.32 = φ(d.3 from 2, d.32 from 5)
+q.35 = φ(q.29 from 2, q.44 from 5)
+temp.31 = r.30
+temp.33 = d.32
+temp.34 = temp.31 < temp.33
+conditional_jump temp.34 3 4
 
 ---- block 3 ----
-temp.28 = q.27
-return temp.28
+temp.36 = q.35
+return temp.36
 
 ---- block 4 ----
 jmp 5
 
 ---- block 5 ----
-temp.29 = r.22
-temp.30 = d.24
-r.31 = temp.29 - temp.30
-temp.32 = q.27
-temp.33 = int 1
-q.34 = temp.32 + temp.33
+temp.37 = r.30
+temp.38 = d.32
+temp.39 = temp.37 - temp.38
+r.40 = temp.39
+temp.41 = q.35
+temp.42 = int 1
+temp.43 = temp.41 + temp.42
+q.44 = temp.43
 jmp 0
 
 
@@ -53,42 +58,47 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-temp.19 = divide(temp.17, temp.18)
-storeprop temp.19, 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.24 = divide(temp.22, temp.23)
+temp.25 = temp.24
+storeprop temp.25, 0
 return 
 
 =======================
 fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-r.20 = n.2
-q.21 = int 0
+temp.26 = n.2
+r.27 = temp.26
+temp.28 = int 0
+q.29 = temp.28
 jmp 0
 
 ---- block 0 ----
-r.22 = φ(r.20 from 2, r.31 from 5)
-q.27 = φ(q.21 from 2, q.34 from 5)
-temp.23 = r.22
-temp.25 = d.3
-temp.26 = temp.23 < temp.25
-conditional_jump temp.26 3 4
+r.30 = φ(r.27 from 2, r.40 from 5)
+q.35 = φ(q.29 from 2, q.44 from 5)
+temp.31 = r.30
+temp.33 = d.3
+temp.34 = temp.31 < temp.33
+conditional_jump temp.34 3 4
 
 ---- block 3 ----
-temp.28 = q.27
-return temp.28
+temp.36 = q.35
+return temp.36
 
 ---- block 4 ----
 jmp 5
 
 ---- block 5 ----
-temp.29 = r.22
-temp.30 = d.3
-r.31 = temp.29 - temp.30
-temp.32 = q.27
-temp.33 = int 1
-q.34 = temp.32 + temp.33
+temp.37 = r.30
+temp.38 = d.3
+temp.39 = temp.37 - temp.38
+r.40 = temp.39
+temp.41 = q.35
+temp.42 = int 1
+temp.43 = temp.41 + temp.42
+q.44 = temp.43
 jmp 0
 
 
@@ -97,39 +107,44 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-temp.19 = divide(temp.17, temp.18)
-storeprop temp.19, 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.24 = divide(temp.22, temp.23)
+temp.25 = temp.24
+storeprop temp.25, 0
 return 
 
 =======================
 fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-r.20 = n.2
-q.21 = int 0
+temp.26 = n.2
+r.27 = temp.26
+temp.28 = int 0
+q.29 = temp.28
 jmp 0
 
 ---- block 0 ----
-r.22 = φ(r.20 from 2, r.31 from 5)
-q.27 = φ(q.21 from 2, q.34 from 5)
-temp.23 = r.22
-temp.25 = d.3
-temp.26 = temp.23 < temp.25
-conditional_jump temp.26 3 4
+r.30 = φ(r.27 from 2, r.40 from 5)
+q.35 = φ(q.29 from 2, q.44 from 5)
+temp.31 = r.30
+temp.33 = d.3
+temp.34 = temp.31 < temp.33
+conditional_jump temp.34 3 4
 
 ---- block 3 ----
-temp.28 = q.27
-return temp.28
+temp.36 = q.35
+return temp.36
 
 ---- block 4 ----
-temp.29 = r.22
-temp.30 = d.3
-r.31 = temp.29 - temp.30
-temp.32 = q.27
-temp.33 = int 1
-q.34 = temp.32 + temp.33
+temp.37 = r.30
+temp.38 = d.3
+temp.39 = temp.37 - temp.38
+r.40 = temp.39
+temp.41 = q.35
+temp.42 = int 1
+temp.43 = temp.41 + temp.42
+q.44 = temp.43
 jmp 5
 
 ---- block 5 ----
@@ -141,39 +156,44 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-temp.19 = divide(temp.17, temp.18)
-storeprop temp.19, 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.24 = divide(temp.22, temp.23)
+temp.25 = temp.24
+storeprop temp.24, 0
 return 
 
 =======================
 fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-r.20 = n.2
-q.21 = int 0
+temp.26 = n.2
+r.27 = n.2
+temp.28 = int 0
+q.29 = temp.28
 jmp 0
 
 ---- block 0 ----
-r.22 = φ(n.2 from 2, r.31 from 5)
-q.27 = φ(q.21 from 2, q.34 from 5)
-temp.23 = r.22
-temp.25 = d.3
-temp.26 = r.22 < d.3
-conditional_jump temp.26 3 4
+r.30 = φ(n.2 from 2, r.40 from 5)
+q.35 = φ(temp.28 from 2, q.44 from 5)
+temp.31 = r.30
+temp.33 = d.3
+temp.34 = r.30 < d.3
+conditional_jump temp.34 3 4
 
 ---- block 3 ----
-temp.28 = q.27
-return q.27
+temp.36 = q.35
+return q.35
 
 ---- block 4 ----
-temp.29 = r.22
-temp.30 = d.3
-r.31 = r.22 - d.3
-temp.32 = q.27
-temp.33 = int 1
-q.34 = q.27 + temp.33
+temp.37 = r.30
+temp.38 = d.3
+temp.39 = r.30 - d.3
+r.40 = temp.39
+temp.41 = q.35
+temp.42 = int 1
+temp.43 = q.35 + temp.42
+q.44 = temp.43
 jmp 5
 
 ---- block 5 ----
@@ -185,32 +205,34 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-temp.19 = divide(temp.17, temp.18)
-storeprop temp.19, 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.24 = divide(temp.22, temp.23)
+storeprop temp.24, 0
 return 
 
 =======================
 fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-q.21 = int 0
+temp.28 = int 0
 jmp 0
 
 ---- block 0 ----
-r.22 = φ(n.2 from 2, r.31 from 5)
-q.27 = φ(q.21 from 2, q.34 from 5)
-temp.26 = r.22 < d.3
-conditional_jump temp.26 3 4
+r.30 = φ(n.2 from 2, r.40 from 5)
+q.35 = φ(temp.28 from 2, q.44 from 5)
+temp.34 = r.30 < d.3
+conditional_jump temp.34 3 4
 
 ---- block 3 ----
-return q.27
+return q.35
 
 ---- block 4 ----
-r.31 = r.22 - d.3
-temp.33 = int 1
-q.34 = q.27 + temp.33
+temp.39 = r.30 - d.3
+r.40 = temp.39
+temp.42 = int 1
+temp.43 = q.35 + temp.42
+q.44 = temp.43
 jmp 5
 
 ---- block 5 ----
@@ -222,32 +244,34 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-temp.19 = divide(temp.17, temp.18)
-storeprop temp.19, 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.24 = divide(temp.22, temp.23)
+storeprop temp.24, 0
 return 
 
 =======================
 fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-q.21 = int 0
+temp.28 = int 0
 jmp 0
 
 ---- block 0 ----
-r.22 = φ(n.2 from 2, r.31 from 5, r.31 from 4)
-q.27 = φ(q.21 from 2, q.34 from 5, q.34 from 4)
-temp.26 = r.22 < d.3
-conditional_jump temp.26 3 4
+r.30 = φ(n.2 from 2, r.40 from 5, r.40 from 4)
+q.35 = φ(temp.28 from 2, q.44 from 5, q.44 from 4)
+temp.34 = r.30 < d.3
+conditional_jump temp.34 3 4
 
 ---- block 3 ----
-return q.27
+return q.35
 
 ---- block 4 ----
-r.31 = r.22 - d.3
-temp.33 = int 1
-q.34 = q.27 + temp.33
+temp.39 = r.30 - d.3
+r.40 = temp.39
+temp.42 = int 1
+temp.43 = q.35 + temp.42
+q.44 = temp.43
 jmp 0
 
 
@@ -256,58 +280,62 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
+temp.22 = int 100
+getprop temp.23, 0
 jmp 2
 
 ---- block 2 ----
-q.36 = int 0
+temp.46 = int 0
 jmp 3
 
 ---- block 3 ----
-r.39 = φ(temp.17 from 2, r.37 from 5)
-q.41 = φ(q.36 from 2, q.38 from 5)
-temp.40 = r.39 < temp.18
-conditional_jump temp.40 4 5
+r.49 = φ(temp.22 from 2, r.47 from 5)
+q.51 = φ(temp.46 from 2, q.48 from 5)
+temp.50 = r.49 < temp.23
+conditional_jump temp.50 4 5
 
 ---- block 4 ----
 jmp 7
 
 ---- block 5 ----
-r.37 = r.39 - temp.18
-temp.42 = int 1
-q.38 = q.41 + temp.42
+temp.52 = r.49 - temp.23
+r.47 = temp.52
+temp.53 = int 1
+temp.54 = q.51 + temp.53
+q.48 = temp.54
 jmp 3
 
 ---- block 7 ----
-temp.35 = φ(q.41 from 4)
-temp.19 = temp.35
+temp.45 = φ(q.51 from 4)
+temp.24 = temp.45
 jmp 1
 
 ---- block 1 ----
-storeprop temp.19, 0
+storeprop temp.24, 0
 return 
 
 =======================
 fn divide(n.2, d.3) -> int
 
 ---- block 2 ----
-q.21 = int 0
+temp.28 = int 0
 jmp 0
 
 ---- block 0 ----
-r.22 = φ(n.2 from 2, r.31 from 5, r.31 from 4)
-q.27 = φ(q.21 from 2, q.34 from 5, q.34 from 4)
-temp.26 = r.22 < d.3
-conditional_jump temp.26 3 4
+r.30 = φ(n.2 from 2, r.40 from 5, r.40 from 4)
+q.35 = φ(temp.28 from 2, q.44 from 5, q.44 from 4)
+temp.34 = r.30 < d.3
+conditional_jump temp.34 3 4
 
 ---- block 3 ----
-return q.27
+return q.35
 
 ---- block 4 ----
-r.31 = r.22 - d.3
-temp.33 = int 1
-q.34 = q.27 + temp.33
+temp.39 = r.30 - d.3
+r.40 = temp.39
+temp.42 = int 1
+temp.43 = q.35 + temp.42
+q.44 = temp.43
 jmp 0
 
 
@@ -316,36 +344,38 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
+temp.22 = int 100
+getprop temp.23, 0
 jmp 2
 
 ---- block 2 ----
-q.36 = int 0
+temp.46 = int 0
 jmp 3
 
 ---- block 3 ----
-r.39 = φ(temp.17 from 2, r.37 from 5)
-q.41 = φ(q.36 from 2, q.38 from 5)
-temp.40 = r.39 < temp.18
-conditional_jump temp.40 4 5
+r.49 = φ(temp.22 from 2, r.47 from 5)
+q.51 = φ(temp.46 from 2, q.48 from 5)
+temp.50 = r.49 < temp.23
+conditional_jump temp.50 4 5
 
 ---- block 4 ----
 jmp 7
 
 ---- block 5 ----
-r.37 = r.39 - temp.18
-temp.42 = int 1
-q.38 = q.41 + temp.42
+temp.52 = r.49 - temp.23
+r.47 = temp.52
+temp.53 = int 1
+temp.54 = q.51 + temp.53
+q.48 = temp.54
 jmp 3
 
 ---- block 7 ----
-temp.35 = φ(q.41 from 4)
-temp.19 = temp.35
+temp.45 = φ(q.51 from 4)
+temp.24 = temp.45
 jmp 1
 
 ---- block 1 ----
-storeprop temp.19, 0
+storeprop temp.24, 0
 return 
 
 
@@ -354,35 +384,37 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
+temp.22 = int 100
+getprop temp.23, 0
 jmp 2
 
 ---- block 2 ----
-q.36 = int 0
+temp.46 = int 0
 jmp 3
 
 ---- block 3 ----
-r.39 = φ(temp.17 from 2, r.37 from 5)
-q.41 = φ(q.36 from 2, q.38 from 5)
-temp.40 = r.39 < temp.18
-conditional_jump temp.40 4 5
+r.49 = φ(temp.22 from 2, r.47 from 5)
+q.51 = φ(temp.46 from 2, q.48 from 5)
+temp.50 = r.49 < temp.23
+conditional_jump temp.50 4 5
 
 ---- block 4 ----
 jmp 7
 
 ---- block 5 ----
-r.37 = r.39 - temp.18
-temp.42 = int 1
-q.38 = q.41 + temp.42
+temp.52 = r.49 - temp.23
+r.47 = temp.52
+temp.53 = int 1
+temp.54 = q.51 + temp.53
+q.48 = temp.54
 jmp 3
 
 ---- block 7 ----
-temp.19 = q.41
+temp.24 = q.51
 jmp 1
 
 ---- block 1 ----
-storeprop temp.19, 0
+storeprop temp.24, 0
 return 
 
 
@@ -391,32 +423,34 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-q.36 = int 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.46 = int 0
 jmp 2
 
 ---- block 2 ----
 jmp 3
 
 ---- block 3 ----
-r.39 = φ(temp.17 from 2, r.37 from 5)
-q.41 = φ(q.36 from 2, q.38 from 5)
-temp.40 = r.39 < temp.18
-conditional_jump temp.40 4 5
+r.49 = φ(temp.22 from 2, r.47 from 5)
+q.51 = φ(temp.46 from 2, q.48 from 5)
+temp.50 = r.49 < temp.23
+conditional_jump temp.50 4 5
 
 ---- block 4 ----
-temp.19 = q.41
+temp.24 = q.51
 jmp 7
 
 ---- block 5 ----
-r.37 = r.39 - temp.18
-temp.42 = int 1
-q.38 = q.41 + temp.42
+temp.52 = r.49 - temp.23
+r.47 = temp.52
+temp.53 = int 1
+temp.54 = q.51 + temp.53
+q.48 = temp.54
 jmp 3
 
 ---- block 7 ----
-storeprop temp.19, 0
+storeprop temp.24, 0
 jmp 1
 
 ---- block 1 ----
@@ -428,32 +462,34 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-q.36 = int 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.46 = int 0
 jmp 2
 
 ---- block 2 ----
 jmp 3
 
 ---- block 3 ----
-r.39 = φ(temp.17 from 2, r.37 from 5)
-q.41 = φ(q.36 from 2, q.38 from 5)
-temp.40 = r.39 < temp.18
-conditional_jump temp.40 4 5
+r.49 = φ(temp.22 from 2, r.47 from 5)
+q.51 = φ(temp.46 from 2, q.48 from 5)
+temp.50 = r.49 < temp.23
+conditional_jump temp.50 4 5
 
 ---- block 4 ----
-temp.19 = q.41
+temp.24 = q.51
 jmp 7
 
 ---- block 5 ----
-r.37 = r.39 - temp.18
-temp.42 = int 1
-q.38 = q.41 + temp.42
+temp.52 = r.49 - temp.23
+r.47 = temp.52
+temp.53 = int 1
+temp.54 = q.51 + temp.53
+q.48 = temp.54
 jmp 3
 
 ---- block 7 ----
-storeprop q.41, 0
+storeprop q.51, 0
 jmp 1
 
 ---- block 1 ----
@@ -465,31 +501,33 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-q.36 = int 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.46 = int 0
 jmp 2
 
 ---- block 2 ----
 jmp 3
 
 ---- block 3 ----
-r.39 = φ(temp.17 from 2, r.37 from 5)
-q.41 = φ(q.36 from 2, q.38 from 5)
-temp.40 = r.39 < temp.18
-conditional_jump temp.40 4 5
+r.49 = φ(temp.22 from 2, r.47 from 5)
+q.51 = φ(temp.46 from 2, q.48 from 5)
+temp.50 = r.49 < temp.23
+conditional_jump temp.50 4 5
 
 ---- block 4 ----
 jmp 7
 
 ---- block 5 ----
-r.37 = r.39 - temp.18
-temp.42 = int 1
-q.38 = q.41 + temp.42
+temp.52 = r.49 - temp.23
+r.47 = temp.52
+temp.53 = int 1
+temp.54 = q.51 + temp.53
+q.48 = temp.54
 jmp 3
 
 ---- block 7 ----
-storeprop q.41, 0
+storeprop q.51, 0
 jmp 1
 
 ---- block 1 ----
@@ -501,25 +539,27 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-q.36 = int 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.46 = int 0
 jmp 3
 
 ---- block 3 ----
-r.39 = φ(temp.17 from 2, r.37 from 5, temp.17 from 0)
-q.41 = φ(q.36 from 2, q.38 from 5, q.36 from 0)
-temp.40 = r.39 < temp.18
-conditional_jump temp.40 7 5
+r.49 = φ(temp.22 from 2, r.47 from 5, temp.22 from 0)
+q.51 = φ(temp.46 from 2, q.48 from 5, temp.46 from 0)
+temp.50 = r.49 < temp.23
+conditional_jump temp.50 7 5
 
 ---- block 7 ----
-storeprop q.41, 0
+storeprop q.51, 0
 return 
 
 ---- block 5 ----
-r.37 = r.39 - temp.18
-temp.42 = int 1
-q.38 = q.41 + temp.42
+temp.52 = r.49 - temp.23
+r.47 = temp.52
+temp.53 = int 1
+temp.54 = q.51 + temp.53
+q.48 = temp.54
 jmp 3
 
 
@@ -528,23 +568,25 @@ jmp 3
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 100
-getprop temp.18, 0
-q.36 = int 0
+temp.22 = int 100
+getprop temp.23, 0
+temp.46 = int 0
 jmp 3
 
 ---- block 3 ----
-r.39 = φ(r.37 from 5, temp.17 from 0)
-q.41 = φ(q.38 from 5, q.36 from 0)
-temp.40 = r.39 < temp.18
-conditional_jump temp.40 7 5
+r.49 = φ(r.47 from 5, temp.22 from 0)
+q.51 = φ(q.48 from 5, temp.46 from 0)
+temp.50 = r.49 < temp.23
+conditional_jump temp.50 7 5
 
 ---- block 7 ----
-storeprop q.41, 0
+storeprop q.51, 0
 return 
 
 ---- block 5 ----
-r.37 = r.39 - temp.18
-temp.42 = int 1
-q.38 = q.41 + temp.42
+temp.52 = r.49 - temp.23
+r.47 = temp.52
+temp.53 = int 1
+temp.54 = q.51 + temp.53
+q.48 = temp.54
 jmp 3

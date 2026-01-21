@@ -111,25 +111,46 @@ impl<'input> SymTabVisitor<'input> {
 
         for statement in ast {
             match &mut statement.kind {
-                StatementKind::VariableDeclaration { ident, value } => {
-                    self.visit_expr(value, diagnostics);
-
-                    let symbol_id = self.symtab.new_symbol(ident, statement.span);
-                    self.symbol_names.insert(ident, symbol_id);
-
-                    statement.meta.set(symbol_id);
-                }
-                StatementKind::Assignment { ident, value } => {
-                    self.visit_expr(value, diagnostics);
-
-                    if let Some(symbol_id) = self.symbol_names.get(ident) {
-                        statement.meta.set(symbol_id);
-                    } else {
-                        diagnostics.add_message(
-                            CompilerErrorKind::UnknownVariable(ident.to_string())
-                                .into_message(statement.span),
-                        );
+                StatementKind::VariableDeclaration { idents, values } => {
+                    // Visit all the value expressions first
+                    for value in values {
+                        self.visit_expr(value, diagnostics);
                     }
+
+                    // no need to do counting checks, that's done in type checking
+                    let mut statement_meta = vec![];
+                    for ident in idents {
+                        let symbol_id = self.symtab.new_symbol(ident, statement.span);
+                        self.symbol_names.insert(ident, symbol_id);
+
+                        statement_meta.push(symbol_id);
+                    }
+
+                    statement.meta.set(statement_meta);
+                }
+                StatementKind::Assignment { idents, values } => {
+                    // Visit all the value expressions first
+                    for value in values {
+                        self.visit_expr(value, diagnostics);
+                    }
+
+                    // no need to do counting checks, that's done in type checking
+                    let mut statement_meta = vec![];
+                    for ident in idents {
+                        if let Some(symbol_id) = self.symbol_names.get(ident) {
+                            statement_meta.push(symbol_id);
+                        } else {
+                            diagnostics.add_message(
+                                CompilerErrorKind::UnknownVariable(ident.to_string())
+                                    .into_message(statement.span),
+                            );
+
+                            // create a dummy symbol to ensure that the meta stays correct
+                            statement_meta.push(self.symtab.new_symbol(ident, statement.span));
+                        }
+                    }
+
+                    statement.meta.set(statement_meta);
                 }
                 StatementKind::If {
                     condition,

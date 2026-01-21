@@ -12,48 +12,56 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(3),
-              meta: {},
-            ),
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+                meta: {},
+              ),
+            ],
           ),
           meta: {},
         ),
         Statement(
           span: "[span]",
           kind: Assignment(
-            ident: "my_property",
-            value: Expression(
-              span: "[span]",
-              kind: BinaryOperation(
-                lhs: Expression(
-                  span: "[span]",
-                  kind: Integer(2),
-                  meta: {},
-                ),
-                operator: Mul,
-                rhs: Expression(
-                  span: "[span]",
-                  kind: BinaryOperation(
-                    lhs: Expression(
-                      span: "[span]",
-                      kind: Variable("x"),
-                      meta: {},
-                    ),
-                    operator: Add,
-                    rhs: Expression(
-                      span: "[span]",
-                      kind: Integer(5),
-                      meta: {},
-                    ),
+            idents: [
+              "my_property",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(2),
+                    meta: {},
                   ),
-                  meta: {},
+                  operator: Mul,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Variable("x"),
+                        meta: {},
+                      ),
+                      operator: Add,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
                 ),
+                meta: {},
               ),
-              meta: {},
-            ),
+            ],
           ),
           meta: {},
         ),

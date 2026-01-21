@@ -8,27 +8,28 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.14 = int 9
-temp.15 = bar(temp.14)
-storeprop temp.15, 0
+temp.15 = int 9
+temp.16 = bar(temp.15)
+temp.17 = temp.16
+storeprop temp.17, 0
 return 
 
 =======================
 fn bar(x.2) -> int
 
 ---- block 0 ----
-temp.16 = x.2
-temp.17 = int 1
-temp.18 = temp.16 - temp.17
-temp.19 = baz(temp.18)
-return temp.19
+temp.18 = x.2
+temp.19 = int 1
+temp.20 = temp.18 - temp.19
+temp.21 = baz(temp.20)
+return temp.21
 
 =======================
 fn baz(x.3) -> int
 
 ---- block 0 ----
-temp.20 = x.3
-temp.21 = int 1
-temp.22 = temp.20 - temp.21
-temp.23 = bar(temp.22)
-return temp.23
+temp.22 = x.3
+temp.23 = int 1
+temp.24 = temp.22 - temp.23
+temp.25 = bar(temp.24)
+return temp.25

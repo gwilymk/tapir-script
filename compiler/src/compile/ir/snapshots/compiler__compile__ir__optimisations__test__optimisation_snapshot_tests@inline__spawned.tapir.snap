@@ -16,18 +16,19 @@ fn foo(x.2) ->
 
 ---- block 0 ----
 wait
-temp.6 = x.2
-storeprop temp.6, 0
+temp.7 = x.2
+temp.8 = temp.7
+storeprop temp.8, 0
 return 
 
 =======================
 fn bar() -> 
 
 ---- block 0 ----
-temp.7 = int 5
-spawn foo(temp.7)
-temp.8 = int 8
-foo(temp.8)
+temp.9 = int 5
+spawn foo(temp.9)
+temp.10 = int 8
+foo(temp.10)
 return 
 
 
@@ -44,23 +45,25 @@ fn foo(x.2) ->
 
 ---- block 0 ----
 wait
-temp.6 = x.2
-storeprop temp.6, 0
+temp.7 = x.2
+temp.8 = temp.7
+storeprop temp.8, 0
 return 
 
 =======================
 fn bar() -> 
 
 ---- block 0 ----
-temp.7 = int 5
-spawn foo(temp.7)
-temp.8 = int 8
+temp.9 = int 5
+spawn foo(temp.9)
+temp.10 = int 8
 jmp 2
 
 ---- block 2 ----
 wait
-temp.9 = temp.8
-storeprop temp.9, 0
+temp.11 = temp.10
+temp.12 = temp.11
+storeprop temp.12, 0
 jmp 4
 
 ---- block 4 ----
@@ -78,15 +81,16 @@ fn @toplevel() ->
 jmp 2
 
 ---- block 2 ----
-temp.10 = int 5
-spawn foo(temp.10)
-temp.11 = int 8
+temp.13 = int 5
+spawn foo(temp.13)
+temp.14 = int 8
 jmp 3
 
 ---- block 3 ----
 wait
-temp.12 = temp.11
-storeprop temp.12, 0
+temp.15 = temp.14
+temp.16 = temp.15
+storeprop temp.16, 0
 jmp 4
 
 ---- block 4 ----
@@ -106,23 +110,25 @@ fn foo(x.2) ->
 
 ---- block 0 ----
 wait
-temp.6 = x.2
-storeprop temp.6, 0
+temp.7 = x.2
+temp.8 = temp.7
+storeprop temp.8, 0
 return 
 
 =======================
 fn bar() -> 
 
 ---- block 0 ----
-temp.7 = int 5
-spawn foo(temp.7)
-temp.8 = int 8
+temp.9 = int 5
+spawn foo(temp.9)
+temp.10 = int 8
 jmp 2
 
 ---- block 2 ----
 wait
-temp.9 = temp.8
-storeprop temp.9, 0
+temp.11 = temp.10
+temp.12 = temp.11
+storeprop temp.12, 0
 jmp 4
 
 ---- block 4 ----
@@ -140,15 +146,16 @@ fn @toplevel() ->
 jmp 2
 
 ---- block 2 ----
-temp.10 = int 5
-spawn foo(temp.10)
-temp.11 = int 8
+temp.13 = int 5
+spawn foo(temp.13)
+temp.14 = int 8
 jmp 3
 
 ---- block 3 ----
 wait
-temp.12 = temp.11
-storeprop temp.12, 0
+temp.15 = temp.14
+temp.16 = temp.15
+storeprop temp.16, 0
 jmp 4
 
 ---- block 4 ----
@@ -168,6 +175,7 @@ fn foo(x.2) ->
 
 ---- block 0 ----
 wait
-temp.6 = x.2
-storeprop temp.6, 0
+temp.7 = x.2
+temp.8 = temp.7
+storeprop temp.8, 0
 return

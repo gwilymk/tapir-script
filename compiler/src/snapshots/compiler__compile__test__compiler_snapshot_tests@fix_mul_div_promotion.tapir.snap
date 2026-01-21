@@ -3,9 +3,11 @@ source: crates/tapir-script/compiler/src/compile.rs
 expression: decompiled
 input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/fix_mul_div_promotion.tapir
 ---
-00000000: loadk 2, 128
-00000002: mov 1, 2
-00000003: loadk 2, 768
-00000005: fixmul 3, 1, 2
-00000006: ret
-00000007: ret
+00000000: loadk 3, 128
+00000002: mov 1, 3
+00000003: mov 3, 1
+00000004: loadk 4, 768
+00000006: fixmul 1, 3, 4
+00000007: mov 2, 1
+00000008: ret
+00000009: ret

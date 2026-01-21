@@ -7,8 +7,9 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/loop_
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.12 = int 10
-x.13 = factorial(temp.12)
+temp.16 = int 10
+temp.17 = factorial(temp.16)
+x.18 = temp.17
 wait
 return 
 
@@ -16,29 +17,32 @@ return
 fn factorial(x.1) -> int
 
 ---- block 2 ----
-result.14 = int 1
+temp.19 = int 1
+result.20 = temp.19
 jmp 0
 
 ---- block 0 ----
-x.15 = φ(x.1 from 2, x.26 from 5)
-result.19 = φ(result.14 from 2, result.23 from 5)
-temp.16 = x.15
-temp.17 = int 0
-temp.18 = temp.16 == temp.17
-conditional_jump temp.18 3 4
+x.21 = φ(x.1 from 2, x.34 from 5)
+result.25 = φ(result.20 from 2, result.30 from 5)
+temp.22 = x.21
+temp.23 = int 0
+temp.24 = temp.22 == temp.23
+conditional_jump temp.24 3 4
 
 ---- block 3 ----
-temp.20 = result.19
-return temp.20
+temp.26 = result.25
+return temp.26
 
 ---- block 4 ----
 jmp 5
 
 ---- block 5 ----
-temp.21 = result.19
-temp.22 = x.15
-result.23 = temp.21 * temp.22
-temp.24 = x.15
-temp.25 = int 1
-x.26 = temp.24 - temp.25
+temp.27 = result.25
+temp.28 = x.21
+temp.29 = temp.27 * temp.28
+result.30 = temp.29
+temp.31 = x.21
+temp.32 = int 1
+temp.33 = temp.31 - temp.32
+x.34 = temp.33
 jmp 0

@@ -28,7 +28,7 @@ Error: Unexpected token Semicolon, expected one of identifier, integer, fix, tru
    │         ┬  
    │         ╰── Unexpected token
 ───╯
-Error: Unexpected token OperatorRealMod, expected one of identifier, integer, fix, true, false, "("
+Error: Unexpected token OperatorRealMod, expected one of identifier, integer, fix, true, false, "(", ";"
    ╭─[ mulitple_errors.tapir:5:5 ]
    │
  5 │ y = %% 2;

@@ -8,32 +8,36 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 3 ----
-temp.8 = bool true
-conditional_jump temp.8 0 1
+temp.12 = bool true
+conditional_jump temp.12 0 1
 
 ---- block 0 ----
-temp.9 = int 5
-storeprop temp.9, 0
+temp.13 = int 5
+temp.14 = temp.13
+storeprop temp.14, 0
 jmp 2
 
 ---- block 1 ----
-temp.10 = int 9
-storeprop temp.10, 0
+temp.15 = int 9
+temp.16 = temp.15
+storeprop temp.16, 0
 jmp 2
 
 ---- block 2 ----
 wait
-temp.11 = bool false
-conditional_jump temp.11 4 5
+temp.17 = bool false
+conditional_jump temp.17 4 5
 
 ---- block 4 ----
-temp.12 = int 15
-storeprop temp.12, 0
+temp.18 = int 15
+temp.19 = temp.18
+storeprop temp.19, 0
 jmp 6
 
 ---- block 5 ----
-temp.13 = int 19
-storeprop temp.13, 0
+temp.20 = int 19
+temp.21 = temp.20
+storeprop temp.21, 0
 jmp 6
 
 ---- block 6 ----
@@ -45,22 +49,53 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-temp.8 = bool true
+temp.12 = bool true
 jmp 0
 
 ---- block 0 ----
-temp.9 = int 5
-storeprop temp.9, 0
+temp.13 = int 5
+temp.14 = temp.13
+storeprop temp.14, 0
 jmp 2
 
 ---- block 2 ----
 wait
-temp.11 = bool false
+temp.17 = bool false
 jmp 5
 
 ---- block 5 ----
-temp.13 = int 19
+temp.20 = int 19
+temp.21 = temp.20
+storeprop temp.21, 0
+jmp 6
+
+---- block 6 ----
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 3 ----
+temp.12 = bool true
+jmp 0
+
+---- block 0 ----
+temp.13 = int 5
+temp.14 = temp.13
 storeprop temp.13, 0
+jmp 2
+
+---- block 2 ----
+wait
+temp.17 = bool false
+jmp 5
+
+---- block 5 ----
+temp.20 = int 19
+temp.21 = temp.20
+storeprop temp.20, 0
 jmp 6
 
 ---- block 6 ----

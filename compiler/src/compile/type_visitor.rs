@@ -5,8 +5,8 @@ use serde::Serialize;
 use crate::{
     Trigger,
     ast::{
-        self, BinaryOperator, Expression, ExternFunctionDefinition, Function, FunctionModifiers,
-        FunctionReturn, InternalOrExternalFunctionId, MaybeResolved, SymbolId,
+        self, BinaryOperator, Expression, ExpressionKind, ExternFunctionDefinition, Function,
+        FunctionModifiers, FunctionReturn, InternalOrExternalFunctionId, MaybeResolved, SymbolId,
     },
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
@@ -210,22 +210,40 @@ impl<'input> TypeVisitor<'input> {
                 | ast::StatementKind::Continue
                 | ast::StatementKind::Nop
                 | ast::StatementKind::Error => {}
-                ast::StatementKind::VariableDeclaration { value, .. } => {
-                    let ident: &SymbolId = statement
-                        .meta
-                        .get()
-                        .expect("Should've been resolved by symbol resolution");
-                    let expr_type = self.type_for_expression(value, symtab, diagnostics);
-                    self.resolve_type(*ident, expr_type, statement.span, diagnostics);
-                }
-                ast::StatementKind::Assignment { value, .. } => {
-                    let ident: &SymbolId = statement
+                ast::StatementKind::VariableDeclaration { values, .. }
+                | ast::StatementKind::Assignment { values, .. } => {
+                    let idents: &Vec<SymbolId> = statement
                         .meta
                         .get()
                         .expect("Should've been resolved by symbol resolution");
 
-                    let expr_type = self.type_for_expression(value, symtab, diagnostics);
-                    self.resolve_type(*ident, expr_type, statement.span, diagnostics);
+                    // this is _only_ valid if it's a function call on the RHS
+                    let value_types = if values.len() == 1
+                        && idents.len() > 1
+                        && let Some(fn_ret_types) =
+                            self.return_types_for_maybe_call(&mut values[0], symtab, diagnostics)
+                    {
+                        fn_ret_types
+                    } else {
+                        values
+                            .iter_mut()
+                            .map(|v| self.type_for_expression(v, symtab, diagnostics))
+                            .collect()
+                    };
+
+                    if value_types.len() != idents.len() {
+                        diagnostics.add_message(
+                            CompilerErrorKind::CountMismatch {
+                                ident_count: idents.len(),
+                                expr_count: value_types.len(),
+                            }
+                            .into_message(statement.span),
+                        );
+                    }
+
+                    for (symbol, value) in idents.iter().zip(value_types) {
+                        self.resolve_type(*symbol, value, statement.span, diagnostics);
+                    }
                 }
                 ast::StatementKind::If {
                     condition,
@@ -484,6 +502,27 @@ impl<'input> TypeVisitor<'input> {
                     types[0]
                 }
             }
+        }
+    }
+
+    fn return_types_for_maybe_call(
+        &mut self,
+        expr: &mut Expression<'input>,
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<Vec<Type>> {
+        match &mut expr.kind {
+            ExpressionKind::Call {
+                name, arguments, ..
+            } => Some(self.type_for_call(
+                expr.span,
+                name,
+                expr.meta.get().copied(),
+                arguments,
+                symtab,
+                diagnostics,
+            )),
+            _ => None,
         }
     }
 

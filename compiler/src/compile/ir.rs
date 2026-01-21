@@ -281,25 +281,97 @@ impl BlockVisitor {
             ast::StatementKind::Error => {
                 unreachable!("Shouldn't be creating IR if there is an error")
             }
-            ast::StatementKind::Assignment { value, .. }
-            | ast::StatementKind::VariableDeclaration { value, .. } => {
-                let target_symbol = *statement.meta.get().expect("Should've resolved symbols");
+            ast::StatementKind::Assignment { values, .. }
+            | ast::StatementKind::VariableDeclaration { values, .. } => {
+                let target_symbols: &Vec<SymbolId> =
+                    statement.meta.get().expect("Should've resolved symbols");
 
-                let expr_target = if symtab.get_property(target_symbol).is_some() {
-                    symtab.new_temporary()
+                let temps: Vec<SymbolId> = if target_symbols.len() == values.len() {
+                    // Paired assignment: evaluate all RHS into temporaries first,
+                    // then move to targets (enables swap idiom: a, b = b, a)
+                    values
+                        .iter()
+                        .map(|value| {
+                            let temp = symtab.new_temporary();
+                            self.blocks_for_expression(value, temp, symtab);
+                            temp
+                        })
+                        .collect()
+                } else if values.len() == 1 {
+                    // this must be a function call
+                    let ast::ExpressionKind::Call { arguments, .. } = &values[0].kind else {
+                        panic!(
+                            "Type checker should've caught this, got mismatching symbols and no function call"
+                        );
+                    };
+
+                    let args = arguments
+                        .iter()
+                        .map(|a| {
+                            let symbol = symtab.new_temporary();
+                            self.blocks_for_expression(a, symbol, symtab);
+                            symbol
+                        })
+                        .collect::<Vec<_>>()
+                        .into_boxed_slice();
+
+                    let f: InternalOrExternalFunctionId = *statement
+                        .meta
+                        .get()
+                        .expect("Should have function IDs by now");
+
+                    let temps = (0..target_symbols.len())
+                        .map(|_| symtab.new_temporary())
+                        .collect::<Vec<_>>();
+
+                    match f {
+                        InternalOrExternalFunctionId::Internal(f) => {
+                            self.current_block.push(TapIr {
+                                instr: TapIrInstr::Call {
+                                    target: temps.clone().into_boxed_slice(),
+                                    f,
+                                    args,
+                                },
+                            });
+                        }
+                        InternalOrExternalFunctionId::External(f) => {
+                            self.current_block.push(TapIr {
+                                instr: TapIrInstr::CallExternal {
+                                    target: temps.clone().into_boxed_slice(),
+                                    f,
+                                    args,
+                                },
+                            });
+                        }
+                    }
+
+                    temps
                 } else {
-                    target_symbol
+                    panic!("Type checker should've caught the count mismatch");
                 };
 
-                self.blocks_for_expression(value, expr_target, symtab);
+                for (&target_symbol, temp) in target_symbols.iter().zip(temps) {
+                    let expr_target = if symtab.get_property(target_symbol).is_some() {
+                        symtab.new_temporary()
+                    } else {
+                        target_symbol
+                    };
 
-                if let Some(property) = symtab.get_property(target_symbol) {
                     self.current_block.push(TapIr {
-                        instr: TapIrInstr::StoreProp {
-                            prop_index: property.index,
-                            value: expr_target,
+                        instr: TapIrInstr::Move {
+                            target: expr_target,
+                            source: temp,
                         },
                     });
+
+                    if let Some(property) = symtab.get_property(target_symbol) {
+                        self.current_block.push(TapIr {
+                            instr: TapIrInstr::StoreProp {
+                                prop_index: property.index,
+                                value: expr_target,
+                            },
+                        });
+                    }
                 }
             }
             ast::StatementKind::Wait => {

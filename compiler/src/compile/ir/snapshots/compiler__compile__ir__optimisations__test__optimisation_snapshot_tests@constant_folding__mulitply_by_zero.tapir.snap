@@ -8,32 +8,36 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-getprop temp.8, 0
-temp.9 = int 0
-temp.10 = temp.8 * temp.9
-storeprop temp.10, 0
-wait
+getprop temp.10, 0
 temp.11 = int 0
-getprop temp.12, 0
-temp.13 = temp.11 * temp.12
+temp.12 = temp.10 * temp.11
+temp.13 = temp.12
 storeprop temp.13, 0
+wait
+temp.14 = int 0
+getprop temp.15, 0
+temp.16 = temp.14 * temp.15
+temp.17 = temp.16
+storeprop temp.17, 0
 return 
 
 
------------ constant_folding -------------
+----------- copy_propagation -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 0 ----
-getprop temp.8, 0
-temp.9 = int 0
-temp.10 = int 0
-storeprop temp.10, 0
-wait
+getprop temp.10, 0
 temp.11 = int 0
-getprop temp.12, 0
-temp.13 = int 0
-storeprop temp.13, 0
+temp.12 = temp.10 * temp.11
+temp.13 = temp.12
+storeprop temp.12, 0
+wait
+temp.14 = int 0
+getprop temp.15, 0
+temp.16 = temp.14 * temp.15
+temp.17 = temp.16
+storeprop temp.16, 0
 return 
 
 
@@ -42,9 +46,43 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.10 = int 0
-storeprop temp.10, 0
+getprop temp.10, 0
+temp.11 = int 0
+temp.12 = temp.10 * temp.11
+storeprop temp.12, 0
 wait
-temp.13 = int 0
-storeprop temp.13, 0
+temp.14 = int 0
+getprop temp.15, 0
+temp.16 = temp.14 * temp.15
+storeprop temp.16, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.10, 0
+temp.11 = int 0
+temp.12 = int 0
+storeprop temp.12, 0
+wait
+temp.14 = int 0
+getprop temp.15, 0
+temp.16 = int 0
+storeprop temp.16, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.12 = int 0
+storeprop temp.12, 0
+wait
+temp.16 = int 0
+storeprop temp.16, 0
 return

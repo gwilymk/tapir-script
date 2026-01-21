@@ -7,21 +7,25 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/ssa/if.ta
 fn @toplevel() -> 
 
 ---- block 3 ----
-x.5 = int 5
-temp.6 = bool true
-temp.7 = bool true
-temp.8 = temp.6 == temp.7
-conditional_jump temp.8 0 1
+temp.9 = int 5
+x.10 = temp.9
+temp.11 = bool true
+temp.12 = bool true
+temp.13 = temp.11 == temp.12
+conditional_jump temp.13 0 1
 
 ---- block 0 ----
-x.9 = int 8
+temp.14 = int 8
+x.15 = temp.14
 jmp 2
 
 ---- block 1 ----
-x.10 = int 9
+temp.16 = int 9
+x.17 = temp.16
 jmp 2
 
 ---- block 2 ----
-x.11 = φ(x.9 from 0, x.10 from 1)
-y.12 = x.11
+x.18 = φ(x.15 from 0, x.17 from 1)
+temp.19 = x.18
+y.20 = temp.19
 return

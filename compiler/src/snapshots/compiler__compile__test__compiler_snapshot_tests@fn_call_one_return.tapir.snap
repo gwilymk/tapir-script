@@ -5,14 +5,16 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/fn_call_one
 ---
 00000000: loadk 3, 3
 00000002: mov 1, 3
-00000003: mov 5, 1
-00000004: call 4
-00000005: jmp 9
-00000006: mov 2, 5
-00000007: ret
-00000008: ret
-00000009: mov 3, 1
-00000010: loadk 4, 3
-00000012: add 2, 3, 4
-00000013: mov 1, 2
-00000014: ret
+00000003: mov 3, 1
+00000004: mov 5, 3
+00000005: call 4
+00000006: jmp 11
+00000007: mov 1, 5
+00000008: mov 2, 1
+00000009: ret
+00000010: ret
+00000011: mov 3, 1
+00000012: loadk 4, 3
+00000014: add 2, 3, 4
+00000015: mov 1, 2
+00000016: ret

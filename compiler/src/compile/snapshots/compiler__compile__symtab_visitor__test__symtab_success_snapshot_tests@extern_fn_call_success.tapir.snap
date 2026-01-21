@@ -12,26 +12,30 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "result",
-            value: Expression(
-              span: "[span]",
-              kind: Call(
-                name: "get_value",
-                arguments: [
-                  Expression(
-                    span: "[span]",
-                    kind: Integer(5),
-                    meta: {},
-                  ),
-                ],
+            idents: [
+              "result",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "get_value",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(5),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {
+                  "compiler::ast::InternalOrExternalFunctionId": "External(ExternalFunctionId(0))",
+                },
               ),
-              meta: {
-                "compiler::ast::InternalOrExternalFunctionId": "External(ExternalFunctionId(0))",
-              },
-            ),
+            ],
           ),
           meta: {
-            "compiler::ast::SymbolId": "SymbolId(1)",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
           },
         ),
       ],

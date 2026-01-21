@@ -12,29 +12,37 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(3),
-              meta: {},
-            ),
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(3),
+                meta: {},
+              ),
+            ],
           ),
           meta: {
-            "compiler::ast::SymbolId": "SymbolId(1)",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
           },
         ),
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "y",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(14),
-              meta: {},
-            ),
+            idents: [
+              "y",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(14),
+                meta: {},
+              ),
+            ],
           ),
           meta: {
-            "compiler::ast::SymbolId": "SymbolId(2)",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
           },
         ),
         Statement(
@@ -49,29 +57,37 @@ Script(
               Statement(
                 span: "[span]",
                 kind: VariableDeclaration(
-                  ident: "x",
-                  value: Expression(
-                    span: "[span]",
-                    kind: Fix,
-                    meta: {},
-                  ),
+                  idents: [
+                    "x",
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Fix,
+                      meta: {},
+                    ),
+                  ],
                 ),
                 meta: {
-                  "compiler::ast::SymbolId": "SymbolId(3)",
+                  "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3)]",
                 },
               ),
               Statement(
                 span: "[span]",
                 kind: Assignment(
-                  ident: "y",
-                  value: Expression(
-                    span: "[span]",
-                    kind: Integer(112),
-                    meta: {},
-                  ),
+                  idents: [
+                    "y",
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(112),
+                      meta: {},
+                    ),
+                  ],
                 ),
                 meta: {
-                  "compiler::ast::SymbolId": "SymbolId(2)",
+                  "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
                 },
               ),
             ],
@@ -79,31 +95,39 @@ Script(
               Statement(
                 span: "[span]",
                 kind: VariableDeclaration(
-                  ident: "z",
-                  value: Expression(
-                    span: "[span]",
-                    kind: Integer(82),
-                    meta: {},
-                  ),
+                  idents: [
+                    "z",
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(82),
+                      meta: {},
+                    ),
+                  ],
                 ),
                 meta: {
-                  "compiler::ast::SymbolId": "SymbolId(4)",
+                  "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4)]",
                 },
               ),
               Statement(
                 span: "[span]",
                 kind: Assignment(
-                  ident: "y",
-                  value: Expression(
-                    span: "[span]",
-                    kind: Variable("z"),
-                    meta: {
-                      "compiler::ast::SymbolId": "SymbolId(4)",
-                    },
-                  ),
+                  idents: [
+                    "y",
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Variable("z"),
+                      meta: {
+                        "compiler::ast::SymbolId": "SymbolId(4)",
+                      },
+                    ),
+                  ],
                 ),
                 meta: {
-                  "compiler::ast::SymbolId": "SymbolId(2)",
+                  "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
                 },
               ),
             ],
@@ -113,15 +137,19 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(12),
-              meta: {},
-            ),
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(12),
+                meta: {},
+              ),
+            ],
           ),
           meta: {
-            "compiler::ast::SymbolId": "SymbolId(1)",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
           },
         ),
       ],

@@ -27,7 +27,8 @@ temp.1 = bool false
 jmp 4
 
 ---- block 5 ----
-x.0 = bool true
+temp.4 = bool true
+x.0 = temp.4
 jmp 7
 
 ---- block 6 ----

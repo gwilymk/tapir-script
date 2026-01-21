@@ -12,12 +12,16 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            ident: "my_property",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(4),
-              meta: {},
-            ),
+            idents: [
+              "my_property",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(4),
+                meta: {},
+              ),
+            ],
           ),
           meta: {},
         ),
@@ -29,12 +33,16 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            ident: "my_property",
-            value: Expression(
-              span: "[span]",
-              kind: Integer(7),
-              meta: {},
-            ),
+            idents: [
+              "my_property",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(7),
+                meta: {},
+              ),
+            ],
           ),
           meta: {},
         ),

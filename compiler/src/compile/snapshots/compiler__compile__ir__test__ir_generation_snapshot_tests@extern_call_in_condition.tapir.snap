@@ -11,7 +11,8 @@ temp.1 = extern is_ready()
 conditional_jump temp.1 0 1
 
 ---- block 0 ----
-x.0 = int 10
+temp.2 = int 10
+x.0 = temp.2
 jmp 2
 
 ---- block 1 ----

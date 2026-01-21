@@ -16,24 +16,32 @@ Script(
               Statement(
                 span: "[span]",
                 kind: VariableDeclaration(
-                  ident: "x",
-                  value: Expression(
-                    span: "[span]",
-                    kind: Integer(5),
-                    meta: {},
-                  ),
+                  idents: [
+                    "x",
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(5),
+                      meta: {},
+                    ),
+                  ],
                 ),
                 meta: {},
               ),
               Statement(
                 span: "[span]",
                 kind: VariableDeclaration(
-                  ident: "y",
-                  value: Expression(
-                    span: "[span]",
-                    kind: Integer(2),
-                    meta: {},
-                  ),
+                  idents: [
+                    "y",
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(2),
+                      meta: {},
+                    ),
+                  ],
                 ),
                 meta: {},
               ),

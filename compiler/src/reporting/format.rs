@@ -239,5 +239,8 @@ fn compiler_error_report(
             .with_label(Label::new(span).with_message(format!("This is called with types {}", second_definition_args.iter().map(|a| a.to_string()).collect::<Vec<_>>().join(", "))))
             .with_message(format!("Trigger '{name}' has been called with inconsistent arguments"))
             .with_help("`trigger` calls must be made with the same argument types"),
+        CompilerErrorKind::CountMismatch { ident_count, expr_count } => build_error_report(span)
+            .with_message(format!("Expected {ident_count} expressions, but got {expr_count} of them"))
+            .with_help("When assigning to multiple variables, both sides of the '=' must have the same number of arguments"),
     }
 }

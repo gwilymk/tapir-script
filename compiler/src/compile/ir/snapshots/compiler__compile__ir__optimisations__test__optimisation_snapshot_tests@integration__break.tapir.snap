@@ -8,17 +8,19 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.9 = int 0
+temp.12 = int 0
+i.13 = temp.12
 jmp 0
 
 ---- block 0 ----
-i.10 = φ(i.9 from 2, i.17 from 5)
-temp.11 = i.10
-storeprop temp.11, 0
-temp.12 = i.10
-temp.13 = int 5
-temp.14 = temp.12 > temp.13
-conditional_jump temp.14 3 4
+i.14 = φ(i.13 from 2, i.23 from 5)
+temp.15 = i.14
+temp.16 = temp.15
+storeprop temp.16, 0
+temp.17 = i.14
+temp.18 = int 5
+temp.19 = temp.17 > temp.18
+conditional_jump temp.19 3 4
 
 ---- block 3 ----
 jmp 1
@@ -30,9 +32,10 @@ jmp 5
 return 
 
 ---- block 5 ----
-temp.15 = i.10
-temp.16 = int 1
-i.17 = temp.15 + temp.16
+temp.20 = i.14
+temp.21 = int 1
+temp.22 = temp.20 + temp.21
+i.23 = temp.22
 jmp 0
 
 
@@ -41,25 +44,28 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.9 = int 0
+temp.12 = int 0
+i.13 = temp.12
 jmp 0
 
 ---- block 0 ----
-i.10 = φ(i.9 from 2, i.17 from 5)
-temp.11 = i.10
-storeprop temp.11, 0
-temp.12 = i.10
-temp.13 = int 5
-temp.14 = temp.12 > temp.13
-conditional_jump temp.14 3 4
+i.14 = φ(i.13 from 2, i.23 from 5)
+temp.15 = i.14
+temp.16 = temp.15
+storeprop temp.16, 0
+temp.17 = i.14
+temp.18 = int 5
+temp.19 = temp.17 > temp.18
+conditional_jump temp.19 3 4
 
 ---- block 3 ----
 jmp 1
 
 ---- block 4 ----
-temp.15 = i.10
-temp.16 = int 1
-i.17 = temp.15 + temp.16
+temp.20 = i.14
+temp.21 = int 1
+temp.22 = temp.20 + temp.21
+i.23 = temp.22
 jmp 5
 
 ---- block 1 ----
@@ -74,25 +80,28 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.9 = int 0
+temp.12 = int 0
+i.13 = temp.12
 jmp 0
 
 ---- block 0 ----
-i.10 = φ(i.9 from 2, i.17 from 5)
-temp.11 = i.10
-storeprop i.10, 0
-temp.12 = i.10
-temp.13 = int 5
-temp.14 = i.10 > temp.13
-conditional_jump temp.14 3 4
+i.14 = φ(temp.12 from 2, i.23 from 5)
+temp.15 = i.14
+temp.16 = i.14
+storeprop i.14, 0
+temp.17 = i.14
+temp.18 = int 5
+temp.19 = i.14 > temp.18
+conditional_jump temp.19 3 4
 
 ---- block 3 ----
 jmp 1
 
 ---- block 4 ----
-temp.15 = i.10
-temp.16 = int 1
-i.17 = i.10 + temp.16
+temp.20 = i.14
+temp.21 = int 1
+temp.22 = i.14 + temp.21
+i.23 = temp.22
 jmp 5
 
 ---- block 1 ----
@@ -107,22 +116,23 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.9 = int 0
+temp.12 = int 0
 jmp 0
 
 ---- block 0 ----
-i.10 = φ(i.9 from 2, i.17 from 5)
-storeprop i.10, 0
-temp.13 = int 5
-temp.14 = i.10 > temp.13
-conditional_jump temp.14 3 4
+i.14 = φ(temp.12 from 2, i.23 from 5)
+storeprop i.14, 0
+temp.18 = int 5
+temp.19 = i.14 > temp.18
+conditional_jump temp.19 3 4
 
 ---- block 3 ----
 jmp 1
 
 ---- block 4 ----
-temp.16 = int 1
-i.17 = i.10 + temp.16
+temp.21 = int 1
+temp.22 = i.14 + temp.21
+i.23 = temp.22
 jmp 5
 
 ---- block 1 ----
@@ -137,22 +147,23 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.9 = int 0
+temp.12 = int 0
 jmp 0
 
 ---- block 0 ----
-i.10 = φ(i.9 from 2, i.17 from 5, i.17 from 4)
-storeprop i.10, 0
-temp.13 = int 5
-temp.14 = i.10 > temp.13
-conditional_jump temp.14 1 4
+i.14 = φ(temp.12 from 2, i.23 from 5, i.23 from 4)
+storeprop i.14, 0
+temp.18 = int 5
+temp.19 = i.14 > temp.18
+conditional_jump temp.19 1 4
 
 ---- block 1 ----
 return 
 
 ---- block 4 ----
-temp.16 = int 1
-i.17 = i.10 + temp.16
+temp.21 = int 1
+temp.22 = i.14 + temp.21
+i.23 = temp.22
 jmp 0
 
 
@@ -161,20 +172,21 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.9 = int 0
+temp.12 = int 0
 jmp 0
 
 ---- block 0 ----
-i.10 = φ(i.9 from 2, i.17 from 4)
-storeprop i.10, 0
-temp.13 = int 5
-temp.14 = i.10 > temp.13
-conditional_jump temp.14 1 4
+i.14 = φ(temp.12 from 2, i.23 from 4)
+storeprop i.14, 0
+temp.18 = int 5
+temp.19 = i.14 > temp.18
+conditional_jump temp.19 1 4
 
 ---- block 1 ----
 return 
 
 ---- block 4 ----
-temp.16 = int 1
-i.17 = i.10 + temp.16
+temp.21 = int 1
+temp.22 = i.14 + temp.21
+i.23 = temp.22
 jmp 0

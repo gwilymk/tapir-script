@@ -12,15 +12,19 @@ Script(
         Statement(
           span: "[span]",
           kind: VariableDeclaration(
-            ident: "x",
-            value: Expression(
-              span: "[span]",
-              kind: Call(
-                name: "foo",
-                arguments: [],
+            idents: [
+              "x",
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "foo",
+                  arguments: [],
+                ),
+                meta: {},
               ),
-              meta: {},
-            ),
+            ],
           ),
           meta: {},
         ),

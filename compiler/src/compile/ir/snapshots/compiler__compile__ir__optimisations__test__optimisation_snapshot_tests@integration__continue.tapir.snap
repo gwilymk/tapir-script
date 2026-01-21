@@ -8,20 +8,22 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.16 = int 0
+temp.19 = int 0
+i.20 = temp.19
 jmp 0
 
 ---- block 0 ----
-i.17 = φ(i.16 from 2, i.20 from 3, i.20 from 9)
-temp.18 = i.17
-temp.19 = int 1
-i.20 = temp.18 + temp.19
-temp.21 = i.20
-temp.22 = int 2
-temp.23 = temp.21 %% temp.22
-temp.24 = int 0
-temp.25 = temp.23 == temp.24
-conditional_jump temp.25 3 4
+i.21 = φ(i.20 from 2, i.25 from 3, i.25 from 9)
+temp.22 = i.21
+temp.23 = int 1
+temp.24 = temp.22 + temp.23
+i.25 = temp.24
+temp.26 = i.25
+temp.27 = int 2
+temp.28 = temp.26 %% temp.27
+temp.29 = int 0
+temp.30 = temp.28 == temp.29
+conditional_jump temp.30 3 4
 
 ---- block 3 ----
 jmp 0
@@ -30,14 +32,15 @@ jmp 0
 jmp 5
 
 ---- block 5 ----
-getprop temp.26, 0
-temp.27 = int 1
-temp.28 = temp.26 + temp.27
-storeprop temp.28, 0
-temp.29 = i.20
-temp.30 = int 20
-temp.31 = temp.29 > temp.30
-conditional_jump temp.31 7 8
+getprop temp.31, 0
+temp.32 = int 1
+temp.33 = temp.31 + temp.32
+temp.34 = temp.33
+storeprop temp.34, 0
+temp.35 = i.25
+temp.36 = int 20
+temp.37 = temp.35 > temp.36
+conditional_jump temp.37 7 8
 
 ---- block 7 ----
 jmp 1
@@ -57,36 +60,39 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.16 = int 0
+temp.19 = int 0
+i.20 = temp.19
 jmp 0
 
 ---- block 0 ----
-i.17 = φ(i.16 from 2, i.20 from 3, i.20 from 9)
-temp.18 = i.17
-temp.19 = int 1
-i.20 = temp.18 + temp.19
-temp.21 = i.20
-temp.22 = int 2
-temp.23 = temp.21 %% temp.22
-temp.24 = int 0
-temp.25 = temp.23 == temp.24
-conditional_jump temp.25 3 4
+i.21 = φ(i.20 from 2, i.25 from 3, i.25 from 9)
+temp.22 = i.21
+temp.23 = int 1
+temp.24 = temp.22 + temp.23
+i.25 = temp.24
+temp.26 = i.25
+temp.27 = int 2
+temp.28 = temp.26 %% temp.27
+temp.29 = int 0
+temp.30 = temp.28 == temp.29
+conditional_jump temp.30 3 4
 
 ---- block 3 ----
 jmp 0
 
 ---- block 4 ----
-getprop temp.26, 0
-temp.27 = int 1
-temp.28 = temp.26 + temp.27
-storeprop temp.28, 0
-temp.29 = i.20
-temp.30 = int 20
-temp.31 = temp.29 > temp.30
+getprop temp.31, 0
+temp.32 = int 1
+temp.33 = temp.31 + temp.32
+temp.34 = temp.33
+storeprop temp.34, 0
+temp.35 = i.25
+temp.36 = int 20
+temp.37 = temp.35 > temp.36
 jmp 5
 
 ---- block 5 ----
-conditional_jump temp.31 7 8
+conditional_jump temp.37 7 8
 
 ---- block 7 ----
 jmp 1
@@ -106,36 +112,39 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.16 = int 0
+temp.19 = int 0
+i.20 = temp.19
 jmp 0
 
 ---- block 0 ----
-i.17 = φ(i.16 from 2, i.20 from 3, i.20 from 9)
-temp.18 = i.17
-temp.19 = int 1
-i.20 = i.17 + temp.19
-temp.21 = i.20
-temp.22 = int 2
-temp.23 = i.20 %% temp.22
-temp.24 = int 0
-temp.25 = temp.23 == temp.24
-conditional_jump temp.25 3 4
+i.21 = φ(temp.19 from 2, i.25 from 3, i.25 from 9)
+temp.22 = i.21
+temp.23 = int 1
+temp.24 = i.21 + temp.23
+i.25 = temp.24
+temp.26 = temp.24
+temp.27 = int 2
+temp.28 = temp.24 %% temp.27
+temp.29 = int 0
+temp.30 = temp.28 == temp.29
+conditional_jump temp.30 3 4
 
 ---- block 3 ----
 jmp 0
 
 ---- block 4 ----
-getprop temp.26, 0
-temp.27 = int 1
-temp.28 = temp.26 + temp.27
-storeprop temp.28, 0
-temp.29 = i.20
-temp.30 = int 20
-temp.31 = i.20 > temp.30
+getprop temp.31, 0
+temp.32 = int 1
+temp.33 = temp.31 + temp.32
+temp.34 = temp.33
+storeprop temp.33, 0
+temp.35 = temp.24
+temp.36 = int 20
+temp.37 = temp.24 > temp.36
 jmp 5
 
 ---- block 5 ----
-conditional_jump temp.31 7 8
+conditional_jump temp.37 7 8
 
 ---- block 7 ----
 jmp 1
@@ -155,33 +164,34 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.16 = int 0
+temp.19 = int 0
 jmp 0
 
 ---- block 0 ----
-i.17 = φ(i.16 from 2, i.20 from 3, i.20 from 9)
-temp.19 = int 1
-i.20 = i.17 + temp.19
-temp.22 = int 2
-temp.23 = i.20 %% temp.22
-temp.24 = int 0
-temp.25 = temp.23 == temp.24
-conditional_jump temp.25 3 4
+i.21 = φ(temp.19 from 2, i.25 from 3, i.25 from 9)
+temp.23 = int 1
+temp.24 = i.21 + temp.23
+i.25 = temp.24
+temp.27 = int 2
+temp.28 = temp.24 %% temp.27
+temp.29 = int 0
+temp.30 = temp.28 == temp.29
+conditional_jump temp.30 3 4
 
 ---- block 3 ----
 jmp 0
 
 ---- block 4 ----
-getprop temp.26, 0
-temp.27 = int 1
-temp.28 = temp.26 + temp.27
-storeprop temp.28, 0
-temp.30 = int 20
-temp.31 = i.20 > temp.30
+getprop temp.31, 0
+temp.32 = int 1
+temp.33 = temp.31 + temp.32
+storeprop temp.33, 0
+temp.36 = int 20
+temp.37 = temp.24 > temp.36
 jmp 5
 
 ---- block 5 ----
-conditional_jump temp.31 7 8
+conditional_jump temp.37 7 8
 
 ---- block 7 ----
 jmp 1
@@ -201,27 +211,28 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.16 = int 0
+temp.19 = int 0
 jmp 0
 
 ---- block 0 ----
-i.17 = φ(i.16 from 2, i.20 from 3, i.20 from 9, i.20 from 0, i.20 from 8)
-temp.19 = int 1
-i.20 = i.17 + temp.19
-temp.22 = int 2
-temp.23 = i.20 %% temp.22
-temp.24 = int 0
-temp.25 = temp.23 == temp.24
-conditional_jump temp.25 0 4
+i.21 = φ(temp.19 from 2, i.25 from 3, i.25 from 9, i.25 from 0, i.25 from 8)
+temp.23 = int 1
+temp.24 = i.21 + temp.23
+i.25 = temp.24
+temp.27 = int 2
+temp.28 = temp.24 %% temp.27
+temp.29 = int 0
+temp.30 = temp.28 == temp.29
+conditional_jump temp.30 0 4
 
 ---- block 4 ----
-getprop temp.26, 0
-temp.27 = int 1
-temp.28 = temp.26 + temp.27
-storeprop temp.28, 0
-temp.30 = int 20
-temp.31 = i.20 > temp.30
-conditional_jump temp.31 7 8
+getprop temp.31, 0
+temp.32 = int 1
+temp.33 = temp.31 + temp.32
+storeprop temp.33, 0
+temp.36 = int 20
+temp.37 = temp.24 > temp.36
+conditional_jump temp.37 7 8
 
 ---- block 7 ----
 return 
@@ -235,27 +246,28 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.16 = int 0
+temp.19 = int 0
 jmp 0
 
 ---- block 0 ----
-i.17 = φ(i.16 from 2, i.20 from 0, i.20 from 8)
-temp.19 = int 1
-i.20 = i.17 + temp.19
-temp.22 = int 2
-temp.23 = i.20 %% temp.22
-temp.24 = int 0
-temp.25 = temp.23 == temp.24
-conditional_jump temp.25 0 4
+i.21 = φ(temp.19 from 2, i.25 from 0, i.25 from 8)
+temp.23 = int 1
+temp.24 = i.21 + temp.23
+i.25 = temp.24
+temp.27 = int 2
+temp.28 = temp.24 %% temp.27
+temp.29 = int 0
+temp.30 = temp.28 == temp.29
+conditional_jump temp.30 0 4
 
 ---- block 4 ----
-getprop temp.26, 0
-temp.27 = int 1
-temp.28 = temp.26 + temp.27
-storeprop temp.28, 0
-temp.30 = int 20
-temp.31 = i.20 > temp.30
-conditional_jump temp.31 7 8
+getprop temp.31, 0
+temp.32 = int 1
+temp.33 = temp.31 + temp.32
+storeprop temp.33, 0
+temp.36 = int 20
+temp.37 = temp.24 > temp.36
+conditional_jump temp.37 7 8
 
 ---- block 7 ----
 return 
@@ -269,27 +281,28 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.16 = int 0
+temp.19 = int 0
 jmp 0
 
 ---- block 0 ----
-i.17 = φ(i.16 from 2, i.20 from 0, i.20 from 8, i.20 from 4)
-temp.19 = int 1
-i.20 = i.17 + temp.19
-temp.22 = int 2
-temp.23 = i.20 %% temp.22
-temp.24 = int 0
-temp.25 = temp.23 == temp.24
-conditional_jump temp.25 0 4
+i.21 = φ(temp.19 from 2, i.25 from 0, i.25 from 8, i.25 from 4)
+temp.23 = int 1
+temp.24 = i.21 + temp.23
+i.25 = temp.24
+temp.27 = int 2
+temp.28 = temp.24 %% temp.27
+temp.29 = int 0
+temp.30 = temp.28 == temp.29
+conditional_jump temp.30 0 4
 
 ---- block 4 ----
-getprop temp.26, 0
-temp.27 = int 1
-temp.28 = temp.26 + temp.27
-storeprop temp.28, 0
-temp.30 = int 20
-temp.31 = i.20 > temp.30
-conditional_jump temp.31 7 0
+getprop temp.31, 0
+temp.32 = int 1
+temp.33 = temp.31 + temp.32
+storeprop temp.33, 0
+temp.36 = int 20
+temp.37 = temp.24 > temp.36
+conditional_jump temp.37 7 0
 
 ---- block 7 ----
 return 
@@ -300,27 +313,28 @@ return
 fn @toplevel() -> 
 
 ---- block 2 ----
-i.16 = int 0
+temp.19 = int 0
 jmp 0
 
 ---- block 0 ----
-i.17 = φ(i.16 from 2, i.20 from 0, i.20 from 4)
-temp.19 = int 1
-i.20 = i.17 + temp.19
-temp.22 = int 2
-temp.23 = i.20 %% temp.22
-temp.24 = int 0
-temp.25 = temp.23 == temp.24
-conditional_jump temp.25 0 4
+i.21 = φ(temp.19 from 2, i.25 from 0, i.25 from 4)
+temp.23 = int 1
+temp.24 = i.21 + temp.23
+i.25 = temp.24
+temp.27 = int 2
+temp.28 = temp.24 %% temp.27
+temp.29 = int 0
+temp.30 = temp.28 == temp.29
+conditional_jump temp.30 0 4
 
 ---- block 4 ----
-getprop temp.26, 0
-temp.27 = int 1
-temp.28 = temp.26 + temp.27
-storeprop temp.28, 0
-temp.30 = int 20
-temp.31 = i.20 > temp.30
-conditional_jump temp.31 7 0
+getprop temp.31, 0
+temp.32 = int 1
+temp.33 = temp.31 + temp.32
+storeprop temp.33, 0
+temp.36 = int 20
+temp.37 = temp.24 > temp.36
+conditional_jump temp.37 7 0
 
 ---- block 7 ----
 return

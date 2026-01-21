@@ -8,24 +8,25 @@ input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisat
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.7 = int 5
-spawn spawned(temp.7)
+temp.8 = int 5
+spawn spawned(temp.8)
 return 
 
 =======================
 fn foo(x.2) -> int
 
 ---- block 0 ----
-temp.8 = x.2
-return temp.8
+temp.9 = x.2
+return temp.9
 
 =======================
 fn spawned(x.3) -> 
 
 ---- block 0 ----
 wait
-temp.9 = x.3
-storeprop temp.9, 0
+temp.10 = x.3
+temp.11 = temp.10
+storeprop temp.11, 0
 return 
 
 
@@ -34,8 +35,8 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.7 = int 5
-spawn spawned(temp.7)
+temp.8 = int 5
+spawn spawned(temp.8)
 return 
 
 =======================
@@ -43,6 +44,7 @@ fn spawned(x.3) ->
 
 ---- block 0 ----
 wait
-temp.9 = x.3
-storeprop temp.9, 0
+temp.10 = x.3
+temp.11 = temp.10
+storeprop temp.11, 0
 return
