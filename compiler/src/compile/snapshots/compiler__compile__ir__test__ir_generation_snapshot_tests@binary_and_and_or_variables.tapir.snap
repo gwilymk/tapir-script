@@ -1,0 +1,27 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/binary_and_and_or_variables.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 2 ----
+temp.2 = bool true
+temp.1 = bool false
+conditional_jump temp.2 0 1
+
+---- block 0 ----
+temp.1 = bool false
+jmp 1
+
+---- block 1 ----
+y.0 = bool true
+conditional_jump temp.1 4 3
+
+---- block 4 ----
+return 
+
+---- block 3 ----
+y.0 = bool true
+jmp 4

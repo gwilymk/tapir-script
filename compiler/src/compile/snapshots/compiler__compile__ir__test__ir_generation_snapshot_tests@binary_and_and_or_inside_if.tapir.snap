@@ -1,0 +1,37 @@
+---
+source: crates/tapir-script/compiler/src/compile/ir.rs
+expression: output
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/ir/binary_and_and_or_inside_if.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 2 ----
+temp.3 = bool true
+temp.2 = bool false
+conditional_jump temp.3 0 1
+
+---- block 0 ----
+temp.2 = bool true
+jmp 1
+
+---- block 1 ----
+temp.1 = bool true
+conditional_jump temp.2 4 3
+
+---- block 4 ----
+conditional_jump temp.1 5 6
+
+---- block 3 ----
+temp.1 = bool false
+jmp 4
+
+---- block 5 ----
+x.0 = bool true
+jmp 7
+
+---- block 6 ----
+jmp 7
+
+---- block 7 ----
+return

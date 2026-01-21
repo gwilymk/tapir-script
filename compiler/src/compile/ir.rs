@@ -511,6 +511,44 @@ impl BlockVisitor {
                         self.blocks_for_expression(lhs, lhs_target, symtab);
                         self.blocks_for_expression(rhs, target_symbol, symtab);
                     }
+                    BinaryOperator::And | BinaryOperator::Or => {
+                        // first calculate the value of the lhs
+                        let is_or = *operator == BinaryOperator::Or;
+
+                        self.blocks_for_expression(lhs, lhs_target, symtab);
+
+                        let rhs_block_id = self.next_block_id();
+                        let continue_block_id = self.next_block_id();
+
+                        // if it's &&, then we should start by assigning false to the target_symbol and jumping only
+                        // if the initial lhs is true. For || it should be the other way around
+                        self.current_block.push(TapIr {
+                            instr: TapIrInstr::Constant(target_symbol, Constant::Bool(is_or)),
+                        });
+
+                        self.finalize_block(
+                            BlockExitInstr::ConditionalJump {
+                                test: lhs_target,
+                                if_true: if is_or {
+                                    continue_block_id
+                                } else {
+                                    rhs_block_id
+                                },
+                                if_false: if !is_or {
+                                    continue_block_id
+                                } else {
+                                    rhs_block_id
+                                },
+                            },
+                            Some(rhs_block_id),
+                        );
+
+                        self.blocks_for_expression(rhs, target_symbol, symtab);
+                        self.finalize_block(
+                            BlockExitInstr::JumpToBlock(continue_block_id),
+                            Some(continue_block_id),
+                        );
+                    }
                     operator => {
                         let rhs_target = symtab.new_temporary();
 
