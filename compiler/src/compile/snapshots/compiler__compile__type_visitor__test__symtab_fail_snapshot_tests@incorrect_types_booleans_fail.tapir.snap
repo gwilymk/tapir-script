@@ -3,7 +3,7 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_types_booleans_fail.tapir
 ---
-Error: Left hand side has type int but right hand side has type fix
+[E0006] Error: Left hand side has type int but right hand side has type fix
    ╭─[ incorrect_types_booleans_fail.tapir:1:20 ]
    │
  1 │ var x = (3 + 5) + (3 * 3.5);

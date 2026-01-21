@@ -3,7 +3,7 @@ source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
 expression: diagnostics.pretty_string(false)
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/variable_fail.tapir
 ---
-Error: Unknown variable 'z'
+[E0001] Error: Unknown variable 'z'
    ╭─[ variable_fail.tapir:2:9 ]
    │
  2 │ var y = z + 3; # z is not defined

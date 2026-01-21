@@ -3,7 +3,7 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/booleans_fail.tapir
 ---
-Error: Incorrect type, expected bool but got int
+[E0002] Error: Incorrect type, expected bool but got int
    ╭─[ booleans_fail.tapir:2:5 ]
    │
  1 │ var x = true;
@@ -13,7 +13,7 @@ Error: Incorrect type, expected bool but got int
    │     ┬  
    │     ╰── Assigning int
 ───╯
-Error: Incorrect type, expected bool but got int
+[E0002] Error: Incorrect type, expected bool but got int
    ╭─[ booleans_fail.tapir:5:5 ]
    │
  4 │ var y = false;

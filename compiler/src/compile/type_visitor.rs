@@ -9,7 +9,7 @@ use crate::{
         FunctionModifiers, FunctionReturn, InternalOrExternalFunctionId, MaybeResolved, SymbolId,
     },
     builtins::BuiltinVariable,
-    reporting::{CompilerErrorKind, CountMismatchExtras, Diagnostics},
+    reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
     types::Type,
 };
@@ -158,23 +158,34 @@ impl<'input> TypeVisitor<'input> {
                 return;
             }
 
-            let error = if let Some(property) = symtab.get_property(symbol_id) {
-                CompilerErrorKind::PropertyTypeError {
+            if let Some(property) = symtab.get_property(symbol_id) {
+                ErrorKind::PropertyTypeError {
                     property_name: property.name.clone(),
                     expected: table_type,
                     actual: ty,
-                    actual_span: value_span,
                 }
+                .at(value_span)
+                .label(value_span, DiagnosticMessage::AssigningType { ty })
+                .emit(diagnostics);
             } else {
-                CompilerErrorKind::TypeError {
+                let builder = ErrorKind::TypeError {
                     expected: table_type,
-                    expected_span,
                     actual: ty,
-                    actual_span: value_span,
                 }
-            };
+                .at(value_span)
+                .label(value_span, DiagnosticMessage::AssigningType { ty });
 
-            diagnostics.add_message(error.into_message(value_span));
+                let builder = if let Some(expected_span) = expected_span {
+                    builder.label(
+                        expected_span,
+                        DiagnosticMessage::DefinedAs { ty: table_type },
+                    )
+                } else {
+                    builder
+                };
+
+                builder.emit(diagnostics);
+            }
 
             return;
         }
@@ -201,10 +212,12 @@ impl<'input> TypeVisitor<'input> {
         match self.type_table.get(symbol_id.0 as usize) {
             Some(Some((ty, _))) => *ty,
             _ => {
-                diagnostics.add_message(
-                    CompilerErrorKind::UnknownType(symtab.name_for_symbol(symbol_id).into_owned())
-                        .into_message(span),
-                );
+                ErrorKind::UnknownType {
+                    name: symtab.name_for_symbol(symbol_id).into_owned(),
+                }
+                .at(span)
+                .label(span, DiagnosticMessage::UnknownTypeLabel)
+                .emit(diagnostics);
 
                 Type::Error
             }
@@ -237,14 +250,22 @@ impl<'input> TypeVisitor<'input> {
         } = &function.modifiers
             && !function.return_types.types.is_empty()
         {
-            diagnostics.add_message(
-                CompilerErrorKind::EventFunctionsShouldNotHaveAReturnType {
-                    return_type_span: function.return_types.span,
-                    function_name: function.name.to_string(),
-                    event_span: *event_span,
-                }
-                .into_message(function.span),
-            );
+            ErrorKind::EventFunctionsShouldNotHaveAReturnType {
+                function_name: function.name.to_string(),
+            }
+            .at(function.span)
+            .label(
+                function.return_types.span,
+                DiagnosticMessage::ExpectedNoReturnType,
+            )
+            .label(
+                *event_span,
+                DiagnosticMessage::DeclaredAsEventHandler {
+                    name: function.name.to_string(),
+                },
+            )
+            .help(DiagnosticMessage::RemoveReturnTypeOrChangeToRegularFunction)
+            .emit(diagnostics);
 
             // we've added an error, so compilation will fail
             // but we also want to warn about invalid returns etc, so
@@ -263,13 +284,15 @@ impl<'input> TypeVisitor<'input> {
         if !function.return_types.types.is_empty()
             && block_analysis_result != BlockAnalysisResult::AllBranchesReturn
         {
-            diagnostics.add_message(
-                CompilerErrorKind::FunctionDoesNotHaveReturn {
-                    name: function.name.to_string(),
-                    return_location: function.return_types.span,
-                }
-                .into_message(function.span),
-            );
+            ErrorKind::FunctionDoesNotHaveReturn {
+                name: function.name.to_string(),
+            }
+            .at(function.span)
+            .label(
+                function.return_types.span,
+                DiagnosticMessage::FunctionReturnsResults,
+            )
+            .emit(diagnostics);
         }
     }
 
@@ -314,27 +337,37 @@ impl<'input> TypeVisitor<'input> {
                     };
 
                     if value_types_and_spans.len() != idents.len() {
-                        let extras = if idents.len() > value_types_and_spans.len() {
-                            CountMismatchExtras::Idents(
-                                idents[value_types_and_spans.len()..]
-                                    .iter()
-                                    .map(|i| i.span)
-                                    .collect(),
-                            )
-                        } else {
-                            CountMismatchExtras::Expressions(
-                                values[idents.len()..].iter().map(|v| v.span).collect(),
-                            )
-                        };
+                        let (extra_spans, label_message) =
+                            if idents.len() > value_types_and_spans.len() {
+                                (
+                                    idents[value_types_and_spans.len()..]
+                                        .iter()
+                                        .map(|i| i.span)
+                                        .collect::<Vec<_>>(),
+                                    DiagnosticMessage::NoValueForVariable,
+                                )
+                            } else {
+                                (
+                                    values[idents.len()..]
+                                        .iter()
+                                        .map(|v| v.span)
+                                        .collect::<Vec<_>>(),
+                                    DiagnosticMessage::NoVariableToReceiveValue,
+                                )
+                            };
 
-                        diagnostics.add_message(
-                            CompilerErrorKind::CountMismatch {
-                                ident_count: idents.len(),
-                                expr_count: value_types_and_spans.len(),
-                                extras,
-                            }
-                            .into_message(statement.span),
-                        );
+                        let mut builder = ErrorKind::CountMismatch {
+                            ident_count: idents.len(),
+                            expr_count: value_types_and_spans.len(),
+                        }
+                        .at(statement.span)
+                        .help(DiagnosticMessage::WhenAssigningMultipleVars);
+
+                        for span in extra_spans {
+                            builder = builder.label(span, label_message.clone());
+                        }
+
+                        builder.emit(diagnostics);
                     }
 
                     for ((symbol, (value_type, value_span)), ident) in symbol_ids
@@ -359,12 +392,15 @@ impl<'input> TypeVisitor<'input> {
                 } => {
                     let condition_type = self.type_for_expression(condition, symtab, diagnostics);
                     if !matches!(condition_type, Type::Bool | Type::Error) {
-                        diagnostics.add_message(
-                            CompilerErrorKind::InvalidTypeForIfCondition {
-                                got: condition_type,
-                            }
-                            .into_message(condition.span),
-                        );
+                        ErrorKind::InvalidTypeForIfCondition {
+                            got: condition_type,
+                        }
+                        .at(condition.span)
+                        .label(
+                            condition.span,
+                            DiagnosticMessage::HasType { ty: condition_type },
+                        )
+                        .emit(diagnostics);
                     }
 
                     let lhs_analysis_result =
@@ -389,14 +425,25 @@ impl<'input> TypeVisitor<'input> {
                     }
 
                     if actual_return_types.len() != expected_return_type.types.len() {
-                        diagnostics.add_message(
-                            CompilerErrorKind::IncorrectNumberOfReturnTypes {
-                                expected: expected_return_type.types.len(),
-                                actual: actual_return_types.len(),
-                                function_return_location: expected_return_type.span,
-                            }
-                            .into_message(statement.span),
-                        );
+                        ErrorKind::IncorrectNumberOfReturnTypes {
+                            expected: expected_return_type.types.len(),
+                            actual: actual_return_types.len(),
+                        }
+                        .at(statement.span)
+                        .label(
+                            statement.span,
+                            DiagnosticMessage::HasReturnValues {
+                                count: actual_return_types.len(),
+                            },
+                        )
+                        .label(
+                            expected_return_type.span,
+                            DiagnosticMessage::FunctionReturnsValues {
+                                count: expected_return_type.types.len(),
+                            },
+                        )
+                        .note(DiagnosticMessage::FunctionsMustReturnFixedNumber)
+                        .emit(diagnostics);
                     }
 
                     for (i, (actual, expected)) in actual_return_types
@@ -408,15 +455,14 @@ impl<'input> TypeVisitor<'input> {
                             && *actual != Type::Error
                             && expected.t != Type::Error
                         {
-                            diagnostics.add_message(
-                                CompilerErrorKind::MismatchingReturnTypes {
-                                    expected: expected.t,
-                                    actual: *actual,
-                                    expected_location: expected.span,
-                                    actual_location: values[i].span,
-                                }
-                                .into_message(statement.span),
-                            );
+                            ErrorKind::MismatchingReturnTypes {
+                                expected: expected.t,
+                                actual: *actual,
+                            }
+                            .at(statement.span)
+                            .label(values[i].span, DiagnosticMessage::HasType { ty: *actual })
+                            .label(expected.span, DiagnosticMessage::HasType { ty: expected.t })
+                            .emit(diagnostics);
                         }
                     }
 
@@ -479,15 +525,26 @@ impl<'input> TypeVisitor<'input> {
                                 },
                             )
                         {
-                            diagnostics.add_message(
-                                CompilerErrorKind::TriggerIncorrectArgs {
-                                    name: name.to_owned(),
-                                    first_definition_span: trigger_info.span,
-                                    first_definition_args: trigger_info.ty.clone(),
-                                    second_definition_args: trigger_arguments,
-                                }
-                                .into_message(statement.span),
-                            );
+                            ErrorKind::TriggerIncorrectArgs {
+                                name: name.to_string(),
+                                first_definition_args: trigger_info.ty.clone(),
+                                second_definition_args: trigger_arguments.clone(),
+                            }
+                            .at(statement.span)
+                            .label(
+                                trigger_info.span,
+                                DiagnosticMessage::CalledWithTypes {
+                                    types: trigger_info.ty.clone(),
+                                },
+                            )
+                            .label(
+                                statement.span,
+                                DiagnosticMessage::CalledWithTypes {
+                                    types: trigger_arguments.clone(),
+                                },
+                            )
+                            .help(DiagnosticMessage::TriggerCallsMustHaveSameArgTypes)
+                            .emit(diagnostics);
                         }
 
                         trigger_index = trigger_info.index;
@@ -522,12 +579,13 @@ impl<'input> TypeVisitor<'input> {
             if let Some((ty, _span)) = ty {
                 types.push(ty);
             } else {
-                diagnostics.add_message(
-                    CompilerErrorKind::UnknownType(
-                        symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),
-                    )
-                    .into_message(symtab.span_for_symbol(SymbolId(i as u64))),
-                );
+                let span = symtab.span_for_symbol(SymbolId(i as u64));
+                ErrorKind::UnknownType {
+                    name: symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),
+                }
+                .at(span)
+                .label(span, DiagnosticMessage::UnknownTypeLabel)
+                .emit(diagnostics);
             }
         }
 
@@ -564,19 +622,22 @@ impl<'input> TypeVisitor<'input> {
                 }
 
                 if lhs_type != rhs_type && *operator != BinaryOperator::Then {
-                    diagnostics.add_message(
-                        CompilerErrorKind::BinaryOperatorTypeError { lhs_type, rhs_type }
-                            .into_message(expression.span),
-                    );
+                    ErrorKind::BinaryOperatorTypeError { lhs_type, rhs_type }
+                        .at(expression.span)
+                        .label(
+                            expression.span,
+                            DiagnosticMessage::MismatchingTypesOnBinaryOperator,
+                        )
+                        .emit(diagnostics);
 
                     return Type::Error;
                 }
 
                 if !operator.can_handle_type(lhs_type) {
-                    diagnostics.add_message(
-                        CompilerErrorKind::InvalidTypeForBinaryOperator { type_: lhs_type }
-                            .into_message(lhs.span),
-                    );
+                    ErrorKind::InvalidTypeForBinaryOperator { type_: lhs_type }
+                        .at(lhs.span)
+                        .label(lhs.span, DiagnosticMessage::BinaryOperatorCannotHandleType)
+                        .emit(diagnostics);
 
                     return Type::Error;
                 }
@@ -598,12 +659,15 @@ impl<'input> TypeVisitor<'input> {
                 );
 
                 if types.len() != 1 {
-                    diagnostics.add_message(
-                        CompilerErrorKind::FunctionMustReturnOneValueInThisLocation {
-                            actual: types.len(),
-                        }
-                        .into_message(expression.span),
-                    );
+                    ErrorKind::FunctionMustReturnOneValueInThisLocation {
+                        actual: types.len(),
+                    }
+                    .at(expression.span)
+                    .label(
+                        expression.span,
+                        DiagnosticMessage::FunctionMustReturnOneHere,
+                    )
+                    .emit(diagnostics);
                     Type::Error
                 } else {
                     types[0]
@@ -654,40 +718,55 @@ impl<'input> TypeVisitor<'input> {
         let function_info = self.functions.get(&function_id).unwrap();
 
         if function_info.modifiers.is_event_handler.is_some() {
-            diagnostics.add_message(
-                CompilerErrorKind::CannotCallEventHandler {
-                    function_span: function_info.span,
-                    function_name: name.to_string(),
-                }
-                .into_message(span),
-            );
+            ErrorKind::CannotCallEventHandler {
+                function_name: name.to_string(),
+            }
+            .at(span)
+            .label(span, DiagnosticMessage::ThisCallHere)
+            .label(function_info.span, DiagnosticMessage::ThisEventHandler)
+            .note(DiagnosticMessage::CannotCallEventHandlerNote {
+                function_name: name.to_string(),
+            })
+            .emit(diagnostics);
 
             return vec![Type::Error];
         } else if argument_types.len() != function_info.args.len() {
-            diagnostics.add_message(
-                CompilerErrorKind::IncorrectNumberOfArguments {
-                    expected: function_info.args.len(),
-                    actual: argument_types.len(),
-                    function_span: function_info.span,
-                    function_name: name.to_string(),
-                }
-                .into_message(span),
-            );
+            ErrorKind::IncorrectNumberOfArguments {
+                function_name: name.to_string(),
+                expected: function_info.args.len(),
+                actual: argument_types.len(),
+            }
+            .at(span)
+            .label(
+                span,
+                DiagnosticMessage::GotArguments {
+                    count: argument_types.len(),
+                },
+            )
+            .label(
+                function_info.span,
+                DiagnosticMessage::ExpectedArguments {
+                    count: function_info.args.len(),
+                },
+            )
+            .emit(diagnostics);
         } else {
             for ((actual, actual_span), arg_info) in argument_types.iter().zip(&function_info.args)
             {
                 if *actual != arg_info.ty && *actual != Type::Error && arg_info.ty != Type::Error {
-                    diagnostics.add_message(
-                        CompilerErrorKind::FunctionArgumentTypeError {
-                            function_name: function_info.name.to_string(),
-                            argument_name: arg_info.name.to_string(),
-                            expected: arg_info.ty,
-                            expected_span: arg_info.span,
-                            actual: *actual,
-                            actual_span: *actual_span,
-                        }
-                        .into_message(*actual_span),
-                    );
+                    ErrorKind::FunctionArgumentTypeError {
+                        function_name: function_info.name.to_string(),
+                        argument_name: arg_info.name.to_string(),
+                        expected: arg_info.ty,
+                        actual: *actual,
+                    }
+                    .at(*actual_span)
+                    .label(
+                        arg_info.span,
+                        DiagnosticMessage::ExpectedType { ty: arg_info.ty },
+                    )
+                    .label(*actual_span, DiagnosticMessage::PassingType { ty: *actual })
+                    .emit(diagnostics);
                 }
             }
         }
@@ -816,12 +895,7 @@ mod test {
             let all_types: Vec<_> = symtab
                 .all_symbols()
                 .map(|(name, id)| (name, type_table.type_for_symbol(id, symtab)))
-                .chain(
-                    symtab
-                        .globals()
-                        .iter()
-                        .map(|g| (g.name.as_str(), g.ty)),
-                )
+                .chain(symtab.globals().iter().map(|g| (g.name.as_str(), g.ty)))
                 .collect();
 
             assert_ron_snapshot!(all_types);

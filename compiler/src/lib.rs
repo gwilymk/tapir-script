@@ -19,7 +19,7 @@ lalrpop_mod!(grammar);
 mod grammar_test;
 
 pub use compile::{CompileSettings, Property};
-pub use reporting::{Message, format::DiagnosticCache};
+pub use reporting::format::DiagnosticCache;
 pub use types::Type;
 
 pub fn compile(

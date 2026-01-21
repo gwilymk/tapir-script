@@ -355,11 +355,7 @@ impl Bytecode {
         extern_functions: Box<[ExternFunction]>,
         symtab: &SymTab,
     ) -> Self {
-        let globals = symtab
-            .globals()
-            .iter()
-            .map(|g| g.initial_value)
-            .collect();
+        let globals = symtab.globals().iter().map(|g| g.initial_value).collect();
 
         Self {
             data: vec![],

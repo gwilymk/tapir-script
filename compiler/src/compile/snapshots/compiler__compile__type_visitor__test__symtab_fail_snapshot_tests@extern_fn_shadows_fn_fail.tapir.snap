@@ -3,7 +3,7 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/extern_fn_shadows_fn_fail.tapir
 ---
-Error: Function with name 'foo' already exists
+[E0011] Error: Function with name 'foo' already exists
    ╭─[ extern_fn_shadows_fn_fail.tapir:1:4 ]
    │
  1 │ fn foo() -> int {

@@ -3,7 +3,7 @@ source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
 expression: diagnostics.pretty_string(false)
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/multi_assign_partial_undeclared_fail.tapir
 ---
-Error: Unknown variable 'b'
+[E0001] Error: Unknown variable 'b'
    ╭─[ multi_assign_partial_undeclared_fail.tapir:3:4 ]
    │
  3 │ a, b = 2, 3;

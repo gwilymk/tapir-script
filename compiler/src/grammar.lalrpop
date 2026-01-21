@@ -1,10 +1,9 @@
 use crate::{
     tokens::{
-        FileId, LexicalError, LexicalErrorKind, Token, Span,
+        FileId, LexicalError, Token, Span,
     },
     ast::*,
-    Message,
-    reporting::{Diagnostics, ParseError},
+    reporting::{Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind},
     types::Type,
 };
 
@@ -99,7 +98,11 @@ ExternFunctionDefinition: ExternFunctionDefinition<'input> = {
         ExternFunctionDefinition { name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() },
     
     "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <block_start: @L> Block <block_end: @R> => {
-        diagnostics.add_message(ParseError::ExternFunctionWithBlock { name: name.to_string() }.with_span(file_id, block_start, block_end));
+        let span = Span::new(file_id, block_start, block_end);
+        ErrorKind::ExternFunctionWithBlock { name: name.to_string() }
+            .at(span)
+            .label(span, DiagnosticMessage::ExternFunctionCannotHaveBody)
+            .emit(diagnostics);
         ExternFunctionDefinition { name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() }
     }
 }
@@ -139,7 +142,11 @@ TypeWithoutLocation: Type = {
     t_bool => Type::Bool,
     t_fix => Type::Fix,
     <start: @L> <ident: identifier> <end: @R> => {
-        diagnostics.add_message(ParseError::UnknownType { token: ident.to_string() }.with_span(file_id, start, end));
+        let span = Span::new(file_id, start, end);
+        ErrorKind::UnknownTypeToken { token: ident.to_string() }
+            .at(span)
+            .label(span, DiagnosticMessage::UnknownTypeLabel2)
+            .emit(diagnostics);
         Type::Error
     },
 }
@@ -243,7 +250,7 @@ Term: Expression<'input> = {
     <start: @L> <ident: identifier> <end: @R> => ExpressionKind::Variable(ident).with_span(file_id, start, end),
     <start: @L> <b: Bool> <end: @R> => ExpressionKind::Bool(b).with_span(file_id, start, end),
     <start: @L> <error: !> <end: @R> => {
-        diagnostics.add_message(Message::from_lalrpop(error.error, file_id));
+        diagnostics.add(Diagnostic::from_lalrpop(error.error, file_id));
         ExpressionKind::Error.with_span(file_id, start, end)
     },
 
@@ -258,14 +265,22 @@ Num: Expression<'input> = {
     <start: @L> <value: integer> <end: @R> => match value.parse::<i32>() {
         Ok(value) => ExpressionKind::Integer(value).with_span(file_id, start, end),
         Err(e) => {
-            diagnostics.add_message(LexicalErrorKind::from(e).with_span(file_id, start, end));
+            let span = Span::new(file_id, start, end);
+            ErrorKind::InvalidNumber { error: e }
+                .at(span)
+                .label(span, DiagnosticMessage::InvalidInteger)
+                .emit(diagnostics);
             ExpressionKind::Error.with_span(file_id, start, end)
         }
     },
     <start: @L> <value: fix> <end: @R> => match Fix::from_str_radix(value, 10) {
         Ok(value) => ExpressionKind::Fix(value).with_span(file_id, start, end),
-        Err(e) => {
-            diagnostics.add_message(LexicalErrorKind::from(e).with_span(file_id, start, end));
+        Err(_e) => {
+            let span = Span::new(file_id, start, end);
+            ErrorKind::InvalidFix
+                .at(span)
+                .label(span, DiagnosticMessage::InvalidFixnumLabel)
+                .emit(diagnostics);
             ExpressionKind::Error.with_span(file_id, start, end)
         }
     }

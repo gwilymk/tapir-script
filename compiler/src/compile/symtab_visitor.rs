@@ -6,7 +6,7 @@ use crate::{
         InternalOrExternalFunctionId, MaybeResolved, Script, Statement, StatementKind, SymbolId,
     },
     builtins::BuiltinVariable,
-    reporting::{CompilerErrorKind, Diagnostics},
+    reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
     types::Type,
 };
@@ -59,12 +59,13 @@ fn evaluate_constant_initializer(
         ExpressionKind::Bool(b) => (Type::Bool, *b as i32),
         _ => {
             // Not a constant literal
-            diagnostics.add_message(
-                CompilerErrorKind::GlobalInitializerNotConstant {
-                    name: global_name.to_string(),
-                }
-                .into_message(expr.span),
-            );
+            ErrorKind::GlobalInitializerNotConstant {
+                name: global_name.to_string(),
+            }
+            .at(expr.span)
+            .label(expr.span, DiagnosticMessage::NotAConstant)
+            .note(DiagnosticMessage::GlobalInitializersMustBeConstant)
+            .emit(diagnostics);
             (Type::Error, 0)
         }
     }
@@ -92,14 +93,13 @@ impl<'input> SymTabVisitor<'input> {
             function.meta.set(fid);
 
             if let Some(other_span) = function_declarations.insert(function.name, function.span) {
-                diagnostics.add_message(
-                    CompilerErrorKind::FunctionAlreadyDeclared {
-                        function_name: function.name.to_string(),
-                        old_function_declaration: other_span,
-                        new_function_declaration: function.span,
-                    }
-                    .into_message(function.span),
-                );
+                ErrorKind::FunctionAlreadyDeclared {
+                    name: function.name.to_string(),
+                }
+                .at(function.span)
+                .label(other_span, DiagnosticMessage::OriginallyDeclaredHere)
+                .label(function.span, DiagnosticMessage::AlsoDeclaredHere)
+                .emit(diagnostics);
             }
 
             functions_map.insert(function.name, InternalOrExternalFunctionId::External(fid));
@@ -111,14 +111,13 @@ impl<'input> SymTabVisitor<'input> {
             function.meta.set(fid);
 
             if let Some(other_span) = function_declarations.insert(function.name, function.span) {
-                diagnostics.add_message(
-                    CompilerErrorKind::FunctionAlreadyDeclared {
-                        function_name: function.name.to_string(),
-                        old_function_declaration: other_span,
-                        new_function_declaration: function.span,
-                    }
-                    .into_message(function.span),
-                );
+                ErrorKind::FunctionAlreadyDeclared {
+                    name: function.name.to_string(),
+                }
+                .at(function.span)
+                .label(other_span, DiagnosticMessage::OriginallyDeclaredHere)
+                .label(function.span, DiagnosticMessage::AlsoDeclaredHere)
+                .emit(diagnostics);
             }
 
             functions_map.insert(function.name, InternalOrExternalFunctionId::Internal(fid));
@@ -134,24 +133,34 @@ impl<'input> SymTabVisitor<'input> {
         // Process global declarations
         for (index, global) in script.globals.iter().enumerate() {
             // Check for conflicts with properties
-            if settings.properties.iter().any(|p| p.name == global.name.ident) {
-                diagnostics.add_message(
-                    CompilerErrorKind::GlobalConflictsWithProperty {
-                        name: global.name.ident.to_string(),
-                    }
-                    .into_message(global.name.span),
-                );
+            if settings
+                .properties
+                .iter()
+                .any(|p| p.name == global.name.ident)
+            {
+                ErrorKind::GlobalConflictsWithProperty {
+                    name: global.name.ident.to_string(),
+                }
+                .at(global.name.span)
+                .label(global.name.span, DiagnosticMessage::ConflictsWithProperty)
+                .emit(diagnostics);
                 continue;
             }
 
             // Check for conflicts with built-ins (reuse existing error)
             if BuiltinVariable::from_name(global.name.ident).is_some() {
-                diagnostics.add_message(
-                    CompilerErrorKind::CannotShadowBuiltin {
-                        name: global.name.ident.to_string(),
-                    }
-                    .into_message(global.name.span),
-                );
+                ErrorKind::CannotShadowBuiltin {
+                    name: global.name.ident.to_string(),
+                }
+                .at(global.name.span)
+                .label(
+                    global.name.span,
+                    DiagnosticMessage::CannotShadowBuiltinLabel,
+                )
+                .note(DiagnosticMessage::BuiltinVariableNote {
+                    name: global.name.ident.to_string(),
+                })
+                .emit(diagnostics);
                 continue;
             }
 
@@ -221,12 +230,15 @@ impl<'input> SymTabVisitor<'input> {
                     let mut statement_meta = vec![];
                     for ident in idents {
                         if BuiltinVariable::from_name(ident.ident).is_some() {
-                            diagnostics.add_message(
-                                CompilerErrorKind::CannotShadowBuiltin {
-                                    name: ident.ident.to_string(),
-                                }
-                                .into_message(ident.span),
-                            );
+                            ErrorKind::CannotShadowBuiltin {
+                                name: ident.ident.to_string(),
+                            }
+                            .at(ident.span)
+                            .label(ident.span, DiagnosticMessage::CannotShadowBuiltinLabel)
+                            .note(DiagnosticMessage::BuiltinVariableNote {
+                                name: ident.ident.to_string(),
+                            })
+                            .emit(diagnostics);
                         }
 
                         let symbol_id = self.symtab.new_symbol(ident.ident, ident.span);
@@ -247,21 +259,26 @@ impl<'input> SymTabVisitor<'input> {
                     let mut statement_meta = vec![];
                     for ident in idents {
                         if BuiltinVariable::from_name(ident.ident).is_some() {
-                            diagnostics.add_message(
-                                CompilerErrorKind::CannotShadowBuiltin {
-                                    name: ident.ident.to_string(),
-                                }
-                                .into_message(ident.span),
-                            );
+                            ErrorKind::CannotShadowBuiltin {
+                                name: ident.ident.to_string(),
+                            }
+                            .at(ident.span)
+                            .label(ident.span, DiagnosticMessage::CannotShadowBuiltinLabel)
+                            .note(DiagnosticMessage::BuiltinVariableNote {
+                                name: ident.ident.to_string(),
+                            })
+                            .emit(diagnostics);
                         }
 
                         if let Some(symbol_id) = self.symbol_names.get(ident.ident, &self.symtab) {
                             statement_meta.push(symbol_id);
                         } else {
-                            diagnostics.add_message(
-                                CompilerErrorKind::UnknownVariable(ident.ident.to_string())
-                                    .into_message(ident.span),
-                            );
+                            ErrorKind::UnknownVariable {
+                                name: ident.ident.to_string(),
+                            }
+                            .at(ident.span)
+                            .label(ident.span, DiagnosticMessage::UnknownVariableLabel)
+                            .emit(diagnostics);
 
                             // create a dummy symbol to ensure that the meta stays correct
                             statement_meta.push(self.symtab.new_symbol(ident.ident, ident.span));
@@ -298,12 +315,12 @@ impl<'input> SymTabVisitor<'input> {
                     if let Some(function) = self.function_names.get(name) {
                         statement.meta.set(*function);
                     } else {
-                        diagnostics.add_message(
-                            CompilerErrorKind::UnknownFunction {
-                                name: name.to_string(),
-                            }
-                            .into_message(statement.span),
-                        );
+                        ErrorKind::UnknownFunction {
+                            name: name.to_string(),
+                        }
+                        .at(statement.span)
+                        .label(statement.span, DiagnosticMessage::UnknownFunctionLabel)
+                        .emit(diagnostics);
                     }
 
                     for argument in arguments {
@@ -330,10 +347,12 @@ impl<'input> SymTabVisitor<'input> {
                 if let Some(symbol_id) = self.symbol_names.get(ident, &self.symtab) {
                     expr.meta.set(symbol_id);
                 } else {
-                    diagnostics.add_message(
-                        CompilerErrorKind::UnknownVariable(ident.to_string())
-                            .into_message(expr.span),
-                    );
+                    ErrorKind::UnknownVariable {
+                        name: ident.to_string(),
+                    }
+                    .at(expr.span)
+                    .label(expr.span, DiagnosticMessage::UnknownVariableLabel)
+                    .emit(diagnostics);
                 }
             }
             ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
@@ -344,12 +363,12 @@ impl<'input> SymTabVisitor<'input> {
                 if let Some(function) = self.function_names.get(name) {
                     expr.meta.set(*function);
                 } else {
-                    diagnostics.add_message(
-                        CompilerErrorKind::UnknownFunction {
-                            name: name.to_string(),
-                        }
-                        .into_message(expr.span),
-                    );
+                    ErrorKind::UnknownFunction {
+                        name: name.to_string(),
+                    }
+                    .at(expr.span)
+                    .label(expr.span, DiagnosticMessage::UnknownFunctionLabel)
+                    .emit(diagnostics);
                 }
 
                 for argument in arguments {
@@ -527,8 +546,7 @@ impl<'input> SymTab<'input> {
     }
 
     fn add_global(&mut self, name: &'input str, info: GlobalInfo) {
-        self.global_names
-            .insert(Cow::Borrowed(name), info.id);
+        self.global_names.insert(Cow::Borrowed(name), info.id);
         self.globals.push(info);
     }
 }

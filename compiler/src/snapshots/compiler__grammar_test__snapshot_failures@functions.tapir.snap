@@ -3,21 +3,25 @@ source: crates/tapir-script/compiler/src/grammar_test.rs
 expression: diagnostics.pretty_string(false)
 input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/functions.tapir
 ---
-Error: Unexpected token KeywordInt, expected one of "{", "->"
+[E0026] Error: Unexpected token KeywordInt
    ╭─[ functions.tapir:1:32 ]
    │
  1 │ fn my_function_without_arrow() int {
    │                                ─┬─  
    │                                 ╰─── Unexpected token
+   │ 
+   │ Note: Expected one of tokens "{", "->"
 ───╯
-Error: Unexpected token RParen, expected one of ":"
+[E0026] Error: Unexpected token RParen
    ╭─[ functions.tapir:5:36 ]
    │
  5 │ fn my_function_with_types_for_arg(x) {}
    │                                    ┬  
    │                                    ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens ":"
 ───╯
-Error: 'not_real' is not a valid type, must be one of fix, bool or int
+[E0028] Error: 'not_real' is not a valid type, must be one of fix, bool or int
    ╭─[ functions.tapir:7:23 ]
    │
  7 │ fn not_a_real_type(x: not_real) {}

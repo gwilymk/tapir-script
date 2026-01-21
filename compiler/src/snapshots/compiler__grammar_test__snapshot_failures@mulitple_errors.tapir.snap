@@ -3,49 +3,53 @@ source: crates/tapir-script/compiler/src/grammar_test.rs
 expression: diagnostics.pretty_string(false)
 input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir
 ---
-Error: number too large to fit in target type
+[E0030] Error: Number larger than maximum positive number which is 2147483647
    ╭─[ mulitple_errors.tapir:1:9 ]
    │
  1 │ var x = 3894723984729;
    │         ──────┬──────  
    │               ╰──────── Invalid integer
-   │ 
-   │ Note: Larger than maximum positive number which is 2147483647
 ───╯
-Error: number too large to fit in target type
+[E0030] Error: Number larger than maximum positive number which is 2147483647
    ╭─[ mulitple_errors.tapir:2:9 ]
    │
  2 │ var y = 234872392818319287;
    │         ─────────┬────────  
    │                  ╰────────── Invalid integer
-   │ 
-   │ Note: Larger than maximum positive number which is 2147483647
 ───╯
-Error: Unexpected token Semicolon, expected one of identifier, integer, fix, true, false, "("
+[E0026] Error: Unexpected token Semicolon
    ╭─[ mulitple_errors.tapir:4:9 ]
    │
  4 │ x = 3 * ;
    │         ┬  
    │         ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens identifier, integer, fix, true, false, "("
 ───╯
-Error: Unexpected token OperatorRealMod, expected one of identifier, integer, fix, true, false, "(", ";"
+[E0026] Error: Unexpected token OperatorRealMod
    ╭─[ mulitple_errors.tapir:5:5 ]
    │
  5 │ y = %% 2;
    │     ─┬  
    │      ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens identifier, integer, fix, true, false, "(", ";"
 ───╯
-Error: Unexpected token RParen, expected one of identifier, integer, fix, true, false, "("
+[E0026] Error: Unexpected token RParen
    ╭─[ mulitple_errors.tapir:7:18 ]
    │
  7 │ var x = 3 + (2 * ) - 4 +;
    │                  ┬  
    │                  ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens identifier, integer, fix, true, false, "("
 ───╯
-Error: Unexpected token Semicolon, expected one of identifier, integer, fix, true, false, "("
+[E0026] Error: Unexpected token Semicolon
    ╭─[ mulitple_errors.tapir:7:25 ]
    │
  7 │ var x = 3 + (2 * ) - 4 +;
    │                         ┬  
    │                         ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens identifier, integer, fix, true, false, "("
 ───╯

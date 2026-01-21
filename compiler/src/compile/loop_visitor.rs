@@ -1,6 +1,6 @@
 use crate::{
     ast::{Function, Statement, StatementKind},
-    reporting::{CompilerErrorKind, Diagnostics},
+    reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -38,18 +38,18 @@ fn visit_block_in_loop(
             }
             StatementKind::Continue => {
                 if !is_in_loop {
-                    diagnostics.add_message(
-                        CompilerErrorKind::BreakOrContinueOutsideOfLoop
-                            .into_message(statement.span),
-                    );
+                    ErrorKind::BreakOrContinueOutsideOfLoop
+                        .at(statement.span)
+                        .label(statement.span, DiagnosticMessage::ThisStatement)
+                        .emit(diagnostics);
                 }
             }
             StatementKind::Break => {
                 if !is_in_loop {
-                    diagnostics.add_message(
-                        CompilerErrorKind::BreakOrContinueOutsideOfLoop
-                            .into_message(statement.span),
-                    );
+                    ErrorKind::BreakOrContinueOutsideOfLoop
+                        .at(statement.span)
+                        .label(statement.span, DiagnosticMessage::ThisStatement)
+                        .emit(diagnostics);
                 }
 
                 result = LoopReturn::MayBreak;

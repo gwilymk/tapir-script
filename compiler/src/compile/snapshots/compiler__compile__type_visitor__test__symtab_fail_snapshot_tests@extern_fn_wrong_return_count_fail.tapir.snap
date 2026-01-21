@@ -3,7 +3,7 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/extern_fn_wrong_return_count_fail.tapir
 ---
-Error: Function call must return exactly 1 value here, but got 2
+[E0014] Error: Function call must return exactly 1 value here, but got 2
    ╭─[ extern_fn_wrong_return_count_fail.tapir:3:9 ]
    │
  3 │ var x = get_pair();

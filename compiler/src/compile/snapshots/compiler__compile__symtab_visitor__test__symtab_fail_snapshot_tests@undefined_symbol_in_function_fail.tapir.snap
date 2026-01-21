@@ -3,7 +3,7 @@ source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
 expression: diagnostics.pretty_string(false)
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/undefined_symbol_in_function_fail.tapir
 ---
-Error: Unknown variable 'y'
+[E0001] Error: Unknown variable 'y'
    ╭─[ undefined_symbol_in_function_fail.tapir:2:12 ]
    │
  2 │     return y;

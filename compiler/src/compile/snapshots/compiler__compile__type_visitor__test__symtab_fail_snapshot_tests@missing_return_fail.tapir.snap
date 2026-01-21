@@ -3,14 +3,14 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/missing_return_fail.tapir
 ---
-Error: Function foo should return results, but not all branches return.
+[E0015] Error: Function foo should return results, but not all branches return.
    ╭─[ missing_return_fail.tapir:1:4 ]
    │
  1 │ fn foo() -> fix {}
    │             ─┬─  
    │              ╰─── Function returns results
 ───╯
-Error: Function bar should return results, but not all branches return.
+[E0015] Error: Function bar should return results, but not all branches return.
    ╭─[ missing_return_fail.tapir:3:4 ]
    │
  3 │ fn bar() -> int {

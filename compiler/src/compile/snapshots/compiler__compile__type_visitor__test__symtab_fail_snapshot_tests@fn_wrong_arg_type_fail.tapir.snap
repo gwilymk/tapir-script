@@ -3,7 +3,7 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/fn_wrong_arg_type_fail.tapir
 ---
-Error: Incorrect type for argument 'a' of function 'add', expected int but got fix
+[E0004] Error: Incorrect type for argument 'a' of function 'add', expected int but got fix
    ╭─[ fn_wrong_arg_type_fail.tapir:5:18 ]
    │
  1 │ fn add(a: int, b: int) -> int {

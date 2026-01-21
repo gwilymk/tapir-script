@@ -3,14 +3,14 @@ source: crates/tapir-script/compiler/src/compile/type_visitor.rs
 expression: err_str
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/trigger_fail.tapir
 ---
-Error: No such function function
+[E0012] Error: No such function function
     ╭─[ trigger_fail.tapir:11:9 ]
     │
  11 │ var y = function(4);
     │         ─────┬─────  
     │              ╰─────── Unknown function
 ────╯
-Error: Trigger 'Foo' has been called with inconsistent arguments
+[E0020] Error: Trigger 'Foo' has been called with inconsistent arguments
    ╭─[ trigger_fail.tapir:2:1 ]
    │
  1 │ trigger Foo(true);
@@ -22,7 +22,7 @@ Error: Trigger 'Foo' has been called with inconsistent arguments
    │ 
    │ Help: `trigger` calls must be made with the same argument types
 ───╯
-Error: Trigger 'Foo' has been called with inconsistent arguments
+[E0020] Error: Trigger 'Foo' has been called with inconsistent arguments
    ╭─[ trigger_fail.tapir:4:1 ]
    │
  1 │ trigger Foo(true);
@@ -35,7 +35,7 @@ Error: Trigger 'Foo' has been called with inconsistent arguments
    │ 
    │ Help: `trigger` calls must be made with the same argument types
 ───╯
-Error: Trigger 'Foo' has been called with inconsistent arguments
+[E0020] Error: Trigger 'Foo' has been called with inconsistent arguments
    ╭─[ trigger_fail.tapir:8:1 ]
    │
  1 │ trigger Foo(true);
