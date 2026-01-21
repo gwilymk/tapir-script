@@ -1,0 +1,4 @@
+var x = true && 3;
+
+var z = 3.9;
+var y = x || z;

@@ -1,0 +1,2 @@
+var x = true && false;
+var y = x || true && false;
