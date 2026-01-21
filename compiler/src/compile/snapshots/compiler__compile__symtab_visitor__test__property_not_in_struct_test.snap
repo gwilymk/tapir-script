@@ -1,0 +1,11 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: diagnostics.pretty_string(false)
+---
+[E0035] Error: Property 'nonexistent' is declared but no corresponding field exists in the Rust struct
+   ╭─[ property_not_in_struct.tapir:2:10 ]
+   │
+ 2 │ property nonexistent: int;
+   │          ─────┬─────  
+   │               ╰─────── No corresponding field in struct
+───╯

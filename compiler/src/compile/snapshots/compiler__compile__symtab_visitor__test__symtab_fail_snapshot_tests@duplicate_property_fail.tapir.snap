@@ -1,0 +1,15 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/duplicate_property_fail.tapir
+---
+[E0033] Error: Property 'health' is already declared
+   ╭─[ duplicate_property_fail.tapir:2:10 ]
+   │
+ 1 │ property health: int;
+   │          ───┬──  
+   │             ╰──── Originally declared here
+ 2 │ property health: int;
+   │          ───┬──  
+   │             ╰──── Property already declared
+───╯

@@ -1,0 +1,2 @@
+global counter = 0;
+property counter: int;

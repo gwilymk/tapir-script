@@ -1,0 +1,3 @@
+property health: int;
+property nonexistent: int;
+property position: fix;

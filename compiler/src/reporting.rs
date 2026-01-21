@@ -89,9 +89,6 @@ pub enum DiagnosticMessage {
     GlobalInitializerNotConstant {
         name: String,
     },
-    GlobalConflictsWithProperty {
-        name: String,
-    },
     DuplicatePropertyDeclaration {
         name: String,
     },
@@ -174,7 +171,6 @@ pub enum DiagnosticMessage {
     NoVariableToReceiveValue,
     CannotShadowBuiltinLabel,
     NotAConstant,
-    ConflictsWithProperty,
     OriginallyDeclaredHere,
     AlsoDeclaredHere,
     PropertyAlreadyDeclared,
@@ -279,9 +275,6 @@ impl DiagnosticMessage {
             DiagnosticMessage::GlobalInitializerNotConstant { name } => {
                 format!("Global variable '{name}' must be initialized with a constant value")
             }
-            DiagnosticMessage::GlobalConflictsWithProperty { name } => {
-                format!("Global variable '{name}' conflicts with an existing property")
-            }
             DiagnosticMessage::DuplicatePropertyDeclaration { name } => {
                 format!("Property '{name}' is already declared")
             }
@@ -343,7 +336,6 @@ impl DiagnosticMessage {
             DiagnosticMessage::NoVariableToReceiveValue => "No variable to receive this value".into(),
             DiagnosticMessage::CannotShadowBuiltinLabel => "Cannot shadow built-in variable".into(),
             DiagnosticMessage::NotAConstant => "Not a constant".into(),
-            DiagnosticMessage::ConflictsWithProperty => "Conflicts with property".into(),
             DiagnosticMessage::OriginallyDeclaredHere => "Originally declared here".into(),
             DiagnosticMessage::AlsoDeclaredHere => "Also declared here".into(),
             DiagnosticMessage::PropertyAlreadyDeclared => "Property already declared".into(),
@@ -481,9 +473,6 @@ pub enum ErrorKind {
     GlobalInitializerNotConstant {
         name: String,
     },
-    GlobalConflictsWithProperty {
-        name: String,
-    },
     DuplicatePropertyDeclaration {
         name: String,
     },
@@ -546,7 +535,6 @@ impl ErrorKind {
             Self::CountMismatch { .. } => "E0021",
             Self::CannotShadowBuiltin { .. } => "E0022",
             Self::GlobalInitializerNotConstant { .. } => "E0023",
-            Self::GlobalConflictsWithProperty { .. } => "E0024",
             Self::DuplicatePropertyDeclaration { .. } => "E0033",
             Self::PropertyConflictsWithGlobal { .. } => "E0034",
             Self::PropertyNotInStruct { .. } => "E0035",
@@ -664,9 +652,6 @@ impl ErrorKind {
             }
             Self::GlobalInitializerNotConstant { name } => {
                 DiagnosticMessage::GlobalInitializerNotConstant { name: name.clone() }
-            }
-            Self::GlobalConflictsWithProperty { name } => {
-                DiagnosticMessage::GlobalConflictsWithProperty { name: name.clone() }
             }
             Self::DuplicatePropertyDeclaration { name } => {
                 DiagnosticMessage::DuplicatePropertyDeclaration { name: name.clone() }

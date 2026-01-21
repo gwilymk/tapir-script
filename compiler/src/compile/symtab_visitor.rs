@@ -223,14 +223,8 @@ impl<'input> SymTabVisitor<'input> {
 
         // Process global declarations
         for (index, global) in script.globals.iter().enumerate() {
-            // Check for conflicts with properties
+            // Skip globals that conflict with properties (error already reported in extract_properties_from_ast)
             if properties.iter().any(|p| p.name == global.name.ident) {
-                ErrorKind::GlobalConflictsWithProperty {
-                    name: global.name.ident.to_string(),
-                }
-                .at(global.name.span)
-                .label(global.name.span, DiagnosticMessage::ConflictsWithProperty)
-                .emit(diagnostics);
                 continue;
             }
 
@@ -713,5 +707,36 @@ mod test {
 
             assert_snapshot!(diagnostics.pretty_string(false));
         });
+    }
+
+    #[test]
+    fn property_not_in_struct_test() {
+        let input = fs::read_to_string(
+            "src/compile/snapshot_tests/symtab_visitor/property_not_in_struct.tapir",
+        )
+        .unwrap();
+
+        let file_id = FileId::new(0);
+        let lexer = Lexer::new(&input, file_id);
+        let parser = grammar::ScriptParser::new();
+
+        let mut diagnostics =
+            Diagnostics::new(file_id, "property_not_in_struct.tapir", &input);
+
+        let mut script = parser
+            .parse(FileId::new(0), &mut diagnostics, lexer)
+            .unwrap();
+
+        // Only 'health' and 'position' exist in the struct, 'nonexistent' doesn't
+        let _visitor = SymTabVisitor::new(
+            &CompileSettings {
+                available_fields: Some(vec!["health".to_string(), "position".to_string()]),
+                enable_optimisations: false,
+            },
+            &mut script,
+            &mut diagnostics,
+        );
+
+        assert_snapshot!(diagnostics.pretty_string(false));
     }
 }
