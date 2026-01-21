@@ -1,16 +1,16 @@
 global counter = 0;
 
-fn counter_updater(max: int) {
+fn counter_updater() {
     loop {
         counter = counter + 1;
-        if counter >= max {
+        if counter >= 5 {
             break;
         }
         wait;
     }
 }
 
-spawn counter_updater(5);
+spawn counter_updater();
 
 loop {
     int_prop = counter;

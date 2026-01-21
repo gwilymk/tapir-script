@@ -1,0 +1,15 @@
+global counter = 0;
+
+fn increment_counter() {
+    counter = counter + 1;
+    wait;
+    counter = counter + 1;
+}
+
+spawn increment_counter();
+
+int_prop = counter;
+wait;
+int_prop = counter;
+wait;
+int_prop = counter;

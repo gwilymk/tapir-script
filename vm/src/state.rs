@@ -124,9 +124,11 @@ impl State {
                     let mut new_stack = Vec::with_capacity(num_args as usize + 1);
                     new_stack.push(-1);
 
-                    let stack_to_copy_start = self.stack_offset + usize::from(first_arg + 1);
-                    let stack_to_copy_end = stack_to_copy_start + usize::from(num_args);
-                    new_stack.extend(&self.stack[stack_to_copy_start..stack_to_copy_end]);
+                    if num_args > 0 {
+                        let stack_to_copy_start = self.stack_offset + usize::from(first_arg + 1);
+                        let stack_to_copy_end = stack_to_copy_start + usize::from(num_args);
+                        new_stack.extend(&self.stack[stack_to_copy_start..stack_to_copy_end]);
+                    }
 
                     let new_thread_pc = self.pc;
                     self.pc += 1; // skip over the jump instruction

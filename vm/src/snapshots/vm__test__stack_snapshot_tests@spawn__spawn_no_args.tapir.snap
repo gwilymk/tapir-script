@@ -1,0 +1,32 @@
+---
+source: crates/tapir-script/vm/src/lib.rs
+expression: stack_at_waits
+input_file: crates/tapir-script/vm/src/snapshot_tests/stack/spawn/spawn_no_args.tapir
+---
+[
+  ([
+    [
+      -1,
+      0,
+    ],
+    [
+      -1,
+      1,
+      0,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 0,
+  )),
+  ([
+    [
+      -1,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([], PropObj(
+    int_prop: 2,
+  )),
+]
