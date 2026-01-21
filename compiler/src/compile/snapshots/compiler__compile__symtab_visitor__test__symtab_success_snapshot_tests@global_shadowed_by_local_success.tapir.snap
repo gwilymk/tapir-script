@@ -1,10 +1,23 @@
 ---
 source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/error_in_expression_still_causes_assignment_success.tapir
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/global_shadowed_by_local_success.tapir
 ---
 Script(
-  globals: [],
+  globals: [
+    GlobalDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "counter",
+      ),
+      value: Expression(
+        span: "[span]",
+        kind: Integer(0),
+        meta: {},
+      ),
+      span: "[span]",
+    ),
+  ],
   functions: [
     Function(
       name: "@toplevel",
@@ -16,25 +29,13 @@ Script(
             idents: [
               Ident(
                 span: "[span]",
-                ident: "x",
+                ident: "counter",
               ),
             ],
             values: [
               Expression(
                 span: "[span]",
-                kind: BinaryOperation(
-                  lhs: Expression(
-                    span: "[span]",
-                    kind: Integer(3),
-                    meta: {},
-                  ),
-                  operator: Add,
-                  rhs: Expression(
-                    span: "[span]",
-                    kind: Error,
-                    meta: {},
-                  ),
-                ),
+                kind: Integer(10),
                 meta: {},
               ),
             ],
@@ -45,37 +46,25 @@ Script(
         ),
         Statement(
           span: "[span]",
-          kind: VariableDeclaration(
+          kind: Assignment(
             idents: [
               Ident(
                 span: "[span]",
-                ident: "y",
+                ident: "int_prop",
               ),
             ],
             values: [
               Expression(
                 span: "[span]",
-                kind: BinaryOperation(
-                  lhs: Expression(
-                    span: "[span]",
-                    kind: Variable("x"),
-                    meta: {
-                      "compiler::ast::SymbolId": "SymbolId(1)",
-                    },
-                  ),
-                  operator: Add,
-                  rhs: Expression(
-                    span: "[span]",
-                    kind: Integer(3),
-                    meta: {},
-                  ),
-                ),
-                meta: {},
+                kind: Variable("counter"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(1)",
+                },
               ),
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0)]",
           },
         ),
       ],

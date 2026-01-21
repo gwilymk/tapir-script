@@ -30,6 +30,8 @@ pub enum Opcode {
     GetProp,
     SetProp,
     GetBuiltin,
+    GetGlobal,
+    SetGlobal,
 
     Call,
     ExternCall,
@@ -186,6 +188,14 @@ impl Type1 {
 
     pub const fn set_prop(value: u8, prop_index: u8) -> Self {
         Self::new2(Opcode::SetProp, value, prop_index)
+    }
+
+    pub const fn get_global(target: u8, global_index: u8) -> Self {
+        Self::new2(Opcode::GetGlobal, target, global_index)
+    }
+
+    pub const fn set_global(value: u8, global_index: u8) -> Self {
+        Self::new2(Opcode::SetGlobal, value, global_index)
     }
 }
 

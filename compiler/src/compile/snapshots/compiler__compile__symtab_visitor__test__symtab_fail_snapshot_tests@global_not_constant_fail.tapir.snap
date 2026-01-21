@@ -1,0 +1,14 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/global_not_constant_fail.tapir
+---
+Error: Global variable 'counter' must be initialized with a constant value
+   ╭─[ global_not_constant_fail.tapir:1:18 ]
+   │
+ 1 │ global counter = 1 + 2;
+   │                  ──┬──  
+   │                    ╰──── Not a constant
+   │ 
+   │ Note: Global initializers must be integer, fix, or bool literals
+───╯

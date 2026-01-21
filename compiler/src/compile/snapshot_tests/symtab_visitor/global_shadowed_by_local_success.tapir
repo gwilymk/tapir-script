@@ -1,0 +1,4 @@
+global counter = 0;
+
+var counter = 10;
+int_prop = counter;

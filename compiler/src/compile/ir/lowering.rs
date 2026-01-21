@@ -1,7 +1,7 @@
 use crate::{
     ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
     builtins::BuiltinVariable,
-    compile::symtab_visitor::SymTab,
+    compile::symtab_visitor::{GlobalId, SymTab},
 };
 
 use super::{
@@ -139,7 +139,10 @@ impl BlockVisitor {
                 };
 
                 for (&target_symbol, temp) in target_symbols.iter().zip(temps) {
-                    let expr_target = if symtab.get_property(target_symbol).is_some() {
+                    let is_property = symtab.get_property(target_symbol).is_some();
+                    let global_id = GlobalId::from_symbol_id(target_symbol);
+
+                    let expr_target = if is_property || global_id.is_some() {
                         symtab.new_temporary()
                     } else {
                         target_symbol
@@ -153,6 +156,11 @@ impl BlockVisitor {
                     if let Some(property) = symtab.get_property(target_symbol) {
                         self.current_block.push(TapIr::StoreProp {
                             prop_index: property.index,
+                            value: expr_target,
+                        });
+                    } else if let Some(global_id) = global_id {
+                        self.current_block.push(TapIr::SetGlobal {
+                            global_index: global_id.0,
                             value: expr_target,
                         });
                     }
@@ -378,6 +386,11 @@ impl BlockVisitor {
                     self.current_block.push(TapIr::GetBuiltin {
                         target: target_symbol,
                         builtin,
+                    });
+                } else if let Some(global_id) = GlobalId::from_symbol_id(source) {
+                    self.current_block.push(TapIr::GetGlobal {
+                        target: target_symbol,
+                        global_index: global_id.0,
                     });
                 } else {
                     self.current_block.push(TapIr::Move {

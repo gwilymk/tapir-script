@@ -4,6 +4,7 @@ expression: script
 input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/symbols_in_return_success.tapir
 ---
 Script(
+  globals: [],
   functions: [
     Function(
       name: "@toplevel",

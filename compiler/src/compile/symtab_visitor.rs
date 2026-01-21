@@ -2,16 +2,73 @@ use std::{borrow::Cow, collections::HashMap};
 
 use crate::{
     ast::{
-        Expression, ExpressionKind, ExternFunctionDefinition, ExternalFunctionId, Function,
-        FunctionId, InternalOrExternalFunctionId, MaybeResolved, Statement, StatementKind,
-        SymbolId,
+        Expression, ExpressionKind, ExternalFunctionId, Function, FunctionId,
+        InternalOrExternalFunctionId, MaybeResolved, Script, Statement, StatementKind, SymbolId,
     },
     builtins::BuiltinVariable,
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
+    types::Type,
 };
 
 use super::{CompileSettings, Property};
+
+/// Identifies a global variable by its index in the globals array.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct GlobalId(pub usize);
+
+impl GlobalId {
+    const GLOBAL_BIT: u64 = 1 << 62;
+
+    /// Convert this GlobalId to a SymbolId for use in the symbol table.
+    pub fn to_symbol_id(self) -> SymbolId {
+        SymbolId(Self::GLOBAL_BIT | (self.0 as u64))
+    }
+
+    /// Try to extract a GlobalId from a SymbolId.
+    /// Returns None if this SymbolId doesn't represent a global.
+    pub fn from_symbol_id(id: SymbolId) -> Option<Self> {
+        if id.0 & Self::GLOBAL_BIT != 0 && id.0 & BuiltinVariable::RESERVED_BIT == 0 {
+            Some(GlobalId((id.0 & !(Self::GLOBAL_BIT)) as usize))
+        } else {
+            None
+        }
+    }
+}
+
+/// Metadata about a declared global variable.
+#[derive(Clone, Debug)]
+pub struct GlobalInfo {
+    pub id: GlobalId,
+    pub name: String,
+    pub ty: Type,
+    pub initial_value: i32,
+    pub span: Span,
+}
+
+/// Evaluate a constant initializer expression for a global variable.
+/// Returns the type and raw i32 value if successful, or (Type::Error, 0) if not a constant.
+fn evaluate_constant_initializer(
+    expr: &Expression<'_>,
+    diagnostics: &mut Diagnostics,
+    global_name: &str,
+) -> (Type, i32) {
+    match &expr.kind {
+        ExpressionKind::Integer(i) => (Type::Int, *i),
+        ExpressionKind::Fix(num) => (Type::Fix, num.to_raw()),
+        ExpressionKind::Bool(b) => (Type::Bool, *b as i32),
+        _ => {
+            // Not a constant literal
+            diagnostics.add_message(
+                CompilerErrorKind::GlobalInitializerNotConstant {
+                    name: global_name.to_string(),
+                }
+                .into_message(expr.span),
+            );
+            (Type::Error, 0)
+        }
+    }
+}
 
 pub struct SymTabVisitor<'input> {
     symtab: SymTab<'input>,
@@ -23,15 +80,14 @@ pub struct SymTabVisitor<'input> {
 impl<'input> SymTabVisitor<'input> {
     pub fn new(
         settings: &CompileSettings,
-        functions: &mut [Function<'input>],
-        extern_functions: &mut [ExternFunctionDefinition<'input>],
+        script: &mut Script<'input>,
         diagnostics: &mut Diagnostics,
     ) -> Self {
         let mut function_declarations = HashMap::new();
         let mut function_names = HashMap::new();
         let mut functions_map = HashMap::new();
 
-        for (i, function) in extern_functions.iter_mut().enumerate() {
+        for (i, function) in script.extern_functions.iter_mut().enumerate() {
             let fid = ExternalFunctionId(i);
             function.meta.set(fid);
 
@@ -50,7 +106,7 @@ impl<'input> SymTabVisitor<'input> {
             function_names.insert(InternalOrExternalFunctionId::External(fid), function.name);
         }
 
-        for (i, function) in functions.iter_mut().enumerate() {
+        for (i, function) in script.functions.iter_mut().enumerate() {
             let fid = FunctionId(i);
             function.meta.set(fid);
 
@@ -69,11 +125,54 @@ impl<'input> SymTabVisitor<'input> {
             function_names.insert(InternalOrExternalFunctionId::Internal(fid), function.name);
         }
 
-        Self {
+        let mut visitor = Self {
             symtab: SymTab::new(settings, function_names),
             symbol_names: NameTable::new(settings),
             function_names: functions_map,
+        };
+
+        // Process global declarations
+        for (index, global) in script.globals.iter().enumerate() {
+            // Check for conflicts with properties
+            if settings.properties.iter().any(|p| p.name == global.name.ident) {
+                diagnostics.add_message(
+                    CompilerErrorKind::GlobalConflictsWithProperty {
+                        name: global.name.ident.to_string(),
+                    }
+                    .into_message(global.name.span),
+                );
+                continue;
+            }
+
+            // Check for conflicts with built-ins (reuse existing error)
+            if BuiltinVariable::from_name(global.name.ident).is_some() {
+                diagnostics.add_message(
+                    CompilerErrorKind::CannotShadowBuiltin {
+                        name: global.name.ident.to_string(),
+                    }
+                    .into_message(global.name.span),
+                );
+                continue;
+            }
+
+            // Validate initializer is a constant and infer type
+            let (ty, initial_value) =
+                evaluate_constant_initializer(&global.value, diagnostics, global.name.ident);
+
+            let global_id = GlobalId(index);
+            visitor.symtab.add_global(
+                global.name.ident,
+                GlobalInfo {
+                    id: global_id,
+                    name: global.name.ident.to_string(),
+                    ty,
+                    initial_value,
+                    span: global.span,
+                },
+            );
         }
+
+        visitor
     }
 
     pub fn get_symtab(&self) -> &SymTab<'input> {
@@ -156,7 +255,7 @@ impl<'input> SymTabVisitor<'input> {
                             );
                         }
 
-                        if let Some(symbol_id) = self.symbol_names.get(ident.ident) {
+                        if let Some(symbol_id) = self.symbol_names.get(ident.ident, &self.symtab) {
                             statement_meta.push(symbol_id);
                         } else {
                             diagnostics.add_message(
@@ -228,7 +327,7 @@ impl<'input> SymTabVisitor<'input> {
     fn visit_expr(&self, expr: &mut Expression<'_>, diagnostics: &mut Diagnostics) {
         match &mut expr.kind {
             ExpressionKind::Variable(ident) => {
-                if let Some(symbol_id) = self.symbol_names.get(ident) {
+                if let Some(symbol_id) = self.symbol_names.get(ident, &self.symtab) {
                     expr.meta.set(symbol_id);
                 } else {
                     diagnostics.add_message(
@@ -291,15 +390,22 @@ impl<'input> NameTable<'input> {
             .insert(Cow::Borrowed(name), id);
     }
 
-    pub fn get(&self, name: &str) -> Option<SymbolId> {
+    pub fn get(&self, name: &str, symtab: &SymTab) -> Option<SymbolId> {
+        // Check built-ins first (cannot be shadowed)
         if let Some(builtin) = BuiltinVariable::from_name(name) {
             return Some(builtin.symbol_id());
         }
 
+        // Check local variables and properties (can shadow globals)
         for nametab in self.names.iter().rev() {
             if let Some(id) = nametab.get(name) {
                 return Some(*id);
             }
+        }
+
+        // Check globals last (can be shadowed by locals)
+        if let Some(global) = symtab.get_global_by_name(name) {
+            return Some(global.id.to_symbol_id());
         }
 
         None
@@ -320,6 +426,9 @@ pub struct SymTab<'input> {
 
     symbol_names: Vec<(Cow<'input, str>, Option<Span>)>,
     function_names: HashMap<InternalOrExternalFunctionId, &'input str>,
+
+    globals: Vec<GlobalInfo>,
+    global_names: HashMap<Cow<'input, str>, GlobalId>,
 }
 
 impl<'input> SymTab<'input> {
@@ -337,6 +446,8 @@ impl<'input> SymTab<'input> {
             properties,
             symbol_names,
             function_names,
+            globals: vec![],
+            global_names: HashMap::new(),
         }
     }
 
@@ -402,6 +513,24 @@ impl<'input> SymTab<'input> {
     pub fn get_property(&self, symbol_id: SymbolId) -> Option<&Property> {
         self.properties.get(symbol_id.0 as usize)
     }
+
+    pub fn get_global_by_name(&self, name: &str) -> Option<&GlobalInfo> {
+        self.global_names.get(name).map(|id| &self.globals[id.0])
+    }
+
+    pub fn get_global(&self, id: GlobalId) -> &GlobalInfo {
+        &self.globals[id.0]
+    }
+
+    pub fn globals(&self) -> &[GlobalInfo] {
+        &self.globals
+    }
+
+    fn add_global(&mut self, name: &'input str, info: GlobalInfo) {
+        self.global_names
+            .insert(Cow::Borrowed(name), info.id);
+        self.globals.push(info);
+    }
 }
 
 #[cfg(test)]
@@ -436,8 +565,7 @@ mod test {
                     }],
                     enable_optimisations: false,
                 },
-                &mut script.functions,
-                &mut script.extern_functions,
+                &mut script,
                 &mut diagnostics,
             );
 
@@ -475,8 +603,7 @@ mod test {
                     }],
                     enable_optimisations: false,
                 },
-                &mut script.functions,
-                &mut script.extern_functions,
+                &mut script,
                 &mut diagnostics,
             );
 

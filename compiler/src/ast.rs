@@ -40,8 +40,16 @@ pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Script<'input> {
+    pub globals: Vec<GlobalDeclaration<'input>>,
     pub functions: Vec<Function<'input>>,
     pub extern_functions: Vec<ExternFunctionDefinition<'input>>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct GlobalDeclaration<'input> {
+    pub name: Ident<'input>,
+    pub value: Expression<'input>,
+    pub span: Span,
 }
 
 impl<'input> Script<'input> {
@@ -52,6 +60,7 @@ impl<'input> Script<'input> {
         let mut top_level_function_statements = vec![];
         let mut functions = vec![];
         let mut extern_functions = vec![];
+        let mut globals = vec![];
 
         for top_level_statement in top_level.into_iter() {
             match top_level_statement {
@@ -62,6 +71,7 @@ impl<'input> Script<'input> {
                 TopLevelStatement::ExternFunctionDefinition(extern_function) => {
                     extern_functions.push(extern_function)
                 }
+                TopLevelStatement::GlobalDeclaration(global) => globals.push(global),
 
                 TopLevelStatement::Error => {}
             }
@@ -84,6 +94,7 @@ impl<'input> Script<'input> {
         functions.insert(0, top_level_function);
 
         Self {
+            globals,
             functions,
             extern_functions,
         }
@@ -157,6 +168,7 @@ pub enum TopLevelStatement<'input> {
     Statement(Statement<'input>),
     FunctionDefinition(Function<'input>),
     ExternFunctionDefinition(ExternFunctionDefinition<'input>),
+    GlobalDeclaration(GlobalDeclaration<'input>),
     Error,
 }
 

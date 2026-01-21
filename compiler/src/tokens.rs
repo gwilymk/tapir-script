@@ -104,6 +104,8 @@ pub enum Token<'input> {
     KeywordThen,
     #[token("trigger")]
     KeywordTrigger,
+    #[token("global")]
+    KeywordGlobal,
 
     #[token("true")]
     True,

@@ -302,12 +302,8 @@ mod test {
                 enable_optimisations: true,
             };
 
-            let mut symtab_visitor = SymTabVisitor::new(
-                &compile_settings,
-                &mut script.functions,
-                &mut script.extern_functions,
-                &mut diagnostics,
-            );
+            let mut symtab_visitor =
+                SymTabVisitor::new(&compile_settings, &mut script, &mut diagnostics);
             let mut type_visitor = TypeVisitor::new(
                 &compile_settings,
                 &script.functions,

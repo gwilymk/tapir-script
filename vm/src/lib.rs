@@ -11,21 +11,28 @@ struct Vm<'a> {
     bytecode: &'a [u32],
     states: Vec<State>,
     frame: i32,
+    globals: Vec<i32>,
 }
 
 impl<'a> Vm<'a> {
-    pub fn new(bytecode: &'a [u32]) -> Self {
+    pub fn new(bytecode: &'a [u32], initial_globals: &[i32]) -> Self {
         Self {
             bytecode,
             states: vec![State::new(0, vec![-1])],
             frame: 0,
+            globals: initial_globals.to_vec(),
         }
     }
 
     fn run_until_wait(&mut self, properties: &mut dyn ObjectSafeProperties) {
         let mut state_index = 0;
         while state_index < self.states.len() {
-            match self.states[state_index].run_until_wait(self.bytecode, properties, self.frame) {
+            match self.states[state_index].run_until_wait(
+                self.bytecode,
+                properties,
+                self.frame,
+                &mut self.globals,
+            ) {
                 state::RunResult::Waiting => {
                     state_index += 1;
                 }
@@ -68,9 +75,9 @@ pub struct Script<T: TapirScript> {
 }
 
 impl<T: TapirScript> Script<T> {
-    pub fn new(properties: T, bytecode: &'static [u32]) -> Self {
+    pub fn new(properties: T, bytecode: &'static [u32], initial_globals: &[i32]) -> Self {
         Self {
-            vm: Vm::new(bytecode),
+            vm: Vm::new(bytecode, initial_globals),
             properties,
         }
     }
@@ -127,11 +134,10 @@ mod test {
                 enable_optimisations: true,
             };
 
-            let bytecode = compiler::compile(path.file_name().unwrap(), &input, compiler_settings)
-                .unwrap()
-                .bytecode;
+            let compile_result =
+                compiler::compile(path.file_name().unwrap(), &input, compiler_settings).unwrap();
 
-            let mut vm = Vm::new(&bytecode);
+            let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
             let mut prop_object = PropObj { int_prop: 5 };
 
             let mut stack_at_waits = vec![];
@@ -179,13 +185,13 @@ mod test {
                             enable_optimisations: false,
                         };
 
-                        let bytecode = compiler::compile(
+                        let compile_result = compiler::compile(
                             concat!(stringify!($name), ".tapir"),
                             concat!("prop = ", $code, ";"),
                             compile_settings
-                        ).unwrap().bytecode;
+                        ).unwrap();
 
-                        let mut vm = Vm::new(&bytecode);
+                        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
                         let mut prop_object = PropObj {
                             int_prop: if Type::$type == Type::Int { 5 } else { 1 },
                         };
@@ -305,7 +311,7 @@ mod test {
         .unwrap()
         .bytecode;
 
-        let mut vm = Vm::new(&bytecode);
+        let mut vm = Vm::new(&bytecode, &[]);
         let mut prop_object = PropObj { int_prop: 999 };
 
         let mut object_safe_props = ObjectSafePropertiesImpl {
@@ -337,7 +343,7 @@ mod test {
         .unwrap()
         .bytecode;
 
-        let mut vm = Vm::new(&bytecode);
+        let mut vm = Vm::new(&bytecode, &[]);
         let mut prop_object = PropObj { int_prop: 999 };
 
         // First run - frame should be 0
@@ -390,7 +396,7 @@ mod test {
         .unwrap()
         .bytecode;
 
-        let mut vm = Vm::new(&bytecode);
+        let mut vm = Vm::new(&bytecode, &[]);
         let mut prop_object = PropObj { int_prop: 999 };
 
         // Run 3 times (to pass 2 waits and reach the assignment)
@@ -424,7 +430,7 @@ mod test {
         .unwrap()
         .bytecode;
 
-        let mut vm = Vm::new(&bytecode);
+        let mut vm = Vm::new(&bytecode, &[]);
         let mut prop_object = PropObj { int_prop: 999 };
 
         // Run until the script completes

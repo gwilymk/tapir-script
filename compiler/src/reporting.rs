@@ -244,6 +244,12 @@ pub enum CompilerErrorKind {
     CannotShadowBuiltin {
         name: String,
     },
+    GlobalInitializerNotConstant {
+        name: String,
+    },
+    GlobalConflictsWithProperty {
+        name: String,
+    },
 }
 
 #[derive(Clone, Debug, Serialize)]

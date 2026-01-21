@@ -18,6 +18,8 @@ use crate::{
     types::Type,
 };
 
+use self::symtab_visitor::SymTab;
+
 #[cfg(test)]
 mod disassemble;
 mod ir;
@@ -59,12 +61,7 @@ pub fn compile(
         }
     };
 
-    let mut sym_tab_visitor = SymTabVisitor::new(
-        settings,
-        &mut ast.functions,
-        &mut ast.extern_functions,
-        &mut diagnostics,
-    );
+    let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast, &mut diagnostics);
     let mut type_visitor = TypeVisitor::new(
         settings,
         &ast.functions,
@@ -104,8 +101,8 @@ pub fn compile(
         })
         .collect();
 
-    let mut compiler = Compiler::new(&type_table, extern_functions);
     let mut symtab = sym_tab_visitor.into_symtab();
+    let mut compiler = Compiler::new(&type_table, extern_functions, &symtab);
 
     let ir_functions = ast
         .functions
@@ -142,13 +139,17 @@ struct Compiler {
 }
 
 impl Compiler {
-    pub fn new(type_table: &TypeTable<'_>, extern_functions: Box<[ExternFunction]>) -> Self {
+    pub fn new(
+        type_table: &TypeTable<'_>,
+        extern_functions: Box<[ExternFunction]>,
+        symtab: &SymTab,
+    ) -> Self {
         Self {
             stack: vec![],
 
             jumps: vec![],
             function_locations: HashMap::from([(FunctionId::toplevel(), Label(0))]),
-            bytecode: Bytecode::new(type_table.triggers(), extern_functions),
+            bytecode: Bytecode::new(type_table.triggers(), extern_functions, symtab),
         }
     }
 
@@ -276,6 +277,18 @@ impl Compiler {
                     TapIr::GetBuiltin { target, builtin } => {
                         self.bytecode.get_builtin(v(target), builtin.id());
                     }
+                    TapIr::GetGlobal {
+                        target,
+                        global_index,
+                    } => {
+                        self.bytecode.get_global(v(target), *global_index as u8);
+                    }
+                    TapIr::SetGlobal {
+                        global_index,
+                        value,
+                    } => {
+                        self.bytecode.set_global(v(value), *global_index as u8);
+                    }
                 }
             }
 
@@ -328,7 +341,8 @@ impl Compiler {
 }
 
 pub struct Bytecode {
-    pub data: Vec<u32>,
+    data: Vec<u32>,
+    globals: Box<[i32]>,
 
     pub event_handlers: Vec<EventHandler>,
     pub triggers: Box<[Trigger]>,
@@ -336,14 +350,44 @@ pub struct Bytecode {
 }
 
 impl Bytecode {
-    fn new(triggers: Box<[Trigger]>, extern_functions: Box<[ExternFunction]>) -> Self {
+    fn new(
+        triggers: Box<[Trigger]>,
+        extern_functions: Box<[ExternFunction]>,
+        symtab: &SymTab,
+    ) -> Self {
+        let globals = symtab
+            .globals()
+            .iter()
+            .map(|g| g.initial_value)
+            .collect();
+
         Self {
             data: vec![],
+            globals,
 
             event_handlers: vec![],
             triggers,
             extern_functions,
         }
+    }
+
+    /// Finalize and decompose the bytecode into its parts
+    pub fn into_parts(
+        self,
+    ) -> (
+        Box<[u32]>,
+        Box<[i32]>,
+        Box<[EventHandler]>,
+        Box<[Trigger]>,
+        Box<[ExternFunction]>,
+    ) {
+        (
+            self.data.into_boxed_slice(),
+            self.globals,
+            self.event_handlers.into_boxed_slice(),
+            self.triggers,
+            self.extern_functions,
+        )
     }
 
     fn offset(&self) -> usize {
@@ -422,6 +466,16 @@ impl Bytecode {
 
     fn get_builtin(&mut self, target: u8, id: u8) {
         self.data.push(Type1::get_builtin(target, id).encode());
+    }
+
+    fn get_global(&mut self, target: u8, global_index: u8) {
+        self.data
+            .push(Type1::get_global(target, global_index).encode());
+    }
+
+    fn set_global(&mut self, value: u8, global_index: u8) {
+        self.data
+            .push(Type1::set_global(value, global_index).encode());
     }
 
     fn binop(&mut self, target: u8, lhs: u8, binop: BinaryOperator, rhs: u8) {

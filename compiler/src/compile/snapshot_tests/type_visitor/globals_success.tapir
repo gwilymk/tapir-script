@@ -1,0 +1,6 @@
+global int_global = 42;
+global fix_global = 1.5;
+
+var x = int_global;
+var y = fix_global;
+int_global = x + 1;

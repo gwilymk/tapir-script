@@ -14,9 +14,9 @@ pub(super) enum SymbolIter<'a> {
 impl<'a> SymbolIter<'a> {
     pub fn new_source(instr: &'a TapIr) -> Self {
         match instr {
-            TapIr::Move { source, .. } | TapIr::StoreProp { value: source, .. } => {
-                Self::One(Some(*source))
-            }
+            TapIr::Move { source, .. }
+            | TapIr::StoreProp { value: source, .. }
+            | TapIr::SetGlobal { value: source, .. } => Self::One(Some(*source)),
             TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
             TapIr::Call { args, .. }
             | TapIr::CallExternal { args, .. }
@@ -32,6 +32,7 @@ impl<'a> SymbolIter<'a> {
             | TapIr::Move { target, .. }
             | TapIr::GetProp { target, .. }
             | TapIr::GetBuiltin { target, .. }
+            | TapIr::GetGlobal { target, .. }
             | TapIr::BinOp { target, .. } => Self::One(Some(*target)),
             TapIr::Call { target, .. } | TapIr::CallExternal { target, .. } => {
                 Self::Many(target.iter())
@@ -74,9 +75,9 @@ pub(super) enum SymbolIterMut<'a> {
 impl<'a> SymbolIterMut<'a> {
     pub fn new_source(instr: &'a mut TapIr) -> Self {
         match instr {
-            TapIr::Move { source, .. } | TapIr::StoreProp { value: source, .. } => {
-                Self::One(Some(source))
-            }
+            TapIr::Move { source, .. }
+            | TapIr::StoreProp { value: source, .. }
+            | TapIr::SetGlobal { value: source, .. } => Self::One(Some(source)),
             TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
             TapIr::Call { args, .. }
             | TapIr::CallExternal { args, .. }
@@ -92,6 +93,7 @@ impl<'a> SymbolIterMut<'a> {
             | TapIr::Move { target, .. }
             | TapIr::GetProp { target, .. }
             | TapIr::GetBuiltin { target, .. }
+            | TapIr::GetGlobal { target, .. }
             | TapIr::BinOp { target, .. } => Self::One(Some(target)),
             TapIr::Call { target, .. } | TapIr::CallExternal { target, .. } => {
                 Self::Many(target.iter_mut())

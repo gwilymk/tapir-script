@@ -118,6 +118,28 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 builtin.name(),
             )
         }
+        TapIr::GetGlobal {
+            target,
+            global_index,
+        } => {
+            write!(
+                output,
+                "getglobal {}, {}",
+                symtab.debug_name_for_symbol(*target),
+                global_index,
+            )
+        }
+        TapIr::SetGlobal {
+            global_index,
+            value,
+        } => {
+            write!(
+                output,
+                "setglobal {}, {}",
+                global_index,
+                symtab.debug_name_for_symbol(*value),
+            )
+        }
     }
 }
 

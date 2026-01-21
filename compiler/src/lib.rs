@@ -28,18 +28,20 @@ pub fn compile(
     compile_settings: CompileSettings,
 ) -> Result<CompileResult, Diagnostics> {
     let bytecode = compile::compile(filename, input, &compile_settings)?;
+    let (bytecode, globals, event_handlers, triggers, extern_functions) = bytecode.into_parts();
 
-    let compiled = bytecode.data.into_boxed_slice();
     Ok(CompileResult {
-        bytecode: compiled,
-        event_handlers: bytecode.event_handlers.into_boxed_slice(),
-        triggers: bytecode.triggers,
-        extern_functions: bytecode.extern_functions,
+        bytecode,
+        globals,
+        event_handlers,
+        triggers,
+        extern_functions,
     })
 }
 
 pub struct CompileResult {
     pub bytecode: Box<[u32]>,
+    pub globals: Box<[i32]>,
     pub event_handlers: Box<[EventHandler]>,
     pub triggers: Box<[Trigger]>,
     pub extern_functions: Box<[ExternFunction]>,

@@ -275,5 +275,12 @@ fn compiler_error_report(
             .with_label(Label::new(span).with_message("Cannot shadow built-in variable"))
             .with_message(format!("Cannot shadow built-in variable '{name}'"))
             .with_note(format!("'{name}' is a built-in variable provided by the runtime")),
+        CompilerErrorKind::GlobalInitializerNotConstant { name } => build_error_report(span)
+            .with_label(Label::new(span).with_message("Not a constant"))
+            .with_message(format!("Global variable '{name}' must be initialized with a constant value"))
+            .with_note("Global initializers must be integer, fix, or bool literals"),
+        CompilerErrorKind::GlobalConflictsWithProperty { name } => build_error_report(span)
+            .with_label(Label::new(span).with_message("Conflicts with property"))
+            .with_message(format!("Global variable '{name}' conflicts with an existing property")),
     }
 }

@@ -1,0 +1,9 @@
+global counter = 0;
+global max_value = 100;
+
+var x = counter;
+counter = x + 1;
+
+if counter > max_value {
+    counter = 0;
+}

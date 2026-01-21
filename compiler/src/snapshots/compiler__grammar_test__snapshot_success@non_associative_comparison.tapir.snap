@@ -4,6 +4,7 @@ expression: ast
 input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/non_associative_comparison.tapir
 ---
 Script(
+  globals: [],
   functions: [
     Function(
       name: "@toplevel",

@@ -4,6 +4,7 @@ expression: ast
 input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/function_call.tapir
 ---
 Script(
+  globals: [],
   functions: [
     Function(
       name: "@toplevel",

@@ -6,7 +6,7 @@ pub enum BuiltinVariable {
 }
 
 impl BuiltinVariable {
-    const RESERVED_BIT: u64 = 1 << 63;
+    pub const RESERVED_BIT: u64 = 1 << 63;
 
     pub const fn symbol_id(self) -> SymbolId {
         SymbolId(Self::RESERVED_BIT | (self as u64))

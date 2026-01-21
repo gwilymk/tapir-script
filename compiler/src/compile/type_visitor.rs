@@ -14,7 +14,11 @@ use crate::{
     types::Type,
 };
 
-use super::{CompileSettings, loop_visitor::LoopContainsNoBreak, symtab_visitor::SymTab};
+use super::{
+    CompileSettings,
+    loop_visitor::LoopContainsNoBreak,
+    symtab_visitor::{GlobalId, SymTab},
+};
 
 pub struct TypeVisitor<'input> {
     type_table: Vec<Option<(Type, Option<Span>)>>,
@@ -135,6 +139,13 @@ impl<'input> TypeVisitor<'input> {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) {
+        // Skip globals and builtins - their types are fixed at declaration
+        if GlobalId::from_symbol_id(symbol_id).is_some()
+            || BuiltinVariable::from_symbol_id(symbol_id).is_some()
+        {
+            return;
+        }
+
         if self.type_table.len() <= symbol_id.0 as usize {
             self.type_table.resize(symbol_id.0 as usize + 1, None);
         }
@@ -180,6 +191,11 @@ impl<'input> TypeVisitor<'input> {
     ) -> Type {
         if let Some(builtin) = BuiltinVariable::from_symbol_id(symbol_id) {
             return builtin.ty();
+        }
+
+        // Check if this is a global
+        if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
+            return symtab.get_global(global_id).ty;
         }
 
         match self.type_table.get(symbol_id.0 as usize) {
@@ -695,11 +711,15 @@ pub struct TypeTable<'input> {
 
 impl TypeTable<'_> {
     #[cfg(test)]
-    pub fn type_for_symbol(&self, symbol_id: SymbolId) -> Type {
+    pub fn type_for_symbol(&self, symbol_id: SymbolId, symtab: &SymTab) -> Type {
         use crate::builtins::BuiltinVariable;
 
         if let Some(builtin) = BuiltinVariable::from_symbol_id(symbol_id) {
             return builtin.ty();
+        }
+
+        if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
+            return symtab.get_global(global_id).ty;
         }
 
         self.types[symbol_id.0 as usize]
@@ -763,12 +783,7 @@ mod test {
                 }],
                 enable_optimisations: false,
             };
-            let mut symtab_visitor = SymTabVisitor::new(
-                &settings,
-                &mut script.functions,
-                &mut script.extern_functions,
-                &mut diagnostics,
-            );
+            let mut symtab_visitor = SymTabVisitor::new(&settings, &mut script, &mut diagnostics);
 
             let mut type_visitor = TypeVisitor::new(
                 &settings,
@@ -798,10 +813,16 @@ mod test {
             let symtab = symtab_visitor.get_symtab();
             let type_table = type_visitor.into_type_table(symtab, &mut diagnostics);
 
-            let all_types = symtab
+            let all_types: Vec<_> = symtab
                 .all_symbols()
-                .map(|(name, id)| (name, type_table.type_for_symbol(id)))
-                .collect::<Vec<_>>();
+                .map(|(name, id)| (name, type_table.type_for_symbol(id, symtab)))
+                .chain(
+                    symtab
+                        .globals()
+                        .iter()
+                        .map(|g| (g.name.as_str(), g.ty)),
+                )
+                .collect();
 
             assert_ron_snapshot!(all_types);
         });
@@ -828,12 +849,7 @@ mod test {
                 }],
                 enable_optimisations: false,
             };
-            let mut symtab_visitor = SymTabVisitor::new(
-                &settings,
-                &mut script.functions,
-                &mut script.extern_functions,
-                &mut diagnostics,
-            );
+            let mut symtab_visitor = SymTabVisitor::new(&settings, &mut script, &mut diagnostics);
             let mut type_visitor = TypeVisitor::new(
                 &settings,
                 &script.functions,

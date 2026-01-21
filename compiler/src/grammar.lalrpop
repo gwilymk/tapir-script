@@ -34,6 +34,7 @@ extern {
         event => Token::KeywordEvent,
         then => Token::KeywordThen,
         trigger => Token::KeywordTrigger,
+        global => Token::KeywordGlobal,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -76,10 +77,16 @@ TopLevelStatement: TopLevelStatement<'input> = {
     <Statement> => TopLevelStatement::Statement(<>),
     <FunctionDefinition> => TopLevelStatement::FunctionDefinition(<>),
     <ExternFunctionDefinition> => TopLevelStatement::ExternFunctionDefinition(<>),
+    <GlobalDecl> => TopLevelStatement::GlobalDeclaration(<>),
     <error: !> => {
         diagnostics.add_lalrpop(<>.error, file_id);
         TopLevelStatement::Error
     },
+}
+
+GlobalDecl: GlobalDeclaration<'input> = {
+    <start:@L> global <name:Identifier> "=" <value:Expression> ";" <end:@R> =>
+        GlobalDeclaration { name, value, span: Span::new(file_id, start, end) },
 }
 
 FunctionDefinition: Function<'input> = {

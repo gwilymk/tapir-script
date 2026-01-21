@@ -1,0 +1,6 @@
+global counter = 0;
+global max_value = 100;
+global is_active = true;
+global speed = 1.5;
+
+counter = counter + 1;

@@ -1,0 +1,162 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/globals_success.tapir
+---
+Script(
+  globals: [
+    GlobalDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "counter",
+      ),
+      value: Expression(
+        span: "[span]",
+        kind: Integer(0),
+        meta: {},
+      ),
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "max_value",
+      ),
+      value: Expression(
+        span: "[span]",
+        kind: Integer(100),
+        meta: {},
+      ),
+      span: "[span]",
+    ),
+  ],
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              Ident(
+                span: "[span]",
+                ident: "x",
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Variable("counter"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                },
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            idents: [
+              Ident(
+                span: "[span]",
+                ident: "counter",
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Variable("x"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(1)",
+                    },
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4611686018427387904)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Variable("counter"),
+                  meta: {
+                    "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                  },
+                ),
+                operator: Gt,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Variable("max_value"),
+                  meta: {
+                    "compiler::ast::SymbolId": "SymbolId(4611686018427387905)",
+                  },
+                ),
+              ),
+              meta: {},
+            ),
+            true_block: [
+              Statement(
+                span: "[span]",
+                kind: Assignment(
+                  idents: [
+                    Ident(
+                      span: "[span]",
+                      ident: "counter",
+                    ),
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(0),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {
+                  "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4611686018427387904)]",
+                },
+              ),
+            ],
+            false_block: [],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+      },
+    ),
+  ],
+  extern_functions: [],
+)

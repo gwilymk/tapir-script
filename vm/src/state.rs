@@ -37,6 +37,7 @@ impl State {
         bytecode: &[u32],
         properties: &mut dyn ObjectSafeProperties,
         frame: i32,
+        globals: &mut [i32],
     ) -> RunResult {
         loop {
             let Some(&instr) = bytecode.get(self.pc) else {
@@ -181,6 +182,14 @@ impl State {
                     };
 
                     self.set_reg(target, value);
+                }
+                O::GetGlobal => {
+                    type1!(target, global_index);
+                    self.set_reg(target, globals[global_index as usize]);
+                }
+                O::SetGlobal => {
+                    type1!(value, global_index);
+                    globals[global_index as usize] = self.get_reg(value);
                 }
 
                 O::Jump => {

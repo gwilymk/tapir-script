@@ -1,0 +1,24 @@
+---
+source: crates/tapir-script/compiler/src/compile.rs
+expression: decompiled
+input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/globals.tapir
+---
+00000000: getglobal 1, 0
+00000001: loadk 3, 1
+00000003: add 2, 1, 3
+00000004: mov 1, 2
+00000005: setglobal 1, 0
+00000006: getglobal 2, 0
+00000007: mov 1, 2
+00000008: setprop 1, 0
+00000009: wait
+00000010: getglobal 1, 0
+00000011: loadk 3, 1
+00000013: add 2, 1, 3
+00000014: mov 1, 2
+00000015: setglobal 1, 0
+00000016: getglobal 2, 0
+00000017: mov 1, 2
+00000018: setprop 1, 0
+00000019: ret
+00000020: ret

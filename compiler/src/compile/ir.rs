@@ -76,6 +76,14 @@ pub enum TapIr {
         prop_index: usize,
         value: SymbolId,
     },
+    GetGlobal {
+        target: SymbolId,
+        global_index: usize,
+    },
+    SetGlobal {
+        global_index: usize,
+        value: SymbolId,
+    },
 }
 
 impl TapIr {
@@ -104,13 +112,15 @@ impl TapIr {
             | TapIr::Move { .. }
             | TapIr::BinOp { .. }
             | TapIr::GetProp { .. }
-            | TapIr::GetBuiltin { .. } => false,
+            | TapIr::GetBuiltin { .. }
+            | TapIr::GetGlobal { .. } => false,
             TapIr::Wait
             | TapIr::Call { .. }
             | TapIr::CallExternal { .. }
             | TapIr::Spawn { .. }
             | TapIr::Trigger { .. }
-            | TapIr::StoreProp { .. } => true,
+            | TapIr::StoreProp { .. }
+            | TapIr::SetGlobal { .. } => true,
         }
     }
 }
@@ -218,6 +228,14 @@ impl TapIrBlock {
                 }
                 TapIr::Trigger { args, .. } | TapIr::Spawn { args, .. } => {
                     symbols.extend(args);
+                }
+                TapIr::GetGlobal {
+                    target: symbol_id, ..
+                }
+                | TapIr::SetGlobal {
+                    value: symbol_id, ..
+                } => {
+                    symbols.insert(*symbol_id);
                 }
             }
         }
@@ -500,12 +518,8 @@ mod test {
                 enable_optimisations: true,
             };
 
-            let mut symtab_visitor = SymTabVisitor::new(
-                &compile_settings,
-                &mut script.functions,
-                &mut script.extern_functions,
-                &mut diagnostics,
-            );
+            let mut symtab_visitor =
+                SymTabVisitor::new(&compile_settings, &mut script, &mut diagnostics);
             let mut type_visitor = TypeVisitor::new(
                 &compile_settings,
                 &script.functions,

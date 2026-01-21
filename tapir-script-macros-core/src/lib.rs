@@ -174,6 +174,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let reduced_filename = reduced_filename.to_string_lossy();
 
     let bytecode = &compiled_content.bytecode;
+    let globals = &compiled_content.globals;
     let event_handlers = compiled_content.event_handlers;
 
     let (event_handler_trait_fns, event_handler_trait_impls) =
@@ -186,8 +187,9 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
             fn script(self) -> ::tapir_script::Script<Self> {
                 static BYTECODE: &[u32] = &[#(#bytecode),*];
+                static GLOBALS: &[i32] = &[#(#globals),*];
 
-                ::tapir_script::Script::new(self, BYTECODE)
+                ::tapir_script::Script::new(self, BYTECODE, GLOBALS)
             }
 
             type EventType = #trigger_type;
