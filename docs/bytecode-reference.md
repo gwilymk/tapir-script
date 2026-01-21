@@ -65,6 +65,15 @@ The VM uses a register-based model with a growable stack. Registers are addresse
 | `GetProp` | `r[target] = property[a]` |
 | `SetProp` | `property[a] = r[target]` |
 
+### Globals (Type 1)
+
+| Opcode      | Description              |
+| ----------- | ------------------------ |
+| `GetGlobal` | `r[target] = global[a]`  |
+| `SetGlobal` | `global[a] = r[target]`  |
+
+Global variables are script-defined mutable values with constant initializers. They are stored separately from the bytecode and initialized when the VM is created. Unlike properties, globals are internal to the script and not accessible from Rust.
+
 ### Built-ins (Type 1)
 
 | Opcode       | Description               |

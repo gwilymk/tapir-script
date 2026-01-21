@@ -50,6 +50,60 @@ a, b = b, a;            # swap
 
 Variables are block-scoped. Type is inferred from the initializer.
 
+## Global Variables
+
+Global variables are declared at the top level with constant initializers:
+
+```tapir
+global counter = 0;
+global max_health = 100;
+global speed = 1.5;
+global is_active = true;
+```
+
+Globals differ from local variables:
+
+- Accessible from all functions and top-level code
+- Persist across `wait` calls and function boundaries
+- Can be shadowed by local variables with the same name
+- Initialized once when the script is created
+
+```tapir
+global counter = 0;
+
+fn increment() {
+    counter = counter + 1;  # modifies global
+}
+
+fn use_local() {
+    var counter = 99;       # shadows global
+    counter = counter + 1;  # modifies local (100)
+}
+
+increment();                # counter is now 1
+use_local();                # global counter unchanged
+increment();                # counter is now 2
+```
+
+Globals are useful for state shared between spawned functions:
+
+```tapir
+global shared_counter = 0;
+
+fn worker() {
+    loop {
+        shared_counter = shared_counter + 1;
+        wait;
+    }
+}
+
+spawn worker();
+spawn worker();
+# Both workers increment the same counter
+```
+
+Unlike properties, globals are internal to the script and not accessible from Rust.
+
 ## Operators
 
 ### Arithmetic (work on `int` and `fix`)
@@ -276,7 +330,7 @@ counter2
 ## Reserved Words
 
 ```
-break continue else event extern false fn if int fix bool
+break continue else event extern false fn global if int fix bool
 loop return spawn then trigger true var wait
 ```
 
