@@ -162,6 +162,12 @@ pub enum CompilerErrorKind {
         actual: Type,
         actual_span: Span,
     },
+    PropertyTypeError {
+        property_name: String,
+        expected: Type,
+        actual: Type,
+        actual_span: Span,
+    },
     UnknownType(String),
     BinaryOperatorTypeError {
         lhs_type: Type,

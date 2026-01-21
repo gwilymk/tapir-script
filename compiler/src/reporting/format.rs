@@ -181,6 +181,13 @@ fn compiler_error_report(
                 report
             }
         }
+        CompilerErrorKind::PropertyTypeError { property_name, expected, actual, actual_span } => {
+            build_error_report(span)
+                .with_label(Label::new(*actual_span).with_message(format!("Assigning {actual}")))
+                .with_message(format!(
+                    "Incorrect type, property '{property_name}' is declared as {expected} but got {actual}",
+                ))
+        }
         CompilerErrorKind::UnknownType(var) => build_error_report(span)
             .with_label(Label::new(span).with_message("Unknown type for variable"))
             .with_message(format!("Unknown type for variable '{var}'")),

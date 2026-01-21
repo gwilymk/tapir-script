@@ -96,6 +96,7 @@ impl<'input> TypeVisitor<'input> {
         ty: Type,
         ident_span: Span,
         value_span: Span,
+        symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) {
         if self.type_table.len() <= symbol_id.0 {
@@ -109,15 +110,23 @@ impl<'input> TypeVisitor<'input> {
                     return;
                 }
 
-                diagnostics.add_message(
+                let error = if let Some(property) = symtab.get_property(symbol_id) {
+                    CompilerErrorKind::PropertyTypeError {
+                        property_name: property.name.clone(),
+                        expected: table_type,
+                        actual: ty,
+                        actual_span: value_span,
+                    }
+                } else {
                     CompilerErrorKind::TypeError {
                         expected: table_type,
                         expected_span,
                         actual: ty,
                         actual_span: value_span,
                     }
-                    .into_message(value_span),
-                );
+                };
+
+                diagnostics.add_message(error.into_message(value_span));
 
                 return;
             }
@@ -162,6 +171,7 @@ impl<'input> TypeVisitor<'input> {
                 argument.t.t,
                 argument.span,
                 argument.span,
+                symtab,
                 diagnostics,
             );
         }
@@ -281,6 +291,7 @@ impl<'input> TypeVisitor<'input> {
                             value_type,
                             ident.span,
                             value_span,
+                            symtab,
                             diagnostics,
                         );
                     }
