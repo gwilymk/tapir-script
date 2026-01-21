@@ -271,5 +271,9 @@ fn compiler_error_report(
                 .with_labels(spans.iter().map(|s| Label::new(*s).with_message(message)))
                 .with_help("When assigning to multiple variables, both sides of the '=' must have the same number of arguments")
         }
+        CompilerErrorKind::CannotShadowBuiltin { name } => build_error_report(span)
+            .with_label(Label::new(span).with_message("Cannot shadow built-in variable"))
+            .with_message(format!("Cannot shadow built-in variable '{name}'"))
+            .with_note(format!("'{name}' is a built-in variable provided by the runtime")),
     }
 }

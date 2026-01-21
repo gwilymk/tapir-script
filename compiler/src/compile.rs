@@ -273,6 +273,9 @@ impl Compiler {
                     TapIr::StoreProp { prop_index, value } => {
                         self.bytecode.set_prop(v(value), *prop_index as u8);
                     }
+                    TapIr::GetBuiltin { target, builtin } => {
+                        self.bytecode.get_builtin(v(target), builtin.id());
+                    }
                 }
             }
 
@@ -415,6 +418,10 @@ impl Bytecode {
 
     fn set_prop(&mut self, target: u8, prop_index: u8) {
         self.data.push(Type1::set_prop(target, prop_index).encode());
+    }
+
+    fn get_builtin(&mut self, target: u8, id: u8) {
+        self.data.push(Type1::get_builtin(target, id).encode());
     }
 
     fn binop(&mut self, target: u8, lhs: u8, binop: BinaryOperator, rhs: u8) {

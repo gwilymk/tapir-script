@@ -28,6 +28,7 @@ use symbol_iter::{SymbolIter, SymbolIterMut};
 use crate::{
     FunctionArgument, Type,
     ast::{self, BinaryOperator, ExternalFunctionId, FunctionId, SymbolId},
+    builtins::BuiltinVariable,
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
 };
 
@@ -67,6 +68,10 @@ pub enum TapIr {
         target: SymbolId,
         prop_index: usize,
     },
+    GetBuiltin {
+        target: SymbolId,
+        builtin: BuiltinVariable,
+    },
     StoreProp {
         prop_index: usize,
         value: SymbolId,
@@ -98,7 +103,8 @@ impl TapIr {
             TapIr::Constant(..)
             | TapIr::Move { .. }
             | TapIr::BinOp { .. }
-            | TapIr::GetProp { .. } => false,
+            | TapIr::GetProp { .. }
+            | TapIr::GetBuiltin { .. } => false,
             TapIr::Wait
             | TapIr::Call { .. }
             | TapIr::CallExternal { .. }
@@ -188,6 +194,9 @@ impl TapIrBlock {
         for instr in &self.instrs {
             match instr {
                 TapIr::Constant(symbol_id, ..)
+                | TapIr::GetBuiltin {
+                    target: symbol_id, ..
+                }
                 | TapIr::GetProp {
                     target: symbol_id, ..
                 }

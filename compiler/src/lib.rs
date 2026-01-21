@@ -6,6 +6,7 @@ use lalrpop_util::lalrpop_mod;
 use reporting::Diagnostics;
 
 mod ast;
+mod builtins;
 mod compile;
 mod lexer;
 mod reporting;

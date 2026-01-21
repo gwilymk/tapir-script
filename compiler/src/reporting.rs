@@ -241,6 +241,9 @@ pub enum CompilerErrorKind {
         expr_count: usize,
         extras: CountMismatchExtras,
     },
+    CannotShadowBuiltin {
+        name: String,
+    },
 }
 
 #[derive(Clone, Debug, Serialize)]

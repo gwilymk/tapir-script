@@ -6,6 +6,7 @@ use crate::{
         FunctionId, InternalOrExternalFunctionId, MaybeResolved, Statement, StatementKind,
         SymbolId,
     },
+    builtins::BuiltinVariable,
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
 };
@@ -120,6 +121,15 @@ impl<'input> SymTabVisitor<'input> {
                     // no need to do counting checks, that's done in type checking
                     let mut statement_meta = vec![];
                     for ident in idents {
+                        if BuiltinVariable::from_name(ident.ident).is_some() {
+                            diagnostics.add_message(
+                                CompilerErrorKind::CannotShadowBuiltin {
+                                    name: ident.ident.to_string(),
+                                }
+                                .into_message(ident.span),
+                            );
+                        }
+
                         let symbol_id = self.symtab.new_symbol(ident.ident, ident.span);
                         self.symbol_names.insert(ident.ident, symbol_id);
 
@@ -137,6 +147,15 @@ impl<'input> SymTabVisitor<'input> {
                     // no need to do counting checks, that's done in type checking
                     let mut statement_meta = vec![];
                     for ident in idents {
+                        if BuiltinVariable::from_name(ident.ident).is_some() {
+                            diagnostics.add_message(
+                                CompilerErrorKind::CannotShadowBuiltin {
+                                    name: ident.ident.to_string(),
+                                }
+                                .into_message(ident.span),
+                            );
+                        }
+
                         if let Some(symbol_id) = self.symbol_names.get(ident.ident) {
                             statement_meta.push(symbol_id);
                         } else {
@@ -273,6 +292,10 @@ impl<'input> NameTable<'input> {
     }
 
     pub fn get(&self, name: &str) -> Option<SymbolId> {
+        if let Some(builtin) = BuiltinVariable::from_name(name) {
+            return Some(builtin.symbol_id());
+        }
+
         for nametab in self.names.iter().rev() {
             if let Some(id) = nametab.get(name) {
                 return Some(*id);

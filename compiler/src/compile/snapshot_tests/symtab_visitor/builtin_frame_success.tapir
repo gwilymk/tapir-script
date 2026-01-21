@@ -1,0 +1,2 @@
+var x = frame;
+int_prop = frame + 1;

@@ -10,6 +10,7 @@ use state::{ObjectSafeProperties, ObjectSafePropertiesImpl, State};
 struct Vm<'a> {
     bytecode: &'a [u32],
     states: Vec<State>,
+    frame: i32,
 }
 
 impl<'a> Vm<'a> {
@@ -17,13 +18,14 @@ impl<'a> Vm<'a> {
         Self {
             bytecode,
             states: vec![State::new(0, vec![-1])],
+            frame: 0,
         }
     }
 
     fn run_until_wait(&mut self, properties: &mut dyn ObjectSafeProperties) {
         let mut state_index = 0;
         while state_index < self.states.len() {
-            match self.states[state_index].run_until_wait(self.bytecode, properties) {
+            match self.states[state_index].run_until_wait(self.bytecode, properties, self.frame) {
                 state::RunResult::Waiting => {
                     state_index += 1;
                 }
@@ -37,6 +39,8 @@ impl<'a> Vm<'a> {
                 }
             }
         }
+
+        self.frame += 1;
     }
 }
 
@@ -280,5 +284,158 @@ mod test {
         fn extern_call(&mut self, _id: usize, _stack: &mut Vec<i32>, _first_arg: usize) {
             unimplemented!("Should never make an extern call")
         }
+    }
+
+    #[test]
+    fn frame_starts_at_zero() {
+        let compile_settings = CompileSettings {
+            properties: vec![Property {
+                ty: Type::Int,
+                index: 0,
+                name: "int_prop".to_string(),
+            }],
+            enable_optimisations: false,
+        };
+
+        let bytecode = compiler::compile(
+            "frame_test.tapir",
+            "int_prop = frame;",
+            compile_settings,
+        )
+        .unwrap()
+        .bytecode;
+
+        let mut vm = Vm::new(&bytecode);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        let mut object_safe_props = ObjectSafePropertiesImpl {
+            properties: &mut prop_object,
+            events: vec![],
+        };
+
+        vm.run_until_wait(&mut object_safe_props);
+
+        assert_eq!(prop_object.int_prop, 0, "frame should be 0 on first run");
+    }
+
+    #[test]
+    fn frame_increments_each_run() {
+        let compile_settings = CompileSettings {
+            properties: vec![Property {
+                ty: Type::Int,
+                index: 0,
+                name: "int_prop".to_string(),
+            }],
+            enable_optimisations: false,
+        };
+
+        let bytecode = compiler::compile(
+            "frame_test.tapir",
+            "int_prop = frame; wait; int_prop = frame; wait; int_prop = frame;",
+            compile_settings,
+        )
+        .unwrap()
+        .bytecode;
+
+        let mut vm = Vm::new(&bytecode);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        // First run - frame should be 0
+        {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+        assert_eq!(prop_object.int_prop, 0, "frame should be 0 on first run");
+
+        // Second run - frame should be 1
+        {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+        assert_eq!(prop_object.int_prop, 1, "frame should be 1 on second run");
+
+        // Third run - frame should be 2
+        {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+        assert_eq!(prop_object.int_prop, 2, "frame should be 2 on third run");
+    }
+
+    #[test]
+    fn frame_in_expression() {
+        let compile_settings = CompileSettings {
+            properties: vec![Property {
+                ty: Type::Int,
+                index: 0,
+                name: "int_prop".to_string(),
+            }],
+            enable_optimisations: false,
+        };
+
+        let bytecode = compiler::compile(
+            "frame_test.tapir",
+            "var start = frame; wait; wait; int_prop = frame - start;",
+            compile_settings,
+        )
+        .unwrap()
+        .bytecode;
+
+        let mut vm = Vm::new(&bytecode);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        // Run 3 times (to pass 2 waits and reach the assignment)
+        for _ in 0..3 {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        assert_eq!(prop_object.int_prop, 2, "frame difference should be 2");
+    }
+
+    #[test]
+    fn frame_in_loop_condition() {
+        let compile_settings = CompileSettings {
+            properties: vec![Property {
+                ty: Type::Int,
+                index: 0,
+                name: "int_prop".to_string(),
+            }],
+            enable_optimisations: false,
+        };
+
+        let bytecode = compiler::compile(
+            "frame_test.tapir",
+            "loop { if frame >= 5 { break; } wait; } int_prop = frame;",
+            compile_settings,
+        )
+        .unwrap()
+        .bytecode;
+
+        let mut vm = Vm::new(&bytecode);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        // Run until the script completes
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        assert_eq!(prop_object.int_prop, 5, "frame should be 5 after loop exits");
     }
 }

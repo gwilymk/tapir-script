@@ -31,6 +31,7 @@ impl<'a> SymbolIter<'a> {
             TapIr::Constant(target, _)
             | TapIr::Move { target, .. }
             | TapIr::GetProp { target, .. }
+            | TapIr::GetBuiltin { target, .. }
             | TapIr::BinOp { target, .. } => Self::One(Some(*target)),
             TapIr::Call { target, .. } | TapIr::CallExternal { target, .. } => {
                 Self::Many(target.iter())
@@ -90,6 +91,7 @@ impl<'a> SymbolIterMut<'a> {
             TapIr::Constant(target, _)
             | TapIr::Move { target, .. }
             | TapIr::GetProp { target, .. }
+            | TapIr::GetBuiltin { target, .. }
             | TapIr::BinOp { target, .. } => Self::One(Some(target)),
             TapIr::Call { target, .. } | TapIr::CallExternal { target, .. } => {
                 Self::Many(target.iter_mut())

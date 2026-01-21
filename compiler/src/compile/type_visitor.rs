@@ -8,6 +8,7 @@ use crate::{
         self, BinaryOperator, Expression, ExpressionKind, ExternFunctionDefinition, Function,
         FunctionModifiers, FunctionReturn, InternalOrExternalFunctionId, MaybeResolved, SymbolId,
     },
+    builtins::BuiltinVariable,
     reporting::{CompilerErrorKind, CountMismatchExtras, Diagnostics},
     tokens::Span,
     types::Type,
@@ -177,6 +178,10 @@ impl<'input> TypeVisitor<'input> {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Type {
+        if let Some(builtin) = BuiltinVariable::from_symbol_id(symbol_id) {
+            return builtin.ty();
+        }
+
         match self.type_table.get(symbol_id.0) {
             Some(Some((ty, _))) => *ty,
             _ => {
@@ -691,6 +696,12 @@ pub struct TypeTable<'input> {
 impl TypeTable<'_> {
     #[cfg(test)]
     pub fn type_for_symbol(&self, symbol_id: SymbolId) -> Type {
+        use crate::builtins::BuiltinVariable;
+
+        if let Some(builtin) = BuiltinVariable::from_symbol_id(symbol_id) {
+            return builtin.ty();
+        }
+
         self.types[symbol_id.0]
     }
 
@@ -777,7 +788,12 @@ mod test {
                 );
             }
 
-            assert!(!diagnostics.has_any(), "{} failed", path.display());
+            assert!(
+                !diagnostics.has_any(),
+                "{} failed with error {}",
+                path.display(),
+                diagnostics.pretty_string(true)
+            );
 
             let symtab = symtab_visitor.get_symtab();
             let type_table = type_visitor.into_type_table(symtab, &mut diagnostics);

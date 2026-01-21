@@ -36,6 +36,7 @@ impl State {
         &mut self,
         bytecode: &[u32],
         properties: &mut dyn ObjectSafeProperties,
+        frame: i32,
     ) -> RunResult {
         loop {
             let Some(&instr) = bytecode.get(self.pc) else {
@@ -170,6 +171,16 @@ impl State {
                     self.pc += 1;
 
                     self.set_reg(target, constant as i32);
+                }
+                O::GetBuiltin => {
+                    type1!(target, id);
+
+                    let value = match id {
+                        0 => frame,
+                        other => panic!("Invalid GetBuiltin for id {other}"),
+                    };
+
+                    self.set_reg(target, value);
                 }
 
                 O::Jump => {
