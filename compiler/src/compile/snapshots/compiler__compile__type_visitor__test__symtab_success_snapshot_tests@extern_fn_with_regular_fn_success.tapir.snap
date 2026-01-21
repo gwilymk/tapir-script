@@ -1,0 +1,10 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/extern_fn_with_regular_fn_success.tapir
+---
+[
+  ("int_prop", Int),
+  ("result", Fix),
+  ("v", Fix),
+]

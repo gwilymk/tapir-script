@@ -1,0 +1,3 @@
+extern fn do_something(x: int, y: fix);
+
+do_something(3, 4.5);

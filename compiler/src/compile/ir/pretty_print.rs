@@ -44,7 +44,33 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 targets += " = ";
             }
 
-            write!(output, "{targets}{}({args})", symtab.name_for_function(*f))
+            write!(
+                output,
+                "{targets}{}({args})",
+                symtab.name_for_function(InternalOrExternalFunctionId::Internal(*f))
+            )
+        }
+        TapIrInstr::CallExternal { target, f, args } => {
+            let mut targets = target
+                .iter()
+                .map(|t| symtab.debug_name_for_symbol(*t))
+                .collect::<Vec<_>>()
+                .join(", ");
+            let args = args
+                .iter()
+                .map(|t| symtab.debug_name_for_symbol(*t))
+                .collect::<Vec<_>>()
+                .join(", ");
+
+            if !targets.is_empty() {
+                targets += " = ";
+            }
+
+            write!(
+                output,
+                "{targets}{}({args})",
+                symtab.name_for_function(InternalOrExternalFunctionId::External(*f))
+            )
         }
         TapIrInstr::Spawn { f, args } => {
             let args = args
@@ -53,7 +79,11 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 .collect::<Vec<_>>()
                 .join(", ");
 
-            write!(output, "spawn {}({args})", symtab.name_for_function(*f))
+            write!(
+                output,
+                "spawn {}({args})",
+                symtab.name_for_function(InternalOrExternalFunctionId::Internal(*f))
+            )
         }
         TapIrInstr::Trigger { f, args } => {
             let args = args
@@ -169,7 +199,7 @@ pub fn pretty_print_tapir_function(
         } else {
             ""
         },
-        symtab.name_for_function(function.id)
+        symtab.name_for_function(InternalOrExternalFunctionId::Internal(function.id))
     )?;
 
     for block in function.blocks() {

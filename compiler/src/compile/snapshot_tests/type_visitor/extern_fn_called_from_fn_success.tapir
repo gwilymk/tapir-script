@@ -1,0 +1,8 @@
+extern fn get_value() -> int;
+
+fn use_extern() -> int {
+    var x = get_value();
+    return x + 1;
+}
+
+var result = use_extern();

@@ -21,7 +21,10 @@ pub use ssa::make_ssa;
 
 use crate::{
     EventHandlerArgument, Type,
-    ast::{self, BinaryOperator, Expression, FunctionId, SymbolId},
+    ast::{
+        self, BinaryOperator, Expression, ExternalFunctionId, FunctionId,
+        InternalOrExternalFunctionId, SymbolId,
+    },
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
 };
 
@@ -47,6 +50,11 @@ pub enum TapIrInstr {
     Call {
         target: Box<[SymbolId]>,
         f: FunctionId,
+        args: Box<[SymbolId]>,
+    },
+    CallExternal {
+        target: Box<[SymbolId]>,
+        f: ExternalFunctionId,
         args: Box<[SymbolId]>,
     },
     Spawn {
@@ -95,6 +103,7 @@ impl TapIr {
             | TapIrInstr::GetProp { .. } => false,
             TapIrInstr::Wait
             | TapIrInstr::Call { .. }
+            | TapIrInstr::CallExternal { .. }
             | TapIrInstr::Spawn { .. }
             | TapIrInstr::Trigger { .. }
             | TapIrInstr::StoreProp { .. } => true,
@@ -384,17 +393,31 @@ impl BlockVisitor {
                     })
                     .collect();
 
-                let f = *statement
+                let f: InternalOrExternalFunctionId = *statement
                     .meta
                     .get()
                     .expect("Should have function IDs by now");
-                self.current_block.push(TapIr {
-                    instr: TapIrInstr::Call {
-                        target: Box::new([]),
-                        f,
-                        args,
-                    },
-                });
+
+                match f {
+                    InternalOrExternalFunctionId::Internal(function_id) => {
+                        self.current_block.push(TapIr {
+                            instr: TapIrInstr::Call {
+                                target: Box::new([]),
+                                f: function_id,
+                                args,
+                            },
+                        });
+                    }
+                    InternalOrExternalFunctionId::External(external_function_id) => {
+                        self.current_block.push(TapIr {
+                            instr: TapIrInstr::CallExternal {
+                                target: Box::new([]),
+                                f: external_function_id,
+                                args,
+                            },
+                        });
+                    }
+                }
             }
             ast::StatementKind::Spawn { arguments, .. } => {
                 let args = arguments
@@ -406,13 +429,24 @@ impl BlockVisitor {
                     })
                     .collect();
 
-                let f = *statement
+                let f: InternalOrExternalFunctionId = *statement
                     .meta
                     .get()
                     .expect("Should have function IDs by now");
-                self.current_block.push(TapIr {
-                    instr: TapIrInstr::Spawn { f, args },
-                });
+
+                match f {
+                    InternalOrExternalFunctionId::Internal(function_id) => {
+                        self.current_block.push(TapIr {
+                            instr: TapIrInstr::Spawn {
+                                f: function_id,
+                                args,
+                            },
+                        });
+                    }
+                    InternalOrExternalFunctionId::External(_) => {
+                        panic!("Shouldn't be able to spawn an external function")
+                    }
+                }
             }
             ast::StatementKind::Trigger { arguments, .. } => {
                 let args = arguments
@@ -571,7 +605,7 @@ impl BlockVisitor {
             }
             ast::ExpressionKind::Nop => {}
             ast::ExpressionKind::Call { arguments, .. } => {
-                let function_id = *expr
+                let function_id: InternalOrExternalFunctionId = *expr
                     .meta
                     .get()
                     .expect("Should've assigned function IDs by now");
@@ -585,13 +619,26 @@ impl BlockVisitor {
                     })
                     .collect();
 
-                self.current_block.push(TapIr {
-                    instr: TapIrInstr::Call {
-                        target: Box::new([target_symbol]),
-                        f: function_id,
-                        args,
-                    },
-                });
+                match function_id {
+                    InternalOrExternalFunctionId::Internal(function_id) => {
+                        self.current_block.push(TapIr {
+                            instr: TapIrInstr::Call {
+                                target: Box::new([target_symbol]),
+                                f: function_id,
+                                args,
+                            },
+                        });
+                    }
+                    InternalOrExternalFunctionId::External(external_function_id) => {
+                        self.current_block.push(TapIr {
+                            instr: TapIrInstr::CallExternal {
+                                target: Box::new([target_symbol]),
+                                f: external_function_id,
+                                args,
+                            },
+                        });
+                    }
+                }
             }
         }
     }
@@ -617,7 +664,8 @@ impl TapIrBlock {
                     target, lhs, rhs, ..
                 } => symbols.extend([*target, *lhs, *rhs]),
                 TapIrInstr::Wait => {}
-                TapIrInstr::Call { target, args, .. } => {
+                TapIrInstr::Call { target, args, .. }
+                | TapIrInstr::CallExternal { target, args, .. } => {
                     symbols.extend(target);
                     symbols.extend(args);
                 }
@@ -1015,9 +1063,17 @@ mod test {
                 enable_optimisations: true,
             };
 
-            let mut symtab_visitor =
-                SymTabVisitor::new(&compile_settings, &mut script.functions, &mut diagnostics);
-            let mut type_visitor = TypeVisitor::new(&compile_settings, &script.functions);
+            let mut symtab_visitor = SymTabVisitor::new(
+                &compile_settings,
+                &mut script.functions,
+                &mut script.extern_functions,
+                &mut diagnostics,
+            );
+            let mut type_visitor = TypeVisitor::new(
+                &compile_settings,
+                &script.functions,
+                &script.extern_functions,
+            );
 
             for function in &mut script.functions {
                 visit_loop_check(function, &mut diagnostics);

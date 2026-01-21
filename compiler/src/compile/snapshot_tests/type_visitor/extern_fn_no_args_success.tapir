@@ -1,0 +1,3 @@
+extern fn get_frame() -> int;
+
+var frame = get_frame();

@@ -6,7 +6,7 @@ use std::{
 use petgraph::{Direction, prelude::DiGraphMap};
 
 use crate::{
-    ast::{FunctionId, SymbolId},
+    ast::{FunctionId, InternalOrExternalFunctionId, SymbolId},
     compile::{
         ir::{
             BlockExitInstr, BlockId, Phi, TapIr, TapIrBlock, TapIrFunction, TapIrFunctionBlockIter,
@@ -45,7 +45,7 @@ pub fn inline_small_functions(
             continue;
         }
 
-        if symtab.name_for_function(f.id()) == "black_box" {
+        if symtab.name_for_function(InternalOrExternalFunctionId::Internal(f.id())) == "black_box" {
             continue;
         }
 

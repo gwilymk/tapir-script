@@ -1,0 +1,16 @@
+---
+source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/extern_fn_duplicate_fail.tapir
+---
+Error: Function with name 'foo' already exists
+   ╭─[ extern_fn_duplicate_fail.tapir:3:11 ]
+   │
+ 1 │ extern fn foo(x: int) -> int;
+   │           ─┬─  
+   │            ╰─── Originally declared here
+   │ 
+ 3 │ extern fn foo(x: fix) -> fix;
+   │           ─┬─  
+   │            ╰─── Also declared here
+───╯

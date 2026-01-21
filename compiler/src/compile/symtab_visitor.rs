@@ -2,7 +2,8 @@ use std::{borrow::Cow, collections::HashMap};
 
 use crate::{
     ast::{
-        Expression, ExpressionKind, Function, FunctionId, MaybeResolved, Statement, StatementKind,
+        Expression, ExpressionKind, ExternFunctionDefinition, ExternalFunctionId, Function,
+        FunctionId, InternalOrExternalFunctionId, MaybeResolved, Statement, StatementKind,
         SymbolId,
     },
     reporting::{CompilerErrorKind, Diagnostics},
@@ -15,21 +16,23 @@ pub struct SymTabVisitor<'input> {
     symtab: SymTab<'input>,
 
     symbol_names: NameTable<'input>,
-    function_names: HashMap<&'input str, FunctionId>,
+    function_names: HashMap<&'input str, InternalOrExternalFunctionId>,
 }
 
 impl<'input> SymTabVisitor<'input> {
     pub fn new(
         settings: &CompileSettings,
         functions: &mut [Function<'input>],
+        extern_functions: &mut [ExternFunctionDefinition<'input>],
         diagnostics: &mut Diagnostics,
     ) -> Self {
         let mut function_declarations = HashMap::new();
-        let mut function_names = vec![];
+        let mut function_names = HashMap::new();
+        let mut functions_map = HashMap::new();
 
-        for (i, function) in functions.iter_mut().enumerate() {
-            function.meta.set(FunctionId(i));
-            function_names.push(function.name);
+        for (i, function) in extern_functions.iter_mut().enumerate() {
+            let fid = ExternalFunctionId(i);
+            function.meta.set(fid);
 
             if let Some(other_span) = function_declarations.insert(function.name, function.span) {
                 diagnostics.add_message(
@@ -41,15 +44,34 @@ impl<'input> SymTabVisitor<'input> {
                     .into_message(function.span),
                 );
             }
+
+            functions_map.insert(function.name, InternalOrExternalFunctionId::External(fid));
+            function_names.insert(InternalOrExternalFunctionId::External(fid), function.name);
+        }
+
+        for (i, function) in functions.iter_mut().enumerate() {
+            let fid = FunctionId(i);
+            function.meta.set(fid);
+
+            if let Some(other_span) = function_declarations.insert(function.name, function.span) {
+                diagnostics.add_message(
+                    CompilerErrorKind::FunctionAlreadyDeclared {
+                        function_name: function.name.to_string(),
+                        old_function_declaration: other_span,
+                        new_function_declaration: function.span,
+                    }
+                    .into_message(function.span),
+                );
+            }
+
+            functions_map.insert(function.name, InternalOrExternalFunctionId::Internal(fid));
+            function_names.insert(InternalOrExternalFunctionId::Internal(fid), function.name);
         }
 
         Self {
             symtab: SymTab::new(settings, function_names),
             symbol_names: NameTable::new(settings),
-            function_names: functions
-                .iter()
-                .map(|f| (f.name, *f.meta.get::<FunctionId>().unwrap()))
-                .collect(),
+            function_names: functions_map,
         }
     }
 
@@ -253,11 +275,14 @@ pub struct SymTab<'input> {
     properties: Vec<Property>,
 
     symbol_names: Vec<(Cow<'input, str>, Option<Span>)>,
-    function_names: Vec<&'input str>,
+    function_names: HashMap<InternalOrExternalFunctionId, &'input str>,
 }
 
 impl<'input> SymTab<'input> {
-    fn new(settings: &CompileSettings, function_names: Vec<&'input str>) -> Self {
+    fn new(
+        settings: &CompileSettings,
+        function_names: HashMap<InternalOrExternalFunctionId, &'input str>,
+    ) -> Self {
         let properties = settings.properties.clone();
         let symbol_names = properties
             .iter()
@@ -307,8 +332,13 @@ impl<'input> SymTab<'input> {
         }
     }
 
-    pub(crate) fn name_for_function(&self, function_id: FunctionId) -> &'input str {
-        self.function_names[function_id.0]
+    pub(crate) fn name_for_function(
+        &self,
+        function_id: InternalOrExternalFunctionId,
+    ) -> &'input str {
+        self.function_names
+            .get(&function_id)
+            .expect("Should have a function name if you have an InternalOrExternalFunctionId")
     }
 
     pub(crate) fn span_for_symbol(&self, symbol_id: SymbolId) -> Span {
@@ -363,6 +393,7 @@ mod test {
                     enable_optimisations: false,
                 },
                 &mut script.functions,
+                &mut script.extern_functions,
                 &mut diagnostics,
             );
 
@@ -401,6 +432,7 @@ mod test {
                     enable_optimisations: false,
                 },
                 &mut script.functions,
+                &mut script.extern_functions,
                 &mut diagnostics,
             );
 

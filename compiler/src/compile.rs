@@ -59,8 +59,13 @@ pub fn compile(
         }
     };
 
-    let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast.functions, &mut diagnostics);
-    let mut type_visitor = TypeVisitor::new(settings, &ast.functions);
+    let mut sym_tab_visitor = SymTabVisitor::new(
+        settings,
+        &mut ast.functions,
+        &mut ast.extern_functions,
+        &mut diagnostics,
+    );
+    let mut type_visitor = TypeVisitor::new(settings, &ast.functions, &ast.extern_functions);
 
     for function in &mut ast.functions {
         sym_tab_visitor.visit_function(function, &mut diagnostics);
@@ -229,6 +234,7 @@ impl Compiler {
                     TapIrInstr::StoreProp { prop_index, value } => {
                         self.bytecode.set_prop(v(value), *prop_index as u8);
                     }
+                    TapIrInstr::CallExternal { target, f, args } => todo!(),
                 }
             }
 

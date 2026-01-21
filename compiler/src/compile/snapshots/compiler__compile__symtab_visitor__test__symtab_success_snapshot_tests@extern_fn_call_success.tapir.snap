@@ -1,0 +1,79 @@
+---
+source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/extern_fn_call_success.tapir
+---
+Script(
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            ident: "result",
+            value: Expression(
+              span: "[span]",
+              kind: Call(
+                name: "get_value",
+                arguments: [
+                  Expression(
+                    span: "[span]",
+                    kind: Integer(5),
+                    meta: {},
+                  ),
+                ],
+              ),
+              meta: {
+                "compiler::ast::InternalOrExternalFunctionId": "External(ExternalFunctionId(0))",
+              },
+            ),
+          ),
+          meta: {
+            "compiler::ast::SymbolId": "SymbolId(1)",
+          },
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+      },
+    ),
+  ],
+  extern_functions: [
+    ExternFunctionDefinition(
+      name: "get_value",
+      span: "[span]",
+      arguments: [
+        FunctionArgument(
+          span: "[span]",
+          t: TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+          name: Unresolved("x"),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {
+        "compiler::ast::ExternalFunctionId": "ExternalFunctionId(0)",
+      },
+    ),
+  ],
+)

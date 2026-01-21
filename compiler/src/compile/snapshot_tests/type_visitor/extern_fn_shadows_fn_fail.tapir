@@ -1,0 +1,5 @@
+fn foo() -> int {
+    return 5;
+}
+
+extern fn foo() -> int;

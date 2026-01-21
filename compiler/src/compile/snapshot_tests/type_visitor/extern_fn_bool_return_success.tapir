@@ -1,0 +1,5 @@
+extern fn is_valid(x: int) -> bool;
+
+if is_valid(5) {
+    var y = 10;
+}

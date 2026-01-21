@@ -1,0 +1,3 @@
+extern fn compute(a: int, b: fix) -> fix;
+
+var x = compute(3.5, 4);

@@ -1,0 +1,7 @@
+extern fn get_external_value(x: int) -> fix;
+
+fn double_it(v: fix) -> fix {
+    return v * 2.0;
+}
+
+var result = double_it(get_external_value(10));

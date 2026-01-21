@@ -1,0 +1,3 @@
+extern fn log_value(x: int);
+
+log_value(42);

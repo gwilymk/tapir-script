@@ -1,0 +1,3 @@
+extern fn get_pair() -> (int, fix);
+
+var x = get_pair();

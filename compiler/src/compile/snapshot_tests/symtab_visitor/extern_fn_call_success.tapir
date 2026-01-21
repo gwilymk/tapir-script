@@ -1,0 +1,3 @@
+extern fn get_value(x: int) -> fix;
+
+var result = get_value(5);

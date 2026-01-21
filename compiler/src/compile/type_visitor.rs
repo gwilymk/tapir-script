@@ -5,8 +5,8 @@ use serde::Serialize;
 use crate::{
     Trigger,
     ast::{
-        self, BinaryOperator, Expression, Function, FunctionId, FunctionModifiers, FunctionReturn,
-        MaybeResolved, SymbolId,
+        self, BinaryOperator, Expression, ExternFunctionDefinition, Function, FunctionModifiers,
+        FunctionReturn, InternalOrExternalFunctionId, MaybeResolved, SymbolId,
     },
     reporting::{CompilerErrorKind, Diagnostics},
     tokens::Span,
@@ -17,7 +17,7 @@ use super::{CompileSettings, loop_visitor::LoopContainsNoBreak, symtab_visitor::
 
 pub struct TypeVisitor<'input> {
     type_table: Vec<Option<Type>>,
-    functions: HashMap<FunctionId, FunctionInfo>,
+    functions: HashMap<InternalOrExternalFunctionId, FunctionInfo>,
 
     trigger_types: HashMap<&'input str, TriggerInfo>,
 }
@@ -39,7 +39,11 @@ struct TriggerInfo {
 }
 
 impl<'input> TypeVisitor<'input> {
-    pub fn new(settings: &CompileSettings, functions: &[Function<'input>]) -> Self {
+    pub fn new(
+        settings: &CompileSettings,
+        functions: &[Function<'input>],
+        extern_functions: &[ExternFunctionDefinition<'input>],
+    ) -> Self {
         let mut resolved_functions = HashMap::new();
 
         for function in functions {
@@ -49,11 +53,27 @@ impl<'input> TypeVisitor<'input> {
             };
 
             resolved_functions.insert(
-                *function.meta.get().unwrap(),
+                InternalOrExternalFunctionId::Internal(*function.meta.get().unwrap()),
                 FunctionInfo {
                     span: function.span,
                     ty: function_type,
                     modifiers: function.modifiers.clone(),
+                },
+            );
+        }
+
+        for function in extern_functions {
+            let function_type = FunctionType {
+                args: function.arguments.iter().map(|t| t.t.t).collect(),
+                rets: function.return_types.types.iter().map(|t| t.t).collect(),
+            };
+
+            resolved_functions.insert(
+                InternalOrExternalFunctionId::External(*function.meta.get().unwrap()),
+                FunctionInfo {
+                    span: function.span,
+                    ty: function_type,
+                    modifiers: FunctionModifiers::default(),
                 },
             );
         }
@@ -471,7 +491,7 @@ impl<'input> TypeVisitor<'input> {
         &mut self,
         span: Span,
         name: &'input str,
-        function_id: Option<FunctionId>,
+        function_id: Option<InternalOrExternalFunctionId>,
         arguments: &mut [Expression<'input>],
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
@@ -583,6 +603,7 @@ mod test {
     #[test]
     fn symtab_success_snapshot_tests() {
         glob!("snapshot_tests", "type_visitor/*_success.tapir", |path| {
+            eprintln!("{}", path.display());
             let input = fs::read_to_string(path).unwrap();
 
             let file_id = FileId::new(0);
@@ -603,10 +624,15 @@ mod test {
                 }],
                 enable_optimisations: false,
             };
-            let mut symtab_visitor =
-                SymTabVisitor::new(&settings, &mut script.functions, &mut diagnostics);
+            let mut symtab_visitor = SymTabVisitor::new(
+                &settings,
+                &mut script.functions,
+                &mut script.extern_functions,
+                &mut diagnostics,
+            );
 
-            let mut type_visitor = TypeVisitor::new(&settings, &script.functions);
+            let mut type_visitor =
+                TypeVisitor::new(&settings, &script.functions, &script.extern_functions);
 
             for function in &mut script.functions {
                 loop_visitor::visit_loop_check(function, &mut diagnostics);
@@ -654,9 +680,14 @@ mod test {
                 }],
                 enable_optimisations: false,
             };
-            let mut symtab_visitor =
-                SymTabVisitor::new(&settings, &mut script.functions, &mut diagnostics);
-            let mut type_visitor = TypeVisitor::new(&settings, &script.functions);
+            let mut symtab_visitor = SymTabVisitor::new(
+                &settings,
+                &mut script.functions,
+                &mut script.extern_functions,
+                &mut diagnostics,
+            );
+            let mut type_visitor =
+                TypeVisitor::new(&settings, &script.functions, &script.extern_functions);
 
             for function in &mut script.functions {
                 loop_visitor::visit_loop_check(function, &mut diagnostics);

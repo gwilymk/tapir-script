@@ -27,6 +27,15 @@ impl FunctionId {
     }
 }
 
+#[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]
+pub struct ExternalFunctionId(pub usize);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, PartialOrd, Ord)]
+pub enum InternalOrExternalFunctionId {
+    Internal(FunctionId),
+    External(ExternalFunctionId),
+}
+
 pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]
