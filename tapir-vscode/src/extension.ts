@@ -1,4 +1,3 @@
-import * as path from "path";
 import * as vscode from "vscode";
 import {
   LanguageClient,
@@ -8,7 +7,9 @@ import {
 
 let client: LanguageClient | undefined;
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(
+  _context: vscode.ExtensionContext,
+): Promise<void> {
   const config = vscode.workspace.getConfiguration("tapir");
   let serverPath = config.get<string>("serverPath");
 
@@ -33,15 +34,15 @@ export function activate(context: vscode.ExtensionContext) {
     "tapir-lsp",
     "Tapir Language Server",
     serverOptions,
-    clientOptions
+    clientOptions,
   );
 
-  client.start();
+  await client.start();
 }
 
-export function deactivate(): Thenable<void> | undefined {
+export async function deactivate(): Promise<void> {
   if (!client) {
     return undefined;
   }
-  return client.stop();
+  return await client.stop();
 }
