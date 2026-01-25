@@ -1,25 +1,13 @@
-use std::borrow::Cow;
-
 use crate::{
-    ast::{FunctionArgument, FunctionReturn, MaybeResolved},
+    ast::{FunctionReturn, TypedIdent},
     types::Type,
 };
 
-use super::super::symtab_visitor::SymTab;
-
-/// Get the name from a MaybeResolved, using the symtab for resolved symbols.
-pub fn resolve_name<'a>(name: &'a MaybeResolved<'a>, symtab: &'a SymTab<'a>) -> Cow<'a, str> {
-    match name {
-        MaybeResolved::Unresolved(s) => Cow::Borrowed(*s),
-        MaybeResolved::Resolved(id) => symtab.name_for_symbol(*id),
-    }
-}
-
 /// Format a list of function arguments as a comma-separated string.
-pub fn format_arguments(arguments: &[FunctionArgument<'_>], symtab: &SymTab<'_>) -> String {
+pub fn format_arguments(arguments: &[TypedIdent<'_>]) -> String {
     arguments
         .iter()
-        .map(|arg| format!("{}: {}", resolve_name(&arg.name, symtab), arg.t.t))
+        .map(|arg| format!("{}: {}", arg.name(), arg.ty_required().t))
         .collect::<Vec<_>>()
         .join(", ")
 }

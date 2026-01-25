@@ -52,7 +52,7 @@ pub fn extract_hover_info(
             continue;
         }
 
-        let args = format_arguments(&function.arguments, symtab);
+        let args = format_arguments(&function.arguments);
         let return_str = format_return_types(&function.return_types);
 
         let prefix = if function.modifiers.is_event_handler.is_some() {
@@ -72,7 +72,7 @@ pub fn extract_hover_info(
 
     // Add hover info for extern functions and build signature map
     for function in &ast.extern_functions {
-        let args = format_arguments(&function.arguments, symtab);
+        let args = format_arguments(&function.arguments);
         let return_str = format_return_types(&function.return_types);
 
         let info = HoverInfo {
@@ -110,7 +110,7 @@ fn extract_from_statements(
             StatementKind::VariableDeclaration { idents, values } => {
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
                     for (ident, symbol_id) in idents.iter().zip(symbol_ids.iter()) {
-                        add_symbol_hover(ident.span, *symbol_id, symtab, type_table, hover_info);
+                        add_symbol_hover(ident.span(), *symbol_id, symtab, type_table, hover_info);
                     }
                 }
                 for expr in values {

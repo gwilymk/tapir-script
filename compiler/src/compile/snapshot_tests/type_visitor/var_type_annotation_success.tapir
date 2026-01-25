@@ -1,0 +1,10 @@
+# Variables with type annotations matching inferred types
+var x: int = 5;
+var y: fix = 3.14;
+var z: bool = true;
+
+# Multiple variables with annotations
+var a: int, b: fix = 1, 2.5;
+
+# Mixed annotated and inferred
+var c: int, d = 10, 20;

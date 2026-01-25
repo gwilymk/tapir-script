@@ -44,7 +44,7 @@ fn extract_from_statements(
                         // Don't show hints for error types
                         if ty != Type::Error {
                             hints.push(InlayHintInfo {
-                                position: ident.span.end(),
+                                position: ident.span().end(),
                                 label: format!(": {}", ty),
                             });
                         }

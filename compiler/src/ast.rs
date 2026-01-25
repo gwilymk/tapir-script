@@ -48,14 +48,13 @@ pub struct Script<'input> {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct PropertyDeclaration<'input> {
-    pub name: Ident<'input>,
-    pub ty: TypeWithLocation,
+    pub name: TypedIdent<'input>,
     pub span: Span,
 }
 
 #[derive(Clone, Debug, Serialize)]
 pub struct GlobalDeclaration<'input> {
-    pub name: Ident<'input>,
+    pub name: TypedIdent<'input>,
     pub value: Expression<'input>,
     pub span: Span,
 }
@@ -138,7 +137,7 @@ impl<'input> Script<'input> {
 pub struct ExternFunctionDefinition<'input> {
     pub name: &'input str,
     pub span: Span,
-    pub arguments: Vec<FunctionArgument<'input>>,
+    pub arguments: Vec<TypedIdent<'input>>,
     pub return_types: FunctionReturn,
 
     pub meta: Metadata,
@@ -149,7 +148,7 @@ pub struct Function<'input> {
     pub name: &'input str,
     pub span: Span,
     pub statements: Vec<Statement<'input>>,
-    pub arguments: Vec<FunctionArgument<'input>>,
+    pub arguments: Vec<TypedIdent<'input>>,
     pub return_types: FunctionReturn,
 
     pub modifiers: FunctionModifiers,
@@ -174,27 +173,6 @@ pub struct TypeWithLocation {
     pub span: Span,
 }
 
-#[derive(Clone, Debug, Serialize)]
-pub struct FunctionArgument<'input> {
-    pub span: Span,
-    pub t: TypeWithLocation,
-    pub name: MaybeResolved<'input>,
-}
-
-#[derive(Clone, Debug, Serialize)]
-pub enum MaybeResolved<'input> {
-    Unresolved(&'input str),
-    Resolved(SymbolId),
-}
-
-impl<'input> MaybeResolved<'input> {
-    pub(crate) fn symbol_id(&self) -> Option<SymbolId> {
-        match self {
-            MaybeResolved::Unresolved(_) => None,
-            MaybeResolved::Resolved(symbol_id) => Some(*symbol_id),
-        }
-    }
-}
 
 #[derive(Clone, Debug, Serialize)]
 pub enum TopLevelStatement<'input> {
@@ -220,11 +198,44 @@ pub struct Ident<'input> {
     pub ident: &'input str,
 }
 
+/// An identifier with an optional type annotation.
+///
+/// Used throughout the AST for any name that may have a type:
+/// - Variable declarations: `var x: int = 5;` (type optional, inferred if absent)
+/// - Global declarations: `global G: int = 10;` (type optional, inferred if absent)
+/// - Function arguments: `fn foo(x: int)` (type required by grammar)
+/// - Property declarations: `property p: int;` (type required by grammar)
+///
+/// Whether the type is required or optional is enforced by the grammar, not the AST.
+#[derive(Clone, Debug, Serialize)]
+pub struct TypedIdent<'input> {
+    pub ident: Ident<'input>,
+    pub ty: Option<TypeWithLocation>,
+}
+
+impl<'input> TypedIdent<'input> {
+    /// Returns the identifier string.
+    pub fn name(&self) -> &'input str {
+        self.ident.ident
+    }
+
+    /// Returns the span of the identifier.
+    pub fn span(&self) -> Span {
+        self.ident.span
+    }
+
+    /// Returns the type, panicking if not present.
+    /// Use only when the grammar guarantees a type exists.
+    pub fn ty_required(&self) -> &TypeWithLocation {
+        self.ty.as_ref().expect("type required by grammar")
+    }
+}
+
 #[derive(Clone, Debug, Default, Serialize)]
 pub enum StatementKind<'input> {
     Error,
     VariableDeclaration {
-        idents: Vec<Ident<'input>>,
+        idents: Vec<TypedIdent<'input>>,
         values: Vec<Expression<'input>>,
     },
     Assignment {

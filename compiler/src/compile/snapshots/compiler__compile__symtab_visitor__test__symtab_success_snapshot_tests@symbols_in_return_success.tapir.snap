@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+source: compiler/src/compile/symtab_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/symbols_in_return_success.tapir
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/symbols_in_return_success.tapir
 ---
 Script(
   property_declarations: [],
@@ -21,6 +21,7 @@ Script(
       ),
       meta: {
         "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
       },
     ),
     Function(
@@ -31,9 +32,12 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "x",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -98,21 +102,25 @@ Script(
         ),
       ],
       arguments: [
-        FunctionArgument(
-          span: "[span]",
-          t: TypeWithLocation(
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: Some(TypeWithLocation(
             t: Int,
             span: "[span]",
-          ),
-          name: Resolved(SymbolId(0)),
+          )),
         ),
-        FunctionArgument(
-          span: "[span]",
-          t: TypeWithLocation(
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: Some(TypeWithLocation(
             t: Fix,
             span: "[span]",
-          ),
-          name: Resolved(SymbolId(1)),
+          )),
         ),
       ],
       return_types: FunctionReturn(
@@ -133,6 +141,7 @@ Script(
       ),
       meta: {
         "compiler::ast::FunctionId": "FunctionId(1)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([SymbolId(0), SymbolId(1)])",
       },
     ),
   ],

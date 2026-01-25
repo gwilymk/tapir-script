@@ -25,7 +25,6 @@ pub use types::{
 use hover::extract_hover_info;
 use inlay_hints::extract_inlay_hints;
 use signature_help::extract_signature_help;
-use util::resolve_name;
 
 /// Analyse a tapir script and return semantic information.
 ///
@@ -92,7 +91,7 @@ pub fn analyse(
     let hover_info = extract_hover_info(&ast, &symtab, &type_table);
 
     // Extract signature help information
-    let (signatures, call_sites) = extract_signature_help(&ast, &symtab);
+    let (signatures, call_sites) = extract_signature_help(&ast);
 
     // Extract inlay hints for variable types
     let inlay_hints = extract_inlay_hints(&ast, &symtab, &type_table);
@@ -125,7 +124,7 @@ fn extract_symbols(_symtab: &SymTab<'_>, _type_table: &TypeTable<'_>) -> Vec<Sym
     vec![]
 }
 
-fn extract_functions<'a>(ast: &'a Script<'a>, symtab: &'a SymTab<'a>) -> Vec<FunctionInfo> {
+fn extract_functions(ast: &Script<'_>, _symtab: &SymTab<'_>) -> Vec<FunctionInfo> {
     let mut functions = vec![];
 
     // Internal functions
@@ -138,9 +137,9 @@ fn extract_functions<'a>(ast: &'a Script<'a>, symtab: &'a SymTab<'a>) -> Vec<Fun
             .arguments
             .iter()
             .map(|arg| FunctionArgumentInfo {
-                name: resolve_name(&arg.name, symtab).into_owned(),
-                ty: arg.t.t,
-                span: arg.span,
+                name: arg.name().to_string(),
+                ty: arg.ty_required().t,
+                span: arg.span(),
             })
             .collect();
 
@@ -159,9 +158,9 @@ fn extract_functions<'a>(ast: &'a Script<'a>, symtab: &'a SymTab<'a>) -> Vec<Fun
             .arguments
             .iter()
             .map(|arg| FunctionArgumentInfo {
-                name: resolve_name(&arg.name, symtab).into_owned(),
-                ty: arg.t.t,
-                span: arg.span,
+                name: arg.name().to_string(),
+                ty: arg.ty_required().t,
+                span: arg.span(),
             })
             .collect();
 

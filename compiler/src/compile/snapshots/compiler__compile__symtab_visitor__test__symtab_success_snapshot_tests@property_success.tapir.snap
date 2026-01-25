@@ -1,18 +1,20 @@
 ---
-source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+source: compiler/src/compile/symtab_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/property_success.tapir
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/property_success.tapir
 ---
 Script(
   property_declarations: [
     PropertyDeclaration(
-      name: Ident(
-        span: "[span]",
-        ident: "int_prop",
-      ),
-      ty: TypeWithLocation(
-        t: Int,
-        span: "[span]",
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "int_prop",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Int,
+          span: "[span]",
+        )),
       ),
       span: "[span]",
     ),
@@ -27,9 +29,12 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "x",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -90,6 +95,7 @@ Script(
       ),
       meta: {
         "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
       },
     ),
   ],

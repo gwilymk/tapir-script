@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+source: compiler/src/compile/symtab_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/if_blocks_success.tapir
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/if_blocks_success.tapir
 ---
 Script(
   property_declarations: [],
@@ -15,9 +15,12 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "x",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -36,9 +39,12 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "y",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "y",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -66,9 +72,12 @@ Script(
                 span: "[span]",
                 kind: VariableDeclaration(
                   idents: [
-                    Ident(
-                      span: "[span]",
-                      ident: "x",
+                    TypedIdent(
+                      ident: Ident(
+                        span: "[span]",
+                        ident: "x",
+                      ),
+                      ty: None,
                     ),
                   ],
                   values: [
@@ -110,9 +119,12 @@ Script(
                 span: "[span]",
                 kind: VariableDeclaration(
                   idents: [
-                    Ident(
-                      span: "[span]",
-                      ident: "z",
+                    TypedIdent(
+                      ident: Ident(
+                        span: "[span]",
+                        ident: "z",
+                      ),
+                      ty: None,
                     ),
                   ],
                   values: [
@@ -186,6 +198,7 @@ Script(
       ),
       meta: {
         "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
       },
     ),
   ],

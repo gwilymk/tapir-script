@@ -35,11 +35,15 @@ impl Serialize for Metadata {
     where
         S: serde::Serializer,
     {
-        serializer.collect_map(
-            self.map
-                .values()
-                .map(|(value, type_name)| (type_name, format!("{value:?}"))),
-        )
+        // Sort by type name for deterministic output
+        let mut entries: Vec<_> = self
+            .map
+            .values()
+            .map(|(value, type_name)| (*type_name, format!("{value:?}")))
+            .collect();
+        entries.sort_by_key(|(name, _)| *name);
+
+        serializer.collect_map(entries)
     }
 }
 

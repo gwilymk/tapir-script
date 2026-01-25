@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/grammar_test.rs
+source: compiler/src/grammar_test.rs
 expression: ast
-input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/multi_assignment.tapir
+input_file: compiler/src/snapshot_tests/grammar/multi_assignment.tapir
 ---
 Script(
   property_declarations: [],
@@ -15,13 +15,19 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "a",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "a",
+                ),
+                ty: None,
               ),
-              Ident(
-                span: "[span]",
-                ident: "b",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "b",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -43,17 +49,26 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "x",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: None,
               ),
-              Ident(
-                span: "[span]",
-                ident: "y",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "y",
+                ),
+                ty: None,
               ),
-              Ident(
-                span: "[span]",
-                ident: "z",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "z",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -80,13 +95,19 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "p",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "p",
+                ),
+                ty: None,
               ),
-              Ident(
-                span: "[span]",
-                ident: "q",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "q",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -106,17 +127,26 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "i",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "i",
+                ),
+                ty: None,
               ),
-              Ident(
-                span: "[span]",
-                ident: "j",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "j",
+                ),
+                ty: None,
               ),
-              Ident(
-                span: "[span]",
-                ident: "k",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "k",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -218,13 +248,19 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "m",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "m",
+                ),
+                ty: None,
               ),
-              Ident(
-                span: "[span]",
-                ident: "n",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "n",
+                ),
+                ty: None,
               ),
             ],
             values: [

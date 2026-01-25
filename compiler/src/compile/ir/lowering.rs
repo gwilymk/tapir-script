@@ -1,7 +1,7 @@
 use crate::{
     ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
     builtins::BuiltinVariable,
-    compile::symtab_visitor::{GlobalId, SymTab},
+    compile::symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
 };
 
 use super::{
@@ -16,10 +16,12 @@ pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
     let modifiers = FunctionModifiers::new(f, symtab);
 
     let arguments = f
-        .arguments
-        .iter()
-        .map(|a| a.name.symbol_id().expect("Should have resolved arguments"))
-        .collect();
+        .meta
+        .get::<FunctionArgumentSymbols>()
+        .expect("Should have resolved arguments")
+        .0
+        .clone()
+        .into_boxed_slice();
 
     let return_types = f.return_types.types.iter().map(|t| t.t).collect();
 

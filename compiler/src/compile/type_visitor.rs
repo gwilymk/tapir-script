@@ -6,7 +6,7 @@ use crate::{
     Trigger,
     ast::{
         self, BinaryOperator, Expression, ExpressionKind, ExternFunctionDefinition, Function,
-        FunctionModifiers, FunctionReturn, InternalOrExternalFunctionId, MaybeResolved, SymbolId,
+        FunctionModifiers, FunctionReturn, InternalOrExternalFunctionId, SymbolId,
     },
     builtins::BuiltinVariable,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
@@ -16,7 +16,7 @@ use crate::{
 
 use super::{
     loop_visitor::LoopContainsNoBreak,
-    symtab_visitor::{GlobalId, SymTab},
+    symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
 };
 
 pub struct TypeVisitor<'input> {
@@ -62,16 +62,10 @@ impl<'input> TypeVisitor<'input> {
             let args = function
                 .arguments
                 .iter()
-                .map(|arg| {
-                    let name = match &arg.name {
-                        MaybeResolved::Unresolved(s) => Cow::Borrowed(*s),
-                        MaybeResolved::Resolved(id) => symtab.name_for_symbol(*id),
-                    };
-                    FunctionArgumentInfo {
-                        name,
-                        ty: arg.t.t,
-                        span: arg.span,
-                    }
+                .map(|arg| FunctionArgumentInfo {
+                    name: Cow::Borrowed(arg.name()),
+                    ty: arg.ty_required().t,
+                    span: arg.span(),
                 })
                 .collect();
 
@@ -91,16 +85,10 @@ impl<'input> TypeVisitor<'input> {
             let args = function
                 .arguments
                 .iter()
-                .map(|arg| {
-                    let name = match &arg.name {
-                        MaybeResolved::Unresolved(s) => Cow::Borrowed(*s),
-                        MaybeResolved::Resolved(id) => symtab.name_for_symbol(*id),
-                    };
-                    FunctionArgumentInfo {
-                        name,
-                        ty: arg.t.t,
-                        span: arg.span,
-                    }
+                .map(|arg| FunctionArgumentInfo {
+                    name: Cow::Borrowed(arg.name()),
+                    ty: arg.ty_required().t,
+                    span: arg.span(),
                 })
                 .collect();
 
@@ -226,22 +214,193 @@ impl<'input> TypeVisitor<'input> {
         }
     }
 
+    /// Check a type annotation against the inferred type.
+    /// Returns the final type to use (annotation if present and valid, otherwise inferred).
+    fn check_type_annotation(
+        &self,
+        annotation: Option<&ast::TypeWithLocation>,
+        inferred_type: Type,
+        ident_span: Span,
+        value_span: Span,
+        diagnostics: &mut Diagnostics,
+    ) -> Type {
+        if let Some(annotation) = annotation {
+            let annotated = annotation.t;
+
+            // Allow if types match or either is Error (to avoid cascading errors)
+            let types_match =
+                annotated == inferred_type || annotated == Type::Error || inferred_type == Type::Error;
+
+            if !types_match {
+                ErrorKind::TypeAnnotationMismatch {
+                    annotated,
+                    actual: inferred_type,
+                }
+                .at(ident_span)
+                .label(
+                    annotation.span,
+                    DiagnosticMessage::ExpectedType { ty: annotated },
+                )
+                .label(
+                    value_span,
+                    DiagnosticMessage::HasType { ty: inferred_type },
+                )
+                .emit(diagnostics);
+                Type::Error
+            } else {
+                annotated
+            }
+        } else {
+            // No annotation - use inferred type
+            inferred_type
+        }
+    }
+
+    fn check_variable_declaration(
+        &mut self,
+        symbol_ids: &[SymbolId],
+        idents: &[ast::TypedIdent<'input>],
+        values: &mut [Expression<'input>],
+        statement_span: Span,
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) {
+        let ident_spans: Vec<Span> = idents.iter().map(|i| i.span()).collect();
+        let annotations: Vec<Option<&ast::TypeWithLocation>> =
+            idents.iter().map(|i| i.ty.as_ref()).collect();
+
+        self.check_assignment_inner(
+            symbol_ids,
+            &ident_spans,
+            &annotations,
+            values,
+            statement_span,
+            symtab,
+            diagnostics,
+        );
+    }
+
+    fn check_assignment(
+        &mut self,
+        symbol_ids: &[SymbolId],
+        idents: &[ast::Ident<'input>],
+        values: &mut [Expression<'input>],
+        statement_span: Span,
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) {
+        let ident_spans: Vec<Span> = idents.iter().map(|i| i.span).collect();
+        let annotations: Vec<Option<&ast::TypeWithLocation>> = vec![None; idents.len()];
+
+        self.check_assignment_inner(
+            symbol_ids,
+            &ident_spans,
+            &annotations,
+            values,
+            statement_span,
+            symtab,
+            diagnostics,
+        );
+    }
+
+    fn check_assignment_inner(
+        &mut self,
+        symbol_ids: &[SymbolId],
+        ident_spans: &[Span],
+        annotations: &[Option<&ast::TypeWithLocation>],
+        values: &mut [Expression<'input>],
+        statement_span: Span,
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) {
+        // this is _only_ valid if it's a function call on the RHS
+        let value_types_and_spans: Vec<(Type, Span)> = if values.len() == 1
+            && ident_spans.len() > 1
+            && let Some(fn_ret_types) =
+                self.return_types_for_maybe_call(&mut values[0], symtab, diagnostics)
+        {
+            // For multi-return function calls, use the call expression span for all
+            let call_span = values[0].span;
+            fn_ret_types.into_iter().map(|t| (t, call_span)).collect()
+        } else {
+            values
+                .iter_mut()
+                .map(|v| {
+                    let span = v.span;
+                    (self.type_for_expression(v, symtab, diagnostics), span)
+                })
+                .collect()
+        };
+
+        if value_types_and_spans.len() != ident_spans.len() {
+            let (extra_spans, label_message): (Vec<Span>, DiagnosticMessage) =
+                if ident_spans.len() > value_types_and_spans.len() {
+                    (
+                        ident_spans[value_types_and_spans.len()..].to_vec(),
+                        DiagnosticMessage::NoValueForVariable,
+                    )
+                } else {
+                    (
+                        values[ident_spans.len()..]
+                            .iter()
+                            .map(|v| v.span)
+                            .collect::<Vec<_>>(),
+                        DiagnosticMessage::NoVariableToReceiveValue,
+                    )
+                };
+
+            let mut builder = ErrorKind::CountMismatch {
+                ident_count: ident_spans.len(),
+                expr_count: value_types_and_spans.len(),
+            }
+            .at(statement_span)
+            .help(DiagnosticMessage::WhenAssigningMultipleVars);
+
+            for span in extra_spans {
+                builder = builder.label(span, label_message.clone());
+            }
+
+            builder.emit(diagnostics);
+        }
+
+        for (((&symbol, (inferred_type, value_span)), &ident_span), annotation) in symbol_ids
+            .iter()
+            .zip(value_types_and_spans)
+            .zip(ident_spans.iter())
+            .zip(annotations.iter())
+        {
+            // Check type annotation if present
+            let final_type =
+                self.check_type_annotation(*annotation, inferred_type, ident_span, value_span, diagnostics);
+
+            self.resolve_type_with_spans(
+                symbol,
+                final_type,
+                ident_span,
+                value_span,
+                symtab,
+                diagnostics,
+            );
+        }
+    }
+
     pub fn visit_function(
         &mut self,
         function: &mut Function<'input>,
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) {
-        for argument in &function.arguments {
-            let MaybeResolved::Resolved(symbol_id) = argument.name else {
-                panic!("Should've resolved the symbol by now")
-            };
+        let argument_symbols = function
+            .meta
+            .get::<FunctionArgumentSymbols>()
+            .expect("Should've resolved arguments by now");
 
+        for (argument, &symbol_id) in function.arguments.iter().zip(argument_symbols.0.iter()) {
             self.resolve_type_with_spans(
                 symbol_id,
-                argument.t.t,
-                argument.span,
-                argument.span,
+                argument.ty_required().t,
+                argument.span(),
+                argument.span(),
                 symtab,
                 diagnostics,
             );
@@ -312,80 +471,35 @@ impl<'input> TypeVisitor<'input> {
                 | ast::StatementKind::Continue
                 | ast::StatementKind::Nop
                 | ast::StatementKind::Error => {}
-                ast::StatementKind::VariableDeclaration { idents, values }
-                | ast::StatementKind::Assignment { idents, values } => {
+                ast::StatementKind::VariableDeclaration { idents, values } => {
                     let symbol_ids: &Vec<SymbolId> = statement
                         .meta
                         .get()
                         .expect("Should've been resolved by symbol resolution");
 
-                    // this is _only_ valid if it's a function call on the RHS
-                    let value_types_and_spans: Vec<(Type, Span)> = if values.len() == 1
-                        && idents.len() > 1
-                        && let Some(fn_ret_types) =
-                            self.return_types_for_maybe_call(&mut values[0], symtab, diagnostics)
-                    {
-                        // For multi-return function calls, use the call expression span for all
-                        let call_span = values[0].span;
-                        fn_ret_types.into_iter().map(|t| (t, call_span)).collect()
-                    } else {
-                        values
-                            .iter_mut()
-                            .map(|v| {
-                                let span = v.span;
-                                (self.type_for_expression(v, symtab, diagnostics), span)
-                            })
-                            .collect()
-                    };
+                    self.check_variable_declaration(
+                        symbol_ids,
+                        idents,
+                        values,
+                        statement.span,
+                        symtab,
+                        diagnostics,
+                    );
+                }
+                ast::StatementKind::Assignment { idents, values } => {
+                    let symbol_ids: &Vec<SymbolId> = statement
+                        .meta
+                        .get()
+                        .expect("Should've been resolved by symbol resolution");
 
-                    if value_types_and_spans.len() != idents.len() {
-                        let (extra_spans, label_message) =
-                            if idents.len() > value_types_and_spans.len() {
-                                (
-                                    idents[value_types_and_spans.len()..]
-                                        .iter()
-                                        .map(|i| i.span)
-                                        .collect::<Vec<_>>(),
-                                    DiagnosticMessage::NoValueForVariable,
-                                )
-                            } else {
-                                (
-                                    values[idents.len()..]
-                                        .iter()
-                                        .map(|v| v.span)
-                                        .collect::<Vec<_>>(),
-                                    DiagnosticMessage::NoVariableToReceiveValue,
-                                )
-                            };
-
-                        let mut builder = ErrorKind::CountMismatch {
-                            ident_count: idents.len(),
-                            expr_count: value_types_and_spans.len(),
-                        }
-                        .at(statement.span)
-                        .help(DiagnosticMessage::WhenAssigningMultipleVars);
-
-                        for span in extra_spans {
-                            builder = builder.label(span, label_message.clone());
-                        }
-
-                        builder.emit(diagnostics);
-                    }
-
-                    for ((symbol, (value_type, value_span)), ident) in symbol_ids
-                        .iter()
-                        .zip(value_types_and_spans)
-                        .zip(idents.iter())
-                    {
-                        self.resolve_type_with_spans(
-                            *symbol,
-                            value_type,
-                            ident.span,
-                            value_span,
-                            symtab,
-                            diagnostics,
-                        );
-                    }
+                    self.check_assignment(
+                        symbol_ids,
+                        idents,
+                        values,
+                        statement.span,
+                        symtab,
+                        diagnostics,
+                    );
                 }
                 ast::StatementKind::If {
                     condition,

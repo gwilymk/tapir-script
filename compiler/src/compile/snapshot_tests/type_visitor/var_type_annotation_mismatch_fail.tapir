@@ -1,0 +1,2 @@
+# Type annotation doesn't match inferred type
+var x: fix = 5;

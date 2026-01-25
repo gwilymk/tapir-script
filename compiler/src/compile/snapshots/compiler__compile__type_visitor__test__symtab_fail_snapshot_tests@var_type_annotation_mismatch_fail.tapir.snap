@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/var_type_annotation_mismatch_fail.tapir
+---
+[E0036] Error: type annotation `fix` doesn't match expression type `int`
+   ╭─[ var_type_annotation_mismatch_fail.tapir:2:5 ]
+   │
+ 2 │ var x: fix = 5;
+   │        ─┬─   ┬  
+   │         ╰─────── Expected fix
+   │              │  
+   │              ╰── This has type int
+───╯

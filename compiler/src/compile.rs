@@ -86,7 +86,7 @@ pub fn compile(
             arguments: extern_function
                 .arguments
                 .iter()
-                .map(|arg| arg.t.t)
+                .map(|arg| arg.ty_required().t)
                 .collect(),
             returns: extern_function
                 .return_types

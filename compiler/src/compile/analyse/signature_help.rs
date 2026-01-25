@@ -3,15 +3,13 @@ use std::collections::HashMap;
 use crate::ast::{Expression, ExpressionKind, Script, Statement, StatementKind};
 
 use super::{
-    super::symtab_visitor::SymTab,
     types::{CallSiteInfo, ParameterInfo, SignatureInfo},
-    util::{format_return_types, resolve_name},
+    util::format_return_types,
 };
 
 /// Extract signature help information from the AST.
-pub fn extract_signature_help<'a>(
-    ast: &'a Script<'a>,
-    symtab: &'a SymTab<'a>,
+pub fn extract_signature_help(
+    ast: &Script<'_>,
 ) -> (HashMap<String, SignatureInfo>, Vec<CallSiteInfo>) {
     let mut signatures = HashMap::new();
     let mut call_sites = Vec::new();
@@ -26,7 +24,7 @@ pub fn extract_signature_help<'a>(
             .arguments
             .iter()
             .map(|arg| ParameterInfo {
-                label: format!("{}: {}", resolve_name(&arg.name, symtab), arg.t.t),
+                label: format!("{}: {}", arg.name(), arg.ty_required().t),
             })
             .collect();
 
@@ -60,7 +58,7 @@ pub fn extract_signature_help<'a>(
             .arguments
             .iter()
             .map(|arg| ParameterInfo {
-                label: format!("{}: {}", resolve_name(&arg.name, symtab), arg.t.t),
+                label: format!("{}: {}", arg.name(), arg.ty_required().t),
             })
             .collect();
 

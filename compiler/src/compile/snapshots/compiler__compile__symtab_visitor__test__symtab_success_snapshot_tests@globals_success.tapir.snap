@@ -1,15 +1,18 @@
 ---
-source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+source: compiler/src/compile/symtab_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/globals_success.tapir
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/globals_success.tapir
 ---
 Script(
   property_declarations: [],
   globals: [
     GlobalDeclaration(
-      name: Ident(
-        span: "[span]",
-        ident: "counter",
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "counter",
+        ),
+        ty: None,
       ),
       value: Expression(
         span: "[span]",
@@ -19,9 +22,12 @@ Script(
       span: "[span]",
     ),
     GlobalDeclaration(
-      name: Ident(
-        span: "[span]",
-        ident: "max_value",
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "max_value",
+        ),
+        ty: None,
       ),
       value: Expression(
         span: "[span]",
@@ -40,9 +46,12 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "x",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: None,
               ),
             ],
             values: [
@@ -156,6 +165,7 @@ Script(
       ),
       meta: {
         "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
       },
     ),
   ],

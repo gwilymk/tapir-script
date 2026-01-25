@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/var_type_annotation_success.tapir
+---
+[
+  ("x", Int),
+  ("y", Fix),
+  ("z", Bool),
+  ("a", Int),
+  ("b", Fix),
+  ("c", Int),
+  ("d", Int),
+]

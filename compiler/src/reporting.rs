@@ -116,6 +116,10 @@ pub enum DiagnosticMessage {
     PropertyNotInStruct {
         name: String,
     },
+    TypeAnnotationMismatch {
+        annotated: Type,
+        actual: Type,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -301,6 +305,9 @@ impl DiagnosticMessage {
             }
             DiagnosticMessage::PropertyNotInStruct { name } => {
                 format!("Property '{name}' is declared but no corresponding field exists in the Rust struct")
+            }
+            DiagnosticMessage::TypeAnnotationMismatch { annotated, actual } => {
+                format!("type annotation `{annotated}` doesn't match expression type `{actual}`")
             }
 
             // Parse errors
@@ -500,6 +507,11 @@ pub enum ErrorKind {
     PropertyNotInStruct {
         name: String,
     },
+    /// Type annotation doesn't match the inferred expression type
+    TypeAnnotationMismatch {
+        annotated: Type,
+        actual: Type,
+    },
 
     // Parse errors
     UnrecognizedEof {
@@ -556,6 +568,7 @@ impl ErrorKind {
             Self::DuplicatePropertyDeclaration { .. } => "E0033",
             Self::PropertyConflictsWithGlobal { .. } => "E0034",
             Self::PropertyNotInStruct { .. } => "E0035",
+            Self::TypeAnnotationMismatch { .. } => "E0036",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -679,6 +692,12 @@ impl ErrorKind {
             }
             Self::PropertyNotInStruct { name } => {
                 DiagnosticMessage::PropertyNotInStruct { name: name.clone() }
+            }
+            Self::TypeAnnotationMismatch { annotated, actual } => {
+                DiagnosticMessage::TypeAnnotationMismatch {
+                    annotated: *annotated,
+                    actual: *actual,
+                }
             }
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {

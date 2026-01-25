@@ -3,7 +3,7 @@ use std::{borrow::Cow, collections::HashMap};
 use crate::{
     ast::{
         Expression, ExpressionKind, ExternalFunctionId, Function, FunctionId,
-        InternalOrExternalFunctionId, MaybeResolved, PropertyDeclaration, Script, Statement,
+        InternalOrExternalFunctionId, PropertyDeclaration, Script, Statement,
         StatementKind, SymbolId,
     },
     builtins::BuiltinVariable,
@@ -11,6 +11,11 @@ use crate::{
     tokens::Span,
     types::Type,
 };
+
+/// Stores resolved symbol IDs for function arguments.
+/// This replaces the old MaybeResolved approach with an immutable AST pattern.
+#[derive(Clone, Debug)]
+pub struct FunctionArgumentSymbols(pub Vec<SymbolId>);
 
 use super::{CompileSettings, Property};
 
@@ -61,33 +66,34 @@ fn extract_properties_from_ast(
 
     for (index, decl) in declarations.iter().enumerate() {
         // Skip properties with parse errors in type
-        if decl.ty.t == Type::Error {
+        if decl.name.ty_required().t == Type::Error {
             continue;
         }
 
-        let name = decl.name.ident;
+        let name = decl.name.name();
+        let name_span = decl.name.span();
 
         // Check for duplicate property names
         if let Some(first_span) = seen_names.get(name) {
             ErrorKind::DuplicatePropertyDeclaration {
                 name: name.to_string(),
             }
-            .at(decl.name.span)
+            .at(name_span)
             .label(*first_span, DiagnosticMessage::OriginallyDeclaredHere)
-            .label(decl.name.span, DiagnosticMessage::PropertyAlreadyDeclared)
+            .label(name_span, DiagnosticMessage::PropertyAlreadyDeclared)
             .emit(diagnostics);
             continue;
         }
-        seen_names.insert(name, decl.name.span);
+        seen_names.insert(name, name_span);
 
         // Check for conflicts with globals
-        if let Some(global) = globals.iter().find(|g| g.name.ident == name) {
+        if let Some(global) = globals.iter().find(|g| g.name.name() == name) {
             ErrorKind::PropertyConflictsWithGlobal {
                 name: name.to_string(),
             }
-            .at(decl.name.span)
-            .label(global.name.span, DiagnosticMessage::OriginallyDeclaredHere)
-            .label(decl.name.span, DiagnosticMessage::ConflictsWithGlobal)
+            .at(name_span)
+            .label(global.name.span(), DiagnosticMessage::OriginallyDeclaredHere)
+            .label(name_span, DiagnosticMessage::ConflictsWithGlobal)
             .emit(diagnostics);
             // Continue anyway to report more errors
         }
@@ -97,8 +103,8 @@ fn extract_properties_from_ast(
             ErrorKind::CannotShadowBuiltin {
                 name: name.to_string(),
             }
-            .at(decl.name.span)
-            .label(decl.name.span, DiagnosticMessage::CannotShadowBuiltinLabel)
+            .at(name_span)
+            .label(name_span, DiagnosticMessage::CannotShadowBuiltinLabel)
             .note(DiagnosticMessage::BuiltinVariableNote {
                 name: name.to_string(),
             })
@@ -113,14 +119,14 @@ fn extract_properties_from_ast(
             ErrorKind::PropertyNotInStruct {
                 name: name.to_string(),
             }
-            .at(decl.name.span)
-            .label(decl.name.span, DiagnosticMessage::PropertyNotInStructLabel)
+            .at(name_span)
+            .label(name_span, DiagnosticMessage::PropertyNotInStructLabel)
             .emit(diagnostics);
             // Continue anyway to report more errors
         }
 
         properties.push(Property {
-            ty: decl.ty.t,
+            ty: decl.name.ty_required().t,
             index,
             name: name.to_string(),
             span: decl.span,
@@ -224,23 +230,26 @@ impl<'input> SymTabVisitor<'input> {
 
         // Process global declarations
         for (index, global) in script.globals.iter().enumerate() {
+            let name = global.name.name();
+            let name_span = global.name.span();
+
             // Skip globals that conflict with properties (error already reported in extract_properties_from_ast)
-            if properties.iter().any(|p| p.name == global.name.ident) {
+            if properties.iter().any(|p| p.name == name) {
                 continue;
             }
 
             // Check for conflicts with built-ins (reuse existing error)
-            if BuiltinVariable::from_name(global.name.ident).is_some() {
+            if BuiltinVariable::from_name(name).is_some() {
                 ErrorKind::CannotShadowBuiltin {
-                    name: global.name.ident.to_string(),
+                    name: name.to_string(),
                 }
-                .at(global.name.span)
+                .at(name_span)
                 .label(
-                    global.name.span,
+                    name_span,
                     DiagnosticMessage::CannotShadowBuiltinLabel,
                 )
                 .note(DiagnosticMessage::BuiltinVariableNote {
-                    name: global.name.ident.to_string(),
+                    name: name.to_string(),
                 })
                 .emit(diagnostics);
                 continue;
@@ -248,14 +257,14 @@ impl<'input> SymTabVisitor<'input> {
 
             // Validate initializer is a constant and infer type
             let (ty, initial_value) =
-                evaluate_constant_initializer(&global.value, diagnostics, global.name.ident);
+                evaluate_constant_initializer(&global.value, diagnostics, name);
 
             let global_id = GlobalId(index);
             visitor.symtab.add_global(
-                global.name.ident,
+                name,
                 GlobalInfo {
                     id: global_id,
-                    name: global.name.ident.to_string(),
+                    name: name.to_string(),
                     ty,
                     initial_value,
                     span: global.span,
@@ -281,16 +290,14 @@ impl<'input> SymTabVisitor<'input> {
     ) {
         self.symbol_names.push_scope();
 
-        for argument in &mut function.arguments {
-            let MaybeResolved::Unresolved(name) = argument.name else {
-                panic!("Should not have resolved arguments yet");
-            };
-
-            let symbol_id = self.symtab.new_symbol(name, argument.span);
+        let mut argument_symbols = Vec::with_capacity(function.arguments.len());
+        for argument in &function.arguments {
+            let name = argument.name();
+            let symbol_id = self.symtab.new_symbol(name, argument.span());
             self.symbol_names.insert(name, symbol_id);
-
-            argument.name = MaybeResolved::Resolved(symbol_id);
+            argument_symbols.push(symbol_id);
         }
+        function.meta.set(FunctionArgumentSymbols(argument_symbols));
 
         self.visit_block(&mut function.statements, diagnostics);
 
@@ -311,20 +318,22 @@ impl<'input> SymTabVisitor<'input> {
                     // no need to do counting checks, that's done in type checking
                     let mut statement_meta = vec![];
                     for ident in idents {
-                        if BuiltinVariable::from_name(ident.ident).is_some() {
+                        let name = ident.name();
+                        let span = ident.span();
+                        if BuiltinVariable::from_name(name).is_some() {
                             ErrorKind::CannotShadowBuiltin {
-                                name: ident.ident.to_string(),
+                                name: name.to_string(),
                             }
-                            .at(ident.span)
-                            .label(ident.span, DiagnosticMessage::CannotShadowBuiltinLabel)
+                            .at(span)
+                            .label(span, DiagnosticMessage::CannotShadowBuiltinLabel)
                             .note(DiagnosticMessage::BuiltinVariableNote {
-                                name: ident.ident.to_string(),
+                                name: name.to_string(),
                             })
                             .emit(diagnostics);
                         }
 
-                        let symbol_id = self.symtab.new_symbol(ident.ident, ident.span);
-                        self.symbol_names.insert(ident.ident, symbol_id);
+                        let symbol_id = self.symtab.new_symbol(name, span);
+                        self.symbol_names.insert(name, symbol_id);
 
                         statement_meta.push(symbol_id);
                     }

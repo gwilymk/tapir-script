@@ -51,7 +51,7 @@ fn extract_references_from_statements(
                 // But also add references for idents that refer to properties (re-assignment)
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
                     for (ident, symbol_id) in idents.iter().zip(symbol_ids.iter()) {
-                        add_symbol_reference(ident.span, *symbol_id, symtab, references);
+                        add_symbol_reference(ident.span(), *symbol_id, symtab, references);
                     }
                 }
             }

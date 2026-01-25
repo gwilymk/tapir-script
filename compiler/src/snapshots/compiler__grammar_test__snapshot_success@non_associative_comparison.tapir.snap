@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/grammar_test.rs
+source: compiler/src/grammar_test.rs
 expression: ast
-input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/non_associative_comparison.tapir
+input_file: compiler/src/snapshot_tests/grammar/non_associative_comparison.tapir
 ---
 Script(
   property_declarations: [],
@@ -15,9 +15,12 @@ Script(
           span: "[span]",
           kind: VariableDeclaration(
             idents: [
-              Ident(
-                span: "[span]",
-                ident: "x",
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: None,
               ),
             ],
             values: [

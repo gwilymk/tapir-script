@@ -444,7 +444,7 @@ pub struct FunctionModifiers {
 }
 
 impl FunctionModifiers {
-    pub fn new(f: &ast::Function<'_>, symtab: &SymTab) -> Self {
+    pub fn new(f: &ast::Function<'_>, _symtab: &SymTab) -> Self {
         let event_handler = if f.modifiers.is_event_handler.is_some() {
             Some(EventHandlerData {
                 name: f.name.to_string(),
@@ -452,14 +452,8 @@ impl FunctionModifiers {
                     .arguments
                     .iter()
                     .map(|a| FunctionArgument {
-                        name: symtab
-                            .name_for_symbol(
-                                a.name
-                                    .symbol_id()
-                                    .expect("Should've been resolved by the symbol visitor"),
-                            )
-                            .to_string(),
-                        ty: a.t.t,
+                        name: a.name().to_string(),
+                        ty: a.ty_required().t,
                     })
                     .collect(),
             })

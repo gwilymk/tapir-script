@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/symtab_visitor.rs
+source: compiler/src/compile/symtab_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/symtab_visitor/extern_fn_statement_call_success.tapir
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/extern_fn_statement_call_success.tapir
 ---
 Script(
   property_declarations: [],
@@ -43,6 +43,7 @@ Script(
       ),
       meta: {
         "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
       },
     ),
   ],
@@ -51,21 +52,25 @@ Script(
       name: "do_something",
       span: "[span]",
       arguments: [
-        FunctionArgument(
-          span: "[span]",
-          t: TypeWithLocation(
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
             t: Int,
             span: "[span]",
-          ),
-          name: Unresolved("x"),
+          )),
         ),
-        FunctionArgument(
-          span: "[span]",
-          t: TypeWithLocation(
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "y",
+          ),
+          ty: Some(TypeWithLocation(
             t: Fix,
             span: "[span]",
-          ),
-          name: Unresolved("y"),
+          )),
         ),
       ],
       return_types: FunctionReturn(

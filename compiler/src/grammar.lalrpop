@@ -86,13 +86,13 @@ TopLevelStatement: TopLevelStatement<'input> = {
 }
 
 GlobalDecl: GlobalDeclaration<'input> = {
-    <start:@L> global <name:Identifier> "=" <value:Expression> ";" <end:@R> =>
+    <start:@L> global <name:TypedIdentifier> "=" <value:Expression> ";" <end:@R> =>
         GlobalDeclaration { name, value, span: Span::new(file_id, start, end) },
 }
 
 PropertyDecl: PropertyDeclaration<'input> = {
-    <start:@L> property <name:Identifier> ":" <ty:Type> ";" <end:@R> =>
-        PropertyDeclaration { name, ty, span: Span::new(file_id, start, end) },
+    <start:@L> property <name:TypedIdentifierRequired> ";" <end:@R> =>
+        PropertyDeclaration { name, span: Span::new(file_id, start, end) },
 }
 
 FunctionDefinition: Function<'input> = {
@@ -118,13 +118,16 @@ FunctionModifiers: FunctionModifiers = {
     () => FunctionModifiers::default(),
     <event_start: @L> event <event_end: @R> => FunctionModifiers { is_event_handler: Some(Span::new(file_id, event_start, event_end)) },
 }
-FunctionArguments: Vec<FunctionArgument<'input>> = CommaSeparated<FunctionArgument>;
-FunctionArgument: FunctionArgument<'input> = 
-    <start: @L> <name: identifier> <end: @R> ":" <t: Type> => FunctionArgument {
-        span: Span::new(file_id, start, end),
-        t,
-        name: MaybeResolved::Unresolved(name),
-    };
+FunctionArguments: Vec<TypedIdent<'input>> = CommaSeparated<TypedIdentifierRequired>;
+
+// Required type annotation (for function args, properties)
+TypedIdentifierRequired: TypedIdent<'input> = {
+    <ident: Identifier> ":" <ty: Type> =>
+        TypedIdent {
+            ident,
+            ty: Some(ty),
+        },
+};
 FunctionReturn: FunctionReturn = {
     <VoidReturn>,
     "->" <start: @L> <t: Type> <end: @R> => FunctionReturn { types: vec![t], span: Span::new(file_id, start, end) },
@@ -162,7 +165,7 @@ Statement: Statement<'input> =
     <start: @L> <kind: StatementKind> <end: @R> => kind.with_span(file_id, start, end);
 
 StatementKind: StatementKind<'input> = {
-    var <idents: CommaSeparated<Identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::VariableDeclaration { <> },
+    var <idents: CommaSeparated<TypedIdentifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::VariableDeclaration { <> },
     <idents: CommaSeparated<Identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
     break ";" => StatementKind::Break,
@@ -190,6 +193,20 @@ StatementKind: StatementKind<'input> = {
 
 Identifier: Ident<'input> =
     <start: @L> <ident: identifier> <end: @R> => Ident { ident, span: Span::new(file_id, start, end) };
+
+// Optional type annotation (for var, global)
+TypedIdentifier: TypedIdent<'input> = {
+    <ident: Identifier> =>
+        TypedIdent {
+            ident,
+            ty: None,
+        },
+    <ident: Identifier> ":" <ty: Type> =>
+        TypedIdent {
+            ident,
+            ty: Some(ty),
+        },
+};
 
 Block: Vec<Statement<'input>> = "{" <Statement*> "}";
 ElseBlock = "else" <Block>;
