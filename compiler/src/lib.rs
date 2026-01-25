@@ -7,6 +7,7 @@ mod ast;
 mod builtins;
 mod compile;
 mod lexer;
+mod prelude;
 mod reporting;
 mod tokens;
 mod types;

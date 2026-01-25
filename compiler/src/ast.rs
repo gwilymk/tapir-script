@@ -112,6 +112,26 @@ impl<'input> Script<'input> {
             extern_functions,
         }
     }
+
+    /// Merge another script into this one. The other script's definitions
+    /// are prepended (so prelude functions come before user functions).
+    pub fn merge_from(&mut self, other: Script<'input>) {
+        // For functions: keep self's @toplevel at [0], insert other's non-toplevel functions after
+        let other_functions: Vec<_> = other
+            .functions
+            .into_iter()
+            .filter(|f| f.name != "@toplevel")
+            .collect();
+
+        // Insert after @toplevel
+        self.functions.splice(1..1, other_functions);
+
+        // Prepend other declarations
+        self.property_declarations
+            .splice(0..0, other.property_declarations);
+        self.globals.splice(0..0, other.globals);
+        self.extern_functions.splice(0..0, other.extern_functions);
+    }
 }
 
 #[derive(Clone, Debug, Serialize)]

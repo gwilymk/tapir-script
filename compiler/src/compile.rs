@@ -11,10 +11,9 @@ use crate::{
         BlockId, TapIr, TapIrFunction, create_ir, make_ssa,
         regalloc::{self, RegisterAllocations},
     },
-    grammar,
-    lexer::Lexer,
+    prelude::{self, USER_FILE_ID},
     reporting::Diagnostics,
-    tokens::{FileId, Span},
+    tokens::Span,
     types::Type,
 };
 
@@ -52,19 +51,11 @@ pub fn compile(
     input: &str,
     settings: &CompileSettings,
 ) -> Result<Bytecode, Diagnostics> {
-    let file_id = FileId::new(0);
+    let mut diagnostics = Diagnostics::new(USER_FILE_ID, &filename, input);
 
-    let mut diagnostics = Diagnostics::new(file_id, filename, input);
-
-    let lexer = Lexer::new(input, file_id);
-    let parser = grammar::ScriptParser::new();
-
-    let mut ast = match parser.parse(file_id, &mut diagnostics, lexer) {
-        Ok(ast) => ast,
-        Err(e) => {
-            diagnostics.add_lalrpop(e, file_id);
-            return Err(diagnostics);
-        }
+    let mut ast = match prelude::parse_with_prelude(&filename, input, &mut diagnostics) {
+        Some(ast) => ast,
+        None => return Err(diagnostics),
     };
 
     let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast, &mut diagnostics);

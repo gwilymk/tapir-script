@@ -7,7 +7,7 @@ mod util;
 use std::{collections::HashMap, path::Path};
 
 use crate::{
-    PropertyInfo, ast::Script, grammar, lexer::Lexer, reporting::Diagnostics, tokens::FileId,
+    PropertyInfo, ast::Script, prelude::{self, USER_FILE_ID}, reporting::Diagnostics,
 };
 
 use super::{
@@ -37,16 +37,11 @@ pub fn analyse(
     input: &str,
     settings: &CompileSettings,
 ) -> AnalysisResult {
-    let file_id = FileId::new(0);
-    let mut diagnostics = Diagnostics::new(file_id, filename, input);
+    let mut diagnostics = Diagnostics::new(USER_FILE_ID, &filename, input);
 
-    let lexer = Lexer::new(input, file_id);
-    let parser = grammar::ScriptParser::new();
-
-    let mut ast = match parser.parse(file_id, &mut diagnostics, lexer) {
-        Ok(ast) => ast,
-        Err(e) => {
-            diagnostics.add_lalrpop(e, file_id);
+    let mut ast = match prelude::parse_with_prelude(&filename, input, &mut diagnostics) {
+        Some(ast) => ast,
+        None => {
             return AnalysisResult {
                 diagnostics,
                 symbols: vec![],

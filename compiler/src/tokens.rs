@@ -8,7 +8,7 @@ use serde::Serialize;
 pub struct FileId(usize);
 
 impl FileId {
-    pub fn new(id: usize) -> Self {
+    pub const fn new(id: usize) -> Self {
         Self(id)
     }
 }

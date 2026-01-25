@@ -43,6 +43,16 @@ impl DiagnosticCache {
 
         Self { map }
     }
+
+    pub fn add_file(&mut self, file_id: FileId, filename: impl AsRef<Path>, content: &str) {
+        self.map.insert(
+            file_id,
+            (
+                filename.as_ref().to_string_lossy().into_owned(),
+                Source::from(content.to_string()),
+            ),
+        );
+    }
 }
 
 impl ariadne::Cache<FileId> for DiagnosticCache {

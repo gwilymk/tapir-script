@@ -868,6 +868,11 @@ impl Diagnostics {
         }
     }
 
+    /// Add a file to the diagnostic cache for error reporting.
+    pub fn add_file(&mut self, file_id: FileId, filename: impl AsRef<Path>, content: &str) {
+        self.cache.add_file(file_id, filename, content);
+    }
+
     /// Add a diagnostic.
     pub(crate) fn add(&mut self, diagnostic: Diagnostic) {
         self.diagnostics.push(diagnostic);
