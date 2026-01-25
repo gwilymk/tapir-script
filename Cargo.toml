@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+
+members = [
+    "bytecode",
+    "compiler",
+    "tapir-lsp",
+    "tapir-script",
+    "tapir-script-macros",
+    "tapir-script-macros-core",
+    "vm",
+]
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3
