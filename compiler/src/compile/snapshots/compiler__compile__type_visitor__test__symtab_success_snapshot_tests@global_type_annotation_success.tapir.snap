@@ -1,0 +1,13 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/global_type_annotation_success.tapir
+---
+[
+  ("x", Int),
+  ("y", Fix),
+  ("z", Bool),
+  ("INT_CONST", Int),
+  ("FIX_CONST", Fix),
+  ("BOOL_FLAG", Bool),
+]

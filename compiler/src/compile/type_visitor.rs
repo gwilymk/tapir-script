@@ -6,7 +6,8 @@ use crate::{
     Trigger,
     ast::{
         self, BinaryOperator, Expression, ExpressionKind, ExternFunctionDefinition, Function,
-        FunctionModifiers, FunctionReturn, InternalOrExternalFunctionId, SymbolId,
+        FunctionModifiers, FunctionReturn, GlobalDeclaration, InternalOrExternalFunctionId,
+        SymbolId,
     },
     builtins::BuiltinVariable,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
@@ -257,6 +258,50 @@ impl<'input> TypeVisitor<'input> {
         } else {
             // No annotation - use inferred type
             inferred_type
+        }
+    }
+
+    /// Check type annotations on global declarations.
+    /// The inferred type comes from the constant initializer (stored in symtab),
+    /// and we validate it matches any explicit annotation.
+    pub fn check_global_annotations(
+        &self,
+        globals: &[GlobalDeclaration<'_>],
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) {
+        for global in globals {
+            let Some(ref annotation) = global.name.ty else {
+                continue;
+            };
+
+            let Some(global_info) = symtab.get_global_by_name(global.name.name()) else {
+                // Global wasn't registered (e.g., due to conflict with property)
+                continue;
+            };
+
+            let inferred_type = global_info.ty;
+            let annotated = annotation.t;
+
+            let types_match =
+                annotated == inferred_type || annotated == Type::Error || inferred_type == Type::Error;
+
+            if !types_match {
+                ErrorKind::TypeAnnotationMismatch {
+                    annotated,
+                    actual: inferred_type,
+                }
+                .at(global.span)
+                .label(
+                    annotation.span,
+                    DiagnosticMessage::ExpectedType { ty: annotated },
+                )
+                .label(
+                    global.value.span,
+                    DiagnosticMessage::HasType { ty: inferred_type },
+                )
+                .emit(diagnostics);
+            }
         }
     }
 
@@ -1011,6 +1056,12 @@ mod test {
                 );
             }
 
+            type_visitor.check_global_annotations(
+                &script.globals,
+                symtab_visitor.get_symtab(),
+                &mut diagnostics,
+            );
+
             assert!(
                 !diagnostics.has_any(),
                 "{} failed with error {}",
@@ -1061,6 +1112,12 @@ mod test {
                 let symtab = symtab_visitor.get_symtab();
                 type_visitor.visit_function(function, symtab, &mut diagnostics);
             }
+
+            type_visitor.check_global_annotations(
+                &script.globals,
+                symtab_visitor.get_symtab(),
+                &mut diagnostics,
+            );
 
             type_visitor.into_type_table(symtab_visitor.get_symtab(), &mut diagnostics);
 

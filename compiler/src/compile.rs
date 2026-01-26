@@ -6,7 +6,7 @@ use type_visitor::{TypeTable, TypeVisitor};
 
 use crate::{
     EventHandler, ExternFunction, Trigger,
-    ast::{BinaryOperator, FunctionId, SymbolId},
+    ast::{BinaryOperator, FunctionId, Script, SymbolId},
     compile::ir::{
         BlockId, TapIr, TapIrFunction, create_ir, make_ssa,
         regalloc::{self, RegisterAllocations},
@@ -27,6 +27,42 @@ mod loop_visitor;
 mod references;
 pub(crate) mod symtab_visitor;
 pub(crate) mod type_visitor;
+
+/// Analyse an AST and return symbol table and type information.
+///
+/// This runs symbol resolution, loop checking, and type checking as three
+/// distinct phases. Returns the symbol table and type table needed for
+/// code generation or tooling.
+pub fn analyse_ast<'input>(
+    ast: &mut Script<'input>,
+    settings: &CompileSettings,
+    diagnostics: &mut Diagnostics,
+) -> (SymTab<'input>, TypeTable<'input>) {
+    // Phase 1: Symbol resolution (all functions)
+    let mut symtab_visitor = SymTabVisitor::new(settings, ast, diagnostics);
+    for function in &mut ast.functions {
+        symtab_visitor.visit_function(function, diagnostics);
+    }
+
+    // Phase 2: Loop checking (all functions)
+    for function in &mut ast.functions {
+        loop_visitor::visit_loop_check(function, diagnostics);
+    }
+
+    // Phase 3: Type checking (all functions + globals)
+    let mut type_visitor = TypeVisitor::new(
+        &ast.functions,
+        &ast.extern_functions,
+        symtab_visitor.get_symtab(),
+    );
+    for function in &mut ast.functions {
+        type_visitor.visit_function(function, symtab_visitor.get_symtab(), diagnostics);
+    }
+    type_visitor.check_global_annotations(&ast.globals, symtab_visitor.get_symtab(), diagnostics);
+
+    let type_table = type_visitor.into_type_table(symtab_visitor.get_symtab(), diagnostics);
+    (symtab_visitor.into_symtab(), type_table)
+}
 
 use bytecode::Opcode;
 
@@ -58,21 +94,7 @@ pub fn compile(
         None => return Err(diagnostics),
     };
 
-    let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast, &mut diagnostics);
-    let mut type_visitor = TypeVisitor::new(
-        &ast.functions,
-        &ast.extern_functions,
-        sym_tab_visitor.get_symtab(),
-    );
-
-    for function in &mut ast.functions {
-        sym_tab_visitor.visit_function(function, &mut diagnostics);
-        loop_visitor::visit_loop_check(function, &mut diagnostics);
-
-        type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
-    }
-
-    let type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);
+    let (mut symtab, type_table) = analyse_ast(&mut ast, settings, &mut diagnostics);
 
     if diagnostics.has_any() {
         return Err(diagnostics);
@@ -97,7 +119,6 @@ pub fn compile(
         })
         .collect();
 
-    let mut symtab = sym_tab_visitor.into_symtab();
     let mut compiler = Compiler::new(&type_table, extern_functions, &symtab);
 
     let ir_functions = ast

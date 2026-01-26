@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/global_type_annotation_mismatch_fail.tapir
+---
+[E0036] Error: type annotation `fix` doesn't match expression type `int`
+   ╭─[ global_type_annotation_mismatch_fail.tapir:2:1 ]
+   │
+ 2 │ global WRONG: fix = 42;
+   │               ─┬─   ─┬  
+   │                ╰──────── Expected fix
+   │                      │  
+   │                      ╰── This has type int
+───╯

@@ -1,0 +1,9 @@
+# Globals with type annotations matching inferred types
+global INT_CONST: int = 42;
+global FIX_CONST: fix = 1.5;
+global BOOL_FLAG: bool = true;
+
+# Use the globals to verify they work
+var x = INT_CONST;
+var y = FIX_CONST;
+var z = BOOL_FLAG;

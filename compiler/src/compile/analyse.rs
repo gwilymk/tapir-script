@@ -14,10 +14,10 @@ use crate::{
 };
 
 use super::{
-    CompileSettings, Property, loop_visitor,
+    CompileSettings, Property, analyse_ast,
     references::extract_references,
-    symtab_visitor::{SymTab, SymTabVisitor},
-    type_visitor::{TypeTable, TypeVisitor},
+    symtab_visitor::SymTab,
+    type_visitor::TypeTable,
 };
 
 pub use types::{
@@ -59,21 +59,7 @@ pub fn analyse(
         }
     };
 
-    let mut sym_tab_visitor = SymTabVisitor::new(settings, &mut ast, &mut diagnostics);
-    let mut type_visitor = TypeVisitor::new(
-        &ast.functions,
-        &ast.extern_functions,
-        sym_tab_visitor.get_symtab(),
-    );
-
-    for function in &mut ast.functions {
-        sym_tab_visitor.visit_function(function, &mut diagnostics);
-        loop_visitor::visit_loop_check(function, &mut diagnostics);
-        type_visitor.visit_function(function, sym_tab_visitor.get_symtab(), &mut diagnostics);
-    }
-
-    let type_table = type_visitor.into_type_table(sym_tab_visitor.get_symtab(), &mut diagnostics);
-    let symtab = sym_tab_visitor.into_symtab();
+    let (symtab, type_table) = analyse_ast(&mut ast, settings, &mut diagnostics);
 
     // Extract symbol information
     let symbols = extract_symbols(&symtab, &type_table);
