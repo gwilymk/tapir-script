@@ -50,6 +50,12 @@ struct TriggerInfo {
     index: usize,
 }
 
+struct AssignmentTargets<'a> {
+    symbol_ids: &'a [SymbolId],
+    ident_spans: &'a [Span],
+    annotations: &'a [Option<&'a ast::TypeWithLocation>],
+}
+
 impl<'input> TypeVisitor<'input> {
     pub fn new(
         functions: &[Function<'input>],
@@ -269,15 +275,13 @@ impl<'input> TypeVisitor<'input> {
         let annotations: Vec<Option<&ast::TypeWithLocation>> =
             idents.iter().map(|i| i.ty.as_ref()).collect();
 
-        self.check_assignment_inner(
+        let targets = AssignmentTargets {
             symbol_ids,
-            &ident_spans,
-            &annotations,
-            values,
-            statement_span,
-            symtab,
-            diagnostics,
-        );
+            ident_spans: &ident_spans,
+            annotations: &annotations,
+        };
+
+        self.check_assignment_inner(targets, values, statement_span, symtab, diagnostics);
     }
 
     fn check_assignment(
@@ -292,22 +296,18 @@ impl<'input> TypeVisitor<'input> {
         let ident_spans: Vec<Span> = idents.iter().map(|i| i.span).collect();
         let annotations: Vec<Option<&ast::TypeWithLocation>> = vec![None; idents.len()];
 
-        self.check_assignment_inner(
+        let targets = AssignmentTargets {
             symbol_ids,
-            &ident_spans,
-            &annotations,
-            values,
-            statement_span,
-            symtab,
-            diagnostics,
-        );
+            ident_spans: &ident_spans,
+            annotations: &annotations,
+        };
+
+        self.check_assignment_inner(targets, values, statement_span, symtab, diagnostics);
     }
 
     fn check_assignment_inner(
         &mut self,
-        symbol_ids: &[SymbolId],
-        ident_spans: &[Span],
-        annotations: &[Option<&ast::TypeWithLocation>],
+        targets: AssignmentTargets<'_>,
         values: &mut [Expression<'input>],
         statement_span: Span,
         symtab: &SymTab,
@@ -315,7 +315,7 @@ impl<'input> TypeVisitor<'input> {
     ) {
         // this is _only_ valid if it's a function call on the RHS
         let value_types_and_spans: Vec<(Type, Span)> = if values.len() == 1
-            && ident_spans.len() > 1
+            && targets.ident_spans.len() > 1
             && let Some(fn_ret_types) =
                 self.return_types_for_maybe_call(&mut values[0], symtab, diagnostics)
         {
@@ -332,16 +332,16 @@ impl<'input> TypeVisitor<'input> {
                 .collect()
         };
 
-        if value_types_and_spans.len() != ident_spans.len() {
+        if value_types_and_spans.len() != targets.ident_spans.len() {
             let (extra_spans, label_message): (Vec<Span>, DiagnosticMessage) =
-                if ident_spans.len() > value_types_and_spans.len() {
+                if targets.ident_spans.len() > value_types_and_spans.len() {
                     (
-                        ident_spans[value_types_and_spans.len()..].to_vec(),
+                        targets.ident_spans[value_types_and_spans.len()..].to_vec(),
                         DiagnosticMessage::NoValueForVariable,
                     )
                 } else {
                     (
-                        values[ident_spans.len()..]
+                        values[targets.ident_spans.len()..]
                             .iter()
                             .map(|v| v.span)
                             .collect::<Vec<_>>(),
@@ -350,7 +350,7 @@ impl<'input> TypeVisitor<'input> {
                 };
 
             let mut builder = ErrorKind::CountMismatch {
-                ident_count: ident_spans.len(),
+                ident_count: targets.ident_spans.len(),
                 expr_count: value_types_and_spans.len(),
             }
             .at(statement_span)
@@ -363,11 +363,12 @@ impl<'input> TypeVisitor<'input> {
             builder.emit(diagnostics);
         }
 
-        for (((&symbol, (inferred_type, value_span)), &ident_span), annotation) in symbol_ids
+        for (((&symbol, (inferred_type, value_span)), &ident_span), annotation) in targets
+            .symbol_ids
             .iter()
             .zip(value_types_and_spans)
-            .zip(ident_spans.iter())
-            .zip(annotations.iter())
+            .zip(targets.ident_spans.iter())
+            .zip(targets.annotations.iter())
         {
             // Check type annotation if present
             let final_type =
