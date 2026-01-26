@@ -427,6 +427,9 @@ mod test {
             vm.run_until_wait(&mut object_safe_props);
         }
 
-        assert_eq!(prop_object.int_prop, 5, "frame should be 5 after loop exits");
+        assert_eq!(
+            prop_object.int_prop, 5,
+            "frame should be 5 after loop exits"
+        );
     }
 }

@@ -7,7 +7,10 @@ mod util;
 use std::{collections::HashMap, path::Path};
 
 use crate::{
-    PropertyInfo, ast::Script, prelude::{self, USER_FILE_ID}, reporting::Diagnostics,
+    PropertyInfo,
+    ast::Script,
+    prelude::{self, USER_FILE_ID},
+    reporting::Diagnostics,
 };
 
 use super::{

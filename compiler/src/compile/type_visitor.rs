@@ -234,8 +234,9 @@ impl<'input> TypeVisitor<'input> {
             let annotated = annotation.t;
 
             // Allow if types match or either is Error (to avoid cascading errors)
-            let types_match =
-                annotated == inferred_type || annotated == Type::Error || inferred_type == Type::Error;
+            let types_match = annotated == inferred_type
+                || annotated == Type::Error
+                || inferred_type == Type::Error;
 
             if !types_match {
                 ErrorKind::TypeAnnotationMismatch {
@@ -247,10 +248,7 @@ impl<'input> TypeVisitor<'input> {
                     annotation.span,
                     DiagnosticMessage::ExpectedType { ty: annotated },
                 )
-                .label(
-                    value_span,
-                    DiagnosticMessage::HasType { ty: inferred_type },
-                )
+                .label(value_span, DiagnosticMessage::HasType { ty: inferred_type })
                 .emit(diagnostics);
                 Type::Error
             } else {
@@ -371,8 +369,13 @@ impl<'input> TypeVisitor<'input> {
             .zip(targets.annotations.iter())
         {
             // Check type annotation if present
-            let final_type =
-                self.check_type_annotation(*annotation, inferred_type, ident_span, value_span, diagnostics);
+            let final_type = self.check_type_annotation(
+                *annotation,
+                inferred_type,
+                ident_span,
+                value_span,
+                diagnostics,
+            );
 
             self.resolve_type_with_spans(
                 symbol,

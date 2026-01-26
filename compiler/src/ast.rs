@@ -173,7 +173,6 @@ pub struct TypeWithLocation {
     pub span: Span,
 }
 
-
 #[derive(Clone, Debug, Serialize)]
 pub enum TopLevelStatement<'input> {
     Statement(Statement<'input>),

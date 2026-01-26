@@ -3,8 +3,8 @@ use std::{borrow::Cow, collections::HashMap};
 use crate::{
     ast::{
         Expression, ExpressionKind, ExternalFunctionId, Function, FunctionId,
-        InternalOrExternalFunctionId, PropertyDeclaration, Script, Statement,
-        StatementKind, SymbolId,
+        InternalOrExternalFunctionId, PropertyDeclaration, Script, Statement, StatementKind,
+        SymbolId,
     },
     builtins::BuiltinVariable,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
@@ -92,7 +92,10 @@ fn extract_properties_from_ast(
                 name: name.to_string(),
             }
             .at(name_span)
-            .label(global.name.span(), DiagnosticMessage::OriginallyDeclaredHere)
+            .label(
+                global.name.span(),
+                DiagnosticMessage::OriginallyDeclaredHere,
+            )
             .label(name_span, DiagnosticMessage::ConflictsWithGlobal)
             .emit(diagnostics);
             // Continue anyway to report more errors
@@ -244,10 +247,7 @@ impl<'input> SymTabVisitor<'input> {
                     name: name.to_string(),
                 }
                 .at(name_span)
-                .label(
-                    name_span,
-                    DiagnosticMessage::CannotShadowBuiltinLabel,
-                )
+                .label(name_span, DiagnosticMessage::CannotShadowBuiltinLabel)
                 .note(DiagnosticMessage::BuiltinVariableNote {
                     name: name.to_string(),
                 })
