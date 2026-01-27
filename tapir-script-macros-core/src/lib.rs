@@ -35,7 +35,13 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
             enable_optimisations: true,
         },
     ) {
-        Ok(content) => content,
+        Ok(mut content) => {
+            // Print any warnings
+            if content.warnings.has_any() {
+                eprintln!("{}", content.warnings.pretty_string(true));
+            }
+            content
+        }
         Err(mut diagnostics) => {
             eprintln!("{}", diagnostics.pretty_string(true));
             panic!("Compile error");

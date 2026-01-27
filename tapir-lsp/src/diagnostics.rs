@@ -4,6 +4,7 @@ use std::time::Instant;
 
 use compiler::{AnalysisResult, CompileSettings};
 use lsp_server::{Connection, Message, Notification};
+use compiler::Severity;
 use lsp_types::{
     Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, PublishDiagnosticsParams, Url,
     notification::{Notification as _, PublishDiagnostics},
@@ -57,6 +58,7 @@ fn convert_diagnostics(uri: Url, result: &mut AnalysisResult) -> Vec<Diagnostic>
         .map(|diag| {
             (
                 diag.primary_span,
+                diag.severity,
                 diag.kind.code().to_string(),
                 diag.message(),
                 diag.labels.clone(),
@@ -66,15 +68,20 @@ fn convert_diagnostics(uri: Url, result: &mut AnalysisResult) -> Vec<Diagnostic>
 
     diag_info
         .into_iter()
-        .filter_map(|(span, code, message, labels)| {
+        .filter_map(|(span, severity, code, message, labels)| {
             let range = result
                 .diagnostics
                 .span_to_range(span)
                 .map(source_range_to_lsp_range)?;
 
+            let lsp_severity = match severity {
+                Severity::Error => DiagnosticSeverity::ERROR,
+                Severity::Warning => DiagnosticSeverity::WARNING,
+            };
+
             Some(Diagnostic {
                 range,
-                severity: Some(DiagnosticSeverity::ERROR),
+                severity: Some(lsp_severity),
                 code: Some(lsp_types::NumberOrString::String(code)),
                 source: Some("tapir".to_string()),
                 message,

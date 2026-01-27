@@ -82,11 +82,17 @@ pub struct CompileSettings {
     pub enable_optimisations: bool,
 }
 
+/// Result of a successful compilation, containing bytecode and any warnings.
+pub struct CompileOutput {
+    pub bytecode: Bytecode,
+    pub warnings: Diagnostics,
+}
+
 pub fn compile(
     filename: impl AsRef<Path>,
     input: &str,
     settings: &CompileSettings,
-) -> Result<Bytecode, Diagnostics> {
+) -> Result<CompileOutput, Diagnostics> {
     let mut diagnostics = Diagnostics::new(USER_FILE_ID, &filename, input);
 
     let mut ast = match prelude::parse_with_prelude(&filename, input, &mut diagnostics) {
@@ -96,7 +102,7 @@ pub fn compile(
 
     let (mut symtab, type_table) = analyse_ast(&mut ast, settings, &mut diagnostics);
 
-    if diagnostics.has_any() {
+    if diagnostics.has_errors() {
         return Err(diagnostics);
     }
 
@@ -163,7 +169,10 @@ pub fn compile(
         compiler.compile_function(&function, &registers);
     }
 
-    Ok(compiler.finalise())
+    Ok(CompileOutput {
+        bytecode: compiler.finalise(),
+        warnings: diagnostics,
+    })
 }
 
 struct Compiler {
@@ -581,10 +590,10 @@ mod test {
                 enable_optimisations,
             };
 
-            let bytecode = compile(path, &input, &compiler_settings).unwrap();
+            let output = compile(path, &input, &compiler_settings).unwrap();
 
             let mut decompiled = String::new();
-            disassemble::disassemble(&bytecode.data, &mut decompiled).unwrap();
+            disassemble::disassemble(&output.bytecode.data, &mut decompiled).unwrap();
 
             assert_snapshot!(decompiled);
         });

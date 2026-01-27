@@ -1,0 +1,6 @@
+# This script triggers a compile-time warning for division by zero
+
+property result: int;
+
+var x = 5 - 5;
+result = 10 / x;

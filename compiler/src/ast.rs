@@ -379,6 +379,8 @@ impl BinaryOperator {
         match (*self, lhs_type) {
             (B::Mul, Type::Fix) => *self = B::FixMul,
             (B::Div, Type::Fix) => *self = B::FixDiv,
+            (B::Div, Type::Int) => *self = B::RealDiv,
+            (B::Mod, Type::Int) => *self = B::RealMod,
             _ => {}
         }
     }

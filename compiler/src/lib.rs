@@ -25,7 +25,7 @@ pub use compile::symtab_visitor::GlobalInfo;
 pub use compile::{CompileSettings, Property};
 pub use reporting::format::DiagnosticCache;
 pub use reporting::{
-    Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind, SourcePosition, SourceRange,
+    Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind, Severity, SourcePosition, SourceRange,
 };
 pub use tokens::Span;
 pub use types::Type;
@@ -35,8 +35,8 @@ pub fn compile(
     input: &str,
     compile_settings: CompileSettings,
 ) -> Result<CompileResult, Diagnostics> {
-    let bytecode = compile::compile(filename, input, &compile_settings)?;
-    let parts = bytecode.into_parts();
+    let output = compile::compile(filename, input, &compile_settings)?;
+    let parts = output.bytecode.into_parts();
 
     Ok(CompileResult {
         bytecode: parts.bytecode,
@@ -45,6 +45,7 @@ pub fn compile(
         event_handlers: parts.event_handlers,
         triggers: parts.triggers,
         extern_functions: parts.extern_functions,
+        warnings: output.warnings,
     })
 }
 
@@ -55,6 +56,8 @@ pub struct CompileResult {
     pub event_handlers: Box<[EventHandler]>,
     pub triggers: Box<[Trigger]>,
     pub extern_functions: Box<[ExternFunction]>,
+    /// Warnings generated during compilation (empty if no warnings).
+    pub warnings: Diagnostics,
 }
 
 /// Information about a declared property in the compiled script.
