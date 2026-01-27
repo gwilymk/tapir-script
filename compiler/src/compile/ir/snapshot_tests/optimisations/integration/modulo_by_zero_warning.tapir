@@ -1,0 +1,5 @@
+# all
+property result: int;
+
+var x: int = 5 - 5;
+result = 10 % x;

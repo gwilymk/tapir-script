@@ -8,6 +8,13 @@ use crate::{
     types::Type,
 };
 
+/// Severity level for diagnostics.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Severity {
+    Error,
+    Warning,
+}
+
 /// A position in source code (0-indexed line and column).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SourcePosition {
@@ -88,6 +95,10 @@ pub enum DiagnosticMessage {
     },
     BreakOrContinueOutsideOfLoop,
     DivideByZero,
+    DivisionOccursHere,
+    OperationOccursHere,
+    IntegerOverflow,
+    CausesOverflow,
     EventFunctionsShouldNotHaveAReturnType {
         function_name: String,
     },
@@ -281,6 +292,10 @@ impl DiagnosticMessage {
                 "`break` or `continue` must be within a loop".into()
             }
             DiagnosticMessage::DivideByZero => "Divide by zero not allowed".into(),
+            DiagnosticMessage::DivisionOccursHere => "This division will fail".into(),
+            DiagnosticMessage::OperationOccursHere => "This operation will fail".into(),
+            DiagnosticMessage::IntegerOverflow => "Integer overflow detected".into(),
+            DiagnosticMessage::CausesOverflow => "This causes overflow".into(),
             DiagnosticMessage::EventFunctionsShouldNotHaveAReturnType { .. } => {
                 "Event handlers should not have a return type".into()
             }
@@ -776,7 +791,8 @@ impl DiagnosticBuilder {
 
     pub(crate) fn build(self) -> Diagnostic {
         Diagnostic {
-            kind: self.kind,
+            severity: Severity::Error,
+            kind: DiagnosticKind::Error(self.kind),
             primary_span: self.primary_span,
             labels: self.labels,
             notes: self.notes,
@@ -785,10 +801,116 @@ impl DiagnosticBuilder {
     }
 }
 
+// ============================================================================
+// Warning Types
+// ============================================================================
+
+/// Warning codes for compile-time warnings.
+#[derive(Clone, Debug)]
+pub enum WarningKind {
+    /// Division by a value that is known to be zero at compile time.
+    DivisionByZero,
+    /// Integer overflow detected at compile time.
+    IntegerOverflow,
+}
+
+impl WarningKind {
+    /// Returns a unique, stable identifier for this warning kind.
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::DivisionByZero => "W0001",
+            Self::IntegerOverflow => "W0002",
+        }
+    }
+
+    /// Get the primary message for this warning.
+    pub fn message(&self) -> DiagnosticMessage {
+        match self {
+            Self::DivisionByZero => DiagnosticMessage::DivideByZero,
+            Self::IntegerOverflow => DiagnosticMessage::IntegerOverflow,
+        }
+    }
+
+    /// Start building a warning at the given span.
+    pub fn at(self, span: Span) -> WarningBuilder {
+        WarningBuilder {
+            kind: self,
+            primary_span: span,
+            labels: vec![],
+            notes: vec![],
+        }
+    }
+}
+
+/// A warning under construction.
+#[must_use = "warnings do nothing unless `.emit()`ed"]
+pub struct WarningBuilder {
+    kind: WarningKind,
+    primary_span: Span,
+    labels: Vec<(Span, DiagnosticMessage)>,
+    notes: Vec<DiagnosticMessage>,
+}
+
+impl WarningBuilder {
+    pub fn label(mut self, span: Span, message: DiagnosticMessage) -> Self {
+        self.labels.push((span, message));
+        self
+    }
+
+    #[allow(dead_code)]
+    pub fn note(mut self, message: DiagnosticMessage) -> Self {
+        self.notes.push(message);
+        self
+    }
+
+    pub fn emit(self, diagnostics: &mut Diagnostics) {
+        // Skip duplicate warnings at the same location
+        if diagnostics.has_warning_at(self.kind.code(), self.primary_span) {
+            return;
+        }
+        diagnostics.add(self.build());
+    }
+
+    pub fn build(self) -> Diagnostic {
+        Diagnostic {
+            severity: Severity::Warning,
+            kind: DiagnosticKind::Warning(self.kind),
+            primary_span: self.primary_span,
+            labels: self.labels,
+            notes: self.notes,
+            help: None,
+        }
+    }
+}
+
+/// The kind of diagnostic - either an error or a warning.
+#[derive(Clone, Debug)]
+pub enum DiagnosticKind {
+    Error(ErrorKind),
+    Warning(WarningKind),
+}
+
+impl DiagnosticKind {
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::Error(e) => e.code(),
+            Self::Warning(w) => w.code(),
+        }
+    }
+
+    pub fn message(&self) -> DiagnosticMessage {
+        match self {
+            Self::Error(e) => e.message(),
+            Self::Warning(w) => w.message(),
+        }
+    }
+}
+
 /// A complete diagnostic ready for rendering.
 #[derive(Clone, Debug)]
 pub struct Diagnostic {
-    pub kind: ErrorKind,
+    pub severity: Severity,
+    pub kind: DiagnosticKind,
     pub primary_span: Span,
     pub labels: Vec<(Span, DiagnosticMessage)>,
     pub notes: Vec<DiagnosticMessage>,
@@ -897,6 +1019,15 @@ impl Diagnostics {
         self.diagnostics.push(diagnostic);
     }
 
+    /// Check if a warning with the given code already exists at the given span.
+    pub(crate) fn has_warning_at(&self, code: &str, span: Span) -> bool {
+        self.diagnostics.iter().any(|d| {
+            d.severity == Severity::Warning
+                && d.kind.code() == code
+                && d.primary_span == span
+        })
+    }
+
     pub(crate) fn add_lalrpop(
         &mut self,
         value: lalrpop_util::ParseError<usize, tokens::Token<'_>, LexicalError>,
@@ -949,5 +1080,12 @@ impl Diagnostics {
 
     pub fn has_any(&self) -> bool {
         !self.diagnostics.is_empty()
+    }
+
+    /// Returns true if there are any errors (not just warnings).
+    pub fn has_errors(&self) -> bool {
+        self.diagnostics
+            .iter()
+            .any(|d| d.severity == Severity::Error)
     }
 }

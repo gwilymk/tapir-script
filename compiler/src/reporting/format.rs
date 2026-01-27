@@ -10,7 +10,7 @@ use ariadne::{Cache, Label, Source};
 
 use crate::tokens::{FileId, Span};
 
-use super::Diagnostic;
+use super::{Diagnostic, Severity};
 
 #[derive(Clone)]
 pub struct DiagnosticCache {
@@ -101,7 +101,12 @@ impl Diagnostic {
         cache: &mut DiagnosticCache,
         include_colour: bool,
     ) -> io::Result<()> {
-        let mut report = ariadne::Report::build(ariadne::ReportKind::Error, self.primary_span)
+        let report_kind = match self.severity {
+            Severity::Error => ariadne::ReportKind::Error,
+            Severity::Warning => ariadne::ReportKind::Warning,
+        };
+
+        let mut report = ariadne::Report::build(report_kind, self.primary_span)
             .with_code(self.kind.code())
             .with_message(self.message());
 

@@ -1,0 +1,5 @@
+# all
+property result: int;
+
+var x: int = 2147483647;
+result = x + 1;

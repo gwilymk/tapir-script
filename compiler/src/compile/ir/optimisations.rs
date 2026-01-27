@@ -9,9 +9,10 @@ use crate::{
     CompileSettings,
     ast::SymbolId,
     compile::{
-        ir::{TapIrFunction, TapIrFunctionBlockIter},
+        ir::{SymbolSpans, TapIrFunction, TapIrFunctionBlockIter},
         symtab_visitor::SymTab,
     },
+    reporting::Diagnostics,
 };
 
 mod block_shuffle;
@@ -113,7 +114,13 @@ fn reduce_renames(renames: &HashMap<SymbolId, SymbolId>) -> HashMap<SymbolId, Sy
     result
 }
 
-pub fn optimise(program: &mut Vec<TapIrFunction>, symtab: &mut SymTab, settings: &CompileSettings) {
+pub fn optimise(
+    program: &mut Vec<TapIrFunction>,
+    symtab: &mut SymTab,
+    symbol_spans: &SymbolSpans,
+    diagnostics: &mut Diagnostics,
+    settings: &CompileSettings,
+) {
     if !settings.enable_optimisations {
         return;
     }
@@ -122,7 +129,7 @@ pub fn optimise(program: &mut Vec<TapIrFunction>, symtab: &mut SymTab, settings:
         let mut did_something = OptimisationResult::DidNothing;
 
         for (_, optimisation) in OPTIMISATIONS {
-            did_something |= optimisation.optimise(program, symtab);
+            did_something |= optimisation.optimise(program, symtab, symbol_spans, diagnostics);
         }
 
         if did_something == OptimisationResult::DidNothing {
@@ -132,8 +139,13 @@ pub fn optimise(program: &mut Vec<TapIrFunction>, symtab: &mut SymTab, settings:
 }
 
 trait Optimisation: Sync {
-    fn optimise(&self, program: &mut Vec<TapIrFunction>, symtab: &mut SymTab)
-    -> OptimisationResult;
+    fn optimise(
+        &self,
+        program: &mut Vec<TapIrFunction>,
+        symtab: &mut SymTab,
+        symbol_spans: &SymbolSpans,
+        diagnostics: &mut Diagnostics,
+    ) -> OptimisationResult;
 }
 
 impl Optimisation for fn(&mut [TapIrFunction]) -> OptimisationResult {
@@ -141,6 +153,8 @@ impl Optimisation for fn(&mut [TapIrFunction]) -> OptimisationResult {
         &self,
         program: &mut Vec<TapIrFunction>,
         _symtab: &mut SymTab,
+        _symbol_spans: &SymbolSpans,
+        _diagnostics: &mut Diagnostics,
     ) -> OptimisationResult {
         (self)(program)
     }
@@ -151,6 +165,8 @@ impl Optimisation for fn(&mut TapIrFunction) -> OptimisationResult {
         &self,
         program: &mut Vec<TapIrFunction>,
         _symtab: &mut SymTab,
+        _symbol_spans: &SymbolSpans,
+        _diagnostics: &mut Diagnostics,
     ) -> OptimisationResult {
         let mut result = OptimisationResult::DidNothing;
 
@@ -167,6 +183,8 @@ impl Optimisation for fn(&mut TapIrFunction, &mut SymTab) -> OptimisationResult 
         &self,
         program: &mut Vec<TapIrFunction>,
         symtab: &mut SymTab,
+        _symbol_spans: &SymbolSpans,
+        _diagnostics: &mut Diagnostics,
     ) -> OptimisationResult {
         let mut result = OptimisationResult::DidNothing;
 
@@ -183,6 +201,8 @@ impl Optimisation for fn(&mut Vec<TapIrFunction>) -> OptimisationResult {
         &self,
         program: &mut Vec<TapIrFunction>,
         _symtab: &mut SymTab,
+        _symbol_spans: &SymbolSpans,
+        _diagnostics: &mut Diagnostics,
     ) -> OptimisationResult {
         (self)(program)
     }
@@ -193,8 +213,30 @@ impl Optimisation for fn(&mut [TapIrFunction], &mut SymTab) -> OptimisationResul
         &self,
         program: &mut Vec<TapIrFunction>,
         symtab: &mut SymTab,
+        _symbol_spans: &SymbolSpans,
+        _diagnostics: &mut Diagnostics,
     ) -> OptimisationResult {
         (self)(program, symtab)
+    }
+}
+
+impl Optimisation
+    for fn(&mut TapIrFunction, &mut SymTab, &SymbolSpans, &mut Diagnostics) -> OptimisationResult
+{
+    fn optimise(
+        &self,
+        program: &mut Vec<TapIrFunction>,
+        symtab: &mut SymTab,
+        symbol_spans: &SymbolSpans,
+        diagnostics: &mut Diagnostics,
+    ) -> OptimisationResult {
+        let mut result = OptimisationResult::DidNothing;
+
+        for f in program.iter_mut() {
+            result |= (self)(f, symtab, symbol_spans, diagnostics);
+        }
+
+        result
     }
 }
 
@@ -234,7 +276,12 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
     (
         "constant_folding",
         &(constant_folding::constant_folding
-            as fn(&mut TapIrFunction, &mut SymTab) -> OptimisationResult),
+            as fn(
+                &mut TapIrFunction,
+                &mut SymTab,
+                &SymbolSpans,
+                &mut Diagnostics,
+            ) -> OptimisationResult),
     ),
     (
         "duplicate_loads",
@@ -317,14 +364,19 @@ mod test {
 
             let mut symtab = symtab_visitor.into_symtab();
 
-            let mut irs = script
+            let (mut irs, spans_vec): (Vec<_>, Vec<_>) = script
                 .functions
                 .iter()
                 .map(|f| create_ir(f, &mut symtab))
-                .collect::<Vec<_>>();
+                .unzip();
+
+            let mut symbol_spans = SymbolSpans::new();
+            for spans in spans_vec {
+                symbol_spans.extend(&spans);
+            }
 
             for f in &mut irs {
-                make_ssa(f, &mut symtab);
+                make_ssa(f, &mut symtab, &mut symbol_spans);
             }
 
             let mut output = String::new();
@@ -348,7 +400,12 @@ mod test {
 
                 for (name, optimisation) in OPTIMISATIONS {
                     if enable_all_optimisations || enabled_optimisations.contains(name) {
-                        let this_did_something = optimisation.optimise(&mut irs, &mut symtab);
+                        let this_did_something = optimisation.optimise(
+                            &mut irs,
+                            &mut symtab,
+                            &symbol_spans,
+                            &mut diagnostics,
+                        );
 
                         if this_did_something == OptimisationResult::DidSomething {
                             writeln!(&mut output, "\n----------- {name} -------------").unwrap();
@@ -365,6 +422,12 @@ mod test {
                 if did_something == OptimisationResult::DidNothing {
                     break;
                 }
+            }
+
+            // Include any warnings in the snapshot output
+            if diagnostics.has_any() {
+                writeln!(&mut output, "\n----------- warnings -------------").unwrap();
+                output.push_str(&diagnostics.pretty_string(false));
             }
 
             assert_snapshot!(output);

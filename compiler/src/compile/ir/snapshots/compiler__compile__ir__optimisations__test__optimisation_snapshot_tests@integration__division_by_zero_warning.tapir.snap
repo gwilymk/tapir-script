@@ -1,0 +1,117 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/division_by_zero_warning.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 5
+temp.10 = int 5
+temp.11 = temp.9 - temp.10
+x.12 = temp.11
+temp.13 = int 10
+temp.14 = x.12
+temp.15 = temp.13 // temp.14
+temp.16 = temp.15
+storeprop temp.16, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 5
+temp.10 = int 5
+temp.11 = temp.9 - temp.10
+x.12 = temp.11
+temp.13 = int 10
+temp.14 = temp.11
+temp.15 = temp.13 // temp.11
+temp.16 = temp.15
+storeprop temp.15, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 5
+temp.10 = int 5
+temp.11 = temp.9 - temp.10
+temp.13 = int 10
+temp.15 = temp.13 // temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 5
+temp.10 = int 5
+temp.11 = int 0
+temp.13 = int 10
+temp.15 = temp.13 // temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- duplicate_loads -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 5
+temp.10 = temp.9
+temp.11 = int 0
+temp.13 = int 10
+temp.15 = temp.13 // temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 5
+temp.11 = int 0
+temp.13 = int 10
+temp.15 = temp.13 // temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.11 = int 0
+temp.13 = int 10
+temp.15 = temp.13 // temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- warnings -------------
+[W0001] Warning: Divide by zero not allowed
+   ╭─[ division_by_zero_warning.tapir:5:10 ]
+   │
+ 4 │ var x: int = 5 - 5;
+   │              ──┬──  
+   │                ╰──── This reduces to 0
+ 5 │ result = 10 // x;
+   │          ───┬───  
+   │             ╰───── This operation will fail
+───╯

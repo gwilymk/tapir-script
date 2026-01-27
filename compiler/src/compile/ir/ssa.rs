@@ -4,7 +4,11 @@ use petgraph::{Direction, prelude::DiGraphMap, visit::IntoNeighbors};
 
 use super::*;
 
-pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
+pub fn make_ssa(
+    function: &mut TapIrFunction,
+    symtab: &mut SymTab,
+    symbol_spans: &mut SymbolSpans,
+) {
     let mut converter = SsaConverter::new(function);
 
     let mut reverse_post_order = TapIrFunctionBlockIter::new_reverse_post_order(function);
@@ -14,21 +18,27 @@ pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab) {
 
         for instr in block.instrs_mut() {
             for source in instr.sources_mut() {
-                *source = converter.read_variable(*source, block_id, symtab);
+                let old_source = *source;
+                let new_source = converter.read_variable(old_source, block_id, symtab, symbol_spans);
+                *source = new_source;
             }
 
             for target in instr.targets_mut() {
-                let new_target = symtab.new_rename(*target);
-                converter.write_variable(*target, block_id, new_target);
+                let old_target = *target;
+                let new_target = symtab.new_rename(old_target);
+                symbol_spans.alias(new_target, old_target);
+                converter.write_variable(old_target, block_id, new_target);
                 *target = new_target;
             }
         }
 
         for source in block.block_exit_mut().sources_mut() {
-            *source = converter.read_variable(*source, block_id, symtab);
+            let old_source = *source;
+            let new_source = converter.read_variable(old_source, block_id, symtab, symbol_spans);
+            *source = new_source;
         }
 
-        converter.mark_filled(block.id(), symtab);
+        converter.mark_filled(block.id(), symtab, symbol_spans);
     }
 
     for (block_id, phis) in converter.into_phis() {
@@ -95,12 +105,13 @@ impl SsaConverter {
         variable: SymbolId,
         block: BlockId,
         symtab: &mut SymTab,
+        symbol_spans: &mut SymbolSpans,
     ) -> SymbolId {
         if let Some(renamed) = self.current_def.get(&variable).and_then(|d| d.get(&block)) {
             return *renamed;
         }
 
-        self.read_variable_recursive(variable, block, symtab)
+        self.read_variable_recursive(variable, block, symtab, symbol_spans)
     }
 
     fn read_variable_recursive(
@@ -108,9 +119,11 @@ impl SsaConverter {
         variable: SymbolId,
         block: BlockId,
         symtab: &mut SymTab,
+        symbol_spans: &mut SymbolSpans,
     ) -> SymbolId {
         let val = if !self.sealed_blocks.contains(&block) {
             let val = symtab.new_rename(variable);
+            symbol_spans.alias(val, variable);
             self.incomplete_phis
                 .entry(block)
                 .or_default()
@@ -124,10 +137,11 @@ impl SsaConverter {
 
             // Optimise for the common case of one predecessor: no phi needed
             if predecessors.len() == 1 {
-                self.read_variable(variable, predecessors[0], symtab)
+                self.read_variable(variable, predecessors[0], symtab, symbol_spans)
             } else {
                 // Break potential cycles by putting the phi in there already
                 let phi_variable = symtab.new_rename(variable);
+                symbol_spans.alias(phi_variable, variable);
                 self.phis
                     .entry(block)
                     .or_default()
@@ -141,6 +155,7 @@ impl SsaConverter {
                     phi_variable,
                     predecessors.into_iter(),
                     symtab,
+                    symbol_spans,
                 )
             }
         };
@@ -157,9 +172,10 @@ impl SsaConverter {
         phi_variable: SymbolId,
         predecessors: impl Iterator<Item = BlockId>,
         symtab: &mut SymTab,
+        symbol_spans: &mut SymbolSpans,
     ) -> SymbolId {
         for predecessor in predecessors {
-            let value = self.read_variable(variable, predecessor, symtab);
+            let value = self.read_variable(variable, predecessor, symtab, symbol_spans);
 
             self.phis
                 .entry(block)
@@ -172,9 +188,14 @@ impl SsaConverter {
         phi_variable
     }
 
-    pub fn mark_filled(&mut self, block: BlockId, symtab: &mut SymTab) {
+    pub fn mark_filled(
+        &mut self,
+        block: BlockId,
+        symtab: &mut SymTab,
+        symbol_spans: &mut SymbolSpans,
+    ) {
         self.filled_blocks.insert(block);
-        self.maybe_seal_block(block, symtab);
+        self.maybe_seal_block(block, symtab, symbol_spans);
 
         let successors = self
             .graph
@@ -183,11 +204,16 @@ impl SsaConverter {
 
         // filling this block might've made some successor sealed
         for successor in successors {
-            self.maybe_seal_block(successor, symtab);
+            self.maybe_seal_block(successor, symtab, symbol_spans);
         }
     }
 
-    fn maybe_seal_block(&mut self, block: BlockId, symtab: &mut SymTab) {
+    fn maybe_seal_block(
+        &mut self,
+        block: BlockId,
+        symtab: &mut SymTab,
+        symbol_spans: &mut SymbolSpans,
+    ) {
         let predecessors = self
             .graph
             .neighbors_directed(block, Direction::Incoming)
@@ -201,7 +227,14 @@ impl SsaConverter {
         }
 
         for (variable, val) in self.incomplete_phis.remove(&block).unwrap_or_default() {
-            self.add_phi_operands(variable, block, val, predecessors.iter().cloned(), symtab);
+            self.add_phi_operands(
+                variable,
+                block,
+                val,
+                predecessors.iter().cloned(),
+                symtab,
+                symbol_spans,
+            );
         }
 
         self.sealed_blocks.insert(block);
@@ -289,14 +322,19 @@ mod test {
 
             let mut symtab = symtab_visitor.into_symtab();
 
-            let mut irs = script
+            let (mut irs, spans_vec): (Vec<_>, Vec<_>) = script
                 .functions
                 .iter()
                 .map(|f| create_ir(f, &mut symtab))
-                .collect::<Vec<_>>();
+                .unzip();
+
+            let mut symbol_spans = SymbolSpans::new();
+            for spans in spans_vec {
+                symbol_spans.extend(&spans);
+            }
 
             for f in &mut irs {
-                make_ssa(f, &mut symtab);
+                make_ssa(f, &mut symtab, &mut symbol_spans);
             }
 
             let mut output = String::new();

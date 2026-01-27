@@ -8,7 +8,7 @@ use crate::{
     EventHandler, ExternFunction, Trigger,
     ast::{BinaryOperator, FunctionId, Script, SymbolId},
     compile::ir::{
-        BlockId, TapIr, TapIrFunction, create_ir, make_ssa,
+        BlockId, SymbolSpans, TapIr, TapIrFunction, create_ir, make_ssa,
         regalloc::{self, RegisterAllocations},
     },
     prelude::{self, USER_FILE_ID},
@@ -121,21 +121,41 @@ pub fn compile(
 
     let mut compiler = Compiler::new(&type_table, extern_functions, &symtab);
 
-    let ir_functions = ast
+    // Create IR with symbol spans
+    let (ir_functions, spans_vec): (Vec<_>, Vec<_>) = ast
         .functions
         .iter()
         .map(|f| create_ir(f, &mut symtab))
-        .collect::<Vec<_>>();
+        .unzip();
 
+    // Merge all symbol spans
+    let mut symbol_spans = SymbolSpans::new();
+    for spans in spans_vec {
+        symbol_spans.extend(&spans);
+    }
+
+    // SSA conversion with span aliasing
     let mut ir_functions = ir_functions
         .into_iter()
         .map(|mut ir_fn| {
-            make_ssa(&mut ir_fn, &mut symtab);
+            make_ssa(&mut ir_fn, &mut symtab, &mut symbol_spans);
             ir_fn
         })
         .collect::<Vec<_>>();
 
-    ir::optimisations::optimise(&mut ir_functions, &mut symtab, settings);
+    // Optimization with span tracking and diagnostics
+    ir::optimisations::optimise(
+        &mut ir_functions,
+        &mut symtab,
+        &symbol_spans,
+        &mut diagnostics,
+        settings,
+    );
+
+    // Check for errors after optimization (warnings are ok)
+    if diagnostics.has_errors() {
+        return Err(diagnostics);
+    }
 
     for mut function in ir_functions {
         let registers = regalloc::allocate_registers(&mut function);

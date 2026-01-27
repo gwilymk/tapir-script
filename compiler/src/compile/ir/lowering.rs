@@ -5,12 +5,13 @@ use crate::{
 };
 
 use super::{
-    BlockExitInstr, BlockId, Constant, FunctionModifiers, TapIr, TapIrBlock, TapIrFunction,
+    BlockExitInstr, BlockId, Constant, FunctionModifiers, SymbolSpans, TapIr, TapIrBlock,
+    TapIrFunction,
 };
 
-pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
+pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> (TapIrFunction, SymbolSpans) {
     let block_visitor = BlockVisitor::default();
-    let blocks = block_visitor.create_blocks(&f.statements, symtab);
+    let (blocks, symbol_spans) = block_visitor.create_blocks(&f.statements, symtab);
 
     let id = *f.meta.get().expect("Should have FunctionId by now");
     let modifiers = FunctionModifiers::new(f, symtab);
@@ -25,12 +26,15 @@ pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> TapIrFunction {
 
     let return_types = f.return_types.types.iter().map(|t| t.t).collect();
 
-    TapIrFunction::new(
-        id,
-        blocks.into_boxed_slice(),
-        modifiers,
-        arguments,
-        return_types,
+    (
+        TapIrFunction::new(
+            id,
+            blocks.into_boxed_slice(),
+            modifiers,
+            arguments,
+            return_types,
+        ),
+        symbol_spans,
     )
 }
 
@@ -42,6 +46,8 @@ struct BlockVisitor {
     loop_entries: Vec<LoopEntry>,
     next_free_block_id: usize,
     next_block_id: Option<BlockId>,
+
+    symbol_spans: SymbolSpans,
 }
 
 struct LoopEntry {
@@ -54,7 +60,7 @@ impl BlockVisitor {
         mut self,
         statements: &[ast::Statement<'_>],
         symtab: &mut SymTab,
-    ) -> Vec<TapIrBlock> {
+    ) -> (Vec<TapIrBlock>, SymbolSpans) {
         for statement in statements {
             self.visit_statement(statement, symtab);
         }
@@ -67,7 +73,7 @@ impl BlockVisitor {
             self.finalize_block(BlockExitInstr::Return(Box::new([])), None);
         }
 
-        self.blocks
+        (self.blocks, self.symbol_spans)
     }
 
     fn visit_statement(&mut self, statement: &ast::Statement<'_>, symtab: &mut SymTab) {
@@ -364,6 +370,9 @@ impl BlockVisitor {
         target_symbol: SymbolId,
         symtab: &mut SymTab,
     ) {
+        // Record the span where this symbol's value is defined
+        self.symbol_spans.define(target_symbol, expr.span);
+
         match &expr.kind {
             ast::ExpressionKind::Integer(i) => {
                 self.current_block

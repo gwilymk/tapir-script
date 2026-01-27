@@ -15,12 +15,14 @@ mod pretty_print;
 pub mod regalloc;
 mod ssa;
 mod symbol_iter;
+mod symbol_spans;
 mod traversal;
 
 pub mod optimisations;
 
 pub use lowering::create_ir;
 pub use ssa::make_ssa;
+pub use symbol_spans::SymbolSpans;
 pub use traversal::TapIrFunctionBlockIter;
 
 use symbol_iter::{SymbolIter, SymbolIterMut};
@@ -534,11 +536,11 @@ mod test {
 
             let mut symtab = symtab_visitor.into_symtab();
 
-            let irs = script
+            let irs: Vec<_> = script
                 .functions
                 .iter()
-                .map(|f| create_ir(f, &mut symtab))
-                .collect::<Vec<_>>();
+                .map(|f| create_ir(f, &mut symtab).0)
+                .collect();
 
             let mut output = String::new();
 
