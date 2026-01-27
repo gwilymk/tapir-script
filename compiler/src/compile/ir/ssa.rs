@@ -4,11 +4,7 @@ use petgraph::{Direction, prelude::DiGraphMap, visit::IntoNeighbors};
 
 use super::*;
 
-pub fn make_ssa(
-    function: &mut TapIrFunction,
-    symtab: &mut SymTab,
-    symbol_spans: &mut SymbolSpans,
-) {
+pub fn make_ssa(function: &mut TapIrFunction, symtab: &mut SymTab, symbol_spans: &mut SymbolSpans) {
     let mut converter = SsaConverter::new(function);
 
     let mut reverse_post_order = TapIrFunctionBlockIter::new_reverse_post_order(function);
@@ -19,7 +15,8 @@ pub fn make_ssa(
         for instr in block.instrs_mut() {
             for source in instr.sources_mut() {
                 let old_source = *source;
-                let new_source = converter.read_variable(old_source, block_id, symtab, symbol_spans);
+                let new_source =
+                    converter.read_variable(old_source, block_id, symtab, symbol_spans);
                 *source = new_source;
             }
 

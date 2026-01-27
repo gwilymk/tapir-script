@@ -14,9 +14,7 @@ use crate::{
 };
 
 use super::{
-    CompileSettings, Property, analyse_ast,
-    references::extract_references,
-    symtab_visitor::SymTab,
+    CompileSettings, Property, analyse_ast, references::extract_references, symtab_visitor::SymTab,
     type_visitor::TypeTable,
 };
 

@@ -190,15 +190,17 @@ pub fn constant_folding(
                 (Some(C::Int(1)), B::Mul | B::FixMul, _) => take_rhs,
 
                 // ================================
-                // Multiply / div by an integer fix
+                // Multiply by an integer fix
                 // ================================
-                (_, op @ (B::FixMul | B::FixDiv), Some(C::Fix(n))) if n.frac() == 0 => {
+                // Note: Only applies to multiplication. Division requires both operands to be
+                // converted, which we can't do when one operand is unknown at compile time.
+                (_, B::FixMul, Some(C::Fix(n))) if n.frac() == 0 => {
                     let temp = symtab.new_temporary();
 
                     *instr = TapIr::BinOp {
                         target: t,
                         lhs: *lhs,
-                        op: if op == B::FixMul { B::Mul } else { B::Div },
+                        op: B::Mul,
                         rhs: temp,
                     };
 
@@ -207,13 +209,13 @@ pub fn constant_folding(
                     did_something = OptimisationResult::DidSomething;
                     continue;
                 }
-                (Some(C::Fix(n)), op @ (B::FixMul | B::FixDiv), _) if n.frac() == 0 => {
+                (Some(C::Fix(n)), B::FixMul, _) if n.frac() == 0 => {
                     let temp = symtab.new_temporary();
 
                     *instr = TapIr::BinOp {
                         target: t,
                         lhs: temp,
-                        op: if op == B::FixMul { B::Mul } else { B::Div },
+                        op: B::Mul,
                         rhs: *rhs,
                     };
 

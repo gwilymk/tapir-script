@@ -1,0 +1,117 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/fix_division_by_zero_warning.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = fix 5
+temp.10 = fix 5
+temp.11 = temp.9 - temp.10
+x.12 = temp.11
+temp.13 = fix 10
+temp.14 = x.12
+temp.15 = temp.13 f/ temp.14
+temp.16 = temp.15
+storeprop temp.16, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = fix 5
+temp.10 = fix 5
+temp.11 = temp.9 - temp.10
+x.12 = temp.11
+temp.13 = fix 10
+temp.14 = temp.11
+temp.15 = temp.13 f/ temp.11
+temp.16 = temp.15
+storeprop temp.15, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = fix 5
+temp.10 = fix 5
+temp.11 = temp.9 - temp.10
+temp.13 = fix 10
+temp.15 = temp.13 f/ temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = fix 5
+temp.10 = fix 5
+temp.11 = fix 0
+temp.13 = fix 10
+temp.15 = temp.13 f/ temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- duplicate_loads -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = fix 5
+temp.10 = temp.9
+temp.11 = fix 0
+temp.13 = fix 10
+temp.15 = temp.13 f/ temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = fix 5
+temp.11 = fix 0
+temp.13 = fix 10
+temp.15 = temp.13 f/ temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.11 = fix 0
+temp.13 = fix 10
+temp.15 = temp.13 f/ temp.11
+storeprop temp.15, 0
+return 
+
+
+----------- warnings -------------
+[W0001] Warning: Divide by zero not allowed
+   ╭─[ fix_division_by_zero_warning.tapir:5:10 ]
+   │
+ 4 │ var x: fix = 5.0 - 5.0;
+   │              ────┬────  
+   │                  ╰────── This reduces to 0
+ 5 │ result = 10.0 / x;
+   │          ────┬───  
+   │              ╰───── This operation will fail
+───╯

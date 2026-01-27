@@ -1022,9 +1022,7 @@ impl Diagnostics {
     /// Check if a warning with the given code already exists at the given span.
     pub(crate) fn has_warning_at(&self, code: &str, span: Span) -> bool {
         self.diagnostics.iter().any(|d| {
-            d.severity == Severity::Warning
-                && d.kind.code() == code
-                && d.primary_span == span
+            d.severity == Severity::Warning && d.kind.code() == code && d.primary_span == span
         })
     }
 

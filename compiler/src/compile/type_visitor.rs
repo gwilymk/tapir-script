@@ -283,8 +283,9 @@ impl<'input> TypeVisitor<'input> {
             let inferred_type = global_info.ty;
             let annotated = annotation.t;
 
-            let types_match =
-                annotated == inferred_type || annotated == Type::Error || inferred_type == Type::Error;
+            let types_match = annotated == inferred_type
+                || annotated == Type::Error
+                || inferred_type == Type::Error;
 
             if !types_match {
                 ErrorKind::TypeAnnotationMismatch {
