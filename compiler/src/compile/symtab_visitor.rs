@@ -161,32 +161,31 @@ pub struct SymTabVisitor<'input> {
     symtab: SymTab<'input>,
 
     symbol_names: NameTable<'input>,
-    function_names: HashMap<&'input str, InternalOrExternalFunctionId>,
+    function_names: HashMap<String, InternalOrExternalFunctionId>,
 }
 
 /// Helper to register a function in the declaration maps.
 /// Returns true if registration succeeded, false if a duplicate was found.
-fn register_function<'input>(
-    name: &'input str,
+fn register_function(
+    name: String,
     span: Span,
     id: InternalOrExternalFunctionId,
-    function_declarations: &mut HashMap<&'input str, Span>,
-    functions_map: &mut HashMap<&'input str, InternalOrExternalFunctionId>,
-    function_names: &mut HashMap<InternalOrExternalFunctionId, &'input str>,
+    function_declarations: &mut HashMap<String, Span>,
+    functions_map: &mut HashMap<String, InternalOrExternalFunctionId>,
+    function_names: &mut HashMap<InternalOrExternalFunctionId, String>,
     diagnostics: &mut Diagnostics,
 ) -> bool {
-    if let Some(other_span) = function_declarations.insert(name, span) {
-        ErrorKind::FunctionAlreadyDeclared {
-            name: name.to_string(),
-        }
-        .at(span)
-        .label(other_span, DiagnosticMessage::OriginallyDeclaredHere)
-        .label(span, DiagnosticMessage::AlsoDeclaredHere)
-        .emit(diagnostics);
+    if let Some(other_span) = function_declarations.get(&name) {
+        ErrorKind::FunctionAlreadyDeclared { name }
+            .at(span)
+            .label(*other_span, DiagnosticMessage::OriginallyDeclaredHere)
+            .label(span, DiagnosticMessage::AlsoDeclaredHere)
+            .emit(diagnostics);
         return false;
     }
 
-    functions_map.insert(name, id);
+    function_declarations.insert(name.clone(), span);
+    functions_map.insert(name.clone(), id);
     function_names.insert(id, name);
     true
 }
@@ -206,11 +205,7 @@ impl<'input> SymTabVisitor<'input> {
         for (i, struct_def) in struct_registry.iter().enumerate() {
             let struct_id = StructId(i as u32);
             register_function(
-                // Use the struct name as the constructor function name
-                // This is a bit hacky since we need &'input str but struct_def.name is String.
-                // We'll use a leaked string for now - this is fine since compilation is short-lived.
-                // A better solution would be to store the name reference in the registry.
-                Box::leak(struct_def.name.clone().into_boxed_str()),
+                struct_def.name.clone(),
                 struct_def.span,
                 InternalOrExternalFunctionId::StructConstructor(struct_id),
                 &mut function_declarations,
@@ -224,7 +219,7 @@ impl<'input> SymTabVisitor<'input> {
             let fid = ExternalFunctionId(i);
             function.meta.set(fid);
             register_function(
-                function.name,
+                function.name.to_string(),
                 function.span,
                 InternalOrExternalFunctionId::External(fid),
                 &mut function_declarations,
@@ -251,7 +246,7 @@ impl<'input> SymTabVisitor<'input> {
             }
 
             if !register_function(
-                function.name,
+                function.name.to_string(),
                 function.span,
                 InternalOrExternalFunctionId::Builtin(fid),
                 &mut function_declarations,
@@ -283,7 +278,7 @@ impl<'input> SymTabVisitor<'input> {
             let fid = FunctionId(i);
             function.meta.set(fid);
             register_function(
-                function.name,
+                function.name.to_string(),
                 function.span,
                 InternalOrExternalFunctionId::Internal(fid),
                 &mut function_declarations,
@@ -441,7 +436,7 @@ impl<'input> SymTabVisitor<'input> {
                 }
                 StatementKind::Call { arguments, name }
                 | StatementKind::Spawn { arguments, name } => {
-                    if let Some(function) = self.function_names.get(name) {
+                    if let Some(function) = self.function_names.get(*name) {
                         statement.meta.set(*function);
                     } else {
                         ErrorKind::UnknownFunction {
@@ -489,7 +484,7 @@ impl<'input> SymTabVisitor<'input> {
                 self.visit_expr(rhs, diagnostics);
             }
             ExpressionKind::Call { arguments, name } => {
-                if let Some(function) = self.function_names.get(name) {
+                if let Some(function) = self.function_names.get(*name) {
                     expr.meta.set(*function);
                 } else {
                     ErrorKind::UnknownFunction {
@@ -567,7 +562,7 @@ pub struct SymTab<'input> {
     properties: Vec<Property>,
 
     symbol_names: Vec<(Cow<'input, str>, Option<Span>)>,
-    function_names: HashMap<InternalOrExternalFunctionId, &'input str>,
+    function_names: HashMap<InternalOrExternalFunctionId, String>,
 
     globals: Vec<GlobalInfo>,
     global_names: HashMap<Cow<'input, str>, GlobalId>,
@@ -578,7 +573,7 @@ pub struct SymTab<'input> {
 impl<'input> SymTab<'input> {
     fn new(
         properties: &[Property],
-        function_names: HashMap<InternalOrExternalFunctionId, &'input str>,
+        function_names: HashMap<InternalOrExternalFunctionId, String>,
         builtin_functions: HashMap<BuiltinFunctionId, BuiltinFunctionInfo>,
     ) -> Self {
         let properties = properties.to_vec();
@@ -633,10 +628,7 @@ impl<'input> SymTab<'input> {
         }
     }
 
-    pub(crate) fn name_for_function(
-        &self,
-        function_id: InternalOrExternalFunctionId,
-    ) -> &'input str {
+    pub(crate) fn name_for_function(&self, function_id: InternalOrExternalFunctionId) -> &str {
         self.function_names
             .get(&function_id)
             .expect("Should have a function name if you have an InternalOrExternalFunctionId")
