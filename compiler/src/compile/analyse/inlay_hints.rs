@@ -1,6 +1,6 @@
 use crate::{
     ast::{Script, Statement, StatementKind, SymbolId},
-    types::Type,
+    types::{StructRegistry, Type},
 };
 
 use super::{
@@ -13,11 +13,12 @@ pub fn extract_inlay_hints(
     ast: &Script<'_>,
     symtab: &SymTab<'_>,
     type_table: &TypeTable<'_>,
+    struct_registry: &StructRegistry,
 ) -> Vec<InlayHintInfo> {
     let mut hints = Vec::new();
 
     for func in &ast.functions {
-        extract_from_statements(&func.statements, symtab, type_table, &mut hints);
+        extract_from_statements(&func.statements, symtab, type_table, struct_registry, &mut hints);
     }
 
     hints
@@ -27,6 +28,7 @@ fn extract_from_statements(
     statements: &[Statement<'_>],
     symtab: &SymTab<'_>,
     type_table: &TypeTable<'_>,
+    struct_registry: &StructRegistry,
     hints: &mut Vec<InlayHintInfo>,
 ) {
     for stmt in statements {
@@ -45,7 +47,7 @@ fn extract_from_statements(
                         if ty != Type::Error {
                             hints.push(InlayHintInfo {
                                 position: ident.span().end(),
-                                label: format!(": {}", ty),
+                                label: format!(": {}", ty.display(struct_registry)),
                             });
                         }
                     }
@@ -56,11 +58,11 @@ fn extract_from_statements(
                 false_block,
                 ..
             } => {
-                extract_from_statements(true_block, symtab, type_table, hints);
-                extract_from_statements(false_block, symtab, type_table, hints);
+                extract_from_statements(true_block, symtab, type_table, struct_registry, hints);
+                extract_from_statements(false_block, symtab, type_table, struct_registry, hints);
             }
             StatementKind::Loop { block } | StatementKind::Block { block } => {
-                extract_from_statements(block, symtab, type_table, hints);
+                extract_from_statements(block, symtab, type_table, struct_registry, hints);
             }
             _ => {}
         }

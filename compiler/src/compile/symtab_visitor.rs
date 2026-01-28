@@ -973,6 +973,13 @@ impl<'input> SymTab<'input> {
         self.struct_property_bases.get(name)
     }
 
+    /// Iterate over all struct property bases.
+    pub fn struct_property_bases(&self) -> impl Iterator<Item = (&str, &StructPropertyBase)> {
+        self.struct_property_bases
+            .iter()
+            .map(|(name, base)| (name.as_str(), base))
+    }
+
     /// Check if a symbol ID represents a struct property base.
     pub fn is_struct_property_base_symbol(symbol_id: SymbolId) -> bool {
         symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0

@@ -1,6 +1,6 @@
 use crate::{
     ast::{FunctionReturn, TypedIdent},
-    types::Type,
+    types::{StructRegistry, Type},
 };
 
 /// Format a list of function arguments as a comma-separated string.
@@ -29,12 +29,22 @@ pub fn format_return_types(return_types: &FunctionReturn) -> String {
 }
 
 /// Get the description for a symbol based on its kind.
-pub fn symbol_description(kind: SymbolKind, name: &str, ty: Type) -> String {
+pub fn symbol_description(
+    kind: SymbolKind,
+    name: &str,
+    ty: Type,
+    registry: &StructRegistry,
+) -> String {
     match kind {
-        SymbolKind::Global => format!("global {}: {}", name, ty),
-        SymbolKind::Property => format!("property {}: {}", name, ty),
-        SymbolKind::Local => format!("var {}: {}", name, ty),
+        SymbolKind::Global => format!("global {}: {}", name, ty.display(registry)),
+        SymbolKind::Property => format!("property {}: {}", name, ty.display(registry)),
+        SymbolKind::Local => format!("var {}: {}", name, ty.display(registry)),
     }
+}
+
+/// Format a type for display, using the struct registry for struct names.
+pub fn format_type(ty: Type, registry: &StructRegistry) -> String {
+    ty.display(registry).to_string()
 }
 
 /// The kind of symbol for description formatting.

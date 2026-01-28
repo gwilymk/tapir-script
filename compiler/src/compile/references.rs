@@ -3,11 +3,19 @@ use std::collections::HashMap;
 use crate::{
     ast::{Expression, ExpressionKind, Script, Statement, StatementKind, SymbolId},
     tokens::Span,
+    types::StructRegistry,
 };
 
-use super::symtab_visitor::{GlobalId, SymTab};
+use super::{
+    symtab_visitor::{GlobalId, SymTab},
+    type_visitor::{FieldAccessInfo, FieldAssignmentInfo},
+};
 
-pub fn extract_references(ast: &Script<'_>, symtab: &SymTab<'_>) -> HashMap<Span, Span> {
+pub fn extract_references(
+    ast: &Script<'_>,
+    symtab: &SymTab<'_>,
+    struct_registry: &StructRegistry,
+) -> HashMap<Span, Span> {
     let mut references = HashMap::new();
 
     // Build a map of function names to their definition spans
@@ -26,6 +34,7 @@ pub fn extract_references(ast: &Script<'_>, symtab: &SymTab<'_>) -> HashMap<Span
         extract_references_from_statements(
             &func.statements,
             symtab,
+            struct_registry,
             &function_spans,
             &mut references,
         );
@@ -37,6 +46,7 @@ pub fn extract_references(ast: &Script<'_>, symtab: &SymTab<'_>) -> HashMap<Span
 fn extract_references_from_statements(
     statements: &[Statement<'_>],
     symtab: &SymTab<'_>,
+    struct_registry: &StructRegistry,
     function_spans: &HashMap<&str, Span>,
     references: &mut HashMap<Span, Span>,
 ) {
@@ -45,7 +55,13 @@ fn extract_references_from_statements(
             StatementKind::VariableDeclaration { idents, values } => {
                 // For declarations, the idents ARE the definitions, so just process RHS
                 for expr in values {
-                    extract_references_from_expression(expr, symtab, function_spans, references);
+                    extract_references_from_expression(
+                        expr,
+                        symtab,
+                        struct_registry,
+                        function_spans,
+                        references,
+                    );
                 }
                 // But also add references for idents that refer to properties (re-assignment)
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
@@ -56,16 +72,49 @@ fn extract_references_from_statements(
             }
             StatementKind::Assignment { targets, values } => {
                 // For assignments, LHS idents refer to existing definitions
+                let field_info: Option<&FieldAssignmentInfo> = stmt.meta.get();
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
-                    for (path, symbol_id) in targets.iter().zip(symbol_ids.iter()) {
+                    for (i, (path, symbol_id)) in
+                        targets.iter().zip(symbol_ids.iter()).enumerate()
+                    {
                         // Add reference for the root variable (first ident in path)
                         if let Some(first) = path.first() {
                             add_symbol_reference(first.span, *symbol_id, symtab, references);
                         }
+
+                        // Add references for field paths (e.g., pos.x = 10)
+                        if path.len() > 1 {
+                            if let Some(FieldAssignmentInfo(info_list)) = field_info {
+                                if let Some(Some((struct_id, field_indices))) =
+                                    info_list.get(i)
+                                {
+                                    let mut current_struct_id = *struct_id;
+                                    for (j, field_ident) in path.iter().skip(1).enumerate() {
+                                        if let Some(&field_index) = field_indices.get(j) {
+                                            let struct_def =
+                                                struct_registry.get(current_struct_id);
+                                            let field_def = &struct_def.fields[field_index];
+                                            references.insert(field_ident.span, field_def.span);
+                                            // Update current_struct_id for nested fields
+                                            if let Some(next_struct_id) = field_def.ty.as_struct()
+                                            {
+                                                current_struct_id = next_struct_id;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 for expr in values {
-                    extract_references_from_expression(expr, symtab, function_spans, references);
+                    extract_references_from_expression(
+                        expr,
+                        symtab,
+                        struct_registry,
+                        function_spans,
+                        references,
+                    );
                 }
             }
             StatementKind::If {
@@ -73,32 +122,80 @@ fn extract_references_from_statements(
                 true_block,
                 false_block,
             } => {
-                extract_references_from_expression(condition, symtab, function_spans, references);
-                extract_references_from_statements(true_block, symtab, function_spans, references);
-                extract_references_from_statements(false_block, symtab, function_spans, references);
+                extract_references_from_expression(
+                    condition,
+                    symtab,
+                    struct_registry,
+                    function_spans,
+                    references,
+                );
+                extract_references_from_statements(
+                    true_block,
+                    symtab,
+                    struct_registry,
+                    function_spans,
+                    references,
+                );
+                extract_references_from_statements(
+                    false_block,
+                    symtab,
+                    struct_registry,
+                    function_spans,
+                    references,
+                );
             }
             StatementKind::Loop { block } | StatementKind::Block { block } => {
-                extract_references_from_statements(block, symtab, function_spans, references);
+                extract_references_from_statements(
+                    block,
+                    symtab,
+                    struct_registry,
+                    function_spans,
+                    references,
+                );
             }
             StatementKind::Expression { expression } => {
-                extract_references_from_expression(expression, symtab, function_spans, references);
+                extract_references_from_expression(
+                    expression,
+                    symtab,
+                    struct_registry,
+                    function_spans,
+                    references,
+                );
             }
             StatementKind::Spawn { name, arguments } => {
                 if let Some(&def_span) = function_spans.get(name) {
                     references.insert(stmt.span, def_span);
                 }
                 for expr in arguments {
-                    extract_references_from_expression(expr, symtab, function_spans, references);
+                    extract_references_from_expression(
+                        expr,
+                        symtab,
+                        struct_registry,
+                        function_spans,
+                        references,
+                    );
                 }
             }
             StatementKind::Trigger { arguments, .. } => {
                 for expr in arguments {
-                    extract_references_from_expression(expr, symtab, function_spans, references);
+                    extract_references_from_expression(
+                        expr,
+                        symtab,
+                        struct_registry,
+                        function_spans,
+                        references,
+                    );
                 }
             }
             StatementKind::Return { values } => {
                 for expr in values {
-                    extract_references_from_expression(expr, symtab, function_spans, references);
+                    extract_references_from_expression(
+                        expr,
+                        symtab,
+                        struct_registry,
+                        function_spans,
+                        references,
+                    );
                 }
             }
             StatementKind::Wait
@@ -133,6 +230,7 @@ fn add_symbol_reference(
 fn extract_references_from_expression(
     expr: &Expression<'_>,
     symtab: &SymTab<'_>,
+    struct_registry: &StructRegistry,
     function_spans: &HashMap<&str, Span>,
     references: &mut HashMap<Span, Span>,
 ) {
@@ -147,16 +245,45 @@ fn extract_references_from_expression(
                 references.insert(expr.span, def_span);
             }
             for arg in arguments {
-                extract_references_from_expression(arg, symtab, function_spans, references);
+                extract_references_from_expression(
+                    arg,
+                    symtab,
+                    struct_registry,
+                    function_spans,
+                    references,
+                );
             }
         }
         ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
-            extract_references_from_expression(lhs, symtab, function_spans, references);
-            extract_references_from_expression(rhs, symtab, function_spans, references);
+            extract_references_from_expression(
+                lhs,
+                symtab,
+                struct_registry,
+                function_spans,
+                references,
+            );
+            extract_references_from_expression(
+                rhs,
+                symtab,
+                struct_registry,
+                function_spans,
+                references,
+            );
         }
-        ExpressionKind::FieldAccess { base, .. } => {
-            extract_references_from_expression(base, symtab, function_spans, references);
-            // TODO: Add reference to field definition
+        ExpressionKind::FieldAccess { base, field } => {
+            extract_references_from_expression(
+                base,
+                symtab,
+                struct_registry,
+                function_spans,
+                references,
+            );
+            // Add reference from field access to field definition
+            if let Some(info) = expr.meta.get::<FieldAccessInfo>() {
+                let struct_def = struct_registry.get(info.base_struct_id);
+                let field_def = &struct_def.fields[info.field_index];
+                references.insert(field.span, field_def.span);
+            }
         }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)

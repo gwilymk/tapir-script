@@ -57,7 +57,7 @@ pub fn analyse(
         }
     };
 
-    let (symtab, type_table, _struct_registry) = analyse_ast(&mut ast, settings, &mut diagnostics);
+    let (symtab, type_table, struct_registry) = analyse_ast(&mut ast, settings, &mut diagnostics);
 
     // Extract symbol information
     let symbols = extract_symbols(&symtab, &type_table);
@@ -72,16 +72,16 @@ pub fn analyse(
     let functions = extract_functions(&ast, &symtab);
 
     // Extract references from the AST
-    let references = extract_references(&ast, &symtab);
+    let references = extract_references(&ast, &symtab, &struct_registry);
 
     // Extract hover information
-    let hover_info = extract_hover_info(&ast, &symtab, &type_table);
+    let hover_info = extract_hover_info(&ast, &symtab, &type_table, &struct_registry);
 
     // Extract signature help information
     let (signatures, call_sites) = extract_signature_help(&ast);
 
     // Extract inlay hints for variable types
-    let inlay_hints = extract_inlay_hints(&ast, &symtab, &type_table);
+    let inlay_hints = extract_inlay_hints(&ast, &symtab, &type_table, &struct_registry);
 
     AnalysisResult {
         diagnostics,
