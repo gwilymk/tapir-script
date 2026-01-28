@@ -517,7 +517,10 @@ impl<'a> BlockVisitor<'a> {
                     collect_leaf_symbols(return_symbol, symtab, &mut return_values);
                 }
 
-                self.finalize_block(BlockExitInstr::Return(return_values.into_boxed_slice()), None);
+                self.finalize_block(
+                    BlockExitInstr::Return(return_values.into_boxed_slice()),
+                    None,
+                );
             }
         }
     }

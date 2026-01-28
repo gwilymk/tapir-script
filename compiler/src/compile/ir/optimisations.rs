@@ -340,8 +340,12 @@ mod test {
             };
 
             let struct_registry = StructRegistry::default();
-            let mut symtab_visitor =
-                SymTabVisitor::new(&compile_settings, &mut script, &struct_registry, &mut diagnostics);
+            let mut symtab_visitor = SymTabVisitor::new(
+                &compile_settings,
+                &mut script,
+                &struct_registry,
+                &mut diagnostics,
+            );
             let mut type_visitor = TypeVisitor::new(
                 &script.functions,
                 &script.extern_functions,

@@ -128,7 +128,12 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     name: function.name,
                     span: function.span,
                     args,
-                    rets: function.return_types.types.iter().map(|t| t.resolved()).collect(),
+                    rets: function
+                        .return_types
+                        .types
+                        .iter()
+                        .map(|t| t.resolved())
+                        .collect(),
                     modifiers: function.modifiers.clone(),
                 },
             );
@@ -151,7 +156,12 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     name: function.name,
                     span: function.span,
                     args,
-                    rets: function.return_types.types.iter().map(|t| t.resolved()).collect(),
+                    rets: function
+                        .return_types
+                        .types
+                        .iter()
+                        .map(|t| t.resolved())
+                        .collect(),
                     modifiers: FunctionModifiers::default(),
                 },
             );
@@ -174,7 +184,12 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     name: function.name,
                     span: function.span,
                     args,
-                    rets: function.return_type.types.iter().map(|t| t.resolved()).collect(),
+                    rets: function
+                        .return_type
+                        .types
+                        .iter()
+                        .map(|t| t.resolved())
+                        .collect(),
                     modifiers: FunctionModifiers::default(),
                 },
             );
@@ -436,7 +451,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     )
                 } else {
                     (
-                        values[paths.len()..].iter().map(|v| v.span).collect::<Vec<_>>(),
+                        values[paths.len()..]
+                            .iter()
+                            .map(|v| v.span)
+                            .collect::<Vec<_>>(),
                         DiagnosticMessage::NoVariableToReceiveValue,
                     )
                 };
@@ -456,7 +474,8 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         }
 
         // Track field assignment info (struct_id and indices for field paths)
-        let mut field_info_list: Vec<Option<(StructId, Vec<usize>)>> = Vec::with_capacity(paths.len());
+        let mut field_info_list: Vec<Option<(StructId, Vec<usize>)>> =
+            Vec::with_capacity(paths.len());
         let mut has_field_assignments = false;
 
         // Check each assignment
@@ -877,7 +896,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                             }
                             .at(statement.span)
                             .label(values[i].span, DiagnosticMessage::HasType { ty: *actual })
-                            .label(expected.span, DiagnosticMessage::HasType { ty: expected_ty })
+                            .label(
+                                expected.span,
+                                DiagnosticMessage::HasType { ty: expected_ty },
+                            )
                             .emit(diagnostics);
                         }
                     }
@@ -1138,10 +1160,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     _ => {
                         ErrorKind::FieldAccessOnNonStruct { ty: base_type }
                             .at(expression.span)
-                            .label(
-                                base.span,
-                                DiagnosticMessage::HasType { ty: base_type },
-                            )
+                            .label(base.span, DiagnosticMessage::HasType { ty: base_type })
                             .emit(diagnostics);
                         Type::Error
                     }

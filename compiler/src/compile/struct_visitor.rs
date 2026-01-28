@@ -40,8 +40,14 @@ pub fn register_structs<'input>(
                 name: name.to_string(),
             }
             .at(decl.name.span)
-            .label(decl.name.span, crate::reporting::DiagnosticMessage::AlsoDeclaredHere)
-            .label(existing_name_span, crate::reporting::DiagnosticMessage::OriginallyDeclaredHere)
+            .label(
+                decl.name.span,
+                crate::reporting::DiagnosticMessage::AlsoDeclaredHere,
+            )
+            .label(
+                existing_name_span,
+                crate::reporting::DiagnosticMessage::OriginallyDeclaredHere,
+            )
             .emit(diagnostics);
             continue;
         }
@@ -96,8 +102,14 @@ pub fn resolve_struct_fields<'input>(
                     field_name: field_name.to_string(),
                 }
                 .at(field_span)
-                .label(field_span, crate::reporting::DiagnosticMessage::AlsoDeclaredHere)
-                .label(first_span, crate::reporting::DiagnosticMessage::OriginallyDeclaredHere)
+                .label(
+                    field_span,
+                    crate::reporting::DiagnosticMessage::AlsoDeclaredHere,
+                )
+                .label(
+                    first_span,
+                    crate::reporting::DiagnosticMessage::OriginallyDeclaredHere,
+                )
                 .emit(diagnostics);
                 continue;
             }
@@ -267,8 +279,8 @@ fn resolve_type_name(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ast::{Ident, StructDeclaration, TypeWithLocation, TypedIdent};
     use crate::tokens::{FileId, Span};
-    use crate::ast::{Ident, StructDeclaration, TypedIdent, TypeWithLocation};
 
     fn test_span() -> Span {
         Span::new(FileId::new(0), 0, 0)
@@ -295,10 +307,7 @@ mod tests {
         }
     }
 
-    fn make_struct_decl<'a>(
-        name: &'a str,
-        fields: Vec<(&'a str, Type)>,
-    ) -> StructDeclaration<'a> {
+    fn make_struct_decl<'a>(name: &'a str, fields: Vec<(&'a str, Type)>) -> StructDeclaration<'a> {
         StructDeclaration {
             name: Ident {
                 ident: name,
@@ -311,7 +320,11 @@ mod tests {
                         ident: field_name,
                         span: test_span(),
                     },
-                    ty: Some(TypeWithLocation { t: Some(ty), name: type_name(ty), span: test_span() }),
+                    ty: Some(TypeWithLocation {
+                        t: Some(ty),
+                        name: type_name(ty),
+                        span: test_span(),
+                    }),
                 })
                 .collect(),
             span: test_span(),
@@ -320,9 +333,10 @@ mod tests {
 
     #[test]
     fn register_single_struct() {
-        let script = make_script_with_structs(vec![
-            make_struct_decl("Point", vec![("x", Type::Int), ("y", Type::Int)]),
-        ]);
+        let script = make_script_with_structs(vec![make_struct_decl(
+            "Point",
+            vec![("x", Type::Int), ("y", Type::Int)],
+        )]);
         let mut registry = StructRegistry::default();
         let mut diagnostics = Diagnostics::new(FileId::new(0), "test.tapir", "");
 
@@ -369,9 +383,8 @@ mod tests {
 
     #[test]
     fn struct_shadows_builtin_error() {
-        let script = make_script_with_structs(vec![
-            make_struct_decl("int", vec![("x", Type::Int)]),
-        ]);
+        let script =
+            make_script_with_structs(vec![make_struct_decl("int", vec![("x", Type::Int)])]);
         let mut registry = StructRegistry::default();
         let mut diagnostics = Diagnostics::new(FileId::new(0), "test.tapir", "");
 
@@ -383,9 +396,10 @@ mod tests {
 
     #[test]
     fn resolve_fields_basic() {
-        let script = make_script_with_structs(vec![
-            make_struct_decl("Point", vec![("x", Type::Int), ("y", Type::Fix)]),
-        ]);
+        let script = make_script_with_structs(vec![make_struct_decl(
+            "Point",
+            vec![("x", Type::Int), ("y", Type::Fix)],
+        )]);
         let mut registry = StructRegistry::default();
         let mut diagnostics = Diagnostics::new(FileId::new(0), "test.tapir", "");
 
@@ -403,9 +417,10 @@ mod tests {
 
     #[test]
     fn duplicate_field_name_error() {
-        let script = make_script_with_structs(vec![
-            make_struct_decl("Bad", vec![("x", Type::Int), ("x", Type::Int)]),
-        ]);
+        let script = make_script_with_structs(vec![make_struct_decl(
+            "Bad",
+            vec![("x", Type::Int), ("x", Type::Int)],
+        )]);
         let mut registry = StructRegistry::default();
         let mut diagnostics = Diagnostics::new(FileId::new(0), "test.tapir", "");
 
@@ -418,9 +433,9 @@ mod tests {
         assert_eq!(struct_def.fields.len(), 1);
     }
 
-    use std::fs;
-    use insta::{assert_snapshot, assert_ron_snapshot, glob};
     use crate::{grammar, lexer::Lexer};
+    use insta::{assert_ron_snapshot, assert_snapshot, glob};
+    use std::fs;
 
     #[test]
     fn struct_visitor_success_snapshot_tests() {
@@ -442,7 +457,11 @@ mod tests {
             resolve_struct_fields(&script, &mut registry, &names, &mut diagnostics);
             resolve_all_types(&mut script, &names, &mut diagnostics);
 
-            assert!(!diagnostics.has_errors(), "Expected no errors but got: {}", diagnostics.pretty_string(false));
+            assert!(
+                !diagnostics.has_errors(),
+                "Expected no errors but got: {}",
+                diagnostics.pretty_string(false)
+            );
 
             assert_ron_snapshot!(registry, {
                 ".**.span" => "[span]",

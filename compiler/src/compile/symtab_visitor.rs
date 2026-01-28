@@ -411,7 +411,8 @@ impl<'input> SymTabVisitor<'input> {
                     let mut statement_meta = vec![];
                     for path in targets {
                         if let Some(first) = path.first() {
-                            if let Some(symbol_id) = self.symbol_names.get(first.ident, &self.symtab)
+                            if let Some(symbol_id) =
+                                self.symbol_names.get(first.ident, &self.symtab)
                             {
                                 statement_meta.push(symbol_id);
                             } else {

@@ -345,7 +345,6 @@ pub enum StatementKind<'input> {
     Return {
         values: Vec<Expression<'input>>,
     },
-
 }
 
 impl<'input> StatementKind<'input> {

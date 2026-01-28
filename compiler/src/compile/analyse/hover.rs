@@ -127,7 +127,9 @@ fn extract_from_statements(
                     for (path, symbol_id) in targets.iter().zip(symbol_ids.iter()) {
                         // Add hover for the root variable (first ident in path)
                         if let Some(first) = path.first() {
-                            add_symbol_hover(first.span, *symbol_id, symtab, type_table, hover_info);
+                            add_symbol_hover(
+                                first.span, *symbol_id, symtab, type_table, hover_info,
+                            );
                         }
                     }
                 }

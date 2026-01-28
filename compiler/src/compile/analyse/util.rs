@@ -19,7 +19,11 @@ pub fn format_return_types(return_types: &FunctionReturn) -> String {
     } else if return_types.types.len() == 1 {
         format!(" -> {}", return_types.types[0].resolved())
     } else {
-        let types: Vec<String> = return_types.types.iter().map(|t| t.resolved().to_string()).collect();
+        let types: Vec<String> = return_types
+            .types
+            .iter()
+            .map(|t| t.resolved().to_string())
+            .collect();
         format!(" -> ({})", types.join(", "))
     }
 }

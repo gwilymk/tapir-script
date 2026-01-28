@@ -57,8 +57,7 @@ pub fn analyse(
         }
     };
 
-    let (symtab, type_table, _struct_registry) =
-        analyse_ast(&mut ast, settings, &mut diagnostics);
+    let (symtab, type_table, _struct_registry) = analyse_ast(&mut ast, settings, &mut diagnostics);
 
     // Extract symbol information
     let symbols = extract_symbols(&symtab, &type_table);
@@ -135,7 +134,12 @@ fn extract_functions(ast: &Script<'_>, _symtab: &SymTab<'_>) -> Vec<FunctionInfo
             name: function.name.to_string(),
             span: function.span,
             arguments,
-            return_types: function.return_types.types.iter().map(|t| t.resolved()).collect(),
+            return_types: function
+                .return_types
+                .types
+                .iter()
+                .map(|t| t.resolved())
+                .collect(),
             is_event_handler: function.modifiers.is_event_handler.is_some(),
         });
     }
@@ -156,7 +160,12 @@ fn extract_functions(ast: &Script<'_>, _symtab: &SymTab<'_>) -> Vec<FunctionInfo
             name: function.name.to_string(),
             span: function.span,
             arguments,
-            return_types: function.return_types.types.iter().map(|t| t.resolved()).collect(),
+            return_types: function
+                .return_types
+                .types
+                .iter()
+                .map(|t| t.resolved())
+                .collect(),
             is_event_handler: false,
         });
     }
