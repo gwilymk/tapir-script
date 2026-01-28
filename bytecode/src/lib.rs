@@ -50,7 +50,7 @@ pub enum Opcode {
 }
 
 pub fn opcode(encoded: u32) -> Option<Opcode> {
-    Opcode::n(encoded.to_be_bytes()[0])
+    Opcode::n((encoded & 0xFF) as u8)
 }
 
 #[derive(Clone, Copy)]
@@ -89,11 +89,11 @@ impl Type1 {
     }
 
     pub const fn encode(self) -> u32 {
-        u32::from_be_bytes([self.opcode as u8, self.target, self.a, self.b])
+        u32::from_le_bytes([self.opcode as u8, self.target, self.a, self.b])
     }
 
     pub fn decode(encoded: u32) -> Self {
-        let [opcode, target, a, b] = encoded.to_be_bytes();
+        let [opcode, target, a, b] = encoded.to_le_bytes();
         Self {
             opcode: Opcode::n(opcode).expect("Invalid encoded"),
             target,
@@ -116,14 +116,13 @@ impl Type3 {
     }
 
     pub const fn encode(self) -> u32 {
-        let value = self.value.to_be_bytes();
-        assert!(value[0] == 0, "Value too large to be encoded");
-        u32::from_be_bytes([self.opcode as u8, value[1], value[2], value[3]])
+        assert!(self.value < (1 << 24), "Value too large to be encoded");
+        (self.value << 8) | (self.opcode as u32)
     }
 
     pub fn decode(encoded: u32) -> Self {
-        let [opcode, value1, value2, value3] = encoded.to_be_bytes();
-        let value = u32::from_be_bytes([0, value1, value2, value3]);
+        let opcode = (encoded & 0xFF) as u8;
+        let value = encoded >> 8;
         Self {
             opcode: Opcode::n(opcode).expect("Invalid encoded"),
             value,

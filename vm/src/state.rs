@@ -204,7 +204,7 @@ impl State {
                 }
 
                 O::Jump => {
-                    let target = instr & 0x00FF_FFFF;
+                    let target = instr >> 8;
                     self.pc = target as usize;
                 }
             }
