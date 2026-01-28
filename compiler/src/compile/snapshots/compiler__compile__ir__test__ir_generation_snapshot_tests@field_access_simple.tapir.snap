@@ -13,16 +13,16 @@ return
 fn test_read_fields() -> 
 
 ---- block 0 ----
-temp.5 = int 1
-temp.6 = int 2
-p.x.7 = temp.5
-p.y.8 = temp.6
-temp.10.x.11 = p.x.7
-temp.10.y.12 = p.y.8
+temp.7 = int 1
+temp.8 = int 2
+p.x.5 = temp.7
+p.y.6 = temp.8
+temp.10.x.11 = p.x.5
+temp.10.y.12 = p.y.6
 temp.9 = temp.10.x.11
 x.1 = temp.9
-temp.14.x.15 = p.x.7
-temp.14.y.16 = p.y.8
+temp.14.x.15 = p.x.5
+temp.14.y.16 = p.y.6
 temp.13 = temp.14.y.16
 y.2 = temp.13
 return 
@@ -31,15 +31,15 @@ return
 fn test_field_in_expression() -> 
 
 ---- block 0 ----
-temp.17 = int 3
-temp.18 = int 4
-p.x.19 = temp.17
-p.y.20 = temp.18
-temp.24.x.25 = p.x.19
-temp.24.y.26 = p.y.20
+temp.19 = int 3
+temp.20 = int 4
+p.x.17 = temp.19
+p.y.18 = temp.20
+temp.24.x.25 = p.x.17
+temp.24.y.26 = p.y.18
 temp.22 = temp.24.x.25
-temp.27.x.28 = p.x.19
-temp.27.y.29 = p.y.20
+temp.27.x.28 = p.x.17
+temp.27.y.29 = p.y.18
 temp.23 = temp.27.y.29
 temp.21 = temp.22 + temp.23
 sum.4 = temp.21

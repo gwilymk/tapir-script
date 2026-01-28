@@ -13,18 +13,18 @@ return
 fn test_multiple_structs() -> 
 
 ---- block 0 ----
-temp.3 = int 1
-temp.4 = int 2
-p1.x.5 = temp.3
-p1.y.6 = temp.4
-temp.7 = int 3
-temp.8 = int 4
-p2.x.9 = temp.7
-p2.y.10 = temp.8
-temp.11 = int 5
-temp.12 = int 6
-p3.x.13 = temp.11
-p3.y.14 = temp.12
+temp.5 = int 1
+temp.6 = int 2
+p1.x.3 = temp.5
+p1.y.4 = temp.6
+temp.9 = int 3
+temp.10 = int 4
+p2.x.7 = temp.9
+p2.y.8 = temp.10
+temp.13 = int 5
+temp.14 = int 6
+p3.x.11 = temp.13
+p3.y.12 = temp.14
 return 
 
 =======================

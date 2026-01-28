@@ -13,58 +13,58 @@ return
 fn test_nested_constructor() -> 
 
 ---- block 0 ----
-temp.4 = int 0
-temp.5 = int 0
-temp.3.x.6 = temp.4
-temp.3.y.7 = temp.5
-temp.9 = int 100
-temp.10 = int 200
-temp.8.x.11 = temp.9
-temp.8.y.12 = temp.10
-r.origin.x.14 = temp.3.x.6
-r.origin.y.15 = temp.3.y.7
-r.size.x.17 = temp.8.x.11
-r.size.y.18 = temp.8.y.12
+temp.12 = int 0
+temp.13 = int 0
+temp.9.x.10 = temp.12
+temp.9.y.11 = temp.13
+temp.17 = int 100
+temp.18 = int 200
+temp.14.x.15 = temp.17
+temp.14.y.16 = temp.18
+r.origin.x.4 = temp.9.x.10
+r.origin.y.5 = temp.9.y.11
+r.size.x.7 = temp.14.x.15
+r.size.y.8 = temp.14.y.16
 return 
 
 =======================
 fn test_mixed_fields() -> 
 
 ---- block 0 ----
-temp.20 = int 0
-temp.21 = int 0
-temp.19.x.22 = temp.20
-temp.19.y.23 = temp.21
-temp.24 = int 5
-temp.26 = int 100
-temp.27 = int 100
-temp.25.x.28 = temp.26
-temp.25.y.29 = temp.27
-line.start.x.31 = temp.19.x.22
-line.start.y.32 = temp.19.y.23
-line.thickness.33 = temp.24
-line.end.x.35 = temp.25.x.28
-line.end.y.36 = temp.25.y.29
+temp.29 = int 0
+temp.30 = int 0
+temp.26.x.27 = temp.29
+temp.26.y.28 = temp.30
+temp.31 = int 5
+temp.35 = int 100
+temp.36 = int 100
+temp.32.x.33 = temp.35
+temp.32.y.34 = temp.36
+line.start.x.20 = temp.26.x.27
+line.start.y.21 = temp.26.y.28
+line.thickness.22 = temp.31
+line.end.x.24 = temp.32.x.33
+line.end.y.25 = temp.32.y.34
 return 
 
 =======================
 fn test_deep_nesting() -> 
 
 ---- block 0 ----
-temp.39 = int 0
-temp.40 = int 0
-temp.38.x.41 = temp.39
-temp.38.y.42 = temp.40
-temp.44 = int 50
-temp.45 = int 50
-temp.43.x.46 = temp.44
-temp.43.y.47 = temp.45
-temp.37.origin.x.49 = temp.38.x.41
-temp.37.origin.y.50 = temp.38.y.42
-temp.37.size.x.52 = temp.43.x.46
-temp.37.size.y.53 = temp.43.y.47
-b.bounds.origin.x.56 = temp.37.origin.x.49
-b.bounds.origin.y.57 = temp.37.origin.y.50
-b.bounds.size.x.59 = temp.37.size.x.52
-b.bounds.size.y.60 = temp.37.size.y.53
+temp.54 = int 0
+temp.55 = int 0
+temp.51.x.52 = temp.54
+temp.51.y.53 = temp.55
+temp.59 = int 50
+temp.60 = int 50
+temp.56.x.57 = temp.59
+temp.56.y.58 = temp.60
+temp.44.origin.x.46 = temp.51.x.52
+temp.44.origin.y.47 = temp.51.y.53
+temp.44.size.x.49 = temp.56.x.57
+temp.44.size.y.50 = temp.56.y.58
+b.bounds.origin.x.39 = temp.44.origin.x.46
+b.bounds.origin.y.40 = temp.44.origin.y.47
+b.bounds.size.x.42 = temp.44.size.x.49
+b.bounds.size.y.43 = temp.44.size.y.50
 return

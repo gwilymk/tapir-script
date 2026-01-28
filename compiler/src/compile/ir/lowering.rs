@@ -701,32 +701,15 @@ impl<'a> BlockVisitor<'a> {
                     .get()
                     .expect("Should've assigned function IDs by now");
 
-                // Struct constructors are handled specially - don't expand args
-                if let InternalOrExternalFunctionId::StructConstructor(_) = function_id {
-                    // Evaluate arguments without expansion (struct constructor handles them)
-                    let args: Box<[SymbolId]> = arguments
-                        .iter()
-                        .map(|arg| {
-                            let arg_sym = symtab.new_temporary();
-                            self.blocks_for_expression(arg, arg_sym, symtab);
-                            arg_sym
-                        })
-                        .collect();
-
-                    // Fall through to struct constructor handling below
-                    let function_id = function_id; // rebind for match
-                    match function_id {
-                        InternalOrExternalFunctionId::StructConstructor(struct_id) => {
-                            self.handle_struct_constructor(
-                                target_symbol,
-                                struct_id,
-                                &args,
-                                expr.span,
-                                symtab,
-                            );
-                        }
-                        _ => unreachable!(),
-                    }
+                // Struct constructors: expand args and target, copy leaf-to-leaf
+                if let InternalOrExternalFunctionId::StructConstructor(struct_id) = function_id {
+                    self.handle_struct_constructor(
+                        target_symbol,
+                        struct_id,
+                        arguments,
+                        expr.span,
+                        symtab,
+                    );
                     return;
                 }
 
@@ -861,66 +844,41 @@ impl<'a> BlockVisitor<'a> {
     }
 
     /// Handle struct constructor calls.
-    /// Expands the target and copies each argument to the corresponding field.
+    /// A struct constructor is essentially an identity function - it just returns its args.
+    /// We expand both args and target to leaves, then copy leaf-to-leaf.
     fn handle_struct_constructor(
         &mut self,
         target_symbol: SymbolId,
         struct_id: crate::types::StructId,
-        args: &[SymbolId],
+        arguments: &[Expression<'_>],
         span: crate::tokens::Span,
         symtab: &mut SymTab,
     ) {
-        // Expand the target symbol into field symbols
-        let base_name = symtab.name_for_symbol(target_symbol).to_string();
-        let target_expansion = symtab.expand_struct_symbol(
+        // Expand target
+        let target_name = symtab.name_for_symbol(target_symbol).to_string();
+        symtab.expand_struct_symbol(
             target_symbol,
-            &base_name,
+            &target_name,
             struct_id,
             span,
             self.struct_registry,
         );
 
-        // Get the struct definition to know field types
-        let struct_def = self.struct_registry.get(struct_id);
+        // Evaluate args and collect expanded leaves
+        let mut arg_leaves = Vec::new();
+        for arg in arguments {
+            let arg_sym = symtab.new_temporary();
+            self.blocks_for_expression(arg, arg_sym, symtab);
+            collect_leaf_symbols(arg_sym, symtab, &mut arg_leaves);
+        }
 
-        // Copy each argument to the corresponding target field
-        for ((&arg_symbol, field), &target_field) in args
-            .iter()
-            .zip(&struct_def.fields)
-            .zip(&target_expansion.fields)
-        {
-            match field.ty {
-                crate::types::Type::Struct(nested_id) => {
-                    // Argument is a struct - copy recursively
-                    let arg_expansion =
-                        if let Some(exp) = symtab.get_struct_expansion(arg_symbol) {
-                            exp.clone()
-                        } else {
-                            let arg_name = symtab.name_for_symbol(arg_symbol).to_string();
-                            symtab.expand_struct_symbol(
-                                arg_symbol,
-                                &arg_name,
-                                nested_id,
-                                span,
-                                self.struct_registry,
-                            )
-                        };
+        // Collect target leaves
+        let mut target_leaves = Vec::new();
+        collect_leaf_symbols(target_symbol, symtab, &mut target_leaves);
 
-                    let target_nested = symtab
-                        .get_struct_expansion(target_field)
-                        .expect("Nested field should be expanded")
-                        .clone();
-
-                    self.copy_struct_fields(&arg_expansion, &target_nested, symtab);
-                }
-                _ => {
-                    // Scalar field - simple move
-                    self.current_block.push(TapIr::Move {
-                        target: target_field,
-                        source: arg_symbol,
-                    });
-                }
-            }
+        // Copy leaf-to-leaf
+        for (&target, &source) in target_leaves.iter().zip(&arg_leaves) {
+            self.current_block.push(TapIr::Move { target, source });
         }
     }
 

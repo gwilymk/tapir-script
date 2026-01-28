@@ -13,11 +13,11 @@ return
 fn make_point() -> int, int
 
 ---- block 0 ----
-temp.4 = int 10
-temp.5 = int 20
-temp.3.x.6 = temp.4
-temp.3.y.7 = temp.5
-return temp.3.x.6, temp.3.y.7
+temp.6 = int 10
+temp.7 = int 20
+temp.3.x.4 = temp.6
+temp.3.y.5 = temp.7
+return temp.3.x.4, temp.3.y.5
 
 =======================
 fn test_field_on_call() -> 

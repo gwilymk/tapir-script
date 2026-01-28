@@ -7,20 +7,20 @@ input_file: compiler/src/compile/snapshot_tests/ir/field_assignment_nested.tapir
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.2 = int 0
-temp.3 = int 0
-temp.1.x.4 = temp.2
-temp.1.y.5 = temp.3
-temp.7 = int 10
-temp.8 = int 10
-temp.6.x.9 = temp.7
-temp.6.y.10 = temp.8
-r.origin.x.12 = temp.1.x.4
-r.origin.y.13 = temp.1.y.5
-r.size.x.15 = temp.6.x.9
-r.size.y.16 = temp.6.y.10
+temp.10 = int 0
+temp.11 = int 0
+temp.7.x.8 = temp.10
+temp.7.y.9 = temp.11
+temp.15 = int 10
+temp.16 = int 10
+temp.12.x.13 = temp.15
+temp.12.y.14 = temp.16
+r.origin.x.2 = temp.7.x.8
+r.origin.y.3 = temp.7.y.9
+r.size.x.5 = temp.12.x.13
+r.size.y.6 = temp.12.y.14
 temp.17 = int 5
-r.origin.x.12 = temp.17
+r.origin.x.2 = temp.17
 temp.18 = int 20
-r.size.y.16 = temp.18
+r.size.y.6 = temp.18
 return
