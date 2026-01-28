@@ -149,12 +149,12 @@ TypedIdentifierRequired: TypedIdent<'input> = {
             ty: Some(ty),
         },
 };
-FunctionReturn: FunctionReturn = {
+FunctionReturn: FunctionReturn<'input> = {
     <VoidReturn>,
     "->" <start: @L> <t: Type> <end: @R> => FunctionReturn { types: vec![t], span: Span::new(file_id, start, end) },
     "->" "(" <start: @L> <types: CommaSeparated<Type>> <end: @R> ")" => FunctionReturn { types, span: Span::new(file_id, start, end) },
 }
-VoidReturn: FunctionReturn = <start: @L> <end: @R> => FunctionReturn { types: vec![], span: Span::new(file_id, start, end) };
+VoidReturn: FunctionReturn<'input> = <start: @L> <end: @R> => FunctionReturn { types: vec![], span: Span::new(file_id, start, end) };
 
 CommaSeparated<T>: Vec<T> =
     <mut v:(<T> ",")*> <e:T?> => match e {
@@ -166,19 +166,23 @@ CommaSeparated<T>: Vec<T> =
     };
 
 
-Type: TypeWithLocation =
-    <start: @L> <t: TypeWithoutLocation> <end: @R> => TypeWithLocation { t, span: Span::new(file_id, start, end) };
-TypeWithoutLocation: Type = {
-    t_integer => Type::Int,
-    t_bool => Type::Bool,
-    t_fix => Type::Fix,
+Type: TypeWithLocation<'input> =
+    <start: @L> <type_and_name: TypeWithoutLocation> <end: @R> => TypeWithLocation {
+        t: type_and_name.0,
+        name: type_and_name.1,
+        span: Span::new(file_id, start, end)
+    };
+TypeWithoutLocation: (Type, &'input str) = {
+    t_integer => (Type::Int, "int"),
+    t_bool => (Type::Bool, "bool"),
+    t_fix => (Type::Fix, "fix"),
     <start: @L> <ident: identifier> <end: @R> => {
         let span = Span::new(file_id, start, end);
         ErrorKind::UnknownTypeToken { token: ident.to_string() }
             .at(span)
             .label(span, DiagnosticMessage::UnknownTypeLabel2)
             .emit(diagnostics);
-        Type::Error
+        (Type::Error, ident)
     },
 }
 

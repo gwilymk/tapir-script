@@ -60,6 +60,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Int,
+            name: "int",
             span: "[span]",
           )),
         ),
@@ -70,6 +71,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Fix,
+            name: "fix",
             span: "[span]",
           )),
         ),

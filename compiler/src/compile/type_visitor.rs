@@ -50,10 +50,10 @@ struct TriggerInfo {
     index: usize,
 }
 
-struct AssignmentTargets<'a> {
+struct AssignmentTargets<'a, 'input> {
     symbol_ids: &'a [SymbolId],
     ident_spans: &'a [Span],
-    annotations: &'a [Option<&'a ast::TypeWithLocation>],
+    annotations: &'a [Option<&'a ast::TypeWithLocation<'input>>],
 }
 
 impl<'input> TypeVisitor<'input> {
@@ -368,7 +368,7 @@ impl<'input> TypeVisitor<'input> {
 
     fn check_assignment_inner(
         &mut self,
-        targets: AssignmentTargets<'_>,
+        targets: AssignmentTargets<'_, 'input>,
         values: &mut [Expression<'input>],
         statement_span: Span,
         symtab: &SymTab,

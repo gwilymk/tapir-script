@@ -18,6 +18,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Int,
+            name: "int",
             span: "[span]",
           )),
         ),
@@ -28,6 +29,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Int,
+            name: "int",
             span: "[span]",
           )),
         ),
@@ -55,6 +57,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Fix,
+            name: "fix",
             span: "[span]",
           )),
         ),
@@ -74,6 +77,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Error,
+            name: "Point",
             span: "[span]",
           )),
         ),
@@ -84,6 +88,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Error,
+            name: "Point",
             span: "[span]",
           )),
         ),
@@ -103,6 +108,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Int,
+            name: "int",
             span: "[span]",
           )),
         ),
@@ -113,6 +119,7 @@ Script(
           ),
           ty: Some(TypeWithLocation(
             t: Bool,
+            name: "bool",
             span: "[span]",
           )),
         ),

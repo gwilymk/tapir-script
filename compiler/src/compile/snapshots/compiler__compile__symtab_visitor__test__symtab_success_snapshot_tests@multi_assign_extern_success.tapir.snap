@@ -102,10 +102,12 @@ Script(
         types: [
           TypeWithLocation(
             t: Fix,
+            name: "fix",
             span: "[span]",
           ),
           TypeWithLocation(
             t: Fix,
+            name: "fix",
             span: "[span]",
           ),
         ],

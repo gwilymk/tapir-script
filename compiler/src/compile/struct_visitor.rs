@@ -171,6 +171,16 @@ mod tests {
         }
     }
 
+    fn type_name(ty: Type) -> &'static str {
+        match ty {
+            Type::Int => "int",
+            Type::Fix => "fix",
+            Type::Bool => "bool",
+            Type::Struct(_) => "struct",
+            Type::Error => "error",
+        }
+    }
+
     fn make_struct_decl<'a>(
         name: &'a str,
         fields: Vec<(&'a str, Type)>,
@@ -187,7 +197,7 @@ mod tests {
                         ident: field_name,
                         span: test_span(),
                     },
-                    ty: Some(TypeWithLocation { t: ty, span: test_span() }),
+                    ty: Some(TypeWithLocation { t: ty, name: type_name(ty), span: test_span() }),
                 })
                 .collect(),
             span: test_span(),

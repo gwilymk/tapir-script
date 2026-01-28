@@ -67,7 +67,7 @@ pub struct BuiltinFunction<'input> {
     pub builtin_id: BuiltinFunctionId,
     pub span: Span,
     pub arguments: Vec<TypedIdent<'input>>,
-    pub return_type: FunctionReturn,
+    pub return_type: FunctionReturn<'input>,
     pub meta: Metadata,
 }
 
@@ -187,7 +187,7 @@ pub struct ExternFunctionDefinition<'input> {
     pub name: &'input str,
     pub span: Span,
     pub arguments: Vec<TypedIdent<'input>>,
-    pub return_types: FunctionReturn,
+    pub return_types: FunctionReturn<'input>,
 
     pub meta: Metadata,
 }
@@ -198,7 +198,7 @@ pub struct Function<'input> {
     pub span: Span,
     pub statements: Vec<Statement<'input>>,
     pub arguments: Vec<TypedIdent<'input>>,
-    pub return_types: FunctionReturn,
+    pub return_types: FunctionReturn<'input>,
 
     pub modifiers: FunctionModifiers,
 
@@ -211,14 +211,23 @@ pub struct FunctionModifiers {
 }
 
 #[derive(Clone, Debug, Serialize)]
-pub struct FunctionReturn {
-    pub types: Vec<TypeWithLocation>,
+pub struct FunctionReturn<'input> {
+    pub types: Vec<TypeWithLocation<'input>>,
     pub span: Span,
 }
 
+/// A type annotation in the source code.
+///
+/// Stores both the original name (for resolution) and the resolved Type.
+/// During parsing, `t` is set to the resolved Type for builtins (int, fix, bool)
+/// or Type::Error for user-defined types that need resolution.
 #[derive(Clone, Debug, Serialize)]
-pub struct TypeWithLocation {
+pub struct TypeWithLocation<'input> {
+    /// The resolved type. May be Type::Error if not yet resolved.
     pub t: Type,
+    /// The original type name from source (e.g., "int", "Point").
+    /// Used for resolving user-defined types and error messages.
+    pub name: &'input str,
     pub span: Span,
 }
 
@@ -260,7 +269,7 @@ pub struct Ident<'input> {
 #[derive(Clone, Debug, Serialize)]
 pub struct TypedIdent<'input> {
     pub ident: Ident<'input>,
-    pub ty: Option<TypeWithLocation>,
+    pub ty: Option<TypeWithLocation<'input>>,
 }
 
 impl<'input> TypedIdent<'input> {
@@ -276,7 +285,7 @@ impl<'input> TypedIdent<'input> {
 
     /// Returns the type, panicking if not present.
     /// Use only when the grammar guarantees a type exists.
-    pub fn ty_required(&self) -> &TypeWithLocation {
+    pub fn ty_required(&self) -> &TypeWithLocation<'input> {
         self.ty.as_ref().expect("type required by grammar")
     }
 }

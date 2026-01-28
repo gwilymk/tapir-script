@@ -71,6 +71,7 @@ Script(
         types: [
           TypeWithLocation(
             t: Int,
+            name: "int",
             span: "[span]",
           ),
         ],
