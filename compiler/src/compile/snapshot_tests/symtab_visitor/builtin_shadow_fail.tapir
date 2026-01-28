@@ -1,1 +1,0 @@
-var frame = 5; # cannot shadow built-in variable

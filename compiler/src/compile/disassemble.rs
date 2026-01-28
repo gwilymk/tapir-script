@@ -48,7 +48,6 @@ fn disassemble_non_constant(instr: u32, target: &mut dyn Write) -> fmt::Result {
         bytecode::Opcode::JumpIf => t1!("jumpif", 1),
         bytecode::Opcode::Ret => t1!("ret", 0),
         bytecode::Opcode::Wait => t1!("wait", 0),
-        bytecode::Opcode::GetBuiltin => t1!("builtin", 2),
         bytecode::Opcode::GetGlobal => t1!("getglobal", 2),
         bytecode::Opcode::SetGlobal => t1!("setglobal", 2),
         bytecode::Opcode::LoadConstant => unreachable!("Load constant should not be hit here"),

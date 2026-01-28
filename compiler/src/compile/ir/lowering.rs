@@ -1,6 +1,5 @@
 use crate::{
     ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
-    builtins::BuiltinVariable,
     compile::symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
 };
 
@@ -413,11 +412,6 @@ impl BlockVisitor {
                     self.current_block.push(TapIr::GetProp {
                         target: target_symbol,
                         prop_index: property.index,
-                    });
-                } else if let Some(builtin) = BuiltinVariable::from_symbol_id(source) {
-                    self.current_block.push(TapIr::GetBuiltin {
-                        target: target_symbol,
-                        builtin,
                     });
                 } else if let Some(global_id) = GlobalId::from_symbol_id(source) {
                     self.current_block.push(TapIr::GetGlobal {

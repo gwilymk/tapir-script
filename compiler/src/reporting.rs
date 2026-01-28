@@ -238,9 +238,6 @@ pub enum DiagnosticMessage {
     },
     TriggerCallsMustHaveSameArgTypes,
     WhenAssigningMultipleVars,
-    BuiltinVariableNote {
-        name: String,
-    },
     GlobalInitializersMustBeConstant,
 
     // Help messages
@@ -425,9 +422,6 @@ impl DiagnosticMessage {
             }
             DiagnosticMessage::WhenAssigningMultipleVars => {
                 "When assigning to multiple variables, both sides of the '=' must have the same number of arguments".into()
-            }
-            DiagnosticMessage::BuiltinVariableNote { name } => {
-                format!("'{name}' is a built-in variable provided by the runtime")
             }
             DiagnosticMessage::GlobalInitializersMustBeConstant => {
                 "Global initializers must be integer, fix, or bool literals".into()

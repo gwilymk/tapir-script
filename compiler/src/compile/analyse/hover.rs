@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use crate::{
     ast::{Expression, ExpressionKind, Script, Statement, StatementKind, SymbolId},
-    builtins::BuiltinVariable,
     tokens::Span,
 };
 
@@ -235,17 +234,6 @@ fn add_symbol_hover(
     type_table: &TypeTable<'_>,
     hover_info: &mut HashMap<Span, HoverInfo>,
 ) {
-    if let Some(builtin) = BuiltinVariable::from_symbol_id(symbol_id) {
-        hover_info.insert(
-            span,
-            HoverInfo {
-                name: builtin.name().to_string(),
-                description: symbol_description(SymbolKind::Builtin, builtin.name(), builtin.ty()),
-            },
-        );
-        return;
-    }
-
     if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
         let global = symtab.get_global(global_id);
         hover_info.insert(

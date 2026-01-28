@@ -27,7 +27,6 @@ pub fn format_return_types(return_types: &FunctionReturn) -> String {
 /// Get the description for a symbol based on its kind.
 pub fn symbol_description(kind: SymbolKind, name: &str, ty: Type) -> String {
     match kind {
-        SymbolKind::Builtin => format!("builtin {}: {}", name, ty),
         SymbolKind::Global => format!("global {}: {}", name, ty),
         SymbolKind::Property => format!("property {}: {}", name, ty),
         SymbolKind::Local => format!("var {}: {}", name, ty),
@@ -37,7 +36,6 @@ pub fn symbol_description(kind: SymbolKind, name: &str, ty: Type) -> String {
 /// The kind of symbol for description formatting.
 #[derive(Clone, Copy, Debug)]
 pub enum SymbolKind {
-    Builtin,
     Global,
     Property,
     Local,

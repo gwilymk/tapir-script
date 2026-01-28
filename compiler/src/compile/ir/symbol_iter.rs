@@ -32,7 +32,6 @@ impl<'a> SymbolIter<'a> {
             TapIr::Constant(target, _)
             | TapIr::Move { target, .. }
             | TapIr::GetProp { target, .. }
-            | TapIr::GetBuiltin { target, .. }
             | TapIr::GetGlobal { target, .. }
             | TapIr::BinOp { target, .. }
             | TapIr::CallBuiltin { target, .. } => Self::One(Some(*target)),
@@ -95,7 +94,6 @@ impl<'a> SymbolIterMut<'a> {
             TapIr::Constant(target, _)
             | TapIr::Move { target, .. }
             | TapIr::GetProp { target, .. }
-            | TapIr::GetBuiltin { target, .. }
             | TapIr::GetGlobal { target, .. }
             | TapIr::BinOp { target, .. }
             | TapIr::CallBuiltin { target, .. } => Self::One(Some(target)),

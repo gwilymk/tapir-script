@@ -9,7 +9,6 @@ use crate::{
         ExternFunctionDefinition, Function, FunctionModifiers, FunctionReturn, GlobalDeclaration,
         InternalOrExternalFunctionId, SymbolId,
     },
-    builtins::BuiltinVariable,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
     types::Type,
@@ -156,10 +155,8 @@ impl<'input> TypeVisitor<'input> {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) {
-        // Skip globals and builtins - their types are fixed at declaration
-        if GlobalId::from_symbol_id(symbol_id).is_some()
-            || BuiltinVariable::from_symbol_id(symbol_id).is_some()
-        {
+        // Skip globals - their types are fixed at declaration
+        if GlobalId::from_symbol_id(symbol_id).is_some() {
             return;
         }
 
@@ -221,10 +218,6 @@ impl<'input> TypeVisitor<'input> {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Type {
-        if let Some(builtin) = BuiltinVariable::from_symbol_id(symbol_id) {
-            return builtin.ty();
-        }
-
         // Check if this is a global
         if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
             return symtab.get_global(global_id).ty;
@@ -987,12 +980,6 @@ pub struct TypeTable<'input> {
 
 impl TypeTable<'_> {
     pub fn type_for_symbol(&self, symbol_id: SymbolId, symtab: &SymTab) -> Type {
-        use crate::builtins::BuiltinVariable;
-
-        if let Some(builtin) = BuiltinVariable::from_symbol_id(symbol_id) {
-            return builtin.ty();
-        }
-
         if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
             return symtab.get_global(global_id).ty;
         }

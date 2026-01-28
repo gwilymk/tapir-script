@@ -321,9 +321,6 @@ impl Compiler {
                     TapIr::StoreProp { prop_index, value } => {
                         self.bytecode.set_prop(v(value), *prop_index as u8);
                     }
-                    TapIr::GetBuiltin { target, builtin } => {
-                        self.bytecode.get_builtin(v(target), builtin.id());
-                    }
                     TapIr::CallBuiltin { target, f, args } => {
                         // Put args starting at first_argument (no offset, like extern calls)
                         put_args(&mut self.bytecode, args, true);
@@ -532,10 +529,6 @@ impl Bytecode {
 
     fn set_prop(&mut self, target: u8, prop_index: u8) {
         self.data.push(Type1::set_prop(target, prop_index).encode());
-    }
-
-    fn get_builtin(&mut self, target: u8, id: u8) {
-        self.data.push(Type1::get_builtin(target, id).encode());
     }
 
     fn get_global(&mut self, target: u8, global_index: u8) {

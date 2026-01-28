@@ -6,7 +6,6 @@ use crate::{
         InternalOrExternalFunctionId, PropertyDeclaration, Script, Statement, StatementKind,
         SymbolId,
     },
-    builtins::BuiltinVariable,
     prelude::PRELUDE_FILE_ID,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
@@ -35,7 +34,7 @@ impl GlobalId {
     /// Try to extract a GlobalId from a SymbolId.
     /// Returns None if this SymbolId doesn't represent a global.
     pub fn from_symbol_id(id: SymbolId) -> Option<Self> {
-        if id.0 & Self::GLOBAL_BIT != 0 && id.0 & BuiltinVariable::RESERVED_BIT == 0 {
+        if id.0 & Self::GLOBAL_BIT != 0 {
             Some(GlobalId((id.0 & !(Self::GLOBAL_BIT)) as usize))
         } else {
             None
@@ -105,20 +104,6 @@ fn extract_properties_from_ast(
                 DiagnosticMessage::OriginallyDeclaredHere,
             )
             .label(name_span, DiagnosticMessage::ConflictsWithGlobal)
-            .emit(diagnostics);
-            // Continue anyway to report more errors
-        }
-
-        // Check for conflicts with built-ins
-        if BuiltinVariable::from_name(name).is_some() {
-            ErrorKind::CannotShadowBuiltin {
-                name: name.to_string(),
-            }
-            .at(name_span)
-            .label(name_span, DiagnosticMessage::CannotShadowBuiltinLabel)
-            .note(DiagnosticMessage::BuiltinVariableNote {
-                name: name.to_string(),
-            })
             .emit(diagnostics);
             // Continue anyway to report more errors
         }
@@ -288,24 +273,9 @@ impl<'input> SymTabVisitor<'input> {
         // Process global declarations
         for (index, global) in script.globals.iter().enumerate() {
             let name = global.name.name();
-            let name_span = global.name.span();
 
             // Skip globals that conflict with properties (error already reported in extract_properties_from_ast)
             if properties.iter().any(|p| p.name == name) {
-                continue;
-            }
-
-            // Check for conflicts with built-ins (reuse existing error)
-            if BuiltinVariable::from_name(name).is_some() {
-                ErrorKind::CannotShadowBuiltin {
-                    name: name.to_string(),
-                }
-                .at(name_span)
-                .label(name_span, DiagnosticMessage::CannotShadowBuiltinLabel)
-                .note(DiagnosticMessage::BuiltinVariableNote {
-                    name: name.to_string(),
-                })
-                .emit(diagnostics);
                 continue;
             }
 
@@ -374,17 +344,6 @@ impl<'input> SymTabVisitor<'input> {
                     for ident in idents {
                         let name = ident.name();
                         let span = ident.span();
-                        if BuiltinVariable::from_name(name).is_some() {
-                            ErrorKind::CannotShadowBuiltin {
-                                name: name.to_string(),
-                            }
-                            .at(span)
-                            .label(span, DiagnosticMessage::CannotShadowBuiltinLabel)
-                            .note(DiagnosticMessage::BuiltinVariableNote {
-                                name: name.to_string(),
-                            })
-                            .emit(diagnostics);
-                        }
 
                         let symbol_id = self.symtab.new_symbol(name, span);
                         self.symbol_names.insert(name, symbol_id);
@@ -403,18 +362,6 @@ impl<'input> SymTabVisitor<'input> {
                     // no need to do counting checks, that's done in type checking
                     let mut statement_meta = vec![];
                     for ident in idents {
-                        if BuiltinVariable::from_name(ident.ident).is_some() {
-                            ErrorKind::CannotShadowBuiltin {
-                                name: ident.ident.to_string(),
-                            }
-                            .at(ident.span)
-                            .label(ident.span, DiagnosticMessage::CannotShadowBuiltinLabel)
-                            .note(DiagnosticMessage::BuiltinVariableNote {
-                                name: ident.ident.to_string(),
-                            })
-                            .emit(diagnostics);
-                        }
-
                         if let Some(symbol_id) = self.symbol_names.get(ident.ident, &self.symtab) {
                             statement_meta.push(symbol_id);
                         } else {
@@ -554,11 +501,6 @@ impl<'input> NameTable<'input> {
     }
 
     pub fn get(&self, name: &str, symtab: &SymTab) -> Option<SymbolId> {
-        // Check built-ins first (cannot be shadowed)
-        if let Some(builtin) = BuiltinVariable::from_name(name) {
-            return Some(builtin.symbol_id());
-        }
-
         // Check local variables and properties (can shadow globals)
         for nametab in self.names.iter().rev() {
             if let Some(id) = nametab.get(name) {

@@ -4,7 +4,6 @@ use std::path::Path;
 use lalrpop_util::lalrpop_mod;
 
 mod ast;
-mod builtins;
 mod compile;
 mod lexer;
 mod prelude;

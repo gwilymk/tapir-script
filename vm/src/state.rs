@@ -175,16 +175,6 @@ impl State {
 
                     self.set_reg(target, constant as i32);
                 }
-                O::GetBuiltin => {
-                    type1!(target, id);
-
-                    let value = match id {
-                        0 => frame,
-                        other => panic!("Invalid GetBuiltin for id {other}"),
-                    };
-
-                    self.set_reg(target, value);
-                }
                 O::CallBuiltin => {
                     type1!(target, builtin_id, first_arg);
                     let builtin_id = builtin_id as i8 as i16;

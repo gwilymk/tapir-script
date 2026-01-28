@@ -29,7 +29,6 @@ pub enum Opcode {
 
     GetProp,
     SetProp,
-    GetBuiltin,
     GetGlobal,
     SetGlobal,
 
@@ -144,10 +143,6 @@ impl Type1 {
 
     pub const fn mov(target: u8, source: u8) -> Self {
         Self::new2(Opcode::Mov, target, source)
-    }
-
-    pub const fn get_builtin(target: u8, index: u8) -> Self {
-        Self::new2(Opcode::GetBuiltin, target, index)
     }
 
     pub const fn binop(opcode: Opcode, target: u8, lhs: u8, rhs: u8) -> Self {

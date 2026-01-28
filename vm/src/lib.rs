@@ -302,7 +302,7 @@ mod test {
 
         let bytecode = compiler::compile(
             "frame_test.tapir",
-            "property int_prop: int;\nint_prop = frame;",
+            "property int_prop: int;\nint_prop = frame();",
             compile_settings,
         )
         .unwrap()
@@ -330,7 +330,7 @@ mod test {
 
         let bytecode = compiler::compile(
             "frame_test.tapir",
-            "property int_prop: int;\nint_prop = frame; wait; int_prop = frame; wait; int_prop = frame;",
+            "property int_prop: int;\nint_prop = frame(); wait; int_prop = frame(); wait; int_prop = frame();",
             compile_settings,
         )
         .unwrap()
@@ -379,7 +379,7 @@ mod test {
 
         let bytecode = compiler::compile(
             "frame_test.tapir",
-            "property int_prop: int;\nvar start = frame; wait; wait; int_prop = frame - start;",
+            "property int_prop: int;\nvar start = frame(); wait; wait; int_prop = frame() - start;",
             compile_settings,
         )
         .unwrap()
@@ -409,7 +409,7 @@ mod test {
 
         let bytecode = compiler::compile(
             "frame_test.tapir",
-            "property int_prop: int;\nloop { if frame >= 5 { break; } wait; } int_prop = frame;",
+            "property int_prop: int;\nloop { if frame() >= 5 { break; } wait; } int_prop = frame();",
             compile_settings,
         )
         .unwrap()

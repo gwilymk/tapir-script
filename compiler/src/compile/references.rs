@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use crate::{
     ast::{Expression, ExpressionKind, Script, Statement, StatementKind, SymbolId},
-    builtins::BuiltinVariable,
     tokens::Span,
 };
 
@@ -111,11 +110,6 @@ fn add_symbol_reference(
     symtab: &SymTab<'_>,
     references: &mut HashMap<Span, Span>,
 ) {
-    // Skip builtins (no source definition)
-    if BuiltinVariable::from_symbol_id(symbol_id).is_some() {
-        return;
-    }
-
     // Check if it's a global
     if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
         let global = symtab.get_global(global_id);
