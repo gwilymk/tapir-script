@@ -4,6 +4,7 @@ expression: ast
 input_file: compiler/src/snapshot_tests/grammar/non_associative_comparison.tapir
 ---
 Script(
+  struct_declarations: [],
   property_declarations: [],
   globals: [],
   functions: [

@@ -36,6 +36,7 @@ extern {
         global => Token::KeywordGlobal,
         property => Token::KeywordProperty,
         builtin => Token::KeywordBuiltin,
+        "struct" => Token::KeywordStruct,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -81,6 +82,7 @@ TopLevelStatement: TopLevelStatement<'input> = {
     <BuiltinFunctionDecl> => TopLevelStatement::BuiltinFunctionDefinition(<>),
     <GlobalDecl> => TopLevelStatement::GlobalDeclaration(<>),
     <PropertyDecl> => TopLevelStatement::PropertyDeclaration(<>),
+    <StructDecl> => TopLevelStatement::StructDeclaration(<>),
     <error: !> => {
         diagnostics.add_lalrpop(<>.error, file_id);
         TopLevelStatement::Error
@@ -95,6 +97,11 @@ GlobalDecl: GlobalDeclaration<'input> = {
 PropertyDecl: PropertyDeclaration<'input> = {
     <start:@L> property <name:TypedIdentifierRequired> ";" <end:@R> =>
         PropertyDeclaration { name, span: Span::new(file_id, start, end) },
+}
+
+StructDecl: StructDeclaration<'input> = {
+    <start:@L> "struct" <name:Identifier> "{" <fields:CommaSeparated<TypedIdentifierRequired>> "}" <end:@R> =>
+        StructDeclaration { name, fields, span: Span::new(file_id, start, end) },
 }
 
 BuiltinFunctionDecl: BuiltinFunction<'input> = {

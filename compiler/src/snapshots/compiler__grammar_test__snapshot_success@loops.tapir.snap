@@ -4,6 +4,7 @@ expression: ast
 input_file: compiler/src/snapshot_tests/grammar/loops.tapir
 ---
 Script(
+  struct_declarations: [],
   property_declarations: [],
   globals: [],
   functions: [

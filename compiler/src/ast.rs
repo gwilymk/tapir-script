@@ -52,6 +52,7 @@ pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Script<'input> {
+    pub struct_declarations: Vec<StructDeclaration<'input>>,
     pub property_declarations: Vec<PropertyDeclaration<'input>>,
     pub globals: Vec<GlobalDeclaration<'input>>,
     pub functions: Vec<Function<'input>>,
@@ -76,6 +77,17 @@ pub struct PropertyDeclaration<'input> {
     pub span: Span,
 }
 
+/// A struct type declaration: `struct Point { x: int, y: int }`
+#[derive(Clone, Debug, Serialize)]
+pub struct StructDeclaration<'input> {
+    /// The name of the struct (includes span for precise error messages)
+    pub name: Ident<'input>,
+    /// The fields of the struct (type is required by grammar)
+    pub fields: Vec<TypedIdent<'input>>,
+    /// Span of entire declaration
+    pub span: Span,
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct GlobalDeclaration<'input> {
     pub name: TypedIdent<'input>,
@@ -94,6 +106,7 @@ impl<'input> Script<'input> {
         let mut builtin_functions = vec![];
         let mut globals = vec![];
         let mut property_declarations = vec![];
+        let mut struct_declarations = vec![];
 
         for top_level_statement in top_level.into_iter() {
             match top_level_statement {
@@ -110,6 +123,9 @@ impl<'input> Script<'input> {
                 TopLevelStatement::GlobalDeclaration(global) => globals.push(global),
                 TopLevelStatement::PropertyDeclaration(property) => {
                     property_declarations.push(property)
+                }
+                TopLevelStatement::StructDeclaration(struct_decl) => {
+                    struct_declarations.push(struct_decl)
                 }
 
                 TopLevelStatement::Error => {}
@@ -133,6 +149,7 @@ impl<'input> Script<'input> {
         functions.insert(0, top_level_function);
 
         Self {
+            struct_declarations,
             property_declarations,
             globals,
             functions,
@@ -155,6 +172,8 @@ impl<'input> Script<'input> {
         self.functions.splice(1..1, other_functions);
 
         // Prepend other declarations
+        self.struct_declarations
+            .splice(0..0, other.struct_declarations);
         self.property_declarations
             .splice(0..0, other.property_declarations);
         self.globals.splice(0..0, other.globals);
@@ -211,6 +230,7 @@ pub enum TopLevelStatement<'input> {
     BuiltinFunctionDefinition(BuiltinFunction<'input>),
     GlobalDeclaration(GlobalDeclaration<'input>),
     PropertyDeclaration(PropertyDeclaration<'input>),
+    StructDeclaration(StructDeclaration<'input>),
     Error,
 }
 

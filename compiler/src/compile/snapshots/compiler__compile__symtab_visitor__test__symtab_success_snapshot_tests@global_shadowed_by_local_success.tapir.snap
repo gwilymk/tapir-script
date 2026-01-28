@@ -4,6 +4,7 @@ expression: script
 input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_shadowed_by_local_success.tapir
 ---
 Script(
+  struct_declarations: [],
   property_declarations: [
     PropertyDeclaration(
       name: TypedIdent(

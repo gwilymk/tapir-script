@@ -4,6 +4,7 @@ expression: script
 input_file: compiler/src/compile/snapshot_tests/symtab_visitor/globals_success.tapir
 ---
 Script(
+  struct_declarations: [],
   property_declarations: [],
   globals: [
     GlobalDeclaration(

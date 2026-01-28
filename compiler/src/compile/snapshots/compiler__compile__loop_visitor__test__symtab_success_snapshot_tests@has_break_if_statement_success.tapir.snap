@@ -4,6 +4,7 @@ expression: script
 input_file: compiler/src/compile/snapshot_tests/loop_visitor/has_break_if_statement_success.tapir
 ---
 Script(
+  struct_declarations: [],
   property_declarations: [],
   globals: [],
   functions: [

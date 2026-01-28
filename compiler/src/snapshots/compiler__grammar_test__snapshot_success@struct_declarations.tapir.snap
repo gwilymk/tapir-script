@@ -1,0 +1,143 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/struct_declarations.tapir
+---
+Script(
+  struct_declarations: [
+    StructDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "Point",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "y",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+    StructDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "Empty",
+      ),
+      fields: [],
+      span: "[span]",
+    ),
+    StructDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "Single",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "value",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+    StructDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "Nested",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "origin",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Error,
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "size",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Error,
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+    StructDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "WithTrailingComma",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Bool,
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+  ],
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

@@ -1,0 +1,50 @@
+---
+source: compiler/src/grammar_test.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/snapshot_tests/grammar/errors/struct_syntax_errors.tapir
+---
+[E0026] Error: Unexpected token RBrace
+   ╭─[ struct_syntax_errors.tapir:2:17 ]
+   │
+ 2 │ struct Bad1 { x }
+   │                 ┬  
+   │                 ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens ":"
+───╯
+[E0026] Error: Unexpected token Semicolon
+   ╭─[ struct_syntax_errors.tapir:5:21 ]
+   │
+ 5 │ struct Bad2 { x: int; y: int }
+   │                     ┬  
+   │                     ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens "}", ","
+───╯
+[E0026] Error: Unexpected token Colon
+   ╭─[ struct_syntax_errors.tapir:5:24 ]
+   │
+ 5 │ struct Bad2 { x: int; y: int }
+   │                        ┬  
+   │                        ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens "(", "=", ","
+───╯
+[E0026] Error: Unexpected token KeywordStruct
+   ╭─[ struct_syntax_errors.tapir:9:5 ]
+   │
+ 9 │     struct Local { x: int }
+   │     ───┬──  
+   │        ╰──── Unexpected token
+   │ 
+   │ Note: Expected one of tokens wait, var, "if", return, spawn, loop, break, continue, trigger, identifier, "{", "}", "="
+───╯
+[E0026] Error: Unexpected token RBrace
+    ╭─[ struct_syntax_errors.tapir:10:1 ]
+    │
+ 10 │ }
+    │ ┬  
+    │ ╰── Unexpected token
+    │ 
+    │ Note: Expected one of tokens wait, var, "if", "extern", "fn", return, spawn, loop, break, continue, event, trigger, global, property, builtin, "struct", identifier, "{", "="
+────╯

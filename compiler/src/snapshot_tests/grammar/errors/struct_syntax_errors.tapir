@@ -1,0 +1,10 @@
+# Missing field type
+struct Bad1 { x }
+
+# Semicolons instead of commas
+struct Bad2 { x: int; y: int }
+
+# Struct inside function (not allowed)
+fn foo() {
+    struct Local { x: int }
+}
