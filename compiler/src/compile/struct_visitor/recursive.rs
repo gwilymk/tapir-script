@@ -137,7 +137,7 @@ pub fn check_recursive_structs(registry: &StructRegistry, diagnostics: &mut Diag
                 error.emit(diagnostics);
                 reported.insert(cycle_start_id);
             }
-            DfsEvent::Finish(node, _) => {
+            DfsEvent::Finish(_node, _) => {
                 path.pop();
             }
             _ => {}
