@@ -103,9 +103,13 @@ pub fn resolve_struct_fields<'input>(
             }
             field_names.insert(field_name, idx);
 
-            // Resolve field type
+            // Resolve field type (if not already resolved)
             let type_with_loc = field_decl.ty_required();
-            let field_type = resolve_type_name(type_with_loc, struct_names, diagnostics);
+            let field_type = if let Some(ty) = type_with_loc.t {
+                ty
+            } else {
+                resolve_type_name(type_with_loc, struct_names, diagnostics)
+            };
 
             fields.push(StructField {
                 name: field_name.to_string(),
@@ -119,34 +123,104 @@ pub fn resolve_struct_fields<'input>(
     }
 }
 
+/// Third pass: Resolve all type annotations throughout the script.
+///
+/// This resolves `None` types (which represent user-defined types)
+/// to `Some(Type::Struct(id))` where appropriate, or emits errors for unknown types.
+pub fn resolve_all_types<'input>(
+    script: &mut crate::ast::Script<'input>,
+    struct_names: &HashMap<&'input str, StructId>,
+    diagnostics: &mut Diagnostics,
+) {
+    // Resolve function argument and return types
+    for function in &mut script.functions {
+        for arg in &mut function.arguments {
+            if let Some(ref mut ty) = arg.ty {
+                resolve_type_in_place(ty, struct_names, diagnostics);
+            }
+        }
+        for ret_ty in &mut function.return_types.types {
+            resolve_type_in_place(ret_ty, struct_names, diagnostics);
+        }
+    }
+
+    // Resolve extern function argument and return types
+    for function in &mut script.extern_functions {
+        for arg in &mut function.arguments {
+            if let Some(ref mut ty) = arg.ty {
+                resolve_type_in_place(ty, struct_names, diagnostics);
+            }
+        }
+        for ret_ty in &mut function.return_types.types {
+            resolve_type_in_place(ret_ty, struct_names, diagnostics);
+        }
+    }
+
+    // Resolve builtin function argument and return types
+    for function in &mut script.builtin_functions {
+        for arg in &mut function.arguments {
+            if let Some(ref mut ty) = arg.ty {
+                resolve_type_in_place(ty, struct_names, diagnostics);
+            }
+        }
+        for ret_ty in &mut function.return_type.types {
+            resolve_type_in_place(ret_ty, struct_names, diagnostics);
+        }
+    }
+
+    // Resolve global declaration types
+    for global in &mut script.globals {
+        if let Some(ref mut ty) = global.name.ty {
+            resolve_type_in_place(ty, struct_names, diagnostics);
+        }
+    }
+
+    // Resolve property declaration types
+    for property in &mut script.property_declarations {
+        if let Some(ref mut ty) = property.name.ty {
+            resolve_type_in_place(ty, struct_names, diagnostics);
+        }
+    }
+}
+
+/// Resolve a type annotation in place.
+///
+/// If the type is `None` (unresolved), tries to resolve it as a struct name.
+/// Updates the TypeWithLocation.t field in place.
+fn resolve_type_in_place(
+    type_with_loc: &mut crate::ast::TypeWithLocation,
+    struct_names: &HashMap<&str, StructId>,
+    diagnostics: &mut Diagnostics,
+) {
+    if type_with_loc.t.is_none() {
+        type_with_loc.t = Some(resolve_type_name(type_with_loc, struct_names, diagnostics));
+    }
+}
+
 /// Resolve a type annotation to a Type value.
 ///
-/// For builtin types (int, fix, bool), returns the corresponding Type.
-/// For struct names, looks up the StructId and returns Type::Struct(id).
+/// Looks up the name as a struct and returns Type::Struct(id).
 /// For unknown names, emits an error and returns Type::Error.
 fn resolve_type_name(
     type_with_loc: &crate::ast::TypeWithLocation,
-    _struct_names: &HashMap<&str, StructId>,
-    _diagnostics: &mut Diagnostics,
+    struct_names: &HashMap<&str, StructId>,
+    diagnostics: &mut Diagnostics,
 ) -> Type {
-    // The grammar currently parses types directly as Type values.
-    // Unknown identifiers become Type::Error with an UnknownTypeToken error.
-    // For now, we just return the parsed type. The grammar will need
-    // updating in Phase 4 to parse types as identifiers and resolve them here.
-    //
-    // However, we need to check if this is an Error type and if so,
-    // try to resolve it as a struct name. The grammar currently emits
-    // an error for unknown types, but we can check if it's actually a struct.
-
-    match type_with_loc.t {
-        Type::Error => {
-            // This might be a struct type that the grammar didn't recognize.
-            // Unfortunately, we don't have access to the original identifier here
-            // since the grammar already converted it to Type::Error.
-            // This will be properly handled in Phase 4 when we update the grammar.
-            Type::Error
+    // Try to resolve as a struct name
+    if let Some(&struct_id) = struct_names.get(type_with_loc.name) {
+        Type::Struct(struct_id)
+    } else {
+        // Unknown type name - emit error
+        ErrorKind::UnknownTypeToken {
+            token: type_with_loc.name.to_string(),
         }
-        other => other,
+        .at(type_with_loc.span)
+        .label(
+            type_with_loc.span,
+            crate::reporting::DiagnosticMessage::UnknownTypeLabel2,
+        )
+        .emit(diagnostics);
+        Type::Error
     }
 }
 
@@ -197,7 +271,7 @@ mod tests {
                         ident: field_name,
                         span: test_span(),
                     },
-                    ty: Some(TypeWithLocation { t: ty, name: type_name(ty), span: test_span() }),
+                    ty: Some(TypeWithLocation { t: Some(ty), name: type_name(ty), span: test_span() }),
                 })
                 .collect(),
             span: test_span(),
@@ -319,13 +393,14 @@ mod tests {
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let script = parser
+            let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
                 .unwrap();
 
             let mut registry = StructRegistry::default();
             let names = register_structs(&script, &mut registry, &mut diagnostics);
             resolve_struct_fields(&script, &mut registry, &names, &mut diagnostics);
+            resolve_all_types(&mut script, &names, &mut diagnostics);
 
             assert!(!diagnostics.has_errors(), "Expected no errors but got: {}", diagnostics.pretty_string(false));
 
@@ -346,13 +421,14 @@ mod tests {
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let script = parser
+            let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
                 .unwrap();
 
             let mut registry = StructRegistry::default();
             let names = register_structs(&script, &mut registry, &mut diagnostics);
             resolve_struct_fields(&script, &mut registry, &names, &mut diagnostics);
+            resolve_all_types(&mut script, &names, &mut diagnostics);
 
             assert_snapshot!(diagnostics.pretty_string(false));
         });

@@ -1,0 +1,11 @@
+# Struct can be used as function argument type
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn takes_point(p: Point) {}
+
+fn returns_point() -> Point {
+    return 0, 0;
+}

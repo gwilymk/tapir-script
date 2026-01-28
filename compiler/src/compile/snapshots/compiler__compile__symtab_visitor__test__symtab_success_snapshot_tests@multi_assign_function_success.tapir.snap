@@ -119,12 +119,12 @@ Script(
       return_types: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           ),
           TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           ),

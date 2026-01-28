@@ -1,0 +1,7 @@
+# Unknown type in function argument
+fn takes_unknown(x: NotAType) {}
+
+# Unknown type in return type
+fn returns_unknown() -> NotAType {
+    return 0;
+}

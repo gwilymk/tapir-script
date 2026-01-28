@@ -1,0 +1,19 @@
+---
+source: compiler/src/compile/struct_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/struct_visitor/unknown_type_in_function_fail.tapir
+---
+[E0028] Error: 'NotAType' is not a valid type, must be one of fix, bool or int
+   ╭─[ unknown_type_in_function_fail.tapir:2:21 ]
+   │
+ 2 │ fn takes_unknown(x: NotAType) {}
+   │                     ────┬───  
+   │                         ╰───── Unknown type
+───╯
+[E0028] Error: 'NotAType' is not a valid type, must be one of fix, bool or int
+   ╭─[ unknown_type_in_function_fail.tapir:5:25 ]
+   │
+ 5 │ fn returns_unknown() -> NotAType {
+   │                         ────┬───  
+   │                             ╰───── Unknown type
+───╯

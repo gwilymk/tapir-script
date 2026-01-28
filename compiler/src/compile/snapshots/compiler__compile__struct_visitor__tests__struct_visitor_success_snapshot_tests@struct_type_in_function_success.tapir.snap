@@ -1,0 +1,25 @@
+---
+source: compiler/src/compile/struct_visitor.rs
+expression: registry
+input_file: compiler/src/compile/snapshot_tests/struct_visitor/struct_type_in_function_success.tapir
+---
+StructRegistry(
+  structs: [
+    StructDef(
+      name: "Point",
+      fields: [
+        StructField(
+          name: "x",
+          ty: Int,
+          span: "[span]",
+        ),
+        StructField(
+          name: "y",
+          ty: Int,
+          span: "[span]",
+        ),
+      ],
+      span: "[span]",
+    ),
+  ],
+)

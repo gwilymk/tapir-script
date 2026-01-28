@@ -101,12 +101,12 @@ Script(
       return_types: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           ),
           TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           ),

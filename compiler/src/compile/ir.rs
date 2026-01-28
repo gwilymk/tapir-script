@@ -457,7 +457,7 @@ impl FunctionModifiers {
                     .iter()
                     .map(|a| FunctionArgument {
                         name: a.name().to_string(),
-                        ty: a.ty_required().t,
+                        ty: a.ty_required().resolved(),
                     })
                     .collect(),
             })

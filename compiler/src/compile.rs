@@ -39,10 +39,11 @@ pub fn analyse_ast<'input>(
     settings: &CompileSettings,
     diagnostics: &mut Diagnostics,
 ) -> (SymTab<'input>, TypeTable<'input>, StructRegistry) {
-    // Phase 0: Struct registration (must be before symbol resolution)
+    // Phase 0: Struct registration and type resolution (must be before symbol resolution)
     let mut struct_registry = StructRegistry::default();
     let struct_names = struct_visitor::register_structs(ast, &mut struct_registry, diagnostics);
     struct_visitor::resolve_struct_fields(ast, &mut struct_registry, &struct_names, diagnostics);
+    struct_visitor::resolve_all_types(ast, &struct_names, diagnostics);
 
     // Phase 1: Symbol resolution (all functions)
     let mut symtab_visitor = SymTabVisitor::new(settings, ast, diagnostics);
@@ -122,13 +123,13 @@ pub fn compile(
             arguments: extern_function
                 .arguments
                 .iter()
-                .map(|arg| arg.ty_required().t)
+                .map(|arg| arg.ty_required().resolved())
                 .collect(),
             returns: extern_function
                 .return_types
                 .types
                 .iter()
-                .map(|ret| ret.t)
+                .map(|ret| ret.resolved())
                 .collect(),
         })
         .collect();

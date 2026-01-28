@@ -24,7 +24,7 @@ pub fn extract_signature_help(
             .arguments
             .iter()
             .map(|arg| ParameterInfo {
-                label: format!("{}: {}", arg.name(), arg.ty_required().t),
+                label: format!("{}: {}", arg.name(), arg.ty_required().resolved()),
             })
             .collect();
 
@@ -58,7 +58,7 @@ pub fn extract_signature_help(
             .arguments
             .iter()
             .map(|arg| ParameterInfo {
-                label: format!("{}: {}", arg.name(), arg.ty_required().t),
+                label: format!("{}: {}", arg.name(), arg.ty_required().resolved()),
             })
             .collect();
 

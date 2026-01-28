@@ -172,18 +172,13 @@ Type: TypeWithLocation<'input> =
         name: type_and_name.1,
         span: Span::new(file_id, start, end)
     };
-TypeWithoutLocation: (Type, &'input str) = {
-    t_integer => (Type::Int, "int"),
-    t_bool => (Type::Bool, "bool"),
-    t_fix => (Type::Fix, "fix"),
-    <start: @L> <ident: identifier> <end: @R> => {
-        let span = Span::new(file_id, start, end);
-        ErrorKind::UnknownTypeToken { token: ident.to_string() }
-            .at(span)
-            .label(span, DiagnosticMessage::UnknownTypeLabel2)
-            .emit(diagnostics);
-        (Type::Error, ident)
-    },
+TypeWithoutLocation: (Option<Type>, &'input str) = {
+    t_integer => (Some(Type::Int), "int"),
+    t_bool => (Some(Type::Bool), "bool"),
+    t_fix => (Some(Type::Fix), "fix"),
+    // User-defined types (structs) are parsed as identifiers with t=None,
+    // then resolved to Some(Type::Struct(id)) by struct_visitor during compilation.
+    <ident: identifier> => (None, ident),
 }
 
 Statement: Statement<'input> =

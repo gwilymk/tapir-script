@@ -23,7 +23,7 @@ pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> (TapIrFunction, 
         .clone()
         .into_boxed_slice();
 
-    let return_types = f.return_types.types.iter().map(|t| t.t).collect();
+    let return_types = f.return_types.types.iter().map(|t| t.resolved()).collect();
 
     (
         TapIrFunction::new(

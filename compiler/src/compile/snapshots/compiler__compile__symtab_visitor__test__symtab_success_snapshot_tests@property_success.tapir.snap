@@ -13,7 +13,7 @@ Script(
           ident: "int_prop",
         ),
         ty: Some(TypeWithLocation(
-          t: Int,
+          t: Some(Int),
           name: "int",
           span: "[span]",
         )),

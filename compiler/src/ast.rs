@@ -219,16 +219,24 @@ pub struct FunctionReturn<'input> {
 /// A type annotation in the source code.
 ///
 /// Stores both the original name (for resolution) and the resolved Type.
-/// During parsing, `t` is set to the resolved Type for builtins (int, fix, bool)
-/// or Type::Error for user-defined types that need resolution.
+/// During parsing, `t` is set to `Some(Type)` for builtins (int, fix, bool)
+/// or `None` for user-defined types that need resolution.
 #[derive(Clone, Debug, Serialize)]
 pub struct TypeWithLocation<'input> {
-    /// The resolved type. May be Type::Error if not yet resolved.
-    pub t: Type,
+    /// The resolved type. `None` if not yet resolved (user-defined types).
+    pub t: Option<Type>,
     /// The original type name from source (e.g., "int", "Point").
     /// Used for resolving user-defined types and error messages.
     pub name: &'input str,
     pub span: Span,
+}
+
+impl<'input> TypeWithLocation<'input> {
+    /// Returns the resolved type, panicking if not yet resolved.
+    /// Use only after type resolution has run.
+    pub fn resolved(&self) -> Type {
+        self.t.expect("type not yet resolved")
+    }
 }
 
 #[derive(Clone, Debug, Serialize)]

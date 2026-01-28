@@ -71,7 +71,7 @@ impl<'input> TypeVisitor<'input> {
                 .iter()
                 .map(|arg| FunctionArgumentInfo {
                     name: Cow::Borrowed(arg.name()),
-                    ty: arg.ty_required().t,
+                    ty: arg.ty_required().resolved(),
                     span: arg.span(),
                 })
                 .collect();
@@ -82,7 +82,7 @@ impl<'input> TypeVisitor<'input> {
                     name: function.name,
                     span: function.span,
                     args,
-                    rets: function.return_types.types.iter().map(|t| t.t).collect(),
+                    rets: function.return_types.types.iter().map(|t| t.resolved()).collect(),
                     modifiers: function.modifiers.clone(),
                 },
             );
@@ -94,7 +94,7 @@ impl<'input> TypeVisitor<'input> {
                 .iter()
                 .map(|arg| FunctionArgumentInfo {
                     name: Cow::Borrowed(arg.name()),
-                    ty: arg.ty_required().t,
+                    ty: arg.ty_required().resolved(),
                     span: arg.span(),
                 })
                 .collect();
@@ -105,7 +105,7 @@ impl<'input> TypeVisitor<'input> {
                     name: function.name,
                     span: function.span,
                     args,
-                    rets: function.return_types.types.iter().map(|t| t.t).collect(),
+                    rets: function.return_types.types.iter().map(|t| t.resolved()).collect(),
                     modifiers: FunctionModifiers::default(),
                 },
             );
@@ -117,7 +117,7 @@ impl<'input> TypeVisitor<'input> {
                 .iter()
                 .map(|arg| FunctionArgumentInfo {
                     name: Cow::Borrowed(arg.name()),
-                    ty: arg.ty_required().t,
+                    ty: arg.ty_required().resolved(),
                     span: arg.span(),
                 })
                 .collect();
@@ -128,7 +128,7 @@ impl<'input> TypeVisitor<'input> {
                     name: function.name,
                     span: function.span,
                     args,
-                    rets: function.return_type.types.iter().map(|t| t.t).collect(),
+                    rets: function.return_type.types.iter().map(|t| t.resolved()).collect(),
                     modifiers: FunctionModifiers::default(),
                 },
             );
@@ -249,7 +249,7 @@ impl<'input> TypeVisitor<'input> {
         diagnostics: &mut Diagnostics,
     ) -> Type {
         if let Some(annotation) = annotation {
-            let annotated = annotation.t;
+            let annotated = annotation.resolved();
 
             // Allow if types match or either is Error (to avoid cascading errors)
             let types_match = annotated == inferred_type
@@ -298,7 +298,7 @@ impl<'input> TypeVisitor<'input> {
             };
 
             let inferred_type = global_info.ty;
-            let annotated = annotation.t;
+            let annotated = annotation.resolved();
 
             let types_match = annotated == inferred_type
                 || annotated == Type::Error
@@ -465,7 +465,7 @@ impl<'input> TypeVisitor<'input> {
         for (argument, &symbol_id) in function.arguments.iter().zip(argument_symbols.0.iter()) {
             self.resolve_type_with_spans(
                 symbol_id,
-                argument.ty_required().t,
+                argument.ty_required().resolved(),
                 argument.span(),
                 argument.span(),
                 symtab,
@@ -634,17 +634,18 @@ impl<'input> TypeVisitor<'input> {
                         .zip(&expected_return_type.types)
                         .enumerate()
                     {
-                        if *actual != expected.t
+                        let expected_ty = expected.resolved();
+                        if *actual != expected_ty
                             && *actual != Type::Error
-                            && expected.t != Type::Error
+                            && expected_ty != Type::Error
                         {
                             ErrorKind::MismatchingReturnTypes {
-                                expected: expected.t,
+                                expected: expected_ty,
                                 actual: *actual,
                             }
                             .at(statement.span)
                             .label(values[i].span, DiagnosticMessage::HasType { ty: *actual })
-                            .label(expected.span, DiagnosticMessage::HasType { ty: expected.t })
+                            .label(expected.span, DiagnosticMessage::HasType { ty: expected_ty })
                             .emit(diagnostics);
                         }
                     }
@@ -1021,10 +1022,11 @@ mod test {
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
     use crate::{
-        compile::{CompileSettings, loop_visitor, symtab_visitor::SymTabVisitor},
+        compile::{CompileSettings, loop_visitor, struct_visitor, symtab_visitor::SymTabVisitor},
         grammar,
         lexer::Lexer,
         tokens::FileId,
+        types::StructRegistry,
     };
 
     use super::*;
@@ -1044,6 +1046,18 @@ mod test {
             let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer)
                 .unwrap();
+
+            // Struct registration and type resolution
+            let mut struct_registry = StructRegistry::default();
+            let struct_names =
+                struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+            struct_visitor::resolve_struct_fields(
+                &script,
+                &mut struct_registry,
+                &struct_names,
+                &mut diagnostics,
+            );
+            struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
 
             let settings = CompileSettings {
                 available_fields: None,
@@ -1107,6 +1121,18 @@ mod test {
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+
+            // Struct registration and type resolution
+            let mut struct_registry = StructRegistry::default();
+            let struct_names =
+                struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+            struct_visitor::resolve_struct_fields(
+                &script,
+                &mut struct_registry,
+                &struct_names,
+                &mut diagnostics,
+            );
+            struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
 
             let settings = CompileSettings {
                 available_fields: None,

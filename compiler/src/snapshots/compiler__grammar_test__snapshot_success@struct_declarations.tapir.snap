@@ -17,7 +17,7 @@ Script(
             ident: "x",
           ),
           ty: Some(TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           )),
@@ -28,7 +28,7 @@ Script(
             ident: "y",
           ),
           ty: Some(TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           )),
@@ -56,7 +56,7 @@ Script(
             ident: "value",
           ),
           ty: Some(TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           )),
@@ -76,7 +76,7 @@ Script(
             ident: "origin",
           ),
           ty: Some(TypeWithLocation(
-            t: Error,
+            t: None,
             name: "Point",
             span: "[span]",
           )),
@@ -87,7 +87,7 @@ Script(
             ident: "size",
           ),
           ty: Some(TypeWithLocation(
-            t: Error,
+            t: None,
             name: "Point",
             span: "[span]",
           )),
@@ -107,7 +107,7 @@ Script(
             ident: "a",
           ),
           ty: Some(TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           )),
@@ -118,7 +118,7 @@ Script(
             ident: "b",
           ),
           ty: Some(TypeWithLocation(
-            t: Bool,
+            t: Some(Bool),
             name: "bool",
             span: "[span]",
           )),

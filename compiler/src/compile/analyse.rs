@@ -126,7 +126,7 @@ fn extract_functions(ast: &Script<'_>, _symtab: &SymTab<'_>) -> Vec<FunctionInfo
             .iter()
             .map(|arg| FunctionArgumentInfo {
                 name: arg.name().to_string(),
-                ty: arg.ty_required().t,
+                ty: arg.ty_required().resolved(),
                 span: arg.span(),
             })
             .collect();
@@ -135,7 +135,7 @@ fn extract_functions(ast: &Script<'_>, _symtab: &SymTab<'_>) -> Vec<FunctionInfo
             name: function.name.to_string(),
             span: function.span,
             arguments,
-            return_types: function.return_types.types.iter().map(|t| t.t).collect(),
+            return_types: function.return_types.types.iter().map(|t| t.resolved()).collect(),
             is_event_handler: function.modifiers.is_event_handler.is_some(),
         });
     }
@@ -147,7 +147,7 @@ fn extract_functions(ast: &Script<'_>, _symtab: &SymTab<'_>) -> Vec<FunctionInfo
             .iter()
             .map(|arg| FunctionArgumentInfo {
                 name: arg.name().to_string(),
-                ty: arg.ty_required().t,
+                ty: arg.ty_required().resolved(),
                 span: arg.span(),
             })
             .collect();
@@ -156,7 +156,7 @@ fn extract_functions(ast: &Script<'_>, _symtab: &SymTab<'_>) -> Vec<FunctionInfo
             name: function.name.to_string(),
             span: function.span,
             arguments,
-            return_types: function.return_types.types.iter().map(|t| t.t).collect(),
+            return_types: function.return_types.types.iter().map(|t| t.resolved()).collect(),
             is_event_handler: false,
         });
     }

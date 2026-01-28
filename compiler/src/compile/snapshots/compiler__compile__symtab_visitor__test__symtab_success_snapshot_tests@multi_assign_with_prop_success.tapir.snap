@@ -13,7 +13,7 @@ Script(
           ident: "int_prop",
         ),
         ty: Some(TypeWithLocation(
-          t: Int,
+          t: Some(Int),
           name: "int",
           span: "[span]",
         )),
@@ -122,12 +122,12 @@ Script(
       return_types: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           ),
           TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           ),

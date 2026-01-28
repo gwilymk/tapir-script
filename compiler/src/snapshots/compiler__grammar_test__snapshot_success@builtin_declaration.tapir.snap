@@ -36,7 +36,7 @@ Script(
             ident: "x",
           ),
           ty: Some(TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           )),
@@ -45,7 +45,7 @@ Script(
       return_type: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           ),
@@ -65,7 +65,7 @@ Script(
             ident: "x",
           ),
           ty: Some(TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           )),
@@ -74,7 +74,7 @@ Script(
       return_type: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           ),
@@ -94,7 +94,7 @@ Script(
             ident: "x",
           ),
           ty: Some(TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           )),
@@ -103,7 +103,7 @@ Script(
       return_type: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           ),
@@ -123,7 +123,7 @@ Script(
             ident: "x",
           ),
           ty: Some(TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           )),
@@ -132,7 +132,7 @@ Script(
       return_type: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           ),
@@ -152,7 +152,7 @@ Script(
             ident: "x",
           ),
           ty: Some(TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           )),
@@ -161,7 +161,7 @@ Script(
       return_type: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           ),
@@ -181,7 +181,7 @@ Script(
             ident: "x",
           ),
           ty: Some(TypeWithLocation(
-            t: Fix,
+            t: Some(Fix),
             name: "fix",
             span: "[span]",
           )),
@@ -190,7 +190,7 @@ Script(
       return_type: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           ),
@@ -207,7 +207,7 @@ Script(
       return_type: FunctionReturn(
         types: [
           TypeWithLocation(
-            t: Int,
+            t: Some(Int),
             name: "int",
             span: "[span]",
           ),

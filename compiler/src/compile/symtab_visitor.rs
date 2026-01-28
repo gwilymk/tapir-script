@@ -72,8 +72,8 @@ fn extract_properties_from_ast(
     let mut seen_names: HashMap<&str, Span> = HashMap::new();
 
     for (index, decl) in declarations.iter().enumerate() {
-        // Skip properties with parse errors in type
-        if decl.name.ty_required().t == Type::Error {
+        // Skip properties with unresolved or error types
+        if decl.name.ty_required().resolved() == Type::Error {
             continue;
         }
 
@@ -122,7 +122,7 @@ fn extract_properties_from_ast(
         }
 
         properties.push(Property {
-            ty: decl.name.ty_required().t,
+            ty: decl.name.ty_required().resolved(),
             index,
             name: name.to_string(),
             span: decl.span,
@@ -248,7 +248,7 @@ impl<'input> SymTabVisitor<'input> {
                 .return_type
                 .types
                 .first()
-                .map(|t| t.t)
+                .map(|t| t.resolved())
                 .unwrap_or(Type::Error);
 
             builtin_function_infos.insert(
