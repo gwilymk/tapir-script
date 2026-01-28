@@ -1,0 +1,22 @@
+# Simple struct constructor tests
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn test_literal_args() {
+    var p = Point(1, 2);
+}
+
+fn test_variable_args() {
+    var x = 5;
+    var y = 10;
+    var p = Point(x, y);
+}
+
+fn test_expression_args() {
+    var a = 10;
+    var b = 20;
+    var p = Point(a + 1, b * 2);
+}

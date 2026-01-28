@@ -326,7 +326,7 @@ mod test {
             let (mut irs, spans_vec): (Vec<_>, Vec<_>) = script
                 .functions
                 .iter()
-                .map(|f| create_ir(f, &mut symtab))
+                .map(|f| create_ir(f, &mut symtab, &struct_registry))
                 .unzip();
 
             let mut symbol_spans = SymbolSpans::new();

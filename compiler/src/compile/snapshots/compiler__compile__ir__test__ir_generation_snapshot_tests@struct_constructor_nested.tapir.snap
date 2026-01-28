@@ -1,0 +1,70 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/struct_constructor_nested.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test_nested_constructor() -> 
+
+---- block 0 ----
+temp.4 = int 0
+temp.5 = int 0
+temp.3.x.6 = temp.4
+temp.3.y.7 = temp.5
+temp.9 = int 100
+temp.10 = int 200
+temp.8.x.11 = temp.9
+temp.8.y.12 = temp.10
+r.origin.x.13 = temp.3.x.6
+r.origin.y.14 = temp.3.y.7
+r.size.x.15 = temp.8.x.11
+r.size.y.16 = temp.8.y.12
+return 
+
+=======================
+fn test_mixed_fields() -> 
+
+---- block 0 ----
+temp.18 = int 0
+temp.19 = int 0
+temp.17.x.20 = temp.18
+temp.17.y.21 = temp.19
+temp.22 = int 5
+temp.24 = int 100
+temp.25 = int 100
+temp.23.x.26 = temp.24
+temp.23.y.27 = temp.25
+line.start.x.28 = temp.17.x.20
+line.start.y.29 = temp.17.y.21
+line.thickness.30 = temp.22
+line.end.x.31 = temp.23.x.26
+line.end.y.32 = temp.23.y.27
+return 
+
+=======================
+fn test_deep_nesting() -> 
+
+---- block 0 ----
+temp.35 = int 0
+temp.36 = int 0
+temp.34.x.37 = temp.35
+temp.34.y.38 = temp.36
+temp.40 = int 50
+temp.41 = int 50
+temp.39.x.42 = temp.40
+temp.39.y.43 = temp.41
+temp.33.origin.x.44 = temp.34.x.37
+temp.33.origin.y.45 = temp.34.y.38
+temp.33.size.x.46 = temp.39.x.42
+temp.33.size.y.47 = temp.39.y.43
+b.bounds.origin.x.48 = temp.33.origin.x.44
+b.bounds.origin.y.49 = temp.33.origin.y.45
+b.bounds.size.x.50 = temp.33.size.x.46
+b.bounds.size.y.51 = temp.33.size.y.47
+return

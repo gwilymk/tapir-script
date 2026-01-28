@@ -1,0 +1,36 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/struct_constructor_multiple.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test_multiple_structs() -> 
+
+---- block 0 ----
+temp.3 = int 1
+temp.4 = int 2
+p1.x.5 = temp.3
+p1.y.6 = temp.4
+temp.7 = int 3
+temp.8 = int 4
+p2.x.9 = temp.7
+p2.y.10 = temp.8
+temp.11 = int 5
+temp.12 = int 6
+p3.x.13 = temp.11
+p3.y.14 = temp.12
+return 
+
+=======================
+fn test_constructor_discarded() -> 
+
+---- block 0 ----
+temp.15 = int 1
+temp.16 = int 2
+return

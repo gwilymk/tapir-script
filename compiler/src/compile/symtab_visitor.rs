@@ -12,6 +12,21 @@ use crate::{
     types::{StructId, StructRegistry, Type},
 };
 
+/// Represents the expansion of a struct-typed symbol into its component field symbols.
+///
+/// When a struct variable is assigned (e.g., `var p = Point(1, 2)`), we expand it into
+/// symbols for each leaf field (e.g., `p.x`, `p.y`). This allows the IR to work with
+/// individual scalar values rather than composite struct values.
+#[derive(Clone, Debug)]
+pub struct ExpandedStruct {
+    /// Maps field paths (e.g., "p.x", "p.origin.x") to their symbol IDs.
+    pub fields: HashMap<String, SymbolId>,
+    /// All leaf symbols in declaration order, for struct-to-struct assignment.
+    pub leaf_symbols: Vec<SymbolId>,
+    /// Types for each leaf symbol, parallel to leaf_symbols.
+    pub leaf_types: Vec<Type>,
+}
+
 /// Stores resolved symbol IDs for function arguments.
 /// This replaces the old MaybeResolved approach with an immutable AST pattern.
 #[derive(Clone, Debug)]
@@ -568,6 +583,10 @@ pub struct SymTab<'input> {
     global_names: HashMap<Cow<'input, str>, GlobalId>,
 
     builtin_functions: HashMap<BuiltinFunctionId, BuiltinFunctionInfo>,
+
+    /// Tracks struct expansions created during IR lowering.
+    /// Maps the "parent" symbol (the struct variable itself) to its expanded field symbols.
+    struct_expansions: HashMap<SymbolId, ExpandedStruct>,
 }
 
 impl<'input> SymTab<'input> {
@@ -589,6 +608,7 @@ impl<'input> SymTab<'input> {
             globals: vec![],
             global_names: HashMap::new(),
             builtin_functions,
+            struct_expansions: HashMap::new(),
         }
     }
 
@@ -607,6 +627,100 @@ impl<'input> SymTab<'input> {
         let id = self.symbol_names.len();
         self.symbol_names.push((Cow::Borrowed(""), None));
         SymbolId(id as u64)
+    }
+
+    /// Create a new symbol with an owned name (for generated field symbols).
+    fn new_symbol_owned(&mut self, name: String, span: Span) -> SymbolId {
+        self.symbol_names.push((Cow::Owned(name), Some(span)));
+        SymbolId((self.symbol_names.len() - 1) as u64)
+    }
+
+    /// Expand a struct-typed symbol into its component field symbols.
+    ///
+    /// Creates symbols for each leaf field (scalars) and recursively expands
+    /// nested struct fields. Returns the expansion and stores it in the symbol table.
+    ///
+    /// This is called during IR lowering when assigning to a struct variable.
+    pub fn expand_struct_symbol(
+        &mut self,
+        parent_symbol: SymbolId,
+        base_name: &str,
+        struct_id: StructId,
+        span: Span,
+        registry: &StructRegistry,
+    ) -> ExpandedStruct {
+        // Check if already expanded
+        if let Some(existing) = self.struct_expansions.get(&parent_symbol) {
+            return existing.clone();
+        }
+
+        let mut fields = HashMap::new();
+        let mut leaf_symbols = Vec::new();
+        let mut leaf_types = Vec::new();
+
+        self.expand_struct_recursive(
+            base_name,
+            struct_id,
+            span,
+            registry,
+            &mut fields,
+            &mut leaf_symbols,
+            &mut leaf_types,
+        );
+
+        let expansion = ExpandedStruct {
+            fields,
+            leaf_symbols,
+            leaf_types,
+        };
+        self.struct_expansions
+            .insert(parent_symbol, expansion.clone());
+        expansion
+    }
+
+    /// Recursively expand a struct's fields into symbols.
+    fn expand_struct_recursive(
+        &mut self,
+        path: &str,
+        struct_id: StructId,
+        span: Span,
+        registry: &StructRegistry,
+        fields: &mut HashMap<String, SymbolId>,
+        leaf_symbols: &mut Vec<SymbolId>,
+        leaf_types: &mut Vec<Type>,
+    ) {
+        let def = registry.get(struct_id);
+
+        for field in &def.fields {
+            let field_path = format!("{}.{}", path, field.name);
+
+            match field.ty {
+                Type::Struct(nested_id) => {
+                    // Recurse for nested structs
+                    self.expand_struct_recursive(
+                        &field_path,
+                        nested_id,
+                        span,
+                        registry,
+                        fields,
+                        leaf_symbols,
+                        leaf_types,
+                    );
+                }
+                ty => {
+                    // Leaf field - create a symbol and record its type
+                    let symbol_id = self.new_symbol_owned(field_path.clone(), span);
+                    fields.insert(field_path, symbol_id);
+                    leaf_symbols.push(symbol_id);
+                    leaf_types.push(ty);
+                }
+            }
+        }
+    }
+
+    /// Get the struct expansion for a symbol, if it exists.
+    pub fn get_struct_expansion(&self, symbol_id: SymbolId) -> Option<&ExpandedStruct> {
+        self.struct_expansions.get(&symbol_id)
     }
 
     pub(crate) fn name_for_symbol(&self, symbol_id: SymbolId) -> Cow<'input, str> {

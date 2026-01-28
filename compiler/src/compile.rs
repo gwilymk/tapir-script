@@ -109,7 +109,7 @@ pub fn compile(
         None => return Err(diagnostics),
     };
 
-    let (mut symtab, type_table, _struct_registry) =
+    let (mut symtab, type_table, struct_registry) =
         analyse_ast(&mut ast, settings, &mut diagnostics);
 
     if diagnostics.has_errors() {
@@ -141,7 +141,7 @@ pub fn compile(
     let (ir_functions, spans_vec): (Vec<_>, Vec<_>) = ast
         .functions
         .iter()
-        .map(|f| create_ir(f, &mut symtab))
+        .map(|f| create_ir(f, &mut symtab, &struct_registry))
         .unzip();
 
     // Merge all symbol spans

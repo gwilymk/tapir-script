@@ -1,6 +1,7 @@
 use crate::{
     ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
     compile::symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
+    types::StructRegistry,
 };
 
 use super::{
@@ -8,8 +9,12 @@ use super::{
     TapIrFunction,
 };
 
-pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> (TapIrFunction, SymbolSpans) {
-    let block_visitor = BlockVisitor::default();
+pub fn create_ir(
+    f: &ast::Function<'_>,
+    symtab: &mut SymTab,
+    struct_registry: &StructRegistry,
+) -> (TapIrFunction, SymbolSpans) {
+    let block_visitor = BlockVisitor::new(struct_registry);
     let (blocks, symbol_spans) = block_visitor.create_blocks(&f.statements, symtab);
 
     let id = *f.meta.get().expect("Should have FunctionId by now");
@@ -37,8 +42,7 @@ pub fn create_ir(f: &ast::Function<'_>, symtab: &mut SymTab) -> (TapIrFunction, 
     )
 }
 
-#[derive(Default)]
-struct BlockVisitor {
+struct BlockVisitor<'a> {
     blocks: Vec<TapIrBlock>,
     current_block: Vec<TapIr>,
 
@@ -47,6 +51,7 @@ struct BlockVisitor {
     next_block_id: Option<BlockId>,
 
     symbol_spans: SymbolSpans,
+    struct_registry: &'a StructRegistry,
 }
 
 struct LoopEntry {
@@ -54,7 +59,19 @@ struct LoopEntry {
     exit: BlockId,
 }
 
-impl BlockVisitor {
+impl<'a> BlockVisitor<'a> {
+    fn new(struct_registry: &'a StructRegistry) -> Self {
+        Self {
+            blocks: Vec::new(),
+            current_block: Vec::new(),
+            loop_entries: Vec::new(),
+            next_free_block_id: 0,
+            next_block_id: None,
+            symbol_spans: SymbolSpans::new(),
+            struct_registry,
+        }
+    }
+
     fn create_blocks(
         mut self,
         statements: &[ast::Statement<'_>],
@@ -88,9 +105,25 @@ impl BlockVisitor {
                 let temps: Vec<SymbolId> = if target_symbols.len() == values.len() {
                     // Paired assignment: evaluate all RHS into temporaries first,
                     // then move to targets (enables swap idiom: a, b = b, a)
+                    //
+                    // Special case: struct constructors assign directly to target fields
+                    // since their arguments don't depend on the targets (no swap issue).
                     values
                         .iter()
-                        .map(|value| {
+                        .zip(target_symbols.iter())
+                        .map(|(value, &target)| {
+                            // Check if this is a struct constructor - if so, assign directly
+                            if let ast::ExpressionKind::Call { .. } = &value.kind {
+                                if let Some(InternalOrExternalFunctionId::StructConstructor(_)) =
+                                    value.meta.get()
+                                {
+                                    // Struct constructor: assign directly to target
+                                    self.blocks_for_expression(value, target, symtab);
+                                    return target; // No temp needed, already assigned to target
+                                }
+                            }
+
+                            // Non-struct: use temporary as before
                             let temp = symtab.new_temporary();
                             self.blocks_for_expression(value, temp, symtab);
                             temp
@@ -148,8 +181,13 @@ impl BlockVisitor {
                             });
                         }
                         InternalOrExternalFunctionId::StructConstructor(_) => {
-                            // TODO: Implement struct constructor IR in 008b
-                            panic!("Struct constructor IR not yet implemented");
+                            // Struct constructors return a single value, so if we're here
+                            // (multi-return branch), it means the code tried to assign a
+                            // struct to multiple variables. This should be caught by the
+                            // type checker.
+                            panic!(
+                                "Struct constructor in multi-return context - type checker should have caught this"
+                            );
                         }
                     }
 
@@ -159,6 +197,11 @@ impl BlockVisitor {
                 };
 
                 for (&target_symbol, temp) in target_symbols.iter().zip(temps) {
+                    // Skip if already assigned directly (e.g., struct constructor)
+                    if temp == target_symbol {
+                        continue;
+                    }
+
                     let is_property = symtab.get_property(target_symbol).is_some();
                     let global_id = GlobalId::from_symbol_id(target_symbol);
 
@@ -305,9 +348,9 @@ impl BlockVisitor {
                         });
                     }
                     InternalOrExternalFunctionId::StructConstructor(_) => {
-                        // Struct constructor called as statement - discard result
-                        // TODO: Implement struct constructor IR in 008b
-                        panic!("Struct constructor IR not yet implemented");
+                        // Struct constructor called as statement - discard result.
+                        // Arguments were already evaluated into temporaries above,
+                        // so we don't need to emit any IR here.
                     }
                 }
             }
@@ -538,9 +581,69 @@ impl BlockVisitor {
                             args,
                         });
                     }
-                    InternalOrExternalFunctionId::StructConstructor(_) => {
-                        // TODO: Implement struct constructor IR in 008b
-                        panic!("Struct constructor IR not yet implemented");
+                    InternalOrExternalFunctionId::StructConstructor(struct_id) => {
+                        // Expand the target symbol into field symbols
+                        let base_name = symtab.name_for_symbol(target_symbol).to_string();
+                        let target_expansion = symtab.expand_struct_symbol(
+                            target_symbol,
+                            &base_name,
+                            struct_id,
+                            expr.span,
+                            self.struct_registry,
+                        );
+
+                        // Get the struct definition to know field types
+                        let struct_def = self.struct_registry.get(struct_id);
+
+                        // Copy each argument to the corresponding field(s)
+                        let mut target_leaf_idx = 0;
+                        for (arg_symbol, field) in args.iter().zip(&struct_def.fields) {
+                            match field.ty {
+                                crate::types::Type::Struct(nested_id) => {
+                                    // Argument is a struct - copy from arg's expanded fields
+                                    if let Some(arg_expansion) =
+                                        symtab.get_struct_expansion(*arg_symbol)
+                                    {
+                                        // Copy each leaf from arg to target
+                                        for &arg_leaf in &arg_expansion.leaf_symbols {
+                                            self.current_block.push(TapIr::Move {
+                                                target: target_expansion.leaf_symbols
+                                                    [target_leaf_idx],
+                                                source: arg_leaf,
+                                            });
+                                            target_leaf_idx += 1;
+                                        }
+                                    } else {
+                                        // Arg should be expanded but isn't - expand it now
+                                        let arg_name =
+                                            symtab.name_for_symbol(*arg_symbol).to_string();
+                                        let arg_expansion = symtab.expand_struct_symbol(
+                                            *arg_symbol,
+                                            &arg_name,
+                                            nested_id,
+                                            expr.span,
+                                            self.struct_registry,
+                                        );
+                                        for &arg_leaf in &arg_expansion.leaf_symbols {
+                                            self.current_block.push(TapIr::Move {
+                                                target: target_expansion.leaf_symbols
+                                                    [target_leaf_idx],
+                                                source: arg_leaf,
+                                            });
+                                            target_leaf_idx += 1;
+                                        }
+                                    }
+                                }
+                                _ => {
+                                    // Scalar field - simple move
+                                    self.current_block.push(TapIr::Move {
+                                        target: target_expansion.leaf_symbols[target_leaf_idx],
+                                        source: *arg_symbol,
+                                    });
+                                    target_leaf_idx += 1;
+                                }
+                            }
+                        }
                     }
                 }
             }

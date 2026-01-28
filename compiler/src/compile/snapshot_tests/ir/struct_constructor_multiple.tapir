@@ -1,0 +1,17 @@
+# Multiple struct variables in one function
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn test_multiple_structs() {
+    var p1 = Point(1, 2);
+    var p2 = Point(3, 4);
+    var p3 = Point(5, 6);
+}
+
+fn test_constructor_discarded() {
+    # Constructor called as statement - result discarded
+    Point(1, 2);
+}

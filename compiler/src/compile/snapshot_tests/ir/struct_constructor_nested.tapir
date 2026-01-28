@@ -1,0 +1,35 @@
+# Nested struct constructors
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+struct Rect {
+    origin: Point,
+    size: Point,
+}
+
+fn test_nested_constructor() {
+    var r = Rect(Point(0, 0), Point(100, 200));
+}
+
+# Struct with mixed scalar and struct fields
+struct Line {
+    start: Point,
+    thickness: int,
+    end: Point,
+}
+
+fn test_mixed_fields() {
+    var line = Line(Point(0, 0), 5, Point(100, 100));
+}
+
+# Three levels of nesting
+struct Box {
+    bounds: Rect,
+}
+
+fn test_deep_nesting() {
+    var b = Box(Rect(Point(0, 0), Point(50, 50)));
+}

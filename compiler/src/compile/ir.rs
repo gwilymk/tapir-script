@@ -483,7 +483,7 @@ mod test {
     use crate::{
         CompileSettings,
         compile::{
-            loop_visitor::visit_loop_check, symtab_visitor::SymTabVisitor,
+            loop_visitor::visit_loop_check, struct_visitor, symtab_visitor::SymTabVisitor,
             type_visitor::TypeVisitor,
         },
         grammar,
@@ -513,7 +513,18 @@ mod test {
                 enable_optimisations: true,
             };
 
-            let struct_registry = StructRegistry::default();
+            // Struct registration and type resolution
+            let mut struct_registry = StructRegistry::default();
+            let struct_names =
+                struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+            struct_visitor::resolve_struct_fields(
+                &script,
+                &mut struct_registry,
+                &struct_names,
+                &mut diagnostics,
+            );
+            struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
             let mut symtab_visitor =
                 SymTabVisitor::new(&compile_settings, &mut script, &struct_registry, &mut diagnostics);
             let mut type_visitor = TypeVisitor::new(
@@ -545,7 +556,7 @@ mod test {
             let irs: Vec<_> = script
                 .functions
                 .iter()
-                .map(|f| create_ir(f, &mut symtab).0)
+                .map(|f| create_ir(f, &mut symtab, &struct_registry).0)
                 .collect();
 
             let mut output = String::new();
