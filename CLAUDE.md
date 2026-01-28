@@ -87,3 +87,5 @@ See `docs/tapir-reference.md` for the complete tapir-script language syntax and 
 ### Snapshot Testing
 
 Tests use `insta` with RON format. Snapshots are in `snapshot_tests/` directories within each crate's source tree.
+Look at the `.snap.new` files yourself to decide if you're happy with the test results, but NEVER accept them. Always
+stop and ask me to review the snapshots and accept them myself.
