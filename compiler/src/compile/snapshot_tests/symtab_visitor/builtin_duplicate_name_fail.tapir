@@ -1,0 +1,2 @@
+builtin(0) fn sin(x: fix) -> fix;
+builtin(1) fn sin(x: fix) -> fix;

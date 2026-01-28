@@ -1,0 +1,27 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/builtin_call_wrong_count_fail.tapir
+---
+[E0013] Error: Incorrect number of argumets for function sin, expected 1 arguments but got 2.
+   ╭─[ builtin_call_wrong_count_fail.tapir:5:14 ]
+   │
+ 1 │ builtin(0) fn sin(x: fix) -> fix;
+   │               ─┬─  
+   │                ╰─── Expected 1 arguments
+   │ 
+ 5 │ var result = sin(1.0, 2.0);
+   │              ──────┬──────  
+   │                    ╰──────── Got 2 arguments
+───╯
+[E0013] Error: Incorrect number of argumets for function frame, expected 0 arguments but got 1.
+   ╭─[ builtin_call_wrong_count_fail.tapir:8:9 ]
+   │
+ 2 │ builtin(-1) fn frame() -> int;
+   │                ──┬──  
+   │                  ╰──── Expected 0 arguments
+   │ 
+ 8 │ var f = frame(42);
+   │         ────┬────  
+   │             ╰────── Got 1 arguments
+───╯

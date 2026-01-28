@@ -5,9 +5,9 @@ use serde::Serialize;
 use crate::{
     Trigger,
     ast::{
-        self, BinaryOperator, Expression, ExpressionKind, ExternFunctionDefinition, Function,
-        FunctionModifiers, FunctionReturn, GlobalDeclaration, InternalOrExternalFunctionId,
-        SymbolId,
+        self, BinaryOperator, BuiltinFunction, Expression, ExpressionKind,
+        ExternFunctionDefinition, Function, FunctionModifiers, FunctionReturn, GlobalDeclaration,
+        InternalOrExternalFunctionId, SymbolId,
     },
     builtins::BuiltinVariable,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
@@ -61,6 +61,7 @@ impl<'input> TypeVisitor<'input> {
     pub fn new(
         functions: &[Function<'input>],
         extern_functions: &[ExternFunctionDefinition<'input>],
+        builtin_functions: &[BuiltinFunction<'input>],
         symtab: &SymTab<'input>,
     ) -> Self {
         let mut resolved_functions = HashMap::new();
@@ -106,6 +107,29 @@ impl<'input> TypeVisitor<'input> {
                     span: function.span,
                     args,
                     rets: function.return_types.types.iter().map(|t| t.t).collect(),
+                    modifiers: FunctionModifiers::default(),
+                },
+            );
+        }
+
+        for function in builtin_functions {
+            let args = function
+                .arguments
+                .iter()
+                .map(|arg| FunctionArgumentInfo {
+                    name: Cow::Borrowed(arg.name()),
+                    ty: arg.ty_required().t,
+                    span: arg.span(),
+                })
+                .collect();
+
+            resolved_functions.insert(
+                InternalOrExternalFunctionId::Builtin(*function.meta.get().unwrap()),
+                FunctionInfo {
+                    name: function.name,
+                    span: function.span,
+                    args,
+                    rets: function.return_type.types.iter().map(|t| t.t).collect(),
                     modifiers: FunctionModifiers::default(),
                 },
             );
@@ -1043,6 +1067,7 @@ mod test {
             let mut type_visitor = TypeVisitor::new(
                 &script.functions,
                 &script.extern_functions,
+                &script.builtin_functions,
                 symtab_visitor.get_symtab(),
             );
 
@@ -1104,6 +1129,7 @@ mod test {
             let mut type_visitor = TypeVisitor::new(
                 &script.functions,
                 &script.extern_functions,
+                &script.builtin_functions,
                 symtab_visitor.get_symtab(),
             );
 

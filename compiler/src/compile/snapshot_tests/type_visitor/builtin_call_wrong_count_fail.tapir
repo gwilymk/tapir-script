@@ -1,0 +1,8 @@
+builtin(0) fn sin(x: fix) -> fix;
+builtin(-1) fn frame() -> int;
+
+# Too many arguments
+var result = sin(1.0, 2.0);
+
+# Arguments when none expected
+var f = frame(42);

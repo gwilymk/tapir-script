@@ -343,6 +343,7 @@ mod test {
             let mut type_visitor = TypeVisitor::new(
                 &script.functions,
                 &script.extern_functions,
+                &script.builtin_functions,
                 symtab_visitor.get_symtab(),
             );
 

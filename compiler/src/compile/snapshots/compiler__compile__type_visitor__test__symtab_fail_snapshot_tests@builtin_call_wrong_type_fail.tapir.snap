@@ -1,0 +1,16 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/builtin_call_wrong_type_fail.tapir
+---
+[E0004] Error: Incorrect type for argument 'x' of function 'sin', expected fix but got int
+   ╭─[ builtin_call_wrong_type_fail.tapir:4:18 ]
+   │
+ 1 │ builtin(0) fn sin(x: fix) -> fix;
+   │                   ┬  
+   │                   ╰── Expected fix
+   │ 
+ 4 │ var result = sin(42);
+   │                  ─┬  
+   │                   ╰── Passing int
+───╯

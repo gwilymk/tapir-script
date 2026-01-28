@@ -1,0 +1,13 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/builtin_call_success.tapir
+---
+[
+  ("angle", Fix),
+  ("s", Fix),
+  ("c", Fix),
+  ("r", Fix),
+  ("f", Int),
+  ("current_frame", Int),
+]

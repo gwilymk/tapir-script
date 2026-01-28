@@ -1,0 +1,15 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/builtin_duplicate_name_fail.tapir
+---
+[E0011] Error: Function with name 'sin' already exists
+   ╭─[ builtin_duplicate_name_fail.tapir:2:15 ]
+   │
+ 1 │ builtin(0) fn sin(x: fix) -> fix;
+   │               ─┬─  
+   │                ╰─── Originally declared here
+ 2 │ builtin(1) fn sin(x: fix) -> fix;
+   │               ─┬─  
+   │                ╰─── Also declared here
+───╯

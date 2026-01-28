@@ -1,0 +1,4 @@
+builtin(0) fn sin(x: fix) -> fix;
+
+# Passing int when fix is expected
+var result = sin(42);

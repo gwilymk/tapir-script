@@ -199,6 +199,24 @@ impl<'input> SymTabVisitor<'input> {
             function_names.insert(InternalOrExternalFunctionId::External(fid), function.name);
         }
 
+        for function in script.builtin_functions.iter_mut() {
+            let fid = function.builtin_id;
+            function.meta.set(fid);
+
+            if let Some(other_span) = function_declarations.insert(function.name, function.span) {
+                ErrorKind::FunctionAlreadyDeclared {
+                    name: function.name.to_string(),
+                }
+                .at(function.span)
+                .label(other_span, DiagnosticMessage::OriginallyDeclaredHere)
+                .label(function.span, DiagnosticMessage::AlsoDeclaredHere)
+                .emit(diagnostics);
+            }
+
+            functions_map.insert(function.name, InternalOrExternalFunctionId::Builtin(fid));
+            function_names.insert(InternalOrExternalFunctionId::Builtin(fid), function.name);
+        }
+
         for (i, function) in script.functions.iter_mut().enumerate() {
             let fid = FunctionId(i);
             function.meta.set(fid);

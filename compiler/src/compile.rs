@@ -53,6 +53,7 @@ pub fn analyse_ast<'input>(
     let mut type_visitor = TypeVisitor::new(
         &ast.functions,
         &ast.extern_functions,
+        &ast.builtin_functions,
         symtab_visitor.get_symtab(),
     );
     for function in &mut ast.functions {

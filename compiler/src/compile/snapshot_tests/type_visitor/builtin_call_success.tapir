@@ -1,0 +1,12 @@
+builtin(0) fn sin(x: fix) -> fix;
+builtin(1) fn cos(x: fix) -> fix;
+builtin(2) fn sqrt(x: fix) -> fix;
+builtin(3) fn floor(x: fix) -> int;
+builtin(-1) fn frame() -> int;
+
+var angle = 0.5;
+var s = sin(angle);
+var c = cos(angle);
+var r = sqrt(4.0);
+var f = floor(3.7);
+var current_frame = frame();
