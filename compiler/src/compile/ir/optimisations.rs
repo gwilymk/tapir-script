@@ -345,7 +345,7 @@ mod test {
             let struct_names =
                 struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
             struct_visitor::resolve_struct_fields(
-                &mut script,
+                &script,
                 &mut struct_registry,
                 &struct_names,
                 &mut diagnostics,
