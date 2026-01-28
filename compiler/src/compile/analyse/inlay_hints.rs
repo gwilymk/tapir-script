@@ -37,6 +37,11 @@ fn extract_from_statements(
                 // Add type hints for each declared variable
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
                     for (ident, symbol_id) in idents.iter().zip(symbol_ids.iter()) {
+                        // Skip if the variable already has an explicit type annotation
+                        if ident.ty.is_some() {
+                            continue;
+                        }
+
                         // Skip if it's a property (properties have explicit types)
                         if symtab.get_property(*symbol_id).is_some() {
                             continue;
