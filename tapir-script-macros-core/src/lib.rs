@@ -110,7 +110,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 // Struct property - generate tuple conversion code
                 let field_ident = format_ident!("{}", struct_info.rust_field_name);
                 let tuple_position = struct_info.tuple_position;
-                let total_fields = struct_info.total_fields;
+                let total_fields = struct_info.total_fields();
 
                 // Generate the tuple type annotation (e.g., (i32, i32))
                 let tuple_types: Vec<_> = struct_info

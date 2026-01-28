@@ -82,12 +82,17 @@ pub struct StructPropertyInfo {
     pub rust_field_name: String,
     /// Position of this field within the flattened tuple (0-indexed).
     pub tuple_position: usize,
-    /// Total number of scalar fields in the expanded struct.
-    pub total_fields: usize,
     /// Types of all scalar fields in order (for generating the tuple type annotation).
     pub field_types: Box<[Type]>,
     /// The struct type ID for this property.
     pub struct_id: StructId,
+}
+
+impl StructPropertyInfo {
+    /// Total number of scalar fields in the expanded struct.
+    pub fn total_fields(&self) -> usize {
+        self.field_types.len()
+    }
 }
 
 pub struct ExternFunction {

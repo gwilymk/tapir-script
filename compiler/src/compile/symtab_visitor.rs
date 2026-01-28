@@ -103,7 +103,6 @@ fn expand_property_fields(
     tuple_position: &mut usize,
     registry: &StructRegistry,
     field_types: &[Type],
-    total_fields: usize,
     span: Span,
     properties: &mut Vec<Property>,
 ) {
@@ -124,7 +123,6 @@ fn expand_property_fields(
                     tuple_position,
                     registry,
                     field_types,
-                    total_fields,
                     span,
                     properties,
                 );
@@ -138,7 +136,6 @@ fn expand_property_fields(
                     struct_info: Some(StructPropertyInfo {
                         rust_field_name: rust_field_name.to_string(),
                         tuple_position: *tuple_position,
-                        total_fields,
                         field_types: field_types.to_vec().into_boxed_slice(),
                         struct_id: root_struct_id,
                     }),
@@ -219,7 +216,6 @@ fn extract_properties_from_ast(
             // Collect all leaf field types first
             let mut field_types = Vec::new();
             collect_struct_field_types(struct_id, struct_registry, &mut field_types);
-            let total_fields = field_types.len();
 
             // Expand struct property into its component scalar properties
             let mut tuple_position = 0;
@@ -232,7 +228,6 @@ fn extract_properties_from_ast(
                 &mut tuple_position,
                 struct_registry,
                 &field_types,
-                total_fields,
                 decl.span,
                 &mut properties,
             );
