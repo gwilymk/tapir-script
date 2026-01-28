@@ -324,8 +324,13 @@ impl Compiler {
                     TapIr::GetBuiltin { target, builtin } => {
                         self.bytecode.get_builtin(v(target), builtin.id());
                     }
-                    TapIr::CallBuiltin { .. } => {
-                        todo!("CallBuiltin bytecode emission - Stage D")
+                    TapIr::CallBuiltin { target, f, args } => {
+                        // Put args starting at first_argument (no offset, like extern calls)
+                        put_args(&mut self.bytecode, args, true);
+                        // Emit call_builtin instruction
+                        // builtin_id is i16 but we only support -128..127 range
+                        let builtin_id = f.0 as i8;
+                        self.bytecode.call_builtin(v(target), builtin_id, first_argument);
                     }
                     TapIr::GetGlobal {
                         target,
@@ -502,6 +507,11 @@ impl Bytecode {
     fn call_external(&mut self, extern_id: u8, first_arg: u8) {
         self.data
             .push(Type1::extern_call(extern_id, first_arg).encode());
+    }
+
+    fn call_builtin(&mut self, target: u8, builtin_id: i8, first_arg: u8) {
+        self.data
+            .push(Type1::call_builtin(target, builtin_id, first_arg).encode());
     }
 
     fn spawn(&mut self, first_arg: u8, num_args: u8) {

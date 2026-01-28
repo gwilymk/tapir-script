@@ -35,6 +35,7 @@ pub enum Opcode {
 
     Call,
     ExternCall,
+    CallBuiltin,
     Spawn,
     Trigger,
 
@@ -168,6 +169,13 @@ impl Type1 {
 
     pub const fn extern_call(extern_id: u8, first_arg: u8) -> Self {
         Self::new2(Opcode::ExternCall, extern_id, first_arg)
+    }
+
+    /// Call a builtin function.
+    /// Format: target = register to store result, builtin_id = i8 as u8, first_arg = first argument register
+    /// Positive IDs are pure (constant foldable), negative IDs are impure (need runtime state)
+    pub const fn call_builtin(target: u8, builtin_id: i8, first_arg: u8) -> Self {
+        Self::new3(Opcode::CallBuiltin, target, builtin_id as u8, first_arg)
     }
 
     pub const fn spawn(first_arg: u8, num_args: u8) -> Self {
