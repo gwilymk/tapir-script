@@ -166,15 +166,19 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            idents: [
-              Ident(
-                span: "[span]",
-                ident: "a",
-              ),
-              Ident(
-                span: "[span]",
-                ident: "b",
-              ),
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "a",
+                ),
+              ],
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "b",
+                ),
+              ],
             ],
             values: [
               Expression(
@@ -194,15 +198,19 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            idents: [
-              Ident(
-                span: "[span]",
-                ident: "p",
-              ),
-              Ident(
-                span: "[span]",
-                ident: "q",
-              ),
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "p",
+                ),
+              ],
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "q",
+                ),
+              ],
             ],
             values: [
               Expression(
@@ -220,15 +228,19 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            idents: [
-              Ident(
-                span: "[span]",
-                ident: "a",
-              ),
-              Ident(
-                span: "[span]",
-                ident: "b",
-              ),
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "a",
+                ),
+              ],
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "b",
+                ),
+              ],
             ],
             values: [
               Expression(

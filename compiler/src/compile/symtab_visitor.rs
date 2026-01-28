@@ -400,27 +400,32 @@ impl<'input> SymTabVisitor<'input> {
 
                     statement.meta.set(statement_meta);
                 }
-                StatementKind::Assignment { idents, values } => {
+                StatementKind::Assignment { targets, values } => {
                     // Visit all the value expressions first
                     for value in values {
                         self.visit_expr(value, diagnostics);
                     }
 
                     // no need to do counting checks, that's done in type checking
+                    // For each target path, resolve the root variable (first ident)
                     let mut statement_meta = vec![];
-                    for ident in idents {
-                        if let Some(symbol_id) = self.symbol_names.get(ident.ident, &self.symtab) {
-                            statement_meta.push(symbol_id);
-                        } else {
-                            ErrorKind::UnknownVariable {
-                                name: ident.ident.to_string(),
-                            }
-                            .at(ident.span)
-                            .label(ident.span, DiagnosticMessage::UnknownVariableLabel)
-                            .emit(diagnostics);
+                    for path in targets {
+                        if let Some(first) = path.first() {
+                            if let Some(symbol_id) = self.symbol_names.get(first.ident, &self.symtab)
+                            {
+                                statement_meta.push(symbol_id);
+                            } else {
+                                ErrorKind::UnknownVariable {
+                                    name: first.ident.to_string(),
+                                }
+                                .at(first.span)
+                                .label(first.span, DiagnosticMessage::UnknownVariableLabel)
+                                .emit(diagnostics);
 
-                            // create a dummy symbol to ensure that the meta stays correct
-                            statement_meta.push(self.symtab.new_symbol(ident.ident, ident.span));
+                                // create a dummy symbol to ensure that the meta stays correct
+                                statement_meta
+                                    .push(self.symtab.new_symbol(first.ident, first.span));
+                            }
                         }
                     }
 

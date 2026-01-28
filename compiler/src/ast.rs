@@ -308,7 +308,8 @@ pub enum StatementKind<'input> {
         values: Vec<Expression<'input>>,
     },
     Assignment {
-        idents: Vec<Ident<'input>>,
+        /// Each target is a path: `[x]` for a variable, `[p, x]` for a field
+        targets: Vec<Vec<Ident<'input>>>,
         values: Vec<Expression<'input>>,
     },
     Wait,
@@ -344,6 +345,7 @@ pub enum StatementKind<'input> {
     Return {
         values: Vec<Expression<'input>>,
     },
+
 }
 
 impl<'input> StatementKind<'input> {

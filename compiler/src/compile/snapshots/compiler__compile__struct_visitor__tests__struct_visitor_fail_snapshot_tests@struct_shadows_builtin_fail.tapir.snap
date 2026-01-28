@@ -19,7 +19,7 @@ input_file: compiler/src/compile/snapshot_tests/struct_visitor/struct_shadows_bu
    │                   ┬  
    │                   ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens "(", "=", ","
+   │ Note: Expected one of tokens "(", "=", ",", "."
 ───╯
 [E0026] Error: Unexpected token KeywordBool
    ╭─[ struct_shadows_builtin_fail.tapir:2:8 ]
@@ -37,7 +37,7 @@ input_file: compiler/src/compile/snapshot_tests/struct_visitor/struct_shadows_bu
    │                   ┬  
    │                   ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens "(", "=", ","
+   │ Note: Expected one of tokens "(", "=", ",", "."
 ───╯
 [E0026] Error: Unexpected token KeywordFix
    ╭─[ struct_shadows_builtin_fail.tapir:3:8 ]
@@ -55,5 +55,5 @@ input_file: compiler/src/compile/snapshot_tests/struct_visitor/struct_shadows_bu
    │                 ┬  
    │                 ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens "(", "=", ","
+   │ Note: Expected one of tokens "(", "=", ",", "."
 ───╯

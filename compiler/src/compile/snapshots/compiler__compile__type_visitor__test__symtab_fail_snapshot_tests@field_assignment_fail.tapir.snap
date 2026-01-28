@@ -1,0 +1,28 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/field_assignment_fail.tapir
+---
+[E0002] Error: Incorrect type, expected int but got bool
+   ╭─[ field_assignment_fail.tapir:4:3 ]
+   │
+ 4 │ p.x = true;
+   │   ┬   ──┬─  
+   │   ╰───────── This has type int
+   │         │   
+   │         ╰─── This has type bool
+───╯
+[E0041] Error: struct `Point` has no field `z`
+   ╭─[ field_assignment_fail.tapir:5:3 ]
+   │
+ 5 │ p.z = 5;
+   │   ┬  
+   │   ╰── struct `Point` has no field `z`
+───╯
+[E0042] Error: cannot access field on type `int` (not a struct)
+   ╭─[ field_assignment_fail.tapir:8:3 ]
+   │
+ 8 │ n.x = 5;
+   │   ┬  
+   │   ╰── cannot access field on type `int` (not a struct)
+───╯

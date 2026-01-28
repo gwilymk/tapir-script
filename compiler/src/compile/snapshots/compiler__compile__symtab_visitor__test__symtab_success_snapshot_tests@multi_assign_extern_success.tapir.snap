@@ -51,15 +51,19 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            idents: [
-              Ident(
-                span: "[span]",
-                ident: "x",
-              ),
-              Ident(
-                span: "[span]",
-                ident: "y",
-              ),
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+              ],
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "y",
+                ),
+              ],
             ],
             values: [
               Expression(

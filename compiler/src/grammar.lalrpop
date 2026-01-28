@@ -187,7 +187,7 @@ Statement: Statement<'input> =
 
 StatementKind: StatementKind<'input> = {
     var <idents: CommaSeparated<TypedIdentifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::VariableDeclaration { <> },
-    <idents: CommaSeparated<Identifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
+    <targets: CommaSeparated<AssignmentTarget>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
     break ";" => StatementKind::Break,
     continue ";" => StatementKind::Continue,
@@ -214,6 +214,16 @@ StatementKind: StatementKind<'input> = {
 
 Identifier: Ident<'input> =
     <start: @L> <ident: identifier> <end: @R> => Ident { ident, span: Span::new(file_id, start, end) };
+
+/// An assignment target: either a simple variable `x` or a field path `p.x.y`
+AssignmentTarget: Vec<Ident<'input>> = {
+    <ident: Identifier> => vec![ident],
+    <path: AssignmentTarget> "." <field: Identifier> => {
+        let mut path = path;
+        path.push(field);
+        path
+    },
+};
 
 // Optional type annotation (for var, global)
 TypedIdentifier: TypedIdent<'input> = {

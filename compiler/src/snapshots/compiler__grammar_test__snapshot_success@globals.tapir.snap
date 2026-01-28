@@ -76,11 +76,13 @@ Script(
         Statement(
           span: "[span]",
           kind: Assignment(
-            idents: [
-              Ident(
-                span: "[span]",
-                ident: "counter",
-              ),
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "counter",
+                ),
+              ],
             ],
             values: [
               Expression(

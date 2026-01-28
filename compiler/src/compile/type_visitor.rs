@@ -22,6 +22,12 @@ pub struct FieldAccessInfo {
     pub field_index: usize,
 }
 
+/// Stored in Assignment statement metadata for targets that are field paths.
+/// Each entry corresponds to a target - None for simple variables, Some for field paths.
+/// For field paths, stores the root struct id and the field indices traversed.
+#[derive(Clone, Debug)]
+pub struct FieldAssignmentInfo(pub Vec<Option<(StructId, Vec<usize>)>>);
+
 use super::{
     loop_visitor::LoopContainsNoBreak,
     symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
@@ -381,25 +387,208 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         self.check_assignment_inner(targets, values, statement_span, symtab, diagnostics);
     }
 
+    /// Check assignments. Returns field assignment info if any targets are field paths.
     fn check_assignment(
         &mut self,
         symbol_ids: &[SymbolId],
-        idents: &[ast::Ident<'input>],
+        paths: &[Vec<ast::Ident<'input>>],
         values: &mut [Expression<'input>],
         statement_span: Span,
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
-    ) {
-        let ident_spans: Vec<Span> = idents.iter().map(|i| i.span).collect();
-        let annotations: Vec<Option<&ast::TypeWithLocation>> = vec![None; idents.len()];
-
-        let targets = AssignmentTargets {
-            symbol_ids,
-            ident_spans: &ident_spans,
-            annotations: &annotations,
+    ) -> Option<FieldAssignmentInfo> {
+        // Type check values. Special handling for multi-return function calls:
+        // if there's a single value but multiple targets, check if it's a function call
+        // with multiple return types.
+        let value_types: Vec<(Type, Span)> = if values.len() == 1
+            && paths.len() > 1
+            && let Some(fn_ret_types) =
+                self.return_types_for_maybe_call(&mut values[0], symtab, diagnostics)
+        {
+            // For multi-return function calls, use the call expression span for all
+            let call_span = values[0].span;
+            fn_ret_types.into_iter().map(|t| (t, call_span)).collect()
+        } else {
+            values
+                .iter_mut()
+                .map(|v| {
+                    let span = v.span;
+                    (self.type_for_expression(v, symtab, diagnostics), span)
+                })
+                .collect()
         };
 
-        self.check_assignment_inner(targets, values, statement_span, symtab, diagnostics);
+        // Check count
+        if paths.len() != value_types.len() {
+            let (extra_spans, label_message): (Vec<Span>, DiagnosticMessage) =
+                if paths.len() > value_types.len() {
+                    (
+                        paths[value_types.len()..]
+                            .iter()
+                            .filter_map(|p| p.last().map(|i| i.span))
+                            .collect(),
+                        DiagnosticMessage::NoValueForVariable,
+                    )
+                } else {
+                    (
+                        values[paths.len()..].iter().map(|v| v.span).collect::<Vec<_>>(),
+                        DiagnosticMessage::NoVariableToReceiveValue,
+                    )
+                };
+
+            let mut builder = ErrorKind::CountMismatch {
+                ident_count: paths.len(),
+                expr_count: value_types.len(),
+            }
+            .at(statement_span)
+            .help(DiagnosticMessage::WhenAssigningMultipleVars);
+
+            for span in extra_spans {
+                builder = builder.label(span, label_message.clone());
+            }
+
+            builder.emit(diagnostics);
+        }
+
+        // Track field assignment info (struct_id and indices for field paths)
+        let mut field_info_list: Vec<Option<(StructId, Vec<usize>)>> = Vec::with_capacity(paths.len());
+        let mut has_field_assignments = false;
+
+        // Check each assignment
+        for (idx, (path, &symbol_id)) in paths.iter().zip(symbol_ids.iter()).enumerate() {
+            if idx >= value_types.len() {
+                field_info_list.push(None);
+                continue;
+            }
+            let (value_type, value_span) = value_types[idx];
+
+            if path.len() == 1 {
+                // Simple variable assignment
+                let ident_span = path[0].span;
+                self.resolve_type_with_spans(
+                    symbol_id,
+                    value_type,
+                    ident_span,
+                    value_span,
+                    symtab,
+                    diagnostics,
+                );
+                field_info_list.push(None);
+            } else {
+                // Field assignment - resolve path to get target type and field indices
+                let target_span = path.last().map(|i| i.span).unwrap_or(statement_span);
+                if let Some((target_type, root_struct_id, field_indices)) =
+                    self.resolve_field_path_with_indices(symbol_id, &path[1..], diagnostics)
+                {
+                    // Check that value type matches target field type
+                    if value_type != Type::Error
+                        && target_type != Type::Error
+                        && value_type != target_type
+                    {
+                        ErrorKind::TypeError {
+                            expected: target_type,
+                            actual: value_type,
+                        }
+                        .at(target_span)
+                        .label(target_span, DiagnosticMessage::HasType { ty: target_type })
+                        .label(value_span, DiagnosticMessage::HasType { ty: value_type })
+                        .emit(diagnostics);
+                    }
+                    field_info_list.push(Some((root_struct_id, field_indices)));
+                    has_field_assignments = true;
+                } else {
+                    // Error case
+                    field_info_list.push(None);
+                }
+            }
+        }
+
+        if has_field_assignments {
+            Some(FieldAssignmentInfo(field_info_list))
+        } else {
+            None
+        }
+    }
+
+    /// Resolves a field path starting from a symbol to get the final field's type,
+    /// the root struct id, and the field indices traversed.
+    /// Returns None if any part of the path is invalid.
+    fn resolve_field_path_with_indices(
+        &self,
+        root_symbol: SymbolId,
+        path: &[ast::Ident<'input>],
+        diagnostics: &mut Diagnostics,
+    ) -> Option<(Type, StructId, Vec<usize>)> {
+        // Get the root symbol's type from the type table
+        let mut current_type = match self.type_table.get(root_symbol.0 as usize) {
+            Some(Some((ty, _))) => *ty,
+            _ => Type::Error,
+        };
+
+        // The root must be a struct
+        let root_struct_id = match current_type {
+            Type::Struct(id) => id,
+            Type::Error => return None,
+            _ => {
+                if let Some(first) = path.first() {
+                    ErrorKind::FieldAccessOnNonStruct { ty: current_type }
+                        .at(first.span)
+                        .label(
+                            first.span,
+                            DiagnosticMessage::FieldAccessOnNonStruct { ty: current_type },
+                        )
+                        .emit(diagnostics);
+                }
+                return None;
+            }
+        };
+
+        let mut field_indices = Vec::with_capacity(path.len());
+
+        for field_ident in path {
+            match current_type {
+                Type::Struct(struct_id) => {
+                    let struct_def = self.struct_registry.get(struct_id);
+                    if let Some((field_index, field_def)) = struct_def
+                        .fields
+                        .iter()
+                        .enumerate()
+                        .find(|(_, f)| f.name == field_ident.ident)
+                    {
+                        field_indices.push(field_index);
+                        current_type = field_def.ty;
+                    } else {
+                        ErrorKind::UnknownField {
+                            struct_name: struct_def.name.clone(),
+                            field_name: field_ident.ident.to_string(),
+                        }
+                        .at(field_ident.span)
+                        .label(
+                            field_ident.span,
+                            DiagnosticMessage::UnknownField {
+                                struct_name: struct_def.name.clone(),
+                                field_name: field_ident.ident.to_string(),
+                            },
+                        )
+                        .emit(diagnostics);
+                        return None;
+                    }
+                }
+                Type::Error => return None,
+                _ => {
+                    ErrorKind::FieldAccessOnNonStruct { ty: current_type }
+                        .at(field_ident.span)
+                        .label(
+                            field_ident.span,
+                            DiagnosticMessage::FieldAccessOnNonStruct { ty: current_type },
+                        )
+                        .emit(diagnostics);
+                    return None;
+                }
+            }
+        }
+
+        Some((current_type, root_struct_id, field_indices))
     }
 
     fn check_assignment_inner(
@@ -589,20 +778,22 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         diagnostics,
                     );
                 }
-                ast::StatementKind::Assignment { idents, values } => {
+                ast::StatementKind::Assignment { targets, values } => {
                     let symbol_ids: &Vec<SymbolId> = statement
                         .meta
                         .get()
                         .expect("Should've been resolved by symbol resolution");
 
-                    self.check_assignment(
+                    if let Some(field_info) = self.check_assignment(
                         symbol_ids,
-                        idents,
+                        targets,
                         values,
                         statement.span,
                         symtab,
                         diagnostics,
-                    );
+                    ) {
+                        statement.meta.set(field_info);
+                    }
                 }
                 ast::StatementKind::If {
                     condition,

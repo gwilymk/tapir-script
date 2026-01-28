@@ -1,0 +1,8 @@
+struct Point { x: int, y: int }
+
+var p = Point(1, 2);
+p.x = true;
+p.z = 5;
+
+var n: int = 1;
+n.x = 5;

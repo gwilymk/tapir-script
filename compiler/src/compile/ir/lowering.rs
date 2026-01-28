@@ -2,7 +2,7 @@ use crate::{
     ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
     compile::{
         symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
-        type_visitor::FieldAccessInfo,
+        type_visitor::{FieldAccessInfo, FieldAssignmentInfo},
     },
     types::StructRegistry,
 };
@@ -104,6 +104,7 @@ impl<'a> BlockVisitor<'a> {
             | ast::StatementKind::VariableDeclaration { values, .. } => {
                 let target_symbols: &Vec<SymbolId> =
                     statement.meta.get().expect("Should've resolved symbols");
+                let field_info: Option<&FieldAssignmentInfo> = statement.meta.get();
 
                 let temps: Vec<SymbolId> = if target_symbols.len() == values.len() {
                     // Paired assignment: evaluate all RHS into temporaries first,
@@ -199,7 +200,25 @@ impl<'a> BlockVisitor<'a> {
                     panic!("Type checker should've caught the count mismatch");
                 };
 
-                for (&target_symbol, temp) in target_symbols.iter().zip(temps) {
+                for (idx, (&root_symbol, temp)) in target_symbols.iter().zip(temps).enumerate() {
+                    // Resolve the actual target symbol - may be a field if this is a field assignment
+                    let target_symbol = if let Some(field_info) = field_info {
+                        if let Some(Some((struct_id, field_indices))) = field_info.0.get(idx) {
+                            // Field assignment - resolve to the actual field symbol
+                            self.resolve_field_symbol(
+                                root_symbol,
+                                *struct_id,
+                                field_indices,
+                                statement.span,
+                                symtab,
+                            )
+                        } else {
+                            root_symbol
+                        }
+                    } else {
+                        root_symbol
+                    };
+
                     // Skip if already assigned directly (e.g., struct constructor)
                     if temp == target_symbol {
                         continue;
@@ -439,6 +458,40 @@ impl<'a> BlockVisitor<'a> {
         ));
 
         self.next_block_id = next_block_id;
+    }
+
+    /// Resolves a field path to the actual field symbol.
+    /// Starts from root_symbol and navigates through field_indices to find the target field.
+    fn resolve_field_symbol(
+        &self,
+        root_symbol: SymbolId,
+        struct_id: crate::types::StructId,
+        field_indices: &[usize],
+        span: crate::tokens::Span,
+        symtab: &mut SymTab,
+    ) -> SymbolId {
+        // Ensure the root symbol has a struct expansion
+        if symtab.get_struct_expansion(root_symbol).is_none() {
+            let root_name = symtab.name_for_symbol(root_symbol).to_string();
+            symtab.expand_struct_symbol(
+                root_symbol,
+                &root_name,
+                struct_id,
+                span,
+                self.struct_registry,
+            );
+        }
+
+        // Navigate through field indices to find the target field
+        let mut current_symbol = root_symbol;
+        for &field_index in field_indices {
+            let expansion = symtab
+                .get_struct_expansion(current_symbol)
+                .expect("Field path should have struct expansion");
+            current_symbol = expansion.fields[field_index];
+        }
+
+        current_symbol
     }
 
     /// Sets the value of the expression to the symbol at target_symbol

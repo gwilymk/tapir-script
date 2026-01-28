@@ -122,10 +122,13 @@ fn extract_from_statements(
                     );
                 }
             }
-            StatementKind::Assignment { idents, values } => {
+            StatementKind::Assignment { targets, values } => {
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
-                    for (ident, symbol_id) in idents.iter().zip(symbol_ids.iter()) {
-                        add_symbol_hover(ident.span, *symbol_id, symtab, type_table, hover_info);
+                    for (path, symbol_id) in targets.iter().zip(symbol_ids.iter()) {
+                        // Add hover for the root variable (first ident in path)
+                        if let Some(first) = path.first() {
+                            add_symbol_hover(first.span, *symbol_id, symtab, type_table, hover_info);
+                        }
                     }
                 }
                 for expr in values {

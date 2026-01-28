@@ -54,11 +54,14 @@ fn extract_references_from_statements(
                     }
                 }
             }
-            StatementKind::Assignment { idents, values } => {
+            StatementKind::Assignment { targets, values } => {
                 // For assignments, LHS idents refer to existing definitions
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
-                    for (ident, symbol_id) in idents.iter().zip(symbol_ids.iter()) {
-                        add_symbol_reference(ident.span, *symbol_id, symtab, references);
+                    for (path, symbol_id) in targets.iter().zip(symbol_ids.iter()) {
+                        // Add reference for the root variable (first ident in path)
+                        if let Some(first) = path.first() {
+                            add_symbol_reference(first.span, *symbol_id, symtab, references);
+                        }
                     }
                 }
                 for expr in values {
