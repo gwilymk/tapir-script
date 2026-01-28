@@ -1,0 +1,22 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/struct_assignment_reassign.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2 = int 1
+temp.3 = int 2
+p.x.4 = temp.2
+p.y.5 = temp.3
+temp.6 = int 3
+temp.7 = int 4
+q.x.8 = temp.6
+q.y.9 = temp.7
+temp.10.x.11 = q.x.8
+temp.10.y.12 = q.y.9
+p.x.4 = temp.10.x.11
+p.y.5 = temp.10.y.12
+return

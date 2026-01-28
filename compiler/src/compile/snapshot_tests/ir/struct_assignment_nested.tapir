@@ -1,0 +1,5 @@
+struct Point { x: int, y: int }
+struct Rect { origin: Point, size: Point }
+
+var r1 = Rect(Point(0, 0), Point(10, 10));
+var r2 = r1;

@@ -224,30 +224,45 @@ impl<'a> BlockVisitor<'a> {
                         continue;
                     }
 
-                    let is_property = symtab.get_property(target_symbol).is_some();
-                    let global_id = GlobalId::from_symbol_id(target_symbol);
-
-                    let expr_target = if is_property || global_id.is_some() {
-                        symtab.new_temporary()
+                    // Check if temp has a struct expansion - if so, copy fields instead of single move
+                    if let Some(temp_expansion) = symtab.get_struct_expansion(temp).cloned() {
+                        // Struct-to-struct assignment: expand target and copy all fields
+                        let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                        let target_expansion = symtab.expand_struct_symbol(
+                            target_symbol,
+                            &target_name,
+                            temp_expansion.struct_id,
+                            statement.span,
+                            self.struct_registry,
+                        );
+                        self.copy_struct_fields(&temp_expansion, &target_expansion, symtab);
                     } else {
-                        target_symbol
-                    };
+                        // Scalar assignment
+                        let is_property = symtab.get_property(target_symbol).is_some();
+                        let global_id = GlobalId::from_symbol_id(target_symbol);
 
-                    self.current_block.push(TapIr::Move {
-                        target: expr_target,
-                        source: temp,
-                    });
+                        let expr_target = if is_property || global_id.is_some() {
+                            symtab.new_temporary()
+                        } else {
+                            target_symbol
+                        };
 
-                    if let Some(property) = symtab.get_property(target_symbol) {
-                        self.current_block.push(TapIr::StoreProp {
-                            prop_index: property.index,
-                            value: expr_target,
+                        self.current_block.push(TapIr::Move {
+                            target: expr_target,
+                            source: temp,
                         });
-                    } else if let Some(global_id) = global_id {
-                        self.current_block.push(TapIr::SetGlobal {
-                            global_index: global_id.0,
-                            value: expr_target,
-                        });
+
+                        if let Some(property) = symtab.get_property(target_symbol) {
+                            self.current_block.push(TapIr::StoreProp {
+                                prop_index: property.index,
+                                value: expr_target,
+                            });
+                        } else if let Some(global_id) = global_id {
+                            self.current_block.push(TapIr::SetGlobal {
+                                global_index: global_id.0,
+                                value: expr_target,
+                            });
+                        }
                     }
                 }
             }

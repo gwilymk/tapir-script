@@ -1,0 +1,18 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/struct_assignment_simple.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2 = int 1
+temp.3 = int 2
+p.x.4 = temp.2
+p.y.5 = temp.3
+temp.6.x.7 = p.x.4
+temp.6.y.8 = p.y.5
+q.x.9 = temp.6.x.7
+q.y.10 = temp.6.y.8
+return

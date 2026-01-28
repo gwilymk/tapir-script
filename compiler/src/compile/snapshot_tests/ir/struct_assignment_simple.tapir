@@ -1,0 +1,4 @@
+struct Point { x: int, y: int }
+
+var p = Point(1, 2);
+var q = p;
