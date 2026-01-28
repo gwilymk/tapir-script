@@ -432,4 +432,137 @@ mod test {
             "frame should be 5 after loop exits"
         );
     }
+
+    #[test]
+    fn builtin_sin_zero() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = "builtin(0) fn sin(x: fix) -> fix;\nproperty prop: fix;\nprop = sin(0.0);";
+        let compile_result =
+            compiler::compile("builtin_sin.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // sin(0) should be 0
+        assert_eq!(prop_object.int_prop, 0);
+    }
+
+    #[test]
+    fn builtin_cos_zero() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = "builtin(1) fn cos(x: fix) -> fix;\nproperty prop: fix;\nprop = cos(0.0);";
+        let compile_result =
+            compiler::compile("builtin_cos.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // cos(0) should be 1.0, which is 256 in fixed point (24.8)
+        assert_eq!(prop_object.int_prop, 256);
+    }
+
+    #[test]
+    fn builtin_sqrt_four() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = "builtin(2) fn sqrt(x: fix) -> fix;\nproperty prop: fix;\nprop = sqrt(4.0);";
+        let compile_result =
+            compiler::compile("builtin_sqrt.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // sqrt(4) should be 2.0, which is 512 in fixed point (24.8)
+        assert_eq!(prop_object.int_prop, 512);
+    }
+
+    #[test]
+    fn builtin_frame_function() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source =
+            "builtin(-1) fn frame() -> int;\nproperty prop: int;\nwait; wait; prop = frame();";
+        let compile_result =
+            compiler::compile("builtin_frame.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        // Run 3 times to execute: initial run (wait), frame 1 (wait), frame 2 (assign prop = frame())
+        for _ in 0..3 {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // frame() should return 2 after two waits
+        assert_eq!(prop_object.int_prop, 2);
+    }
+
+    #[test]
+    fn builtin_floor() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source =
+            "builtin(3) fn floor(x: fix) -> int;\nproperty prop: int;\nprop = floor(3.7);";
+        let compile_result =
+            compiler::compile("builtin_floor.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // floor(3.7) should be 3
+        assert_eq!(prop_object.int_prop, 3);
+    }
 }

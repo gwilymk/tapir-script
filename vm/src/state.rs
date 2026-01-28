@@ -185,6 +185,25 @@ impl State {
 
                     self.set_reg(target, value);
                 }
+                O::CallBuiltin => {
+                    type1!(target, builtin_id, first_arg);
+                    let builtin_id = builtin_id as i8 as i16;
+
+                    let args_start = self.stack_offset + usize::from(first_arg);
+                    let args = self.stack.get(args_start..).unwrap_or(&[]);
+
+                    let result = if builtin_id >= 0 {
+                        builtins::execute_pure(builtin_id, args)
+                            .unwrap_or_else(|| panic!("Unknown pure builtin ID {builtin_id}"))
+                            .unwrap_or_else(|e| panic!("Builtin error: {e:?}"))
+                    } else {
+                        let ctx = builtins::Context { frame };
+                        builtins::execute_impure(builtin_id, args, &ctx)
+                            .unwrap_or_else(|| panic!("Unknown impure builtin ID {builtin_id}"))
+                    };
+
+                    self.set_reg(target, result);
+                }
                 O::GetGlobal => {
                     type1!(target, global_index);
                     self.set_reg(target, globals[global_index as usize]);

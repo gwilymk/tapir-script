@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 bytecode = { path = "../bytecode" }
+builtins = { path = "../builtins" }
 agb_fixnum = "0.22"
 
 [dev-dependencies]
