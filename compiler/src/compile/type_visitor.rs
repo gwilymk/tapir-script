@@ -285,6 +285,11 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             return symtab.get_global(global_id).ty;
         }
 
+        // Check if this is a struct property base (e.g., "pos" for "property pos: Point;")
+        if let Some(struct_id) = SymTab::struct_id_from_base_symbol(symbol_id) {
+            return Type::Struct(struct_id);
+        }
+
         match self.type_table.get(symbol_id.0 as usize) {
             Some(Some((ty, _))) => *ty,
             _ => {
@@ -543,10 +548,15 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         path: &[ast::Ident<'input>],
         diagnostics: &mut Diagnostics,
     ) -> Option<(Type, StructId, Vec<usize>)> {
-        // Get the root symbol's type from the type table
-        let mut current_type = match self.type_table.get(root_symbol.0 as usize) {
-            Some(Some((ty, _))) => *ty,
-            _ => Type::Error,
+        // Check if this is a struct property base symbol first
+        let mut current_type = if let Some(struct_id) = SymTab::struct_id_from_base_symbol(root_symbol) {
+            Type::Struct(struct_id)
+        } else {
+            // Get the root symbol's type from the type table
+            match self.type_table.get(root_symbol.0 as usize) {
+                Some(Some((ty, _))) => *ty,
+                _ => Type::Error,
+            }
         };
 
         // The root must be a struct

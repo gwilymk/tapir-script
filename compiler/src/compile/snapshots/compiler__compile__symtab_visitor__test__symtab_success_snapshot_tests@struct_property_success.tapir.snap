@@ -1,0 +1,205 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/struct_property_success.tapir
+---
+Script(
+  struct_declarations: [
+    StructDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "Point",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "y",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+  ],
+  property_declarations: [
+    PropertyDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "pos",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Struct(StructId(0))),
+          name: "Point",
+          span: "[span]",
+        )),
+      ),
+      span: "[span]",
+    ),
+  ],
+  globals: [],
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "pos",
+                ),
+                Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+              ],
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(10),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2305843009213693952)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "pos",
+                ),
+                Ident(
+                  span: "[span]",
+                  ident: "y",
+                ),
+              ],
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(20),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2305843009213693952)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: Variable("pos"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(2305843009213693952)",
+                    },
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "x",
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "y",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: Variable("pos"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(2305843009213693952)",
+                    },
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "y",
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3)]",
+          },
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
+      },
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

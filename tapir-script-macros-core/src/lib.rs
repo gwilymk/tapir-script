@@ -104,17 +104,88 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         .properties
         .iter()
         .map(|property| {
-            let field_ident = format_ident!("{}", property.name);
             let index = property.index as u8;
 
-            let setter = quote! {
-                #index => { ::tapir_script::TapirProperty::set_from_i32(&mut self.#field_ident, value); }
-            };
-            let getter = quote! {
-                #index => ::tapir_script::TapirProperty::to_i32(&self.#field_ident)
-            };
+            if let Some(ref struct_info) = property.struct_info {
+                // Struct property - generate tuple conversion code
+                let field_ident = format_ident!("{}", struct_info.rust_field_name);
+                let tuple_position = struct_info.tuple_position;
+                let total_fields = struct_info.total_fields;
 
-            (setter, getter)
+                // Generate the tuple type annotation (e.g., (i32, i32))
+                let tuple_types: Vec<_> = struct_info
+                    .field_types
+                    .iter()
+                    .map(|ty| match ty {
+                        Type::Int => quote!(i32),
+                        Type::Fix => quote!(i32),
+                        Type::Bool => quote!(i32),
+                        _ => panic!("Unexpected field type in struct property: {ty}"),
+                    })
+                    .collect();
+
+                // Generate getter - destructure and return the specific field
+                // e.g., let (v0, _, v2): (i32, i32, i32) = self.pos.clone().into(); v1
+                let getter_destructure: Vec<_> = (0..total_fields)
+                    .map(|i| {
+                        if i == tuple_position {
+                            format_ident!("v{}", i)
+                        } else {
+                            format_ident!("_")
+                        }
+                    })
+                    .collect();
+                let result_ident = format_ident!("v{}", tuple_position);
+                let getter = quote! {
+                    #index => {
+                        let (#(#getter_destructure),*): (#(#tuple_types),*) = self.#field_ident.clone().into();
+                        #result_ident
+                    }
+                };
+
+                // Generate setter - get all values, replace one, reconstruct
+                // e.g., let (v0, _, v2): (i32, i32, i32) = self.pos.clone().into();
+                //       self.pos = From::from((v0, value, v2));
+                let setter_destructure: Vec<_> = (0..total_fields)
+                    .map(|i| {
+                        if i == tuple_position {
+                            format_ident!("_")
+                        } else {
+                            format_ident!("v{}", i)
+                        }
+                    })
+                    .collect();
+                let reconstruct_args: Vec<_> = (0..total_fields)
+                    .map(|i| {
+                        if i == tuple_position {
+                            quote!(value)
+                        } else {
+                            let ident = format_ident!("v{}", i);
+                            quote!(#ident)
+                        }
+                    })
+                    .collect();
+                let setter = quote! {
+                    #index => {
+                        let (#(#setter_destructure),*): (#(#tuple_types),*) = self.#field_ident.clone().into();
+                        self.#field_ident = (#(#reconstruct_args),*).into();
+                    }
+                };
+
+                (setter, getter)
+            } else {
+                // Scalar property - use TapirProperty trait
+                let field_ident = format_ident!("{}", property.name);
+
+                let setter = quote! {
+                    #index => { ::tapir_script::TapirProperty::set_from_i32(&mut self.#field_ident, value); }
+                };
+                let getter = quote! {
+                    #index => ::tapir_script::TapirProperty::to_i32(&self.#field_ident)
+                };
+
+                (setter, getter)
+            }
         })
         .unzip();
 

@@ -62,13 +62,32 @@ pub struct CompileResult {
 /// Information about a declared property in the compiled script.
 pub struct PropertyInfo {
     /// The name of the property as declared in the script.
+    /// For struct properties, this is the full path (e.g., "pos.x").
     pub name: String,
-    /// The type of the property.
+    /// The type of the property (always a scalar type for expanded properties).
     pub ty: Type,
     /// The index into the property array (matches declaration order).
     pub index: usize,
     /// The span where the property was declared.
     pub span: Span,
+    /// For struct properties: info about the parent struct property.
+    /// None for scalar properties.
+    pub struct_info: Option<StructPropertyInfo>,
+}
+
+/// Metadata for a property that's part of an expanded struct.
+/// Used by the macro to generate tuple conversion code.
+pub struct StructPropertyInfo {
+    /// The original property name in the Rust struct (e.g., "position").
+    pub rust_field_name: String,
+    /// Position of this field within the flattened tuple (0-indexed).
+    pub tuple_position: usize,
+    /// Total number of scalar fields in the expanded struct.
+    pub total_fields: usize,
+    /// Types of all scalar fields in order (for generating the tuple type annotation).
+    pub field_types: Box<[Type]>,
+    /// The struct type ID for this property.
+    pub struct_id: StructId,
 }
 
 pub struct ExternFunction {

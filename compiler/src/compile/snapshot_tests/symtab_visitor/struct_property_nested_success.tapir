@@ -1,0 +1,12 @@
+struct Point { x: int, y: int }
+struct Rect { origin: Point, size: Point }
+property bounds: Rect;
+
+bounds.origin.x = 10;
+bounds.origin.y = 20;
+bounds.size.x = 100;
+bounds.size.y = 200;
+var ox = bounds.origin.x;
+var oy = bounds.origin.y;
+var sx = bounds.size.x;
+var sy = bounds.size.y;

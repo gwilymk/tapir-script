@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{
     ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
     compile::{
@@ -267,6 +269,38 @@ impl<'a> BlockVisitor<'a> {
                 };
 
                 for (idx, (&root_symbol, temp)) in target_symbols.iter().zip(temps).enumerate() {
+                    // Check if root_symbol is a struct property base
+                    if SymTab::is_struct_property_base_symbol(root_symbol) {
+                        // Struct property field assignment
+                        if let Some(field_info) = field_info
+                            && let Some(Some((_struct_id, field_indices))) = field_info.0.get(idx)
+                        {
+                            // Build the property path from root_symbol and field indices
+                            let base_name = symtab.name_for_symbol(root_symbol).to_string();
+                            let prop_path = self.build_struct_property_path(
+                                &base_name,
+                                root_symbol,
+                                field_indices,
+                            );
+
+                            if let Some(prop) = symtab.get_property_by_path(&prop_path) {
+                                // Scalar field - generate StoreProp directly
+                                self.current_block.push(TapIr::StoreProp {
+                                    prop_index: prop.index,
+                                    value: temp,
+                                });
+                            } else {
+                                // Nested struct assignment - store all scalar fields
+                                self.store_struct_property_fields(
+                                    &prop_path,
+                                    temp,
+                                    symtab,
+                                );
+                            }
+                        }
+                        continue;
+                    }
+
                     // Resolve the actual target symbol - may be a field if this is a field assignment
                     let target_symbol = if let Some(field_info) = field_info {
                         if let Some(Some((struct_id, field_indices))) = field_info.0.get(idx) {
@@ -789,13 +823,44 @@ impl<'a> BlockVisitor<'a> {
                     }
                 }
             }
-            ast::ExpressionKind::FieldAccess { base, .. } => {
+            ast::ExpressionKind::FieldAccess { base, field } => {
                 // Get the field info from type checking
                 let info = expr
                     .meta
                     .get::<FieldAccessInfo>()
                     .expect("FieldAccess should have FieldAccessInfo");
 
+                // Check if the base is a struct property base (e.g., "pos" in "property pos: Point;")
+                if let ast::ExpressionKind::Variable(_) = &base.kind
+                    && let Some(base_symbol) = base.meta.get::<SymbolId>()
+                    && SymTab::is_struct_property_base_symbol(*base_symbol)
+                {
+                    // This is a struct property field access - generate GetProp directly
+                    // Build the full path (e.g., "pos.x") and look up the expanded property
+                    let base_name = symtab.name_for_symbol(*base_symbol);
+                    let full_path = format!("{}.{}", base_name, field.ident);
+
+                    if let Some(prop) = symtab.get_property_by_path(&full_path) {
+                        self.current_block.push(TapIr::GetProp {
+                            target: target_symbol,
+                            prop_index: prop.index,
+                        });
+                    } else {
+                        // Property path not found - this shouldn't happen if type checking passed
+                        // Handle nested struct property access by building the full path
+                        self.handle_struct_property_field_access(
+                            target_symbol,
+                            &base_name,
+                            field.ident,
+                            info,
+                            expr.span,
+                            symtab,
+                        );
+                    }
+                    return;
+                }
+
+                // Regular field access (not a struct property base)
                 // Evaluate the base into a temp (handles any expression uniformly)
                 let base_temp = symtab.new_temporary();
                 self.blocks_for_expression(base, base_temp, symtab);
@@ -904,6 +969,163 @@ impl<'a> BlockVisitor<'a> {
                     target: target_field,
                     source: source_field,
                 });
+            }
+        }
+    }
+
+    /// Handle nested struct property field access.
+    /// For deeply nested paths like `pos.origin.x`, recursively builds the path
+    /// and generates GetProp for scalar fields.
+    fn handle_struct_property_field_access(
+        &mut self,
+        target_symbol: SymbolId,
+        base_path: &Cow<'_, str>,
+        field_name: &str,
+        info: &FieldAccessInfo,
+        span: crate::tokens::Span,
+        symtab: &mut SymTab,
+    ) {
+        // Build the full path
+        let full_path = format!("{}.{}", base_path, field_name);
+
+        // Check if this is a scalar property
+        if let Some(prop) = symtab.get_property_by_path(&full_path) {
+            self.current_block.push(TapIr::GetProp {
+                target: target_symbol,
+                prop_index: prop.index,
+            });
+            return;
+        }
+
+        // This must be a nested struct field - we need to recursively get all scalar fields
+        // and copy them to the target's expansion
+        let struct_def = self.struct_registry.get(info.base_struct_id);
+        let field_def = &struct_def.fields[info.field_index];
+
+        if let Type::Struct(nested_struct_id) = field_def.ty {
+            // Create expansion for target
+            let target_name = symtab.name_for_symbol(target_symbol).to_string();
+            symtab.expand_struct_symbol(
+                target_symbol,
+                &target_name,
+                nested_struct_id,
+                span,
+                self.struct_registry,
+            );
+
+            // Get all leaf properties for this path and copy them
+            self.copy_struct_property_fields_to_expansion(
+                target_symbol,
+                &full_path,
+                nested_struct_id,
+                symtab,
+            );
+        }
+    }
+
+    /// Copy scalar property fields matching a path prefix to an expanded struct symbol.
+    fn copy_struct_property_fields_to_expansion(
+        &mut self,
+        target_symbol: SymbolId,
+        path_prefix: &str,
+        struct_id: crate::types::StructId,
+        symtab: &SymTab,
+    ) {
+        let target_expansion = symtab
+            .get_struct_expansion(target_symbol)
+            .expect("Target should be expanded")
+            .clone();
+
+        let struct_def = self.struct_registry.get(struct_id);
+
+        for (i, field) in struct_def.fields.iter().enumerate() {
+            let field_path = format!("{}.{}", path_prefix, field.name);
+            let target_field = target_expansion.fields[i];
+
+            match field.ty {
+                Type::Struct(nested_id) => {
+                    // Recursively copy nested struct fields
+                    self.copy_struct_property_fields_to_expansion(
+                        target_field,
+                        &field_path,
+                        nested_id,
+                        symtab,
+                    );
+                }
+                _ => {
+                    // Scalar field - get from property
+                    if let Some(prop) = symtab.get_property_by_path(&field_path) {
+                        self.current_block.push(TapIr::GetProp {
+                            target: target_field,
+                            prop_index: prop.index,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    /// Build a property path from a base name and field indices.
+    fn build_struct_property_path(
+        &self,
+        base_name: &str,
+        base_symbol: SymbolId,
+        field_indices: &[usize],
+    ) -> String {
+        // Get the struct ID from the base symbol
+        let Some(struct_id) = SymTab::struct_id_from_base_symbol(base_symbol) else {
+            return base_name.to_string();
+        };
+
+        let mut path = base_name.to_string();
+        let mut current_struct_id = struct_id;
+
+        for &field_index in field_indices {
+            let struct_def = self.struct_registry.get(current_struct_id);
+            let field = &struct_def.fields[field_index];
+            path = format!("{}.{}", path, field.name);
+
+            // Update current_struct_id if the field is a struct
+            if let Type::Struct(nested_id) = field.ty {
+                current_struct_id = nested_id;
+            }
+        }
+
+        path
+    }
+
+    /// Store all scalar fields from a source symbol to struct property paths.
+    fn store_struct_property_fields(
+        &mut self,
+        path_prefix: &str,
+        source_symbol: SymbolId,
+        symtab: &SymTab,
+    ) {
+        // Get the struct expansion for the source
+        let Some(expansion) = symtab.get_struct_expansion(source_symbol).cloned() else {
+            return;
+        };
+
+        let struct_def = self.struct_registry.get(expansion.struct_id);
+
+        for (i, field) in struct_def.fields.iter().enumerate() {
+            let field_path = format!("{}.{}", path_prefix, field.name);
+            let source_field = expansion.fields[i];
+
+            match field.ty {
+                Type::Struct(_) => {
+                    // Recursively store nested struct fields
+                    self.store_struct_property_fields(&field_path, source_field, symtab);
+                }
+                _ => {
+                    // Scalar field - generate StoreProp
+                    if let Some(prop) = symtab.get_property_by_path(&field_path) {
+                        self.current_block.push(TapIr::StoreProp {
+                            prop_index: prop.index,
+                            value: source_field,
+                        });
+                    }
+                }
             }
         }
     }

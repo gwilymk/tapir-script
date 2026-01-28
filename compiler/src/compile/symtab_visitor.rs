@@ -32,7 +32,7 @@ pub struct ExpandedStruct {
 #[derive(Clone, Debug)]
 pub struct FunctionArgumentSymbols(pub Vec<SymbolId>);
 
-use super::{CompileSettings, Property};
+use super::{CompileSettings, Property, StructPropertyInfo};
 
 /// Identifies a global variable by its index in the globals array.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -76,19 +76,97 @@ pub struct BuiltinFunctionInfo {
 
 use crate::ast::GlobalDeclaration;
 
+/// Collect all leaf (scalar) types from a struct type recursively.
+fn collect_struct_field_types(
+    struct_id: StructId,
+    registry: &StructRegistry,
+    out: &mut Vec<Type>,
+) {
+    let def = registry.get(struct_id);
+    for field in &def.fields {
+        if let Type::Struct(nested_id) = field.ty {
+            collect_struct_field_types(nested_id, registry, out);
+        } else {
+            out.push(field.ty);
+        }
+    }
+}
+
+/// Recursively expand a struct-typed property into its component scalar properties.
+/// Each field becomes a property with a path name like "pos.x", "pos.y".
+fn expand_property_fields(
+    path: &str,
+    rust_field_name: &str,
+    root_struct_id: StructId,
+    current_struct_id: StructId,
+    current_index: &mut usize,
+    tuple_position: &mut usize,
+    registry: &StructRegistry,
+    field_types: &[Type],
+    total_fields: usize,
+    span: Span,
+    properties: &mut Vec<Property>,
+) {
+    let def = registry.get(current_struct_id);
+
+    for field in &def.fields {
+        let field_path = format!("{}.{}", path, field.name);
+
+        match field.ty {
+            Type::Struct(nested_id) => {
+                // Recurse for nested structs
+                expand_property_fields(
+                    &field_path,
+                    rust_field_name,
+                    root_struct_id,
+                    nested_id,
+                    current_index,
+                    tuple_position,
+                    registry,
+                    field_types,
+                    total_fields,
+                    span,
+                    properties,
+                );
+            }
+            scalar_type => {
+                properties.push(Property {
+                    ty: scalar_type,
+                    index: *current_index,
+                    name: field_path,
+                    span,
+                    struct_info: Some(StructPropertyInfo {
+                        rust_field_name: rust_field_name.to_string(),
+                        tuple_position: *tuple_position,
+                        total_fields,
+                        field_types: field_types.to_vec().into_boxed_slice(),
+                        struct_id: root_struct_id,
+                    }),
+                });
+                *current_index += 1;
+                *tuple_position += 1;
+            }
+        }
+    }
+}
+
 /// Extract properties from AST property declarations with validation.
+/// Struct-typed properties are expanded to consecutive property indices.
 fn extract_properties_from_ast(
     declarations: &[PropertyDeclaration<'_>],
     globals: &[GlobalDeclaration<'_>],
     available_fields: Option<&[String]>,
+    struct_registry: &StructRegistry,
     diagnostics: &mut Diagnostics,
 ) -> Vec<Property> {
     let mut properties = Vec::new();
     let mut seen_names: HashMap<&str, Span> = HashMap::new();
+    let mut current_index = 0;
 
-    for (index, decl) in declarations.iter().enumerate() {
+    for decl in declarations {
         // Skip properties with unresolved or error types
-        if decl.name.ty_required().resolved() == Type::Error {
+        let prop_ty = decl.name.ty_required().resolved();
+        if prop_ty == Type::Error {
             continue;
         }
 
@@ -136,12 +214,39 @@ fn extract_properties_from_ast(
             // Continue anyway to report more errors
         }
 
-        properties.push(Property {
-            ty: decl.name.ty_required().resolved(),
-            index,
-            name: name.to_string(),
-            span: decl.span,
-        });
+        // Check if this is a struct-typed property
+        if let Type::Struct(struct_id) = prop_ty {
+            // Collect all leaf field types first
+            let mut field_types = Vec::new();
+            collect_struct_field_types(struct_id, struct_registry, &mut field_types);
+            let total_fields = field_types.len();
+
+            // Expand struct property into its component scalar properties
+            let mut tuple_position = 0;
+            expand_property_fields(
+                name,
+                name,
+                struct_id,
+                struct_id,
+                &mut current_index,
+                &mut tuple_position,
+                struct_registry,
+                &field_types,
+                total_fields,
+                decl.span,
+                &mut properties,
+            );
+        } else {
+            // Scalar property - add directly
+            properties.push(Property {
+                ty: prop_ty,
+                index: current_index,
+                name: name.to_string(),
+                span: decl.span,
+                struct_info: None,
+            });
+            current_index += 1;
+        }
     }
 
     properties
@@ -308,12 +413,13 @@ impl<'input> SymTabVisitor<'input> {
             &script.property_declarations,
             &script.globals,
             settings.available_fields.as_deref(),
+            struct_registry,
             diagnostics,
         );
 
         let mut visitor = Self {
             symtab: SymTab::new(&properties, function_names, builtin_function_infos),
-            symbol_names: NameTable::new(&properties),
+            symbol_names: NameTable::new(&properties, &struct_property_bases_for_name_table(&properties)),
             function_names: functions_map,
         };
 
@@ -533,12 +639,31 @@ impl<'input> SymTabVisitor<'input> {
     }
 }
 
-struct NameTable<'input> {
-    names: Vec<HashMap<Cow<'input, str>, SymbolId>>,
+/// Helper to extract struct property base names for NameTable initialization.
+fn struct_property_bases_for_name_table(properties: &[Property]) -> HashMap<String, StructId> {
+    let mut bases = HashMap::new();
+    for prop in properties {
+        if let Some(ref info) = prop.struct_info {
+            bases.entry(info.rust_field_name.clone()).or_insert(info.struct_id);
+        }
+    }
+    bases
 }
 
+struct NameTable<'input> {
+    names: Vec<HashMap<Cow<'input, str>, SymbolId>>,
+    /// Maps struct property base names to their struct type.
+    /// These are "virtual" symbols used during type checking for field access.
+    struct_property_bases: HashMap<String, StructId>,
+}
+
+/// Marker bit for struct property base symbols.
+/// These symbols don't correspond to actual values but are used
+/// to resolve field access on struct properties during type checking.
+pub const STRUCT_PROPERTY_BASE_BIT: u64 = 1 << 61;
+
 impl<'input> NameTable<'input> {
-    pub fn new(properties: &[Property]) -> Self {
+    pub fn new(properties: &[Property], struct_property_bases: &HashMap<String, StructId>) -> Self {
         let property_symbols = properties
             .iter()
             .enumerate()
@@ -547,6 +672,7 @@ impl<'input> NameTable<'input> {
 
         Self {
             names: vec![property_symbols],
+            struct_property_bases: struct_property_bases.clone(),
         }
     }
 
@@ -565,12 +691,30 @@ impl<'input> NameTable<'input> {
             }
         }
 
+        // Check struct property bases (e.g., "pos" for "property pos: Point;")
+        if let Some(&struct_id) = self.struct_property_bases.get(name) {
+            // Return a special symbol ID that encodes the struct property base
+            return Some(SymbolId(STRUCT_PROPERTY_BASE_BIT | struct_id.0 as u64));
+        }
+
         // Check globals last (can be shadowed by locals)
         if let Some(global) = symtab.get_global_by_name(name) {
             return Some(global.id.to_symbol_id());
         }
 
         None
+    }
+
+    /// Check if a name is a struct property base.
+    #[allow(dead_code)]
+    pub fn is_struct_property_base(&self, name: &str) -> bool {
+        self.struct_property_bases.contains_key(name)
+    }
+
+    /// Get the struct ID for a struct property base name.
+    #[allow(dead_code)]
+    pub fn get_struct_property_base(&self, name: &str) -> Option<StructId> {
+        self.struct_property_bases.get(name).copied()
     }
 
     pub fn push_scope(&mut self) {
@@ -581,6 +725,16 @@ impl<'input> NameTable<'input> {
         self.names.pop();
         assert!(!self.names.is_empty());
     }
+}
+
+/// Information about a struct property base (e.g., "pos" for "property pos: Point;").
+#[derive(Clone, Debug)]
+pub struct StructPropertyBase {
+    pub struct_id: StructId,
+    /// The indices of all expanded property fields for this struct property.
+    /// These are property indices, not symbol IDs.
+    pub expanded_indices: Vec<usize>,
+    pub span: Span,
 }
 
 pub struct SymTab<'input> {
@@ -597,6 +751,10 @@ pub struct SymTab<'input> {
     /// Tracks struct expansions created during IR lowering.
     /// Maps the "parent" symbol (the struct variable itself) to its expanded field symbols.
     struct_expansions: HashMap<SymbolId, ExpandedStruct>,
+
+    /// Tracks struct property bases (e.g., "pos" for "property pos: Point;").
+    /// Maps the base property name to its struct information.
+    struct_property_bases: HashMap<String, StructPropertyBase>,
 }
 
 impl<'input> SymTab<'input> {
@@ -611,6 +769,24 @@ impl<'input> SymTab<'input> {
             .map(|prop| (Cow::Owned(prop.name.clone()), None))
             .collect();
 
+        // Build struct property bases from the expanded properties
+        let mut struct_property_bases = HashMap::new();
+        for prop in &properties {
+            if let Some(ref info) = prop.struct_info {
+                // Use the rust_field_name as the base name
+                let base_name = &info.rust_field_name;
+                struct_property_bases
+                    .entry(base_name.clone())
+                    .or_insert_with(|| StructPropertyBase {
+                        struct_id: info.struct_id,
+                        expanded_indices: Vec::new(),
+                        span: prop.span,
+                    })
+                    .expanded_indices
+                    .push(prop.index);
+            }
+        }
+
         Self {
             properties,
             symbol_names,
@@ -619,6 +795,7 @@ impl<'input> SymTab<'input> {
             global_names: HashMap::new(),
             builtin_functions,
             struct_expansions: HashMap::new(),
+            struct_property_bases,
         }
     }
 
@@ -703,6 +880,22 @@ impl<'input> SymTab<'input> {
     }
 
     pub(crate) fn name_for_symbol(&self, symbol_id: SymbolId) -> Cow<'input, str> {
+        // Check if this is a struct property base symbol
+        if symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0 {
+            let struct_id = StructId((symbol_id.0 & !(STRUCT_PROPERTY_BASE_BIT)) as u32);
+            // Find the property base name for this struct_id
+            for (name, base) in &self.struct_property_bases {
+                if base.struct_id == struct_id {
+                    return Cow::Owned(name.clone());
+                }
+            }
+            return Cow::Owned(format!("struct_property.{}", struct_id.0));
+        }
+
+        if symbol_id.0 as usize >= self.symbol_names.len() {
+            return Cow::Owned(format!("unknown.{}", symbol_id.0));
+        }
+
         let name = self.symbol_names[symbol_id.0 as usize].0.clone();
         if name.is_empty() {
             Cow::Owned(format!("temp.{}", symbol_id.0))
@@ -749,11 +942,41 @@ impl<'input> SymTab<'input> {
     }
 
     pub fn get_property(&self, symbol_id: SymbolId) -> Option<&Property> {
+        // Don't return properties for struct property bases or globals
+        if symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0
+            || symbol_id.0 & GlobalId::GLOBAL_BIT != 0
+        {
+            return None;
+        }
         self.properties.get(symbol_id.0 as usize)
+    }
+
+    /// Get a property by its full path name (e.g., "pos.x").
+    pub fn get_property_by_path(&self, path: &str) -> Option<&Property> {
+        self.properties.iter().find(|p| p.name == path)
     }
 
     pub fn properties(&self) -> &[Property] {
         &self.properties
+    }
+
+    /// Get struct property base info by name.
+    pub fn get_struct_property_base(&self, name: &str) -> Option<&StructPropertyBase> {
+        self.struct_property_bases.get(name)
+    }
+
+    /// Check if a symbol ID represents a struct property base.
+    pub fn is_struct_property_base_symbol(symbol_id: SymbolId) -> bool {
+        symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0
+    }
+
+    /// Extract struct ID from a struct property base symbol.
+    pub fn struct_id_from_base_symbol(symbol_id: SymbolId) -> Option<StructId> {
+        if symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0 {
+            Some(StructId((symbol_id.0 & !(STRUCT_PROPERTY_BASE_BIT)) as u32))
+        } else {
+            None
+        }
     }
 
     pub fn get_global_by_name(&self, name: &str) -> Option<&GlobalInfo> {
@@ -780,7 +1003,7 @@ mod test {
 
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
-    use crate::{grammar, lexer::Lexer, tokens::FileId};
+    use crate::{compile::struct_visitor, grammar, lexer::Lexer, tokens::FileId};
 
     use super::*;
 
@@ -797,7 +1020,18 @@ mod test {
 
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
-            let struct_registry = StructRegistry::default();
+            // Struct registration and type resolution
+            let mut struct_registry = StructRegistry::default();
+            let struct_names =
+                struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+            struct_visitor::resolve_struct_fields(
+                &script,
+                &mut struct_registry,
+                &struct_names,
+                &mut diagnostics,
+            );
+            struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
             let mut visitor = SymTabVisitor::new(
                 &CompileSettings {
                     available_fields: None,
@@ -833,7 +1067,18 @@ mod test {
                 .parse(FileId::new(0), &mut diagnostics, lexer)
                 .unwrap();
 
-            let struct_registry = StructRegistry::default();
+            // Struct registration and type resolution
+            let mut struct_registry = StructRegistry::default();
+            let struct_names =
+                struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+            struct_visitor::resolve_struct_fields(
+                &script,
+                &mut struct_registry,
+                &struct_names,
+                &mut diagnostics,
+            );
+            struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
             let mut visitor = SymTabVisitor::new(
                 &CompileSettings {
                     available_fields: None,

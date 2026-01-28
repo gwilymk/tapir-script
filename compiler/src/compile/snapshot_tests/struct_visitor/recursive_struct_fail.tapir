@@ -1,0 +1,4 @@
+struct Recursive {
+    x: int,
+    self_ref: Recursive
+}

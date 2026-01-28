@@ -286,37 +286,37 @@ temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
 temp.164 = temp.163
-jmp 6
-
----- block 6 ----
-temp.238 = temp.147 + temp.163
-temp.239 = temp.148 + temp.164
-jmp 8
-
----- block 8 ----
-temp.234 = φ(temp.238 from 6)
-temp.235 = φ(temp.239 from 6)
-temp.236 = φ(temp.151 from 6)
-temp.237 = φ(temp.152 from 6)
-temp.23.origin.x.165 = temp.234
-temp.23.origin.y.166 = temp.235
-temp.23.size.x.167 = temp.236
-temp.23.size.y.168 = temp.237
-jmp 5
-
----- block 5 ----
 jmp 2
 
 ---- block 2 ----
-temp.233 = temp.23.size.x.167 * temp.23.size.y.168
+temp.236 = temp.147 + temp.163
+temp.237 = temp.148 + temp.164
 jmp 4
 
 ---- block 4 ----
-temp.232 = φ(temp.233 from 2)
-temp.177 = temp.232
+temp.232 = φ(temp.236 from 2)
+temp.233 = φ(temp.237 from 2)
+temp.234 = φ(temp.151 from 2)
+temp.235 = φ(temp.152 from 2)
+temp.23.origin.x.165 = temp.232
+temp.23.origin.y.166 = temp.233
+temp.23.size.x.167 = temp.234
+temp.23.size.y.168 = temp.235
 jmp 1
 
 ---- block 1 ----
+jmp 6
+
+---- block 6 ----
+temp.239 = temp.23.size.x.167 * temp.23.size.y.168
+jmp 8
+
+---- block 8 ----
+temp.238 = φ(temp.239 from 6)
+temp.177 = temp.238
+jmp 5
+
+---- block 5 ----
 temp.185 = temp.177 + temp.23.origin.x.165
 storeprop temp.185, 0
 return 
@@ -348,37 +348,37 @@ temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
 temp.164 = temp.163
-jmp 6
-
----- block 6 ----
-temp.238 = temp.147 + temp.163
-temp.239 = temp.148 + temp.164
-jmp 8
-
----- block 8 ----
-temp.234 = φ(temp.238 from 6)
-temp.235 = φ(temp.239 from 6)
-temp.236 = φ(temp.151 from 6)
-temp.237 = φ(temp.152 from 6)
-temp.23.origin.x.165 = temp.234
-temp.23.origin.y.166 = temp.235
-temp.23.size.x.167 = temp.236
-temp.23.size.y.168 = temp.237
-jmp 5
-
----- block 5 ----
 jmp 2
 
 ---- block 2 ----
-temp.233 = temp.23.size.x.167 * temp.23.size.y.168
+temp.236 = temp.147 + temp.163
+temp.237 = temp.148 + temp.164
 jmp 4
 
 ---- block 4 ----
-temp.232 = φ(temp.233 from 2)
-temp.177 = temp.232
+temp.232 = φ(temp.236 from 2)
+temp.233 = φ(temp.237 from 2)
+temp.234 = φ(temp.151 from 2)
+temp.235 = φ(temp.152 from 2)
+temp.23.origin.x.165 = temp.232
+temp.23.origin.y.166 = temp.233
+temp.23.size.x.167 = temp.234
+temp.23.size.y.168 = temp.235
 jmp 1
 
 ---- block 1 ----
+jmp 6
+
+---- block 6 ----
+temp.239 = temp.23.size.x.167 * temp.23.size.y.168
+jmp 8
+
+---- block 8 ----
+temp.238 = φ(temp.239 from 6)
+temp.177 = temp.238
+jmp 5
+
+---- block 5 ----
 temp.185 = temp.177 + temp.23.origin.x.165
 storeprop temp.185, 0
 return 
@@ -395,32 +395,32 @@ temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
 temp.164 = temp.163
-jmp 6
-
----- block 6 ----
-temp.238 = temp.147 + temp.163
-temp.239 = temp.148 + temp.164
-jmp 8
-
----- block 8 ----
-temp.23.origin.x.165 = temp.238
-temp.23.origin.y.166 = temp.239
-temp.23.size.x.167 = temp.151
-temp.23.size.y.168 = temp.152
-jmp 5
-
----- block 5 ----
 jmp 2
 
 ---- block 2 ----
-temp.233 = temp.23.size.x.167 * temp.23.size.y.168
+temp.236 = temp.147 + temp.163
+temp.237 = temp.148 + temp.164
 jmp 4
 
 ---- block 4 ----
-temp.177 = temp.233
+temp.23.origin.x.165 = temp.236
+temp.23.origin.y.166 = temp.237
+temp.23.size.x.167 = temp.151
+temp.23.size.y.168 = temp.152
 jmp 1
 
 ---- block 1 ----
+jmp 6
+
+---- block 6 ----
+temp.239 = temp.23.size.x.167 * temp.23.size.y.168
+jmp 8
+
+---- block 8 ----
+temp.177 = temp.239
+jmp 5
+
+---- block 5 ----
 temp.185 = temp.177 + temp.23.origin.x.165
 storeprop temp.185, 0
 return 
@@ -437,34 +437,34 @@ temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
 temp.164 = temp.163
-temp.238 = temp.147 + temp.163
-temp.239 = temp.148 + temp.164
-jmp 6
-
----- block 6 ----
-temp.23.origin.x.165 = temp.238
-temp.23.origin.y.166 = temp.239
-temp.23.size.x.167 = temp.151
-temp.23.size.y.168 = temp.152
-jmp 8
-
----- block 8 ----
-jmp 5
-
----- block 5 ----
-temp.233 = temp.23.size.x.167 * temp.23.size.y.168
+temp.236 = temp.147 + temp.163
+temp.237 = temp.148 + temp.164
 jmp 2
 
 ---- block 2 ----
-temp.177 = temp.233
+temp.23.origin.x.165 = temp.236
+temp.23.origin.y.166 = temp.237
+temp.23.size.x.167 = temp.151
+temp.23.size.y.168 = temp.152
 jmp 4
 
 ---- block 4 ----
-temp.185 = temp.177 + temp.23.origin.x.165
-storeprop temp.185, 0
 jmp 1
 
 ---- block 1 ----
+temp.239 = temp.23.size.x.167 * temp.23.size.y.168
+jmp 6
+
+---- block 6 ----
+temp.177 = temp.239
+jmp 8
+
+---- block 8 ----
+temp.185 = temp.177 + temp.23.origin.x.165
+storeprop temp.185, 0
+jmp 5
+
+---- block 5 ----
 return 
 
 
@@ -479,34 +479,34 @@ temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
 temp.164 = temp.163
-temp.238 = temp.147 + temp.163
-temp.239 = temp.147 + temp.163
-jmp 6
-
----- block 6 ----
-temp.23.origin.x.165 = temp.238
-temp.23.origin.y.166 = temp.239
-temp.23.size.x.167 = temp.151
-temp.23.size.y.168 = temp.152
-jmp 8
-
----- block 8 ----
-jmp 5
-
----- block 5 ----
-temp.233 = temp.151 * temp.152
+temp.236 = temp.147 + temp.163
+temp.237 = temp.147 + temp.163
 jmp 2
 
 ---- block 2 ----
-temp.177 = temp.233
+temp.23.origin.x.165 = temp.236
+temp.23.origin.y.166 = temp.237
+temp.23.size.x.167 = temp.151
+temp.23.size.y.168 = temp.152
 jmp 4
 
 ---- block 4 ----
-temp.185 = temp.233 + temp.238
-storeprop temp.185, 0
 jmp 1
 
 ---- block 1 ----
+temp.239 = temp.151 * temp.152
+jmp 6
+
+---- block 6 ----
+temp.177 = temp.239
+jmp 8
+
+---- block 8 ----
+temp.185 = temp.239 + temp.236
+storeprop temp.185, 0
+jmp 5
+
+---- block 5 ----
 return 
 
 
@@ -519,29 +519,29 @@ temp.147 = int 0
 temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
-temp.238 = temp.147 + temp.163
-temp.239 = temp.147 + temp.163
-jmp 6
-
----- block 6 ----
-jmp 8
-
----- block 8 ----
-jmp 5
-
----- block 5 ----
-temp.233 = temp.151 * temp.152
+temp.236 = temp.147 + temp.163
+temp.237 = temp.147 + temp.163
 jmp 2
 
 ---- block 2 ----
 jmp 4
 
 ---- block 4 ----
-temp.185 = temp.233 + temp.238
-storeprop temp.185, 0
 jmp 1
 
 ---- block 1 ----
+temp.239 = temp.151 * temp.152
+jmp 6
+
+---- block 6 ----
+jmp 8
+
+---- block 8 ----
+temp.185 = temp.239 + temp.236
+storeprop temp.185, 0
+jmp 5
+
+---- block 5 ----
 return 
 
 
@@ -554,29 +554,29 @@ temp.147 = int 0
 temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
-temp.238 = int 5
-temp.239 = int 5
-jmp 6
-
----- block 6 ----
-jmp 8
-
----- block 8 ----
-jmp 5
-
----- block 5 ----
-temp.233 = int 200
+temp.236 = int 5
+temp.237 = int 5
 jmp 2
 
 ---- block 2 ----
 jmp 4
 
 ---- block 4 ----
-temp.185 = temp.233 + temp.238
-storeprop temp.185, 0
 jmp 1
 
 ---- block 1 ----
+temp.239 = int 200
+jmp 6
+
+---- block 6 ----
+jmp 8
+
+---- block 8 ----
+temp.185 = temp.239 + temp.236
+storeprop temp.185, 0
+jmp 5
+
+---- block 5 ----
 return 
 
 
@@ -589,29 +589,29 @@ temp.147 = int 0
 temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
-temp.238 = temp.163
-temp.239 = temp.163
-jmp 6
-
----- block 6 ----
-jmp 8
-
----- block 8 ----
-jmp 5
-
----- block 5 ----
-temp.233 = int 200
+temp.236 = temp.163
+temp.237 = temp.163
 jmp 2
 
 ---- block 2 ----
 jmp 4
 
 ---- block 4 ----
-temp.185 = temp.233 + temp.238
-storeprop temp.185, 0
 jmp 1
 
 ---- block 1 ----
+temp.239 = int 200
+jmp 6
+
+---- block 6 ----
+jmp 8
+
+---- block 8 ----
+temp.185 = temp.239 + temp.236
+storeprop temp.185, 0
+jmp 5
+
+---- block 5 ----
 return 
 
 
@@ -624,19 +624,19 @@ temp.147 = int 0
 temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
-temp.238 = temp.163
-temp.239 = temp.163
-jmp 8
-
----- block 8 ----
-jmp 5
-
----- block 5 ----
-temp.233 = int 200
+temp.236 = temp.163
+temp.237 = temp.163
 jmp 4
 
 ---- block 4 ----
-temp.185 = temp.233 + temp.238
+jmp 1
+
+---- block 1 ----
+temp.239 = int 200
+jmp 8
+
+---- block 8 ----
+temp.185 = temp.239 + temp.236
 storeprop temp.185, 0
 return 
 
@@ -650,20 +650,20 @@ temp.147 = int 0
 temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
-temp.238 = temp.163
-temp.239 = temp.163
-jmp 8
-
----- block 8 ----
-temp.233 = int 200
-jmp 5
-
----- block 5 ----
-temp.185 = temp.233 + temp.238
-storeprop temp.185, 0
+temp.236 = temp.163
+temp.237 = temp.163
 jmp 4
 
 ---- block 4 ----
+temp.239 = int 200
+jmp 1
+
+---- block 1 ----
+temp.185 = temp.239 + temp.236
+storeprop temp.185, 0
+jmp 8
+
+---- block 8 ----
 return 
 
 
@@ -676,20 +676,20 @@ temp.147 = int 0
 temp.151 = int 10
 temp.152 = int 20
 temp.163 = int 5
-temp.238 = temp.163
-temp.239 = temp.163
-jmp 8
-
----- block 8 ----
-temp.233 = int 200
-jmp 5
-
----- block 5 ----
-temp.185 = temp.233 + temp.163
-storeprop temp.185, 0
+temp.236 = temp.163
+temp.237 = temp.163
 jmp 4
 
 ---- block 4 ----
+temp.239 = int 200
+jmp 1
+
+---- block 1 ----
+temp.185 = temp.239 + temp.163
+storeprop temp.185, 0
+jmp 8
+
+---- block 8 ----
 return 
 
 
@@ -699,18 +699,18 @@ fn @toplevel() ->
 
 ---- block 0 ----
 temp.163 = int 5
-jmp 8
-
----- block 8 ----
-temp.233 = int 200
-jmp 5
-
----- block 5 ----
-temp.185 = temp.233 + temp.163
-storeprop temp.185, 0
 jmp 4
 
 ---- block 4 ----
+temp.239 = int 200
+jmp 1
+
+---- block 1 ----
+temp.185 = temp.239 + temp.163
+storeprop temp.185, 0
+jmp 8
+
+---- block 8 ----
 return 
 
 
@@ -720,18 +720,18 @@ fn @toplevel() ->
 
 ---- block 0 ----
 temp.163 = int 5
-jmp 8
-
----- block 8 ----
-temp.233 = int 200
-jmp 5
-
----- block 5 ----
-temp.185 = int 205
-storeprop temp.185, 0
 jmp 4
 
 ---- block 4 ----
+temp.239 = int 200
+jmp 1
+
+---- block 1 ----
+temp.185 = int 205
+storeprop temp.185, 0
+jmp 8
+
+---- block 8 ----
 return 
 
 
@@ -741,13 +741,13 @@ fn @toplevel() ->
 
 ---- block 0 ----
 temp.163 = int 5
-jmp 8
+jmp 4
 
----- block 8 ----
-temp.233 = int 200
-jmp 5
+---- block 4 ----
+temp.239 = int 200
+jmp 1
 
----- block 5 ----
+---- block 1 ----
 temp.185 = int 205
 storeprop temp.185, 0
 return 
@@ -759,15 +759,15 @@ fn @toplevel() ->
 
 ---- block 0 ----
 temp.163 = int 5
-temp.233 = int 200
-jmp 8
+temp.239 = int 200
+jmp 4
 
----- block 8 ----
+---- block 4 ----
 temp.185 = int 205
 storeprop temp.185, 0
-jmp 5
+jmp 1
 
----- block 5 ----
+---- block 1 ----
 return 
 
 
@@ -776,14 +776,14 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-jmp 8
+jmp 4
 
----- block 8 ----
+---- block 4 ----
 temp.185 = int 205
 storeprop temp.185, 0
-jmp 5
+jmp 1
 
----- block 5 ----
+---- block 1 ----
 return 
 
 
@@ -792,9 +792,9 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-jmp 8
+jmp 4
 
----- block 8 ----
+---- block 4 ----
 temp.185 = int 205
 storeprop temp.185, 0
 return 
@@ -807,9 +807,9 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.185 = int 205
 storeprop temp.185, 0
-jmp 8
+jmp 4
 
----- block 8 ----
+---- block 4 ----
 return 
 
 

@@ -81,6 +81,23 @@ pub struct Property {
     pub index: usize,
     pub name: String,
     pub span: Span,
+    /// For struct properties: info about the parent struct property.
+    pub struct_info: Option<StructPropertyInfo>,
+}
+
+/// Metadata for a property that's part of an expanded struct.
+#[derive(Clone, Debug)]
+pub struct StructPropertyInfo {
+    /// The original property name in the Rust struct (e.g., "position").
+    pub rust_field_name: String,
+    /// Position of this field within the flattened tuple (0-indexed).
+    pub tuple_position: usize,
+    /// Total number of scalar fields in the expanded struct.
+    pub total_fields: usize,
+    /// Types of all scalar fields in order.
+    pub field_types: Box<[Type]>,
+    /// The struct type ID for this property.
+    pub struct_id: crate::types::StructId,
 }
 
 pub struct CompileSettings {
@@ -436,6 +453,13 @@ impl Bytecode {
                 ty: p.ty,
                 index: p.index,
                 span: p.span,
+                struct_info: p.struct_info.as_ref().map(|si| crate::StructPropertyInfo {
+                    rust_field_name: si.rust_field_name.clone(),
+                    tuple_position: si.tuple_position,
+                    total_fields: si.total_fields,
+                    field_types: si.field_types.clone(),
+                    struct_id: si.struct_id,
+                }),
             })
             .collect();
 

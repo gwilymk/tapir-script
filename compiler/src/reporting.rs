@@ -154,6 +154,9 @@ pub enum DiagnosticMessage {
     FieldAccessOnNonStruct {
         ty: Type,
     },
+    RecursiveStruct {
+        name: String,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -232,6 +235,14 @@ pub enum DiagnosticMessage {
     PropertyAlreadyDeclared,
     ConflictsWithGlobal,
     PropertyNotInStructLabel,
+    StructDefinedHere,
+    FieldCreatesCycle {
+        field_name: String,
+    },
+    FieldInCyclePath {
+        field_name: String,
+        target_struct: String,
+    },
 
     // Parse error labels
     EndOfFileNotExpectedHere,
@@ -371,6 +382,9 @@ impl DiagnosticMessage {
             DiagnosticMessage::FieldAccessOnNonStruct { ty } => {
                 format!("cannot access field on type `{ty}` (not a struct)")
             }
+            DiagnosticMessage::RecursiveStruct { name } => {
+                format!("struct `{name}` contains itself, creating infinite recursion")
+            }
 
             // Parse errors
             DiagnosticMessage::UnrecognizedEof => "Unexpected end of file".into(),
@@ -428,6 +442,16 @@ impl DiagnosticMessage {
             DiagnosticMessage::PropertyAlreadyDeclared => "Property already declared".into(),
             DiagnosticMessage::ConflictsWithGlobal => "Conflicts with global variable".into(),
             DiagnosticMessage::PropertyNotInStructLabel => "No corresponding field in struct".into(),
+            DiagnosticMessage::StructDefinedHere => "Struct defined here".into(),
+            DiagnosticMessage::FieldCreatesCycle { field_name } => {
+                format!("Field `{field_name}` creates the cycle")
+            }
+            DiagnosticMessage::FieldInCyclePath {
+                field_name,
+                target_struct,
+            } => {
+                format!("Field `{field_name}` contains `{target_struct}`")
+            }
 
             // Parse error labels
             DiagnosticMessage::EndOfFileNotExpectedHere => "End of file not expected here".into(),
@@ -597,6 +621,10 @@ pub enum ErrorKind {
     FieldAccessOnNonStruct {
         ty: Type,
     },
+    /// Recursive struct definition (struct contains itself directly or indirectly)
+    RecursiveStruct {
+        name: String,
+    },
 
     // Parse errors
     UnrecognizedEof {
@@ -660,6 +688,7 @@ impl ErrorKind {
             Self::DuplicateStructField { .. } => "E0040",
             Self::UnknownField { .. } => "E0041",
             Self::FieldAccessOnNonStruct { .. } => "E0042",
+            Self::RecursiveStruct { .. } => "E0043",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -815,6 +844,9 @@ impl ErrorKind {
             },
             Self::FieldAccessOnNonStruct { ty } => {
                 DiagnosticMessage::FieldAccessOnNonStruct { ty: *ty }
+            }
+            Self::RecursiveStruct { name } => {
+                DiagnosticMessage::RecursiveStruct { name: name.clone() }
             }
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {

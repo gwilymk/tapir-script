@@ -1,0 +1,7 @@
+struct Point { x: int, y: int }
+property pos: Point;
+
+pos.x = 10;
+pos.y = 20;
+var x = pos.x;
+var y = pos.y;

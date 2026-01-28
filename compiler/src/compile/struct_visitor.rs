@@ -1,3 +1,5 @@
+mod recursive;
+
 use std::collections::HashMap;
 
 use crate::{
@@ -72,7 +74,8 @@ pub fn register_structs<'input>(
 /// Second pass: Now that all struct names are registered, resolve field types.
 ///
 /// This converts AST type annotations (which may be struct names like "Point")
-/// into actual Type values (Type::Struct(id)). Also detects duplicate field names.
+/// into actual Type values (Type::Struct(id)). Also detects duplicate field names
+/// and recursive struct definitions.
 pub fn resolve_struct_fields<'input>(
     script: &Script<'input>,
     registry: &mut StructRegistry,
@@ -133,6 +136,9 @@ pub fn resolve_struct_fields<'input>(
         // Update the struct definition with resolved fields
         registry.get_mut(struct_id).fields = fields;
     }
+
+    // Check for recursive struct definitions after all fields are resolved
+    recursive::check_recursive_structs(registry, diagnostics);
 }
 
 /// Third pass: Resolve all type annotations throughout the script.

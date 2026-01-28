@@ -1,0 +1,21 @@
+---
+source: compiler/src/compile/struct_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/struct_visitor/recursive_struct_indirect_fail.tapir
+---
+[E0043] Error: struct `A` contains itself, creating infinite recursion
+   ╭─[ recursive_struct_indirect_fail.tapir:1:1 ]
+   │
+ 1 │ ╭─▶ struct A {
+   ┆ ┆   
+ 3 │ │       b: B
+   │ │       ┬  
+   │ │       ╰── Field `b` contains `B`
+ 4 │ ├─▶ }
+   │ │       
+   │ ╰─────── Struct defined here
+   │ 
+ 8 │         a: A
+   │         ┬  
+   │         ╰── Field `a` creates the cycle
+───╯

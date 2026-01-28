@@ -1,0 +1,17 @@
+---
+source: compiler/src/compile/struct_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/struct_visitor/recursive_struct_fail.tapir
+---
+[E0043] Error: struct `Recursive` contains itself, creating infinite recursion
+   ╭─[ recursive_struct_fail.tapir:1:1 ]
+   │
+ 1 │ ╭─▶ struct Recursive {
+   ┆ ┆   
+ 3 │ │       self_ref: Recursive
+   │ │       ────┬───  
+   │ │           ╰───── Field `self_ref` creates the cycle
+ 4 │ ├─▶ }
+   │ │       
+   │ ╰─────── Struct defined here
+───╯

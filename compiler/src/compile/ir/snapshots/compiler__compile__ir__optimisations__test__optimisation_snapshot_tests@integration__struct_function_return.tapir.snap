@@ -180,36 +180,36 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.53 = int 3
 temp.54 = int 4
-jmp 2
-
----- block 2 ----
-jmp 4
-
----- block 4 ----
-temp.89 = φ(temp.53 from 2)
-temp.90 = φ(temp.54 from 2)
-temp.6.x.55 = temp.89
-temp.6.y.56 = temp.90
-jmp 1
-
----- block 1 ----
 jmp 6
 
 ---- block 6 ----
-temp.93 = int 2
-temp.95 = temp.6.x.55 * temp.93
-temp.94 = temp.93
-temp.96 = temp.6.y.56 * temp.94
 jmp 8
 
 ---- block 8 ----
-temp.91 = φ(temp.95 from 6)
-temp.92 = φ(temp.96 from 6)
-temp.13.x.61 = temp.91
-temp.13.y.62 = temp.92
+temp.95 = φ(temp.53 from 6)
+temp.96 = φ(temp.54 from 6)
+temp.6.x.55 = temp.95
+temp.6.y.56 = temp.96
 jmp 5
 
 ---- block 5 ----
+jmp 2
+
+---- block 2 ----
+temp.91 = int 2
+temp.93 = temp.6.x.55 * temp.91
+temp.92 = temp.91
+temp.94 = temp.6.y.56 * temp.92
+jmp 4
+
+---- block 4 ----
+temp.89 = φ(temp.93 from 2)
+temp.90 = φ(temp.94 from 2)
+temp.13.x.61 = temp.89
+temp.13.y.62 = temp.90
+jmp 1
+
+---- block 1 ----
 temp.71 = temp.13.x.61 + temp.13.y.62
 storeprop temp.71, 0
 return 
@@ -238,36 +238,36 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.53 = int 3
 temp.54 = int 4
-jmp 2
-
----- block 2 ----
-jmp 4
-
----- block 4 ----
-temp.89 = φ(temp.53 from 2)
-temp.90 = φ(temp.54 from 2)
-temp.6.x.55 = temp.89
-temp.6.y.56 = temp.90
-jmp 1
-
----- block 1 ----
 jmp 6
 
 ---- block 6 ----
-temp.93 = int 2
-temp.95 = temp.6.x.55 * temp.93
-temp.94 = temp.93
-temp.96 = temp.6.y.56 * temp.94
 jmp 8
 
 ---- block 8 ----
-temp.91 = φ(temp.95 from 6)
-temp.92 = φ(temp.96 from 6)
-temp.13.x.61 = temp.91
-temp.13.y.62 = temp.92
+temp.95 = φ(temp.53 from 6)
+temp.96 = φ(temp.54 from 6)
+temp.6.x.55 = temp.95
+temp.6.y.56 = temp.96
 jmp 5
 
 ---- block 5 ----
+jmp 2
+
+---- block 2 ----
+temp.91 = int 2
+temp.93 = temp.6.x.55 * temp.91
+temp.92 = temp.91
+temp.94 = temp.6.y.56 * temp.92
+jmp 4
+
+---- block 4 ----
+temp.89 = φ(temp.93 from 2)
+temp.90 = φ(temp.94 from 2)
+temp.13.x.61 = temp.89
+temp.13.y.62 = temp.90
+jmp 1
+
+---- block 1 ----
 temp.71 = temp.13.x.61 + temp.13.y.62
 storeprop temp.71, 0
 return 
@@ -280,32 +280,32 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.53 = int 3
 temp.54 = int 4
-jmp 2
-
----- block 2 ----
-jmp 4
-
----- block 4 ----
-temp.6.x.55 = temp.53
-temp.6.y.56 = temp.54
-jmp 1
-
----- block 1 ----
 jmp 6
 
 ---- block 6 ----
-temp.93 = int 2
-temp.95 = temp.6.x.55 * temp.93
-temp.94 = temp.93
-temp.96 = temp.6.y.56 * temp.94
 jmp 8
 
 ---- block 8 ----
-temp.13.x.61 = temp.95
-temp.13.y.62 = temp.96
+temp.6.x.55 = temp.53
+temp.6.y.56 = temp.54
 jmp 5
 
 ---- block 5 ----
+jmp 2
+
+---- block 2 ----
+temp.91 = int 2
+temp.93 = temp.6.x.55 * temp.91
+temp.92 = temp.91
+temp.94 = temp.6.y.56 * temp.92
+jmp 4
+
+---- block 4 ----
+temp.13.x.61 = temp.93
+temp.13.y.62 = temp.94
+jmp 1
+
+---- block 1 ----
 temp.71 = temp.13.x.61 + temp.13.y.62
 storeprop temp.71, 0
 return 
@@ -318,34 +318,34 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.53 = int 3
 temp.54 = int 4
-jmp 2
-
----- block 2 ----
-temp.6.x.55 = temp.53
-temp.6.y.56 = temp.54
-jmp 4
-
----- block 4 ----
-jmp 1
-
----- block 1 ----
-temp.93 = int 2
-temp.95 = temp.6.x.55 * temp.93
-temp.94 = temp.93
-temp.96 = temp.6.y.56 * temp.94
 jmp 6
 
 ---- block 6 ----
-temp.13.x.61 = temp.95
-temp.13.y.62 = temp.96
+temp.6.x.55 = temp.53
+temp.6.y.56 = temp.54
 jmp 8
 
 ---- block 8 ----
-temp.71 = temp.13.x.61 + temp.13.y.62
-storeprop temp.71, 0
 jmp 5
 
 ---- block 5 ----
+temp.91 = int 2
+temp.93 = temp.6.x.55 * temp.91
+temp.92 = temp.91
+temp.94 = temp.6.y.56 * temp.92
+jmp 2
+
+---- block 2 ----
+temp.13.x.61 = temp.93
+temp.13.y.62 = temp.94
+jmp 4
+
+---- block 4 ----
+temp.71 = temp.13.x.61 + temp.13.y.62
+storeprop temp.71, 0
+jmp 1
+
+---- block 1 ----
 return 
 
 
@@ -356,34 +356,34 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.53 = int 3
 temp.54 = int 4
-jmp 2
+jmp 6
 
----- block 2 ----
+---- block 6 ----
 temp.6.x.55 = temp.53
 temp.6.y.56 = temp.54
-jmp 4
-
----- block 4 ----
-jmp 1
-
----- block 1 ----
-temp.93 = int 2
-temp.95 = temp.53 * temp.93
-temp.94 = temp.93
-temp.96 = temp.54 * temp.93
-jmp 6
-
----- block 6 ----
-temp.13.x.61 = temp.95
-temp.13.y.62 = temp.96
 jmp 8
 
 ---- block 8 ----
-temp.71 = temp.95 + temp.96
-storeprop temp.71, 0
 jmp 5
 
 ---- block 5 ----
+temp.91 = int 2
+temp.93 = temp.53 * temp.91
+temp.92 = temp.91
+temp.94 = temp.54 * temp.91
+jmp 2
+
+---- block 2 ----
+temp.13.x.61 = temp.93
+temp.13.y.62 = temp.94
+jmp 4
+
+---- block 4 ----
+temp.71 = temp.93 + temp.94
+storeprop temp.71, 0
+jmp 1
+
+---- block 1 ----
 return 
 
 
@@ -394,29 +394,29 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.53 = int 3
 temp.54 = int 4
-jmp 2
-
----- block 2 ----
-jmp 4
-
----- block 4 ----
-jmp 1
-
----- block 1 ----
-temp.93 = int 2
-temp.95 = temp.53 * temp.93
-temp.96 = temp.54 * temp.93
 jmp 6
 
 ---- block 6 ----
 jmp 8
 
 ---- block 8 ----
-temp.71 = temp.95 + temp.96
-storeprop temp.71, 0
 jmp 5
 
 ---- block 5 ----
+temp.91 = int 2
+temp.93 = temp.53 * temp.91
+temp.94 = temp.54 * temp.91
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+temp.71 = temp.93 + temp.94
+storeprop temp.71, 0
+jmp 1
+
+---- block 1 ----
 return 
 
 
@@ -427,25 +427,167 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.53 = int 3
 temp.54 = int 4
-jmp 2
-
----- block 2 ----
-jmp 4
-
----- block 4 ----
-jmp 1
-
----- block 1 ----
-temp.93 = int 2
-temp.95 = int 6
-temp.96 = int 8
 jmp 6
 
 ---- block 6 ----
 jmp 8
 
 ---- block 8 ----
-temp.71 = temp.95 + temp.96
+jmp 5
+
+---- block 5 ----
+temp.91 = int 2
+temp.93 = int 6
+temp.94 = int 8
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+temp.71 = temp.93 + temp.94
+storeprop temp.71, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.53 = int 3
+temp.54 = int 4
+jmp 8
+
+---- block 8 ----
+jmp 5
+
+---- block 5 ----
+temp.91 = int 2
+temp.93 = int 6
+temp.94 = int 8
+jmp 4
+
+---- block 4 ----
+temp.71 = temp.93 + temp.94
+storeprop temp.71, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.53 = int 3
+temp.54 = int 4
+jmp 8
+
+---- block 8 ----
+temp.91 = int 2
+temp.93 = int 6
+temp.94 = int 8
+jmp 5
+
+---- block 5 ----
+temp.71 = temp.93 + temp.94
+storeprop temp.71, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 8
+
+---- block 8 ----
+temp.93 = int 6
+temp.94 = int 8
+jmp 5
+
+---- block 5 ----
+temp.71 = temp.93 + temp.94
+storeprop temp.71, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 8
+
+---- block 8 ----
+temp.93 = int 6
+temp.94 = int 8
+jmp 5
+
+---- block 5 ----
+temp.71 = int 14
+storeprop temp.71, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 8
+
+---- block 8 ----
+temp.93 = int 6
+temp.94 = int 8
+jmp 5
+
+---- block 5 ----
+temp.71 = int 14
+storeprop temp.71, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.93 = int 6
+temp.94 = int 8
+jmp 8
+
+---- block 8 ----
+temp.71 = int 14
+storeprop temp.71, 0
+jmp 5
+
+---- block 5 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 8
+
+---- block 8 ----
+temp.71 = int 14
 storeprop temp.71, 0
 jmp 5
 
@@ -458,151 +600,9 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.53 = int 3
-temp.54 = int 4
-jmp 4
-
----- block 4 ----
-jmp 1
-
----- block 1 ----
-temp.93 = int 2
-temp.95 = int 6
-temp.96 = int 8
 jmp 8
 
 ---- block 8 ----
-temp.71 = temp.95 + temp.96
-storeprop temp.71, 0
-return 
-
-
------------ simplify_blocks -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-temp.53 = int 3
-temp.54 = int 4
-jmp 4
-
----- block 4 ----
-temp.93 = int 2
-temp.95 = int 6
-temp.96 = int 8
-jmp 1
-
----- block 1 ----
-temp.71 = temp.95 + temp.96
-storeprop temp.71, 0
-jmp 8
-
----- block 8 ----
-return 
-
-
------------ dead_store_elimination -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-jmp 4
-
----- block 4 ----
-temp.95 = int 6
-temp.96 = int 8
-jmp 1
-
----- block 1 ----
-temp.71 = temp.95 + temp.96
-storeprop temp.71, 0
-jmp 8
-
----- block 8 ----
-return 
-
-
------------ constant_folding -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-jmp 4
-
----- block 4 ----
-temp.95 = int 6
-temp.96 = int 8
-jmp 1
-
----- block 1 ----
-temp.71 = int 14
-storeprop temp.71, 0
-jmp 8
-
----- block 8 ----
-return 
-
-
------------ empty_block -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-jmp 4
-
----- block 4 ----
-temp.95 = int 6
-temp.96 = int 8
-jmp 1
-
----- block 1 ----
-temp.71 = int 14
-storeprop temp.71, 0
-return 
-
-
------------ simplify_blocks -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-temp.95 = int 6
-temp.96 = int 8
-jmp 4
-
----- block 4 ----
-temp.71 = int 14
-storeprop temp.71, 0
-jmp 1
-
----- block 1 ----
-return 
-
-
------------ dead_store_elimination -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-jmp 4
-
----- block 4 ----
-temp.71 = int 14
-storeprop temp.71, 0
-jmp 1
-
----- block 1 ----
-return 
-
-
------------ empty_block -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-jmp 4
-
----- block 4 ----
 temp.71 = int 14
 storeprop temp.71, 0
 return 
@@ -615,9 +615,9 @@ fn @toplevel() ->
 ---- block 0 ----
 temp.71 = int 14
 storeprop temp.71, 0
-jmp 4
+jmp 8
 
----- block 4 ----
+---- block 8 ----
 return 
 
 

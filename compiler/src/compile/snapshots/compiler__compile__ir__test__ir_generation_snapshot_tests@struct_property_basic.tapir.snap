@@ -1,0 +1,18 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/struct_property_basic.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.4 = int 10
+storeprop temp.4, 0
+temp.5 = int 20
+storeprop temp.5, 1
+getprop temp.6, 0
+x.2 = temp.6
+getprop temp.7, 1
+y.3 = temp.7
+return
