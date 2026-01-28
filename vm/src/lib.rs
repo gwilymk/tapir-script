@@ -440,7 +440,7 @@ mod test {
             enable_optimisations: false,
         };
 
-        let source = "builtin(0) fn sin(x: fix) -> fix;\nproperty prop: fix;\nprop = sin(0.0);";
+        let source = "property prop: fix;\nprop = sin(0.0);";
         let compile_result =
             compiler::compile("builtin_sin.tapir", source, compile_settings).unwrap();
 
@@ -466,7 +466,7 @@ mod test {
             enable_optimisations: false,
         };
 
-        let source = "builtin(1) fn cos(x: fix) -> fix;\nproperty prop: fix;\nprop = cos(0.0);";
+        let source = "property prop: fix;\nprop = cos(0.0);";
         let compile_result =
             compiler::compile("builtin_cos.tapir", source, compile_settings).unwrap();
 
@@ -492,7 +492,7 @@ mod test {
             enable_optimisations: false,
         };
 
-        let source = "builtin(2) fn sqrt(x: fix) -> fix;\nproperty prop: fix;\nprop = sqrt(4.0);";
+        let source = "property prop: fix;\nprop = sqrt(4.0);";
         let compile_result =
             compiler::compile("builtin_sqrt.tapir", source, compile_settings).unwrap();
 
@@ -518,8 +518,7 @@ mod test {
             enable_optimisations: false,
         };
 
-        let source =
-            "builtin(-1) fn frame() -> int;\nproperty prop: int;\nwait; wait; prop = frame();";
+        let source = "property prop: int;\nwait; wait; prop = frame();";
         let compile_result =
             compiler::compile("builtin_frame.tapir", source, compile_settings).unwrap();
 
@@ -546,8 +545,7 @@ mod test {
             enable_optimisations: false,
         };
 
-        let source =
-            "builtin(3) fn floor(x: fix) -> int;\nproperty prop: int;\nprop = floor(3.7);";
+        let source = "property prop: int;\nprop = floor(3.7);";
         let compile_result =
             compiler::compile("builtin_floor.tapir", source, compile_settings).unwrap();
 

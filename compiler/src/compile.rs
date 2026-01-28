@@ -612,4 +612,26 @@ mod test {
             assert_snapshot!(decompiled);
         });
     }
+
+    #[test]
+    fn builtin_outside_prelude_is_error() {
+        let source = "builtin(99) fn my_builtin(x: int) -> int;";
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+        };
+
+        let result = compile("test.tapir", source, &settings);
+        match result {
+            Ok(_) => panic!("Expected compilation to fail"),
+            Err(mut err) => {
+                let msg = err.pretty_string(false);
+                assert!(msg.contains("E0037"), "Expected E0037 error, got: {msg}");
+                assert!(
+                    msg.contains("can only be declared in the prelude"),
+                    "Expected prelude error message, got: {msg}"
+                );
+            }
+        }
+    }
 }

@@ -1,1 +1,12 @@
 # Tapir-script prelude - utility functions available to all scripts
+
+# Math functions
+builtin(0) fn sin(x: fix) -> fix;
+builtin(1) fn cos(x: fix) -> fix;
+builtin(2) fn sqrt(x: fix) -> fix;
+builtin(3) fn floor(x: fix) -> int;
+builtin(4) fn ceil(x: fix) -> int;
+builtin(5) fn round(x: fix) -> int;
+
+# Runtime functions
+builtin(-1) fn frame() -> int;

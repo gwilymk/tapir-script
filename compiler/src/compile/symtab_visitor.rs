@@ -7,6 +7,7 @@ use crate::{
         SymbolId,
     },
     builtins::BuiltinVariable,
+    prelude::PRELUDE_FILE_ID,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
     types::Type,
@@ -211,6 +212,16 @@ impl<'input> SymTabVisitor<'input> {
         for function in script.builtin_functions.iter_mut() {
             let fid = function.builtin_id;
             function.meta.set(fid);
+
+            // Builtin functions can only be declared in the prelude
+            if function.span.file_id != PRELUDE_FILE_ID {
+                ErrorKind::BuiltinOutsidePrelude {
+                    name: function.name.to_string(),
+                }
+                .at(function.span)
+                .emit(diagnostics);
+                continue;
+            }
 
             if let Some(other_span) = function_declarations.insert(function.name, function.span) {
                 ErrorKind::FunctionAlreadyDeclared {

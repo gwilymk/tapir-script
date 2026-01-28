@@ -132,6 +132,9 @@ pub enum DiagnosticMessage {
         annotated: Type,
         actual: Type,
     },
+    BuiltinOutsidePrelude {
+        name: String,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -327,6 +330,9 @@ impl DiagnosticMessage {
             }
             DiagnosticMessage::TypeAnnotationMismatch { annotated, actual } => {
                 format!("type annotation `{annotated}` doesn't match expression type `{actual}`")
+            }
+            DiagnosticMessage::BuiltinOutsidePrelude { name } => {
+                format!("builtin function `{name}` can only be declared in the prelude")
             }
 
             // Parse errors
@@ -531,6 +537,10 @@ pub enum ErrorKind {
         annotated: Type,
         actual: Type,
     },
+    /// Builtin function declared outside of prelude
+    BuiltinOutsidePrelude {
+        name: String,
+    },
 
     // Parse errors
     UnrecognizedEof {
@@ -588,6 +598,7 @@ impl ErrorKind {
             Self::PropertyConflictsWithGlobal { .. } => "E0034",
             Self::PropertyNotInStruct { .. } => "E0035",
             Self::TypeAnnotationMismatch { .. } => "E0036",
+            Self::BuiltinOutsidePrelude { .. } => "E0037",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -718,6 +729,9 @@ impl ErrorKind {
                     actual: *actual,
                 }
             }
+            Self::BuiltinOutsidePrelude { name } => DiagnosticMessage::BuiltinOutsidePrelude {
+                name: name.clone(),
+            },
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {
                 token: token.clone(),
