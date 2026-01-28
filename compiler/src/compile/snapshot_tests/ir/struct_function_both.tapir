@@ -1,0 +1,9 @@
+struct Point { x: int, y: int }
+
+fn add_points(a: Point, b: Point) -> Point {
+    return Point(a.x + b.x, a.y + b.y);
+}
+
+var p1 = Point(1, 2);
+var p2 = Point(3, 4);
+var sum = add_points(p1, p2);

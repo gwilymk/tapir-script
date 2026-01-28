@@ -1,0 +1,25 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/struct_function_return.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.4 = int 3
+temp.5 = int 4
+temp.3.x.6, temp.3.y.7 = make_point(temp.4, temp.5)
+p.x.8 = temp.3.x.6
+p.y.9 = temp.3.y.7
+return 
+
+=======================
+fn make_point(x.1, y.2) -> int, int
+
+---- block 0 ----
+temp.11 = x.1
+temp.12 = y.2
+temp.10.x.13 = temp.11
+temp.10.y.14 = temp.12
+return temp.10.x.13, temp.10.y.14

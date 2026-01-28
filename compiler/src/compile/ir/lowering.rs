@@ -2,9 +2,9 @@ use crate::{
     ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
     compile::{
         symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
-        type_visitor::{FieldAccessInfo, FieldAssignmentInfo},
+        type_visitor::{CallReturnInfo, FieldAccessInfo, FieldAssignmentInfo},
     },
-    types::StructRegistry,
+    types::{StructRegistry, Type},
 };
 
 use super::{
@@ -17,32 +17,99 @@ pub fn create_ir(
     symtab: &mut SymTab,
     struct_registry: &StructRegistry,
 ) -> (TapIrFunction, SymbolSpans) {
+    // First, expand struct parameters so they're available during block creation
+    let arg_symbols = f
+        .meta
+        .get::<FunctionArgumentSymbols>()
+        .expect("Should have resolved arguments");
+
+    for (arg, &symbol_id) in f.arguments.iter().zip(arg_symbols.0.iter()) {
+        if let Some(ref type_with_loc) = arg.ty {
+            let arg_type = type_with_loc.resolved();
+            if let crate::types::Type::Struct(struct_id) = arg_type {
+                let arg_name = symtab.name_for_symbol(symbol_id).to_string();
+                symtab.expand_struct_symbol(
+                    symbol_id,
+                    &arg_name,
+                    struct_id,
+                    arg.ident.span,
+                    struct_registry,
+                );
+            }
+        }
+    }
+
     let block_visitor = BlockVisitor::new(struct_registry);
     let (blocks, symbol_spans) = block_visitor.create_blocks(&f.statements, symtab);
 
     let id = *f.meta.get().expect("Should have FunctionId by now");
     let modifiers = FunctionModifiers::new(f, symtab);
 
-    let arguments = f
-        .meta
-        .get::<FunctionArgumentSymbols>()
-        .expect("Should have resolved arguments")
-        .0
-        .clone()
-        .into_boxed_slice();
+    // Expand struct arguments into their leaf symbols
+    let mut arguments = Vec::new();
+    for (arg, &symbol_id) in f.arguments.iter().zip(arg_symbols.0.iter()) {
+        if let Some(ref type_with_loc) = arg.ty {
+            let arg_type = type_with_loc.resolved();
+            if let crate::types::Type::Struct(_) = arg_type {
+                // Struct parameter: use expanded leaf symbols
+                collect_leaf_symbols(symbol_id, symtab, &mut arguments);
+            } else {
+                // Scalar parameter
+                arguments.push(symbol_id);
+            }
+        } else {
+            // No type annotation - treat as scalar
+            arguments.push(symbol_id);
+        }
+    }
 
-    let return_types = f.return_types.types.iter().map(|t| t.resolved()).collect();
+    // Expand struct return types into their leaf types
+    let mut return_types = Vec::new();
+    for ret_type in f.return_types.types.iter().map(|t| t.resolved()) {
+        if let crate::types::Type::Struct(struct_id) = ret_type {
+            collect_leaf_types(struct_id, struct_registry, &mut return_types);
+        } else {
+            return_types.push(ret_type);
+        }
+    }
 
     (
         TapIrFunction::new(
             id,
             blocks.into_boxed_slice(),
             modifiers,
-            arguments,
-            return_types,
+            arguments.into_boxed_slice(),
+            return_types.into_boxed_slice(),
         ),
         symbol_spans,
     )
+}
+
+/// Collect all leaf (scalar) symbols from a struct expansion recursively.
+fn collect_leaf_symbols(symbol_id: SymbolId, symtab: &SymTab, out: &mut Vec<SymbolId>) {
+    if let Some(expansion) = symtab.get_struct_expansion(symbol_id) {
+        for &field_symbol in &expansion.fields {
+            collect_leaf_symbols(field_symbol, symtab, out);
+        }
+    } else {
+        out.push(symbol_id);
+    }
+}
+
+/// Collect all leaf (scalar) types from a struct type recursively.
+fn collect_leaf_types(
+    struct_id: crate::types::StructId,
+    registry: &StructRegistry,
+    out: &mut Vec<crate::types::Type>,
+) {
+    let def = registry.get(struct_id);
+    for field in &def.fields {
+        if let crate::types::Type::Struct(nested_id) = field.ty {
+            collect_leaf_types(nested_id, registry, out);
+        } else {
+            out.push(field.ty);
+        }
+    }
 }
 
 struct BlockVisitor<'a> {
@@ -441,16 +508,16 @@ impl<'a> BlockVisitor<'a> {
                 self.current_block.push(TapIr::Trigger { f, args });
             }
             ast::StatementKind::Return { values } => {
-                let return_values = values
-                    .iter()
-                    .map(|v| {
-                        let return_symbol = symtab.new_temporary();
-                        self.blocks_for_expression(v, return_symbol, symtab);
-                        return_symbol
-                    })
-                    .collect();
+                let mut return_values = Vec::new();
+                for v in values {
+                    let return_symbol = symtab.new_temporary();
+                    self.blocks_for_expression(v, return_symbol, symtab);
 
-                self.finalize_block(BlockExitInstr::Return(return_values), None);
+                    // If this is a struct, expand to leaf symbols
+                    collect_leaf_symbols(return_symbol, symtab, &mut return_values);
+                }
+
+                self.finalize_block(BlockExitInstr::Return(return_values.into_boxed_slice()), None);
             }
         }
     }
@@ -634,92 +701,106 @@ impl<'a> BlockVisitor<'a> {
                     .get()
                     .expect("Should've assigned function IDs by now");
 
-                let args = arguments
-                    .iter()
-                    .map(|arg| {
-                        let arg_sym = symtab.new_temporary();
-                        self.blocks_for_expression(arg, arg_sym, symtab);
-                        arg_sym
-                    })
-                    .collect();
+                // Struct constructors are handled specially - don't expand args
+                if let InternalOrExternalFunctionId::StructConstructor(_) = function_id {
+                    // Evaluate arguments without expansion (struct constructor handles them)
+                    let args: Box<[SymbolId]> = arguments
+                        .iter()
+                        .map(|arg| {
+                            let arg_sym = symtab.new_temporary();
+                            self.blocks_for_expression(arg, arg_sym, symtab);
+                            arg_sym
+                        })
+                        .collect();
+
+                    // Fall through to struct constructor handling below
+                    let function_id = function_id; // rebind for match
+                    match function_id {
+                        InternalOrExternalFunctionId::StructConstructor(struct_id) => {
+                            self.handle_struct_constructor(
+                                target_symbol,
+                                struct_id,
+                                &args,
+                                expr.span,
+                                symtab,
+                            );
+                        }
+                        _ => unreachable!(),
+                    }
+                    return;
+                }
+
+                // For non-struct-constructor calls, evaluate and expand struct args to leaf symbols
+                let mut args = Vec::new();
+                for arg in arguments {
+                    let arg_sym = symtab.new_temporary();
+                    self.blocks_for_expression(arg, arg_sym, symtab);
+                    // Expand struct args to leaf symbols
+                    collect_leaf_symbols(arg_sym, symtab, &mut args);
+                }
+                let args = args.into_boxed_slice();
+
+                // Get return type info to know if we need to expand target for struct return
+                let return_info: Option<&CallReturnInfo> = expr.meta.get();
 
                 match function_id {
                     InternalOrExternalFunctionId::Internal(function_id) => {
+                        // Expand target if function returns a struct
+                        if let Some(CallReturnInfo(ret_types)) = return_info {
+                            if let Some(Type::Struct(struct_id)) = ret_types.first() {
+                                let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                                symtab.expand_struct_symbol(
+                                    target_symbol,
+                                    &target_name,
+                                    *struct_id,
+                                    expr.span,
+                                    self.struct_registry,
+                                );
+                            }
+                        }
+                        // Collect target leaf symbols
+                        let mut targets = Vec::new();
+                        collect_leaf_symbols(target_symbol, symtab, &mut targets);
                         self.current_block.push(TapIr::Call {
-                            target: Box::new([target_symbol]),
+                            target: targets.into_boxed_slice(),
                             f: function_id,
                             args,
                         });
                     }
                     InternalOrExternalFunctionId::External(external_function_id) => {
+                        // Expand target if function returns a struct
+                        if let Some(CallReturnInfo(ret_types)) = return_info {
+                            if let Some(Type::Struct(struct_id)) = ret_types.first() {
+                                let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                                symtab.expand_struct_symbol(
+                                    target_symbol,
+                                    &target_name,
+                                    *struct_id,
+                                    expr.span,
+                                    self.struct_registry,
+                                );
+                            }
+                        }
+                        // Collect target leaf symbols
+                        let mut targets = Vec::new();
+                        collect_leaf_symbols(target_symbol, symtab, &mut targets);
                         self.current_block.push(TapIr::CallExternal {
-                            target: Box::new([target_symbol]),
+                            target: targets.into_boxed_slice(),
                             f: external_function_id,
                             args,
                         });
                     }
                     InternalOrExternalFunctionId::Builtin(builtin_id) => {
+                        // Builtins don't take or return structs
                         self.current_block.push(TapIr::CallBuiltin {
                             target: target_symbol,
                             f: builtin_id,
                             args,
                         });
                     }
-                    InternalOrExternalFunctionId::StructConstructor(struct_id) => {
-                        // Expand the target symbol into field symbols
-                        let base_name = symtab.name_for_symbol(target_symbol).to_string();
-                        let target_expansion = symtab.expand_struct_symbol(
-                            target_symbol,
-                            &base_name,
-                            struct_id,
-                            expr.span,
-                            self.struct_registry,
-                        );
-
-                        // Get the struct definition to know field types
-                        let struct_def = self.struct_registry.get(struct_id);
-
-                        // Copy each argument to the corresponding target field
-                        for ((arg_symbol, field), &target_field) in args
-                            .iter()
-                            .zip(&struct_def.fields)
-                            .zip(&target_expansion.fields)
-                        {
-                            match field.ty {
-                                crate::types::Type::Struct(nested_id) => {
-                                    // Argument is a struct - copy recursively
-                                    let arg_expansion =
-                                        if let Some(exp) = symtab.get_struct_expansion(*arg_symbol)
-                                        {
-                                            exp.clone()
-                                        } else {
-                                            let arg_name =
-                                                symtab.name_for_symbol(*arg_symbol).to_string();
-                                            symtab.expand_struct_symbol(
-                                                *arg_symbol,
-                                                &arg_name,
-                                                nested_id,
-                                                expr.span,
-                                                self.struct_registry,
-                                            )
-                                        };
-
-                                    let target_nested = symtab
-                                        .get_struct_expansion(target_field)
-                                        .expect("Nested field should be expanded")
-                                        .clone();
-
-                                    self.copy_struct_fields(&arg_expansion, &target_nested, symtab);
-                                }
-                                _ => {
-                                    // Scalar field - simple move
-                                    self.current_block.push(TapIr::Move {
-                                        target: target_field,
-                                        source: *arg_symbol,
-                                    });
-                                }
-                            }
-                        }
+                    InternalOrExternalFunctionId::StructConstructor(_) => {
+                        // Handled above with early return
+                        unreachable!("Struct constructors are handled separately");
                     }
                 }
             }
@@ -773,6 +854,70 @@ impl<'a> BlockVisitor<'a> {
                     self.current_block.push(TapIr::Move {
                         target: target_symbol,
                         source: field_symbol,
+                    });
+                }
+            }
+        }
+    }
+
+    /// Handle struct constructor calls.
+    /// Expands the target and copies each argument to the corresponding field.
+    fn handle_struct_constructor(
+        &mut self,
+        target_symbol: SymbolId,
+        struct_id: crate::types::StructId,
+        args: &[SymbolId],
+        span: crate::tokens::Span,
+        symtab: &mut SymTab,
+    ) {
+        // Expand the target symbol into field symbols
+        let base_name = symtab.name_for_symbol(target_symbol).to_string();
+        let target_expansion = symtab.expand_struct_symbol(
+            target_symbol,
+            &base_name,
+            struct_id,
+            span,
+            self.struct_registry,
+        );
+
+        // Get the struct definition to know field types
+        let struct_def = self.struct_registry.get(struct_id);
+
+        // Copy each argument to the corresponding target field
+        for ((&arg_symbol, field), &target_field) in args
+            .iter()
+            .zip(&struct_def.fields)
+            .zip(&target_expansion.fields)
+        {
+            match field.ty {
+                crate::types::Type::Struct(nested_id) => {
+                    // Argument is a struct - copy recursively
+                    let arg_expansion =
+                        if let Some(exp) = symtab.get_struct_expansion(arg_symbol) {
+                            exp.clone()
+                        } else {
+                            let arg_name = symtab.name_for_symbol(arg_symbol).to_string();
+                            symtab.expand_struct_symbol(
+                                arg_symbol,
+                                &arg_name,
+                                nested_id,
+                                span,
+                                self.struct_registry,
+                            )
+                        };
+
+                    let target_nested = symtab
+                        .get_struct_expansion(target_field)
+                        .expect("Nested field should be expanded")
+                        .clone();
+
+                    self.copy_struct_fields(&arg_expansion, &target_nested, symtab);
+                }
+                _ => {
+                    // Scalar field - simple move
+                    self.current_block.push(TapIr::Move {
+                        target: target_field,
+                        source: arg_symbol,
                     });
                 }
             }

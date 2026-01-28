@@ -1,0 +1,8 @@
+struct Point { x: int, y: int }
+
+fn get_x(p: Point) -> int {
+    return p.x;
+}
+
+var pt = Point(5, 10);
+var x = get_x(pt);

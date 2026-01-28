@@ -10,23 +10,23 @@ fn @toplevel() ->
 return 
 
 =======================
-fn make_point() -> struct
+fn make_point() -> int, int
 
 ---- block 0 ----
 temp.4 = int 10
 temp.5 = int 20
 temp.3.x.6 = temp.4
 temp.3.y.7 = temp.5
-return temp.3
+return temp.3.x.6, temp.3.y.7
 
 =======================
 fn test_field_on_call() -> 
 
 ---- block 0 ----
-temp.9 = make_point()
+temp.9.x.10, temp.9.y.11 = make_point()
 temp.8 = temp.9.x.10
 x.0 = temp.8
-temp.13 = make_point()
+temp.13.x.14, temp.13.y.15 = make_point()
 temp.12 = temp.13.y.15
 y.1 = temp.12
 return 
@@ -35,9 +35,9 @@ return
 fn test_field_on_call_in_expression() -> 
 
 ---- block 0 ----
-temp.19 = make_point()
+temp.19.x.20, temp.19.y.21 = make_point()
 temp.17 = temp.19.x.20
-temp.22 = make_point()
+temp.22.x.23, temp.22.y.24 = make_point()
 temp.18 = temp.22.y.24
 temp.16 = temp.17 + temp.18
 sum.2 = temp.16

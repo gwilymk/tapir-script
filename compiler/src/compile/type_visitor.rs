@@ -28,6 +28,11 @@ pub struct FieldAccessInfo {
 #[derive(Clone, Debug)]
 pub struct FieldAssignmentInfo(pub Vec<Option<(StructId, Vec<usize>)>>);
 
+/// Stored in Call expression metadata during type checking.
+/// Contains return types so IR lowering knows when to expand targets for struct returns.
+#[derive(Clone, Debug)]
+pub struct CallReturnInfo(pub Vec<Type>);
+
 use super::{
     loop_visitor::LoopContainsNoBreak,
     symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
@@ -1075,6 +1080,9 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     symtab,
                     diagnostics,
                 );
+
+                // Store return types for IR lowering (needed for struct returns)
+                expression.meta.set(CallReturnInfo(types.clone()));
 
                 if types.len() != 1 {
                     ErrorKind::FunctionMustReturnOneValueInThisLocation {
