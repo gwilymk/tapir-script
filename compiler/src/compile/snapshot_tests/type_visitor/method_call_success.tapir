@@ -1,0 +1,30 @@
+# Method definitions on builtin types
+fn int.negate(self) -> int {
+    return 0 - self;
+}
+
+fn int.add(self, other: int) -> int {
+    return self + other;
+}
+
+fn fix.double(self) -> fix {
+    return self + self;
+}
+
+# Test method calls
+var x: int = 5;
+var neg = x.negate();
+var sum = x.add(10);
+
+var y: fix = 2.5;
+var doubled = y.double();
+
+# Test method call on function result
+fn get_int() -> int {
+    return 42;
+}
+
+var from_fn = get_int().negate();
+
+# Chained method calls
+var chained = x.negate().add(3).negate();

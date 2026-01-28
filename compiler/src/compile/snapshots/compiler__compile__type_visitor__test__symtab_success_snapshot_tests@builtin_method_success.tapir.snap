@@ -1,0 +1,12 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/builtin_method_success.tapir
+---
+[
+  ("x", Fix),
+  ("rounded", Int),
+  ("floored", Int),
+  ("ceiled", Int),
+  ("from_fn", Int),
+]

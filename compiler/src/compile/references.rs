@@ -285,6 +285,28 @@ fn extract_references_from_expression(
                 references.insert(field.span, field_def.span);
             }
         }
+        ExpressionKind::MethodCall {
+            receiver,
+            arguments,
+            ..
+        } => {
+            extract_references_from_expression(
+                receiver,
+                symtab,
+                struct_registry,
+                function_spans,
+                references,
+            );
+            for arg in arguments {
+                extract_references_from_expression(
+                    arg,
+                    symtab,
+                    struct_registry,
+                    function_spans,
+                    references,
+                );
+            }
+        }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)

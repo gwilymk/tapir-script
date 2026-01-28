@@ -1,0 +1,16 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/method_wrong_arg_type_fail.tapir
+---
+[E0004] Error: Incorrect type for argument 'other' of function 'int.add', expected int but got fix
+   ╭─[ method_wrong_arg_type_fail.tapir:8:20 ]
+   │
+ 2 │ fn int.add(self, other: int) -> int {
+   │                  ──┬──  
+   │                    ╰──── Expected int
+   │ 
+ 8 │ var result = x.add(1.5);
+   │                    ─┬─  
+   │                     ╰─── Passing fix
+───╯

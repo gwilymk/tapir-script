@@ -145,6 +145,7 @@ pub fn resolve_struct_fields<'input>(
 ///
 /// This resolves `None` types (which represent user-defined types)
 /// to `Some(Type::Struct(id))` where appropriate, or emits errors for unknown types.
+/// For methods, also resolves the receiver type and fills in self's type.
 pub fn resolve_all_types<'input>(
     script: &mut crate::ast::Script<'input>,
     struct_names: &HashMap<&'input str, StructId>,
@@ -152,6 +153,23 @@ pub fn resolve_all_types<'input>(
 ) {
     // Resolve function argument and return types
     for function in &mut script.functions {
+        // For methods, resolve receiver type and fill in self's type
+        if let Some(ref receiver) = function.receiver_type {
+            let receiver_type = resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
+
+            // Fill in self's type from receiver type (self never has explicit type)
+            if let Some(self_param) = function.arguments.first_mut() {
+                if self_param.name() == "self" {
+                    // Create a TypeWithLocation for self with the resolved receiver type
+                    self_param.ty = Some(crate::ast::TypeWithLocation {
+                        t: Some(receiver_type),
+                        name: receiver.ident,
+                        span: self_param.span(),
+                    });
+                }
+            }
+        }
+
         for arg in &mut function.arguments {
             if let Some(ref mut ty) = arg.ty {
                 resolve_type_in_place(ty, struct_names, diagnostics);
@@ -176,6 +194,23 @@ pub fn resolve_all_types<'input>(
 
     // Resolve builtin function argument and return types
     for function in &mut script.builtin_functions {
+        // For builtin methods, resolve receiver type and fill in self's type
+        if let Some(ref receiver) = function.receiver_type {
+            let receiver_type = resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
+
+            // Fill in self's type from receiver type (self never has explicit type)
+            if let Some(self_param) = function.arguments.first_mut() {
+                if self_param.name() == "self" {
+                    // Create a TypeWithLocation for self with the resolved receiver type
+                    self_param.ty = Some(crate::ast::TypeWithLocation {
+                        t: Some(receiver_type),
+                        name: receiver.ident,
+                        span: self_param.span(),
+                    });
+                }
+            }
+        }
+
         for arg in &mut function.arguments {
             if let Some(ref mut ty) = arg.ty {
                 resolve_type_in_place(ty, struct_names, diagnostics);
@@ -253,6 +288,35 @@ fn resolve_type_in_place(
     if type_with_loc.t.is_none() {
         type_with_loc.t = Some(resolve_type_name(type_with_loc, struct_names, diagnostics));
     }
+}
+
+/// Resolve a receiver type name to a Type value.
+///
+/// This handles both builtin types (int, fix, bool) and struct types.
+/// For unknown names, emits an error and returns Type::Error.
+fn resolve_receiver_type(
+    name: &str,
+    struct_names: &HashMap<&str, StructId>,
+    span: Span,
+    diagnostics: &mut Diagnostics,
+) -> Type {
+    // First try builtin types
+    if let Some(ty) = Type::parse_builtin(name) {
+        return ty;
+    }
+
+    // Then try struct names
+    if let Some(&struct_id) = struct_names.get(name) {
+        return Type::Struct(struct_id);
+    }
+
+    // Unknown type name - emit error
+    ErrorKind::UnknownMethodType {
+        name: name.to_string(),
+    }
+    .at(span)
+    .emit(diagnostics);
+    Type::Error
 }
 
 /// Resolve a type annotation to a Type value.

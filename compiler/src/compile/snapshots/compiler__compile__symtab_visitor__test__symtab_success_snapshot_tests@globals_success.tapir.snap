@@ -40,6 +40,7 @@ Script(
   ],
   functions: [
     Function(
+      receiver_type: None,
       name: "@toplevel",
       span: "[span]",
       statements: [

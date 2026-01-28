@@ -1,0 +1,38 @@
+# Method call on self
+fn int.double(self) -> int {
+    return self.negate().negate() + self;
+}
+
+# Method call in expression
+fn test_method_call_in_expression() {
+    var x: int = 5;
+    var y: int = get_value().negate();
+}
+
+# Method call on function result
+fn get_value() -> int {
+    return 42;
+}
+
+# Chained method calls
+fn test_chained() {
+    var x: int = get_value().negate().double();
+}
+
+# Method call with arguments
+fn test_method_with_args() {
+    var x: int = 5;
+    var y: int = x.add(10);
+}
+
+# Method call on parenthesized expression
+fn test_paren_method() {
+    var x: int = (5 + 3).negate();
+}
+
+# Method call as statement (not on plain identifier due to grammar conflict)
+fn test_method_statement() {
+    self.print();
+    get_value().print();
+    (5 + 3).print();
+}

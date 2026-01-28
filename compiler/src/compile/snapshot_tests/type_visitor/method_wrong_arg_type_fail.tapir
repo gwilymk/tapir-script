@@ -1,0 +1,8 @@
+# Method that takes an int argument
+fn int.add(self, other: int) -> int {
+    return self + other;
+}
+
+# Calling with wrong argument type
+var x: int = 5;
+var result = x.add(1.5);

@@ -1,0 +1,9 @@
+# Method without self as first parameter
+fn int.bad_method(x: int) -> int {
+    return x;
+}
+
+# Self with explicit type (should error)
+fn int.bad_typed_self(self: int) -> int {
+    return self;
+}

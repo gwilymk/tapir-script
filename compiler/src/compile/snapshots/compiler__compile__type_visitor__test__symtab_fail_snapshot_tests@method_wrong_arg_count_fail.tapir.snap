@@ -1,0 +1,16 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/method_wrong_arg_count_fail.tapir
+---
+[E0013] Error: Incorrect number of argumets for function int.add, expected 1 arguments but got 2.
+   ╭─[ method_wrong_arg_count_fail.tapir:8:14 ]
+   │
+ 2 │ fn int.add(self, other: int) -> int {
+   │        ─┬─  
+   │         ╰─── Expected 1 arguments
+   │ 
+ 8 │ var result = x.add(10, 20);
+   │              ──────┬──────  
+   │                    ╰──────── Got 2 arguments
+───╯

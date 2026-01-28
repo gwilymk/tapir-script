@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/method_event_fail.tapir
+---
+[E0046] Error: method `on_event` cannot be an event handler
+   ╭─[ method_event_fail.tapir:2:1 ]
+   │
+ 2 │ event fn int.on_event(self) {}
+   │ ──┬──        ────┬───  
+   │   ╰──────────────────── Methods cannot be event handlers
+   │                  │     
+   │                  ╰───── Method defined here
+───╯

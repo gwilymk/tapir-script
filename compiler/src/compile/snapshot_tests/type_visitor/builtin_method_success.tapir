@@ -1,0 +1,16 @@
+# Builtin methods on fix type
+builtin(10) fn fix.round(self) -> int;
+builtin(11) fn fix.floor(self) -> int;
+builtin(12) fn fix.ceil(self) -> int;
+
+var x: fix = 3.7;
+var rounded = x.round();
+var floored = x.floor();
+var ceiled = x.ceil();
+
+# Chained calls
+fn get_fix() -> fix {
+    return 2.5;
+}
+
+var from_fn = get_fix().round();

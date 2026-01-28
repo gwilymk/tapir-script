@@ -1,0 +1,540 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/method_calls.tapir
+---
+Script(
+  struct_declarations: [],
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      receiver_type: None,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "int",
+      )),
+      name: "double",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: MethodCall(
+                      receiver: Expression(
+                        span: "[span]",
+                        kind: MethodCall(
+                          receiver: Expression(
+                            span: "[span]",
+                            kind: Variable("self"),
+                            meta: {},
+                          ),
+                          method: Ident(
+                            span: "[span]",
+                            ident: "negate",
+                          ),
+                          arguments: [],
+                        ),
+                        meta: {},
+                      ),
+                      method: Ident(
+                        span: "[span]",
+                        ident: "negate",
+                      ),
+                      arguments: [],
+                    ),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("self"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: None,
+      name: "test_method_call_in_expression",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: Some(TypeWithLocation(
+                  t: Some(Int),
+                  name: "int",
+                  span: "[span]",
+                )),
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(5),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "y",
+                ),
+                ty: Some(TypeWithLocation(
+                  t: Some(Int),
+                  name: "int",
+                  span: "[span]",
+                )),
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: MethodCall(
+                  receiver: Expression(
+                    span: "[span]",
+                    kind: Call(
+                      name: "get_value",
+                      arguments: [],
+                    ),
+                    meta: {},
+                  ),
+                  method: Ident(
+                    span: "[span]",
+                    ident: "negate",
+                  ),
+                  arguments: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: None,
+      name: "get_value",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(42),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: None,
+      name: "test_chained",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: Some(TypeWithLocation(
+                  t: Some(Int),
+                  name: "int",
+                  span: "[span]",
+                )),
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: MethodCall(
+                  receiver: Expression(
+                    span: "[span]",
+                    kind: MethodCall(
+                      receiver: Expression(
+                        span: "[span]",
+                        kind: Call(
+                          name: "get_value",
+                          arguments: [],
+                        ),
+                        meta: {},
+                      ),
+                      method: Ident(
+                        span: "[span]",
+                        ident: "negate",
+                      ),
+                      arguments: [],
+                    ),
+                    meta: {},
+                  ),
+                  method: Ident(
+                    span: "[span]",
+                    ident: "double",
+                  ),
+                  arguments: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: None,
+      name: "test_method_with_args",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: Some(TypeWithLocation(
+                  t: Some(Int),
+                  name: "int",
+                  span: "[span]",
+                )),
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(5),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "y",
+                ),
+                ty: Some(TypeWithLocation(
+                  t: Some(Int),
+                  name: "int",
+                  span: "[span]",
+                )),
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: MethodCall(
+                  receiver: Expression(
+                    span: "[span]",
+                    kind: Variable("x"),
+                    meta: {},
+                  ),
+                  method: Ident(
+                    span: "[span]",
+                    ident: "add",
+                  ),
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(10),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: None,
+      name: "test_paren_method",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: Some(TypeWithLocation(
+                  t: Some(Int),
+                  name: "int",
+                  span: "[span]",
+                )),
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: MethodCall(
+                  receiver: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
+                      operator: Add,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  method: Ident(
+                    span: "[span]",
+                    ident: "negate",
+                  ),
+                  arguments: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: None,
+      name: "test_method_statement",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: MethodCall(
+                receiver: Expression(
+                  span: "[span]",
+                  kind: Variable("self"),
+                  meta: {},
+                ),
+                method: Ident(
+                  span: "[span]",
+                  ident: "print",
+                ),
+                arguments: [],
+              ),
+              meta: {},
+            ),
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: MethodCall(
+                receiver: Expression(
+                  span: "[span]",
+                  kind: Call(
+                    name: "get_value",
+                    arguments: [],
+                  ),
+                  meta: {},
+                ),
+                method: Ident(
+                  span: "[span]",
+                  ident: "print",
+                ),
+                arguments: [],
+              ),
+              meta: {},
+            ),
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: MethodCall(
+                receiver: Expression(
+                  span: "[span]",
+                  kind: BinaryOperation(
+                    lhs: Expression(
+                      span: "[span]",
+                      kind: Integer(5),
+                      meta: {},
+                    ),
+                    operator: Add,
+                    rhs: Expression(
+                      span: "[span]",
+                      kind: Integer(3),
+                      meta: {},
+                    ),
+                  ),
+                  meta: {},
+                ),
+                method: Ident(
+                  span: "[span]",
+                  ident: "print",
+                ),
+                arguments: [],
+              ),
+              meta: {},
+            ),
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

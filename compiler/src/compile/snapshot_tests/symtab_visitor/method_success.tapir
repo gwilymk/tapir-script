@@ -1,0 +1,7 @@
+# Method definition and call
+fn int.double(self) -> int {
+    return self + self;
+}
+
+var x: int = 5;
+var doubled = x.double();

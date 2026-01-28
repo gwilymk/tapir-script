@@ -1,4 +1,4 @@
-use std::{fmt::Display, iter};
+use std::{borrow::Cow, fmt::Display, iter};
 
 use crate::{
     tokens::{FileId, Span},
@@ -50,6 +50,14 @@ pub enum InternalOrExternalFunctionId {
     StructConstructor(StructId),
 }
 
+/// Stored in MethodCall expression metadata during type checking.
+/// Contains the resolved function ID for IR lowering.
+#[derive(Clone, Copy, Debug)]
+pub struct MethodCallInfo {
+    /// The resolved function ID (maps to mangled name like Point@distance)
+    pub function_id: InternalOrExternalFunctionId,
+}
+
 pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]
@@ -63,8 +71,12 @@ pub struct Script<'input> {
 }
 
 /// A builtin function declaration: `builtin(N) fn name(args) -> ret;`
+/// For methods: `builtin(N) fn Type.name(self, args) -> ret;`
 #[derive(Clone, Debug, Serialize)]
 pub struct BuiltinFunction<'input> {
+    /// If Some, this is a method on the given type (e.g., "Point", "fix").
+    /// Uses Ident to preserve span for error messages.
+    pub receiver_type: Option<Ident<'input>>,
     pub name: &'input str,
     pub builtin_id: BuiltinFunctionId,
     pub span: Span,
@@ -135,6 +147,7 @@ impl<'input> Script<'input> {
         }
 
         let top_level_function = Function {
+            receiver_type: None,
             name: "@toplevel",
             span: Span::new(file_id, 0, 0),
             statements: top_level_function_statements,
@@ -194,22 +207,63 @@ pub struct ExternFunctionDefinition<'input> {
     pub meta: Metadata,
 }
 
+/// A function definition - methods are functions with a receiver_type
 #[derive(Clone, Debug, Serialize)]
 pub struct Function<'input> {
+    /// If Some, this is a method on the given type (e.g., "Point", "fix").
+    /// Uses Ident to preserve span for error messages.
+    pub receiver_type: Option<Ident<'input>>,
+    /// The function/method name
     pub name: &'input str,
+    /// Span of the function name
     pub span: Span,
+    /// Function body
     pub statements: Vec<Statement<'input>>,
+    /// Function arguments (for methods, first should be `self`)
     pub arguments: Vec<TypedIdent<'input>>,
+    /// Return type(s)
     pub return_types: FunctionReturn<'input>,
-
+    /// Modifiers (event not allowed for methods)
     pub modifiers: FunctionModifiers,
-
+    /// Metadata for compilation passes
     pub(crate) meta: Metadata,
 }
 
 #[derive(Clone, Debug, Serialize, Default)]
 pub struct FunctionModifiers {
     pub is_event_handler: Option<Span>,
+}
+
+impl<'input> Function<'input> {
+    /// Returns true if this is a method (has a receiver type)
+    pub fn is_method(&self) -> bool {
+        self.receiver_type.is_some()
+    }
+
+    /// Returns the mangled function name.
+    /// For methods: "Type@method", for regular functions: just the name.
+    pub fn mangled_name(&self) -> Cow<'_, str> {
+        match &self.receiver_type {
+            Some(receiver) => Cow::Owned(format!("{}@{}", receiver.ident, self.name)),
+            None => Cow::Borrowed(self.name),
+        }
+    }
+}
+
+impl<'input> BuiltinFunction<'input> {
+    /// Returns true if this is a method (has a receiver type)
+    pub fn is_method(&self) -> bool {
+        self.receiver_type.is_some()
+    }
+
+    /// Returns the mangled function name.
+    /// For methods: "Type@method", for regular functions: just the name.
+    pub fn mangled_name(&self) -> Cow<'_, str> {
+        match &self.receiver_type {
+            Some(receiver) => Cow::Owned(format!("{}@{}", receiver.ident, self.name)),
+            None => Cow::Borrowed(self.name),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -386,6 +440,15 @@ impl<'input> Expression<'input> {
             ExpressionKind::FieldAccess { base, .. } => {
                 Box::new(iter::once(self).chain(base.all_inner()))
             }
+            ExpressionKind::MethodCall {
+                receiver,
+                arguments,
+                ..
+            } => Box::new(
+                iter::once(self)
+                    .chain(receiver.all_inner())
+                    .chain(arguments.iter().flat_map(|argument| argument.all_inner())),
+            ),
         }
     }
 }
@@ -414,6 +477,13 @@ pub enum ExpressionKind<'input> {
     FieldAccess {
         base: Box<Expression<'input>>,
         field: Ident<'input>,
+    },
+
+    /// Method call: receiver.method(args)
+    MethodCall {
+        receiver: Box<Expression<'input>>,
+        method: Ident<'input>,
+        arguments: Vec<Expression<'input>>,
     },
 }
 

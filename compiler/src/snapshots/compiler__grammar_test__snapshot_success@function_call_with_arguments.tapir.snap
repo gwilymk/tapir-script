@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      receiver_type: None,
       name: "@toplevel",
       span: "[span]",
       statements: [
@@ -73,6 +74,7 @@ Script(
       meta: {},
     ),
     Function(
+      receiver_type: None,
       name: "foo",
       span: "[span]",
       statements: [

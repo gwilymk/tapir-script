@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      receiver_type: None,
       name: "@toplevel",
       span: "[span]",
       statements: [],
@@ -26,6 +27,7 @@ Script(
   extern_functions: [],
   builtin_functions: [
     BuiltinFunction(
+      receiver_type: None,
       name: "sin",
       builtin_id: BuiltinFunctionId(0),
       span: "[span]",
@@ -55,6 +57,7 @@ Script(
       meta: {},
     ),
     BuiltinFunction(
+      receiver_type: None,
       name: "cos",
       builtin_id: BuiltinFunctionId(1),
       span: "[span]",
@@ -84,6 +87,7 @@ Script(
       meta: {},
     ),
     BuiltinFunction(
+      receiver_type: None,
       name: "sqrt",
       builtin_id: BuiltinFunctionId(2),
       span: "[span]",
@@ -113,6 +117,7 @@ Script(
       meta: {},
     ),
     BuiltinFunction(
+      receiver_type: None,
       name: "floor",
       builtin_id: BuiltinFunctionId(3),
       span: "[span]",
@@ -142,6 +147,7 @@ Script(
       meta: {},
     ),
     BuiltinFunction(
+      receiver_type: None,
       name: "ceil",
       builtin_id: BuiltinFunctionId(4),
       span: "[span]",
@@ -171,6 +177,7 @@ Script(
       meta: {},
     ),
     BuiltinFunction(
+      receiver_type: None,
       name: "round",
       builtin_id: BuiltinFunctionId(5),
       span: "[span]",
@@ -200,6 +207,7 @@ Script(
       meta: {},
     ),
     BuiltinFunction(
+      receiver_type: None,
       name: "frame",
       builtin_id: BuiltinFunctionId(-1),
       span: "[span]",

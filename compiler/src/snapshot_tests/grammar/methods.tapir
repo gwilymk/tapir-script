@@ -1,0 +1,32 @@
+# Method definition with self parameter
+fn int.negate(self) -> int {
+    return 0 - self;
+}
+
+# Method definition with self and additional args
+fn int.add(self, other: int) -> int {
+    return self + other;
+}
+
+# Method definition on fix type
+fn fix.floor_to_int(self) -> int {
+    return floor(self);
+}
+
+# Method with multiple return values
+fn int.divmod(self, divisor: int) -> (int, int) {
+    return self / divisor, self % divisor;
+}
+
+# Method with no return value
+fn int.print(self) {}
+
+# Method with trailing comma in args
+fn int.add_three(self, a: int, b: int,) -> int {
+    return self + a + b;
+}
+
+# Builtin method on fix type
+builtin(10) fn fix.round(self) -> int;
+builtin(11) fn fix.floor(self) -> int;
+builtin(12) fn fix.ceil(self) -> int;

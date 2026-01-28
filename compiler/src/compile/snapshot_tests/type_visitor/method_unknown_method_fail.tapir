@@ -1,0 +1,3 @@
+# Calling a method that doesn't exist
+var x: int = 5;
+var result = x.unknown_method();

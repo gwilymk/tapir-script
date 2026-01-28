@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      receiver_type: None,
       name: "@toplevel",
       span: "[span]",
       statements: [],
@@ -23,6 +24,7 @@ Script(
       meta: {},
     ),
     Function(
+      receiver_type: None,
       name: "my_function",
       span: "[span]",
       statements: [
@@ -45,6 +47,7 @@ Script(
       meta: {},
     ),
     Function(
+      receiver_type: None,
       name: "my_second_function",
       span: "[span]",
       statements: [
@@ -78,6 +81,7 @@ Script(
       meta: {},
     ),
     Function(
+      receiver_type: None,
       name: "my_third_function",
       span: "[span]",
       statements: [
@@ -106,6 +110,7 @@ Script(
       meta: {},
     ),
     Function(
+      receiver_type: None,
       name: "my_fourth_function",
       span: "[span]",
       statements: [

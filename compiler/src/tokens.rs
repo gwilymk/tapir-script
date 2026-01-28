@@ -124,6 +124,8 @@ pub enum Token<'input> {
     KeywordBuiltin,
     #[token("struct")]
     KeywordStruct,
+    #[token("self")]
+    KeywordSelf,
 
     #[token("true")]
     True,

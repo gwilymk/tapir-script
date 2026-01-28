@@ -183,6 +183,16 @@ fn extract_from_expression(
         ExpressionKind::FieldAccess { base, .. } => {
             extract_from_expression(base, signatures, call_sites);
         }
+        ExpressionKind::MethodCall {
+            receiver,
+            arguments,
+            ..
+        } => {
+            extract_from_expression(receiver, signatures, call_sites);
+            for arg in arguments {
+                extract_from_expression(arg, signatures, call_sites);
+            }
+        }
         ExpressionKind::Variable(_)
         | ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)

@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      receiver_type: None,
       name: "@toplevel",
       span: "[span]",
       statements: [],
@@ -26,6 +27,7 @@ Script(
       },
     ),
     Function(
+      receiver_type: None,
       name: "my_function",
       span: "[span]",
       statements: [

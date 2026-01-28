@@ -1,0 +1,18 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/method_call_success.tapir
+---
+[
+  ("x", Int),
+  ("neg", Int),
+  ("sum", Int),
+  ("y", Fix),
+  ("doubled", Fix),
+  ("from_fn", Int),
+  ("chained", Int),
+  ("self", Int),
+  ("self", Int),
+  ("other", Int),
+  ("self", Fix),
+]

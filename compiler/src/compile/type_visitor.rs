@@ -7,7 +7,7 @@ use crate::{
     ast::{
         self, BinaryOperator, BuiltinFunction, Expression, ExpressionKind,
         ExternFunctionDefinition, Function, FunctionModifiers, FunctionReturn, GlobalDeclaration,
-        InternalOrExternalFunctionId, SymbolId,
+        InternalOrExternalFunctionId, MethodCallInfo, SymbolId,
     },
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
@@ -1182,6 +1182,132 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                             .emit(diagnostics);
                         Type::Error
                     }
+                }
+            }
+            ast::ExpressionKind::MethodCall {
+                receiver,
+                method,
+                arguments,
+            } => {
+                // Type check the receiver
+                let receiver_type = self.type_for_expression(receiver, symtab, diagnostics);
+
+                if receiver_type == Type::Error {
+                    return Type::Error;
+                }
+
+                // Build the mangled name based on receiver type
+                let type_name = match receiver_type {
+                    Type::Int => "int".to_string(),
+                    Type::Fix => "fix".to_string(),
+                    Type::Bool => "bool".to_string(),
+                    Type::Struct(id) => self.struct_registry.get(id).name.clone(),
+                    Type::Error => return Type::Error,
+                };
+
+                let mangled = format!("{}@{}", type_name, method.ident);
+
+                // Look up the method
+                let Some(function_id) = symtab.function_by_mangled_name(&mangled) else {
+                    ErrorKind::UnknownMethod {
+                        type_name: type_name.clone(),
+                        method_name: method.ident.to_string(),
+                    }
+                    .at(method.span)
+                    .label(receiver.span, DiagnosticMessage::HasType { ty: receiver_type })
+                    .emit(diagnostics);
+                    return Type::Error;
+                };
+
+                // Type check arguments first (before borrowing function_info)
+                let argument_types: Vec<_> = arguments
+                    .iter_mut()
+                    .map(|arg| (self.type_for_expression(arg, symtab, diagnostics), arg.span))
+                    .collect();
+
+                // Now we can borrow function_info
+                let function_info = self.functions.get(&function_id).unwrap();
+
+                // Expected args = function args minus self (first param)
+                let expected_args = if !function_info.args.is_empty() {
+                    function_info.args.len() - 1
+                } else {
+                    0
+                };
+
+                if argument_types.len() != expected_args {
+                    ErrorKind::IncorrectNumberOfArguments {
+                        function_name: format!("{}.{}", type_name, method.ident),
+                        expected: expected_args,
+                        actual: argument_types.len(),
+                    }
+                    .at(expression.span)
+                    .label(
+                        expression.span,
+                        DiagnosticMessage::GotArguments {
+                            count: argument_types.len(),
+                        },
+                    )
+                    .label(
+                        function_info.span,
+                        DiagnosticMessage::ExpectedArguments {
+                            count: expected_args,
+                        },
+                    )
+                    .emit(diagnostics);
+                } else {
+                    // Verify receiver type matches self parameter
+                    if !function_info.args.is_empty() {
+                        let self_param = &function_info.args[0];
+                        if receiver_type != self_param.ty
+                            && receiver_type != Type::Error
+                            && self_param.ty != Type::Error
+                        {
+                            ErrorKind::FunctionArgumentTypeError {
+                                function_name: format!("{}.{}", type_name, method.ident),
+                                argument_name: "self".to_string(),
+                                expected: self_param.ty,
+                                actual: receiver_type,
+                            }
+                            .at(receiver.span)
+                            .emit(diagnostics);
+                        }
+                    }
+
+                    // Type check each explicit argument (skip self parameter in function_info.args)
+                    for ((actual, actual_span), arg_info) in
+                        argument_types.iter().zip(function_info.args.iter().skip(1))
+                    {
+                        if *actual != arg_info.ty && *actual != Type::Error && arg_info.ty != Type::Error
+                        {
+                            ErrorKind::FunctionArgumentTypeError {
+                                function_name: format!("{}.{}", type_name, method.ident),
+                                argument_name: arg_info.name.to_string(),
+                                expected: arg_info.ty,
+                                actual: *actual,
+                            }
+                            .at(*actual_span)
+                            .label(arg_info.span, DiagnosticMessage::ExpectedType { ty: arg_info.ty })
+                            .label(*actual_span, DiagnosticMessage::PassingType { ty: *actual })
+                            .emit(diagnostics);
+                        }
+                    }
+                }
+
+                // Store method call info for IR lowering
+                expression.meta.set(MethodCallInfo { function_id });
+
+                // Store return types for IR lowering (needed for struct returns)
+                let return_types = function_info.rets.clone();
+                expression.meta.set(CallReturnInfo(return_types.clone()));
+
+                // Return type is the function's return type
+                if return_types.len() == 1 {
+                    return_types[0]
+                } else if return_types.is_empty() {
+                    Type::Error // void method used as expression
+                } else {
+                    Type::Error // multi-return method used as expression
                 }
             }
         }

@@ -37,6 +37,7 @@ extern {
         property => Token::KeywordProperty,
         builtin => Token::KeywordBuiltin,
         "struct" => Token::KeywordStruct,
+        "self" => Token::KeywordSelf,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -106,8 +107,13 @@ StructDecl: StructDeclaration<'input> = {
 }
 
 BuiltinFunctionDecl: BuiltinFunction<'input> = {
+    // Regular builtin: builtin(id) fn name(...) -> ret;
     builtin "(" <builtin_id: BuiltinId> ")" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_type: FunctionReturn> ";" =>
-        BuiltinFunction { name, builtin_id, arguments, return_type, span: Span::new(file_id, start, end), meta: Metadata::new() },
+        BuiltinFunction { receiver_type: None, name, builtin_id, arguments, return_type, span: Span::new(file_id, start, end), meta: Metadata::new() },
+
+    // Builtin method: builtin(id) fn Type.name(...) -> ret;
+    builtin "(" <builtin_id: BuiltinId> ")" "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_type: FunctionReturn> ";" =>
+        BuiltinFunction { receiver_type: Some(receiver), name, builtin_id, arguments, return_type, span: Span::new(file_id, start, end), meta: Metadata::new() },
 }
 
 BuiltinId: BuiltinFunctionId = {
@@ -118,8 +124,13 @@ BuiltinId: BuiltinFunctionId = {
 }
 
 FunctionDefinition: Function<'input> = {
+    // Regular function: fn name(...) { ... }
     <modifiers: FunctionModifiers> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+        Function { receiver_type: None, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+
+    // Method: fn Type.name(...) { ... }
+    <modifiers: FunctionModifiers> "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
+        Function { receiver_type: Some(receiver), name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 }
 
 ExternFunctionDefinition: ExternFunctionDefinition<'input> = {
@@ -141,6 +152,40 @@ FunctionModifiers: FunctionModifiers = {
     <event_start: @L> event <event_end: @R> => FunctionModifiers { is_event_handler: Some(Span::new(file_id, event_start, event_end)) },
 }
 FunctionArguments: Vec<TypedIdent<'input>> = CommaSeparated<TypedIdentifierRequired>;
+
+// Method arguments: optional self (never typed) followed by regular typed arguments
+// self's type is always implicitly the receiver type - no explicit type allowed
+// The rule handles: (), (self), (self, x: int), (x: int, y: int)
+MethodArguments: Vec<TypedIdent<'input>> = {
+    // Just self (instance method with no other args)
+    <start:@L> "self" <end:@R> =>
+        vec![TypedIdent {
+            ident: Ident { ident: "self", span: Span::new(file_id, start, end) },
+            ty: None,
+        }],
+
+    // self followed by more arguments (instance method with args)
+    <start:@L> "self" <end:@R> "," <rest:NonEmptyCommaSeparated<TypedIdentifierRequired>> => {
+        let mut args = vec![TypedIdent {
+            ident: Ident { ident: "self", span: Span::new(file_id, start, end) },
+            ty: None,
+        }];
+        args.extend(rest);
+        args
+    },
+
+    // Static method - no self, just regular typed arguments (can be empty)
+    <FunctionArguments>,
+};
+
+// Non-empty comma-separated list (at least one element)
+NonEmptyCommaSeparated<T>: Vec<T> = {
+    <e:T> => vec![e],
+    <mut v:(<T> ",")+> <e:T> => {
+        v.push(e);
+        v
+    },
+};
 
 // Required type annotation (for function args, properties)
 TypedIdentifierRequired: TypedIdent<'input> = {
@@ -192,7 +237,7 @@ StatementKind: StatementKind<'input> = {
     break ";" => StatementKind::Break,
     continue ";" => StatementKind::Continue,
 
-    "if" <condition: Expression> <true_block: Block> <false_block: ElseBlock?> => StatementKind::If { 
+    "if" <condition: Expression> <true_block: Block> <false_block: ElseBlock?> => StatementKind::If {
         condition, true_block, false_block: false_block.unwrap_or_else(Vec::new),
     },
     loop <block: Block> => StatementKind::Loop { <> },
@@ -203,6 +248,36 @@ StatementKind: StatementKind<'input> = {
         StatementKind::Expression {
             expression: Box::new(ExpressionKind::Call { name, arguments }.with_span(file_id, start, end))
         },
+    // Method call statement on self: self.method(args);
+    // (This is unambiguous since 'self' can't be an assignment target)
+    <start: @L> "self" <self_end: @R> "." <method: Identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" =>
+        StatementKind::Expression {
+            expression: Box::new(ExpressionKind::MethodCall {
+                receiver: Box::new(ExpressionKind::Variable("self").with_span(file_id, start, self_end)),
+                method,
+                arguments
+            }.with_span(file_id, start, end))
+        },
+    // Method call statement on function result: func().method(args);
+    <start: @L> <name: identifier> "(" <call_args: CommaSeparated<Expression>> ")" <call_end: @R> "." <method: Identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" =>
+        StatementKind::Expression {
+            expression: Box::new(ExpressionKind::MethodCall {
+                receiver: Box::new(ExpressionKind::Call { name, arguments: call_args }.with_span(file_id, start, call_end)),
+                method,
+                arguments
+            }.with_span(file_id, start, end))
+        },
+    // Method call statement on parenthesized expression: (expr).method(args);
+    <start: @L> "(" <inner: Expression> ")" <paren_end: @R> "." <method: Identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" => {
+        let receiver = Expression { span: inner.span, kind: inner.kind, meta: inner.meta };
+        StatementKind::Expression {
+            expression: Box::new(ExpressionKind::MethodCall {
+                receiver: Box::new(receiver),
+                method,
+                arguments
+            }.with_span(file_id, start, end))
+        }
+    },
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
 
     spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Spawn { <> },
@@ -210,7 +285,7 @@ StatementKind: StatementKind<'input> = {
     trigger <name: identifier> ";" => StatementKind::Trigger { name, arguments: vec![] },
 
     <block: Block> => StatementKind::Block { <> },
-    
+
     <error: !> ";" => {
         diagnostics.add_lalrpop(<>.error, file_id);
         StatementKind::Error
@@ -219,6 +294,15 @@ StatementKind: StatementKind<'input> = {
 
 Identifier: Ident<'input> =
     <start: @L> <ident: identifier> <end: @R> => Ident { ident, span: Span::new(file_id, start, end) };
+
+// TypeIdentifier accepts identifiers AND builtin type keywords (int, fix, bool)
+// Used for method receiver types where both struct names and builtin types are valid
+TypeIdentifier: Ident<'input> = {
+    <start: @L> <ident: identifier> <end: @R> => Ident { ident, span: Span::new(file_id, start, end) },
+    <start: @L> t_integer <end: @R> => Ident { ident: "int", span: Span::new(file_id, start, end) },
+    <start: @L> t_fix <end: @R> => Ident { ident: "fix", span: Span::new(file_id, start, end) },
+    <start: @L> t_bool <end: @R> => Ident { ident: "bool", span: Span::new(file_id, start, end) },
+};
 
 /// An assignment target: either a simple variable `x` or a field path `p.x.y`
 AssignmentTarget: Vec<Ident<'input>> = {
@@ -306,6 +390,10 @@ ComparisonOp: BinaryOperator = {
 
 PostfixExpr: Expression<'input> = {
     <Term>,
+    // Method call (with parentheses) - must come before field access for precedence
+    <start:@L> <receiver:PostfixExpr> "." <method:Identifier> "(" <arguments:CommaSeparated<Expression>> ")" <end:@R> =>
+        ExpressionKind::MethodCall { receiver: Box::new(receiver), method, arguments }.with_span(file_id, start, end),
+    // Field access (no parentheses)
     <start:@L> <base:PostfixExpr> "." <field:Identifier> <end:@R> =>
         ExpressionKind::FieldAccess { base: Box::new(base), field }.with_span(file_id, start, end),
 }
@@ -313,14 +401,16 @@ PostfixExpr: Expression<'input> = {
 Term: Expression<'input> = {
     "(" <Expression> ")",
     <Num>,
+    // Variable reference - either identifier or self keyword
     <start: @L> <ident: identifier> <end: @R> => ExpressionKind::Variable(ident).with_span(file_id, start, end),
+    <start: @L> "self" <end: @R> => ExpressionKind::Variable("self").with_span(file_id, start, end),
     <start: @L> <b: Bool> <end: @R> => ExpressionKind::Bool(b).with_span(file_id, start, end),
     <start: @L> <error: !> <end: @R> => {
         diagnostics.add(Diagnostic::from_lalrpop(error.error, file_id));
         ExpressionKind::Error.with_span(file_id, start, end)
     },
 
-    <start: @L> <ident: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> => 
+    <start: @L> <ident: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> =>
         ExpressionKind::Call {
             name: ident,
             arguments,

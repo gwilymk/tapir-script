@@ -1,0 +1,462 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/methods.tapir
+---
+Script(
+  struct_declarations: [],
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      receiver_type: None,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Block(
+            block: [
+              Statement(
+                span: "[span]",
+                kind: Return(
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: BinaryOperation(
+                            lhs: Expression(
+                              span: "[span]",
+                              kind: Variable("self"),
+                              meta: {},
+                            ),
+                            operator: Add,
+                            rhs: Expression(
+                              span: "[span]",
+                              kind: Variable("a"),
+                              meta: {},
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Add,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("b"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "int",
+      )),
+      name: "negate",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(0),
+                    meta: {},
+                  ),
+                  operator: Sub,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("self"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "int",
+      )),
+      name: "add",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Variable("self"),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("other"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "other",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "fix",
+      )),
+      name: "floor_to_int",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "floor",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: Variable("self"),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "int",
+      )),
+      name: "divmod",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Variable("self"),
+                    meta: {},
+                  ),
+                  operator: Div,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("divisor"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Variable("self"),
+                    meta: {},
+                  ),
+                  operator: Mod,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("divisor"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "divisor",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "int",
+      )),
+      name: "print",
+      span: "[span]",
+      statements: [],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [
+    BuiltinFunction(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "fix",
+      )),
+      name: "round",
+      builtin_id: BuiltinFunctionId(10),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+    BuiltinFunction(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "fix",
+      )),
+      name: "floor",
+      builtin_id: BuiltinFunctionId(11),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+    BuiltinFunction(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "fix",
+      )),
+      name: "ceil",
+      builtin_id: BuiltinFunctionId(12),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+  ],
+)

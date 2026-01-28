@@ -1,0 +1,18 @@
+struct Point {
+    x: int,
+    y: int,
+}
+
+# Method on a struct type
+fn Point.scale(self, factor: int) -> Point {
+    return Point(self.x * factor, self.y * factor);
+}
+
+fn Point.add(self, other: Point) -> Point {
+    return Point(self.x + other.x, self.y + other.y);
+}
+
+# Test method calls on struct
+var p = Point(3, 4);
+var scaled = p.scale(2);
+var sum = p.add(scaled);

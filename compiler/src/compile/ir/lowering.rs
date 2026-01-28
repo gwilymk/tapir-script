@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use crate::{
-    ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
+    ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, MethodCallInfo, SymbolId},
     compile::{
         symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
         type_visitor::{CallReturnInfo, FieldAccessInfo, FieldAssignmentInfo},
@@ -779,6 +779,97 @@ impl<'a> BlockVisitor<'a> {
                     InternalOrExternalFunctionId::StructConstructor(_) => {
                         // Handled above with early return
                         unreachable!("Struct constructors are handled separately");
+                    }
+                }
+            }
+            ast::ExpressionKind::MethodCall {
+                receiver,
+                arguments,
+                ..
+            } => {
+                // Get the resolved function ID from type checking
+                let info: &MethodCallInfo = expr
+                    .meta
+                    .get()
+                    .expect("MethodCallInfo should be set during type checking");
+                let function_id = info.function_id;
+
+                // Evaluate the receiver - this becomes the first argument (self)
+                let receiver_sym = symtab.new_temporary();
+                self.blocks_for_expression(receiver, receiver_sym, symtab);
+
+                // Collect receiver as first arg (expand if struct)
+                let mut args = Vec::new();
+                collect_leaf_symbols(receiver_sym, symtab, &mut args);
+
+                // Evaluate and collect the explicit arguments
+                for arg in arguments {
+                    let arg_sym = symtab.new_temporary();
+                    self.blocks_for_expression(arg, arg_sym, symtab);
+                    collect_leaf_symbols(arg_sym, symtab, &mut args);
+                }
+                let args = args.into_boxed_slice();
+
+                // Get return type info to know if we need to expand target for struct return
+                let return_info: Option<&CallReturnInfo> = expr.meta.get();
+
+                match function_id {
+                    InternalOrExternalFunctionId::Internal(function_id) => {
+                        // Expand target if function returns a struct
+                        if let Some(CallReturnInfo(ret_types)) = return_info
+                            && let Some(Type::Struct(struct_id)) = ret_types.first()
+                        {
+                            let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                            symtab.expand_struct_symbol(
+                                target_symbol,
+                                &target_name,
+                                *struct_id,
+                                expr.span,
+                                self.struct_registry,
+                            );
+                        }
+                        // Collect target leaf symbols
+                        let mut targets = Vec::new();
+                        collect_leaf_symbols(target_symbol, symtab, &mut targets);
+                        self.current_block.push(TapIr::Call {
+                            target: targets.into_boxed_slice(),
+                            f: function_id,
+                            args,
+                        });
+                    }
+                    InternalOrExternalFunctionId::External(external_function_id) => {
+                        // Expand target if function returns a struct
+                        if let Some(CallReturnInfo(ret_types)) = return_info
+                            && let Some(Type::Struct(struct_id)) = ret_types.first()
+                        {
+                            let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                            symtab.expand_struct_symbol(
+                                target_symbol,
+                                &target_name,
+                                *struct_id,
+                                expr.span,
+                                self.struct_registry,
+                            );
+                        }
+                        // Collect target leaf symbols
+                        let mut targets = Vec::new();
+                        collect_leaf_symbols(target_symbol, symtab, &mut targets);
+                        self.current_block.push(TapIr::CallExternal {
+                            target: targets.into_boxed_slice(),
+                            f: external_function_id,
+                            args,
+                        });
+                    }
+                    InternalOrExternalFunctionId::Builtin(builtin_id) => {
+                        // Builtins don't take or return structs
+                        self.current_block.push(TapIr::CallBuiltin {
+                            target: target_symbol,
+                            f: builtin_id,
+                            args,
+                        });
+                    }
+                    InternalOrExternalFunctionId::StructConstructor(_) => {
+                        unreachable!("Struct constructors cannot be called as methods")
                     }
                 }
             }

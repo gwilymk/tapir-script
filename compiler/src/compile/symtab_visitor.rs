@@ -360,8 +360,9 @@ impl<'input> SymTabVisitor<'input> {
                 continue;
             }
 
+            // Use mangled_name() - returns "Type@method" for methods, "name" for functions
             if !register_function(
-                function.name.to_string(),
+                function.mangled_name().into_owned(),
                 function.span,
                 InternalOrExternalFunctionId::Builtin(fid),
                 &mut function_declarations,
@@ -392,8 +393,25 @@ impl<'input> SymTabVisitor<'input> {
         for (i, function) in script.functions.iter_mut().enumerate() {
             let fid = FunctionId(i);
             function.meta.set(fid);
+
+            // Check for event modifier on methods (not allowed)
+            if function.is_method() && function.modifiers.is_event_handler.is_some() {
+                ErrorKind::MethodCannotBeEventHandler {
+                    method_name: function.name.to_string(),
+                }
+                .at(function.modifiers.is_event_handler.unwrap())
+                .label(
+                    function.modifiers.is_event_handler.unwrap(),
+                    DiagnosticMessage::MethodCannotBeEventHandlerLabel,
+                )
+                .label(function.span, DiagnosticMessage::MethodDefinedHere)
+                .emit(diagnostics);
+                continue;
+            }
+
+            // Use mangled_name() - returns "Type@method" for methods, "name" for functions
             register_function(
-                function.name.to_string(),
+                function.mangled_name().into_owned(),
                 function.span,
                 InternalOrExternalFunctionId::Internal(fid),
                 &mut function_declarations,
@@ -413,7 +431,7 @@ impl<'input> SymTabVisitor<'input> {
         );
 
         let mut visitor = Self {
-            symtab: SymTab::new(&properties, function_names, builtin_function_infos),
+            symtab: SymTab::new(&properties, function_names, functions_map.clone(), builtin_function_infos),
             symbol_names: NameTable::new(&properties, &struct_property_bases_for_name_table(&properties)),
             function_names: functions_map,
         };
@@ -627,6 +645,17 @@ impl<'input> SymTabVisitor<'input> {
                 // Visit the base expression; field resolution happens during type checking
                 self.visit_expr(base, diagnostics);
             }
+            ExpressionKind::MethodCall {
+                receiver,
+                arguments,
+                ..
+            } => {
+                // Visit receiver and arguments; method resolution happens during type checking
+                self.visit_expr(receiver, diagnostics);
+                for argument in arguments {
+                    self.visit_expr(argument, diagnostics);
+                }
+            }
             ExpressionKind::Integer(_)
             | ExpressionKind::Fix(_)
             | ExpressionKind::Error
@@ -739,6 +768,8 @@ pub struct SymTab<'input> {
 
     symbol_names: Vec<(Cow<'input, str>, Option<Span>)>,
     function_names: HashMap<InternalOrExternalFunctionId, String>,
+    /// Reverse lookup: function/method name to ID (uses mangled names for methods)
+    functions_by_name: HashMap<String, InternalOrExternalFunctionId>,
 
     globals: Vec<GlobalInfo>,
     global_names: HashMap<Cow<'input, str>, GlobalId>,
@@ -758,6 +789,7 @@ impl<'input> SymTab<'input> {
     fn new(
         properties: &[Property],
         function_names: HashMap<InternalOrExternalFunctionId, String>,
+        functions_by_name: HashMap<String, InternalOrExternalFunctionId>,
         builtin_functions: HashMap<BuiltinFunctionId, BuiltinFunctionInfo>,
     ) -> Self {
         let properties = properties.to_vec();
@@ -788,12 +820,19 @@ impl<'input> SymTab<'input> {
             properties,
             symbol_names,
             function_names,
+            functions_by_name,
             globals: vec![],
             global_names: HashMap::new(),
             builtin_functions,
             struct_expansions: HashMap::new(),
             struct_property_bases,
         }
+    }
+
+    /// Look up a function/method by its mangled name.
+    /// For methods, use "Type@method" format (e.g., "Point@distance", "fix@round").
+    pub fn function_by_mangled_name(&self, mangled: &str) -> Option<InternalOrExternalFunctionId> {
+        self.functions_by_name.get(mangled).copied()
     }
 
     fn new_symbol(&mut self, ident: &'input str, span: Span) -> SymbolId {

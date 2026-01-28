@@ -157,6 +157,16 @@ pub enum DiagnosticMessage {
     RecursiveStruct {
         name: String,
     },
+    UnknownMethodType {
+        name: String,
+    },
+    UnknownMethod {
+        type_name: String,
+        method_name: String,
+    },
+    MethodCannotBeEventHandler {
+        method_name: String,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -243,6 +253,10 @@ pub enum DiagnosticMessage {
         field_name: String,
         target_struct: String,
     },
+    MethodCannotBeEventHandlerLabel,
+    MethodDefinedHere,
+    FunctionDefinedHere,
+    CallSiteHere,
 
     // Parse error labels
     EndOfFileNotExpectedHere,
@@ -385,6 +399,18 @@ impl DiagnosticMessage {
             DiagnosticMessage::RecursiveStruct { name } => {
                 format!("struct `{name}` contains itself, creating infinite recursion")
             }
+            DiagnosticMessage::UnknownMethodType { name } => {
+                format!("cannot define method on unknown type `{name}`")
+            }
+            DiagnosticMessage::UnknownMethod {
+                type_name,
+                method_name,
+            } => {
+                format!("type `{type_name}` has no method `{method_name}`")
+            }
+            DiagnosticMessage::MethodCannotBeEventHandler { method_name } => {
+                format!("method `{method_name}` cannot be an event handler")
+            }
 
             // Parse errors
             DiagnosticMessage::UnrecognizedEof => "Unexpected end of file".into(),
@@ -452,6 +478,12 @@ impl DiagnosticMessage {
             } => {
                 format!("Field `{field_name}` contains `{target_struct}`")
             }
+            DiagnosticMessage::MethodCannotBeEventHandlerLabel => {
+                "Methods cannot be event handlers".into()
+            }
+            DiagnosticMessage::MethodDefinedHere => "Method defined here".into(),
+            DiagnosticMessage::FunctionDefinedHere => "Function defined here".into(),
+            DiagnosticMessage::CallSiteHere => "Called here".into(),
 
             // Parse error labels
             DiagnosticMessage::EndOfFileNotExpectedHere => "End of file not expected here".into(),
@@ -626,6 +658,22 @@ pub enum ErrorKind {
         name: String,
     },
 
+    /// Method defined on unknown type
+    UnknownMethodType {
+        name: String,
+    },
+
+    /// Unknown method on type
+    UnknownMethod {
+        type_name: String,
+        method_name: String,
+    },
+
+    /// Event modifier not allowed on methods
+    MethodCannotBeEventHandler {
+        method_name: String,
+    },
+
     // Parse errors
     UnrecognizedEof {
         expected: Box<[String]>,
@@ -689,6 +737,9 @@ impl ErrorKind {
             Self::UnknownField { .. } => "E0041",
             Self::FieldAccessOnNonStruct { .. } => "E0042",
             Self::RecursiveStruct { .. } => "E0043",
+            Self::UnknownMethodType { .. } => "E0044",
+            Self::UnknownMethod { .. } => "E0045",
+            Self::MethodCannotBeEventHandler { .. } => "E0046",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -847,6 +898,21 @@ impl ErrorKind {
             }
             Self::RecursiveStruct { name } => {
                 DiagnosticMessage::RecursiveStruct { name: name.clone() }
+            }
+            Self::UnknownMethodType { name } => {
+                DiagnosticMessage::UnknownMethodType { name: name.clone() }
+            }
+            Self::UnknownMethod {
+                type_name,
+                method_name,
+            } => DiagnosticMessage::UnknownMethod {
+                type_name: type_name.clone(),
+                method_name: method_name.clone(),
+            },
+            Self::MethodCannotBeEventHandler { method_name } => {
+                DiagnosticMessage::MethodCannotBeEventHandler {
+                    method_name: method_name.clone(),
+                }
             }
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {

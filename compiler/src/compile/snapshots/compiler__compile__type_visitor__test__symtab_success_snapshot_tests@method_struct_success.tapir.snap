@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/method_struct_success.tapir
+---
+[
+  ("p", Struct(StructId(0))),
+  ("scaled", Struct(StructId(0))),
+  ("sum", Struct(StructId(0))),
+  ("self", Struct(StructId(0))),
+  ("factor", Int),
+  ("self", Struct(StructId(0))),
+  ("other", Struct(StructId(0))),
+]

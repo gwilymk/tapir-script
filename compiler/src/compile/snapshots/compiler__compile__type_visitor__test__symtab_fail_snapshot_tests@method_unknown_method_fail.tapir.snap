@@ -1,0 +1,12 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/method_unknown_method_fail.tapir
+---
+[E0045] Error: type `int` has no method `unknown_method`
+   ╭─[ method_unknown_method_fail.tapir:3:16 ]
+   │
+ 3 │ var result = x.unknown_method();
+   │              ┬  
+   │              ╰── This has type int
+───╯

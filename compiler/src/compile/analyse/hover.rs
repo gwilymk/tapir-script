@@ -488,6 +488,30 @@ fn extract_from_expression(
                 );
             }
         }
+        ExpressionKind::MethodCall {
+            receiver,
+            arguments,
+            ..
+        } => {
+            extract_from_expression(
+                receiver,
+                symtab,
+                type_table,
+                struct_registry,
+                function_signatures,
+                hover_info,
+            );
+            for arg in arguments {
+                extract_from_expression(
+                    arg,
+                    symtab,
+                    type_table,
+                    struct_registry,
+                    function_signatures,
+                    hover_info,
+                );
+            }
+        }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)

@@ -1,0 +1,2 @@
+# Methods cannot be event handlers
+event fn int.on_event(self) {}
