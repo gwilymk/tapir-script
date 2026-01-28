@@ -2,6 +2,7 @@
 resolver = "2"
 
 members = [
+    "builtins",
     "bytecode",
     "compiler",
     "tapir-lsp",

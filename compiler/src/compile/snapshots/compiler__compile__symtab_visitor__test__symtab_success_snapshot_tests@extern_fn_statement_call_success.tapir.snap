@@ -82,4 +82,5 @@ Script(
       },
     ),
   ],
+  builtin_functions: [],
 )

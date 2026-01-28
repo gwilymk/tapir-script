@@ -79,4 +79,5 @@ Script(
       meta: {},
     ),
   ],
+  builtin_functions: [],
 )

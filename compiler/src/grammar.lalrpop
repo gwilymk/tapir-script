@@ -35,6 +35,7 @@ extern {
         trigger => Token::KeywordTrigger,
         global => Token::KeywordGlobal,
         property => Token::KeywordProperty,
+        builtin => Token::KeywordBuiltin,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -77,6 +78,7 @@ TopLevelStatement: TopLevelStatement<'input> = {
     <Statement> => TopLevelStatement::Statement(<>),
     <FunctionDefinition> => TopLevelStatement::FunctionDefinition(<>),
     <ExternFunctionDefinition> => TopLevelStatement::ExternFunctionDefinition(<>),
+    <BuiltinFunctionDecl> => TopLevelStatement::BuiltinFunctionDefinition(<>),
     <GlobalDecl> => TopLevelStatement::GlobalDeclaration(<>),
     <PropertyDecl> => TopLevelStatement::PropertyDeclaration(<>),
     <error: !> => {
@@ -93,6 +95,18 @@ GlobalDecl: GlobalDeclaration<'input> = {
 PropertyDecl: PropertyDeclaration<'input> = {
     <start:@L> property <name:TypedIdentifierRequired> ";" <end:@R> =>
         PropertyDeclaration { name, span: Span::new(file_id, start, end) },
+}
+
+BuiltinFunctionDecl: BuiltinFunction<'input> = {
+    builtin "(" <builtin_id: BuiltinId> ")" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_type: FunctionReturn> ";" =>
+        BuiltinFunction { name, builtin_id, arguments, return_type, span: Span::new(file_id, start, end), meta: Metadata::new() },
+}
+
+BuiltinId: BuiltinFunctionId = {
+    <value: integer> => match value.parse::<i16>() {
+        Ok(id) => BuiltinFunctionId(id),
+        Err(_) => BuiltinFunctionId(0), // Error handling could be improved
+    },
 }
 
 FunctionDefinition: Function<'input> = {

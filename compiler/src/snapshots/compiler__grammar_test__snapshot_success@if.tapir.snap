@@ -106,4 +106,5 @@ Script(
     ),
   ],
   extern_functions: [],
+  builtin_functions: [],
 )

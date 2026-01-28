@@ -1,0 +1,12 @@
+# Pure builtin function (ID >= 0)
+builtin(0) fn sin(x: fix) -> fix;
+builtin(1) fn cos(x: fix) -> fix;
+builtin(2) fn sqrt(x: fix) -> fix;
+
+# Conversion functions
+builtin(3) fn floor(x: fix) -> int;
+builtin(4) fn ceil(x: fix) -> int;
+builtin(5) fn round(x: fix) -> int;
+
+# Impure builtin function (ID < 0)
+builtin(-1) fn frame() -> int;

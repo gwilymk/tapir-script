@@ -91,4 +91,5 @@ Script(
       },
     ),
   ],
+  builtin_functions: [],
 )

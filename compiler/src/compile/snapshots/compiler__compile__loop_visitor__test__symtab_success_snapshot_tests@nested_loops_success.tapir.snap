@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/loop_visitor.rs
+source: compiler/src/compile/loop_visitor.rs
 expression: script
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/loop_visitor/nested_loops_success.tapir
+input_file: compiler/src/compile/snapshot_tests/loop_visitor/nested_loops_success.tapir
 ---
 Script(
   property_declarations: [],
@@ -52,4 +52,5 @@ Script(
     ),
   ],
   extern_functions: [],
+  builtin_functions: [],
 )

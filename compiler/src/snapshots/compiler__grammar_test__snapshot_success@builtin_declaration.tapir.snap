@@ -1,0 +1,206 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/builtin_declaration.tapir
+---
+Script(
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [
+    BuiltinFunction(
+      name: "sin",
+      builtin_id: BuiltinFunctionId(0),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+    BuiltinFunction(
+      name: "cos",
+      builtin_id: BuiltinFunctionId(1),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+    BuiltinFunction(
+      name: "sqrt",
+      builtin_id: BuiltinFunctionId(2),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+    BuiltinFunction(
+      name: "floor",
+      builtin_id: BuiltinFunctionId(3),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+    BuiltinFunction(
+      name: "ceil",
+      builtin_id: BuiltinFunctionId(4),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+    BuiltinFunction(
+      name: "round",
+      builtin_id: BuiltinFunctionId(5),
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Fix,
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+    BuiltinFunction(
+      name: "frame",
+      builtin_id: BuiltinFunctionId(-1),
+      span: "[span]",
+      arguments: [],
+      return_type: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Int,
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+  ],
+)

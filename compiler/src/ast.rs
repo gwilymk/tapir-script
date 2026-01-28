@@ -30,10 +30,22 @@ impl FunctionId {
 #[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]
 pub struct ExternalFunctionId(pub usize);
 
+/// ID for a builtin function. Positive IDs are pure (constant foldable),
+/// negative IDs are impure (require runtime state).
+#[derive(Clone, Copy, Hash, PartialEq, Eq, Debug, Serialize, PartialOrd, Ord)]
+pub struct BuiltinFunctionId(pub i16);
+
+impl BuiltinFunctionId {
+    pub fn is_pure(self) -> bool {
+        self.0 >= 0
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, PartialOrd, Ord)]
 pub enum InternalOrExternalFunctionId {
     Internal(FunctionId),
     External(ExternalFunctionId),
+    Builtin(BuiltinFunctionId),
 }
 
 pub type Fix = agb_fixnum::Num<i32, 8>;
@@ -44,6 +56,18 @@ pub struct Script<'input> {
     pub globals: Vec<GlobalDeclaration<'input>>,
     pub functions: Vec<Function<'input>>,
     pub extern_functions: Vec<ExternFunctionDefinition<'input>>,
+    pub builtin_functions: Vec<BuiltinFunction<'input>>,
+}
+
+/// A builtin function declaration: `builtin(N) fn name(args) -> ret;`
+#[derive(Clone, Debug, Serialize)]
+pub struct BuiltinFunction<'input> {
+    pub name: &'input str,
+    pub builtin_id: BuiltinFunctionId,
+    pub span: Span,
+    pub arguments: Vec<TypedIdent<'input>>,
+    pub return_type: FunctionReturn,
+    pub meta: Metadata,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -67,6 +91,7 @@ impl<'input> Script<'input> {
         let mut top_level_function_statements = vec![];
         let mut functions = vec![];
         let mut extern_functions = vec![];
+        let mut builtin_functions = vec![];
         let mut globals = vec![];
         let mut property_declarations = vec![];
 
@@ -78,6 +103,9 @@ impl<'input> Script<'input> {
                 TopLevelStatement::FunctionDefinition(function) => functions.push(function),
                 TopLevelStatement::ExternFunctionDefinition(extern_function) => {
                     extern_functions.push(extern_function)
+                }
+                TopLevelStatement::BuiltinFunctionDefinition(builtin_function) => {
+                    builtin_functions.push(builtin_function)
                 }
                 TopLevelStatement::GlobalDeclaration(global) => globals.push(global),
                 TopLevelStatement::PropertyDeclaration(property) => {
@@ -109,6 +137,7 @@ impl<'input> Script<'input> {
             globals,
             functions,
             extern_functions,
+            builtin_functions,
         }
     }
 
@@ -130,6 +159,7 @@ impl<'input> Script<'input> {
             .splice(0..0, other.property_declarations);
         self.globals.splice(0..0, other.globals);
         self.extern_functions.splice(0..0, other.extern_functions);
+        self.builtin_functions.splice(0..0, other.builtin_functions);
     }
 }
 
@@ -178,6 +208,7 @@ pub enum TopLevelStatement<'input> {
     Statement(Statement<'input>),
     FunctionDefinition(Function<'input>),
     ExternFunctionDefinition(ExternFunctionDefinition<'input>),
+    BuiltinFunctionDefinition(BuiltinFunction<'input>),
     GlobalDeclaration(GlobalDeclaration<'input>),
     PropertyDeclaration(PropertyDeclaration<'input>),
     Error,

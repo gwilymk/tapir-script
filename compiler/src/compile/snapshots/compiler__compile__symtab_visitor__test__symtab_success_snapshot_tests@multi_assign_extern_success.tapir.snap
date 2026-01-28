@@ -115,4 +115,5 @@ Script(
       },
     ),
   ],
+  builtin_functions: [],
 )

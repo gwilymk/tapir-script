@@ -120,6 +120,8 @@ pub enum Token<'input> {
     KeywordGlobal,
     #[token("property")]
     KeywordProperty,
+    #[token("builtin")]
+    KeywordBuiltin,
 
     #[token("true")]
     True,

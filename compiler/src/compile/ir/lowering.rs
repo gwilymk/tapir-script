@@ -139,6 +139,9 @@ impl BlockVisitor {
                                 args,
                             });
                         }
+                        InternalOrExternalFunctionId::Builtin(_) => {
+                            todo!("Builtin call in assignment - Stage C")
+                        }
                     }
 
                     temps
@@ -283,6 +286,9 @@ impl BlockVisitor {
                             args,
                         });
                     }
+                    InternalOrExternalFunctionId::Builtin(_) => {
+                        todo!("Builtin call as statement - Stage C")
+                    }
                 }
             }
             ast::StatementKind::Spawn { arguments, .. } => {
@@ -309,6 +315,9 @@ impl BlockVisitor {
                     }
                     InternalOrExternalFunctionId::External(_) => {
                         panic!("Shouldn't be able to spawn an external function")
+                    }
+                    InternalOrExternalFunctionId::Builtin(_) => {
+                        panic!("Shouldn't be able to spawn a builtin function")
                     }
                 }
             }
@@ -503,6 +512,9 @@ impl BlockVisitor {
                             f: external_function_id,
                             args,
                         });
+                    }
+                    InternalOrExternalFunctionId::Builtin(_) => {
+                        todo!("Builtin call expression - Stage C")
                     }
                 }
             }
