@@ -184,14 +184,13 @@ impl<'a> BlockVisitor<'a> {
                         .zip(target_symbols.iter())
                         .map(|(value, &target)| {
                             // Check if this is a struct constructor - if so, assign directly
-                            if let ast::ExpressionKind::Call { .. } = &value.kind {
-                                if let Some(InternalOrExternalFunctionId::StructConstructor(_)) =
+                            if let ast::ExpressionKind::Call { .. } = &value.kind
+                                && let Some(InternalOrExternalFunctionId::StructConstructor(_)) =
                                     value.meta.get()
-                                {
-                                    // Struct constructor: assign directly to target
-                                    self.blocks_for_expression(value, target, symtab);
-                                    return target; // No temp needed, already assigned to target
-                                }
+                            {
+                                // Struct constructor: assign directly to target
+                                self.blocks_for_expression(value, target, symtab);
+                                return target; // No temp needed, already assigned to target
                             }
 
                             // Non-struct: use temporary as before
@@ -732,17 +731,17 @@ impl<'a> BlockVisitor<'a> {
                 match function_id {
                     InternalOrExternalFunctionId::Internal(function_id) => {
                         // Expand target if function returns a struct
-                        if let Some(CallReturnInfo(ret_types)) = return_info {
-                            if let Some(Type::Struct(struct_id)) = ret_types.first() {
-                                let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                                symtab.expand_struct_symbol(
-                                    target_symbol,
-                                    &target_name,
-                                    *struct_id,
-                                    expr.span,
-                                    self.struct_registry,
-                                );
-                            }
+                        if let Some(CallReturnInfo(ret_types)) = return_info
+                            && let Some(Type::Struct(struct_id)) = ret_types.first()
+                        {
+                            let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                            symtab.expand_struct_symbol(
+                                target_symbol,
+                                &target_name,
+                                *struct_id,
+                                expr.span,
+                                self.struct_registry,
+                            );
                         }
                         // Collect target leaf symbols
                         let mut targets = Vec::new();
@@ -755,17 +754,17 @@ impl<'a> BlockVisitor<'a> {
                     }
                     InternalOrExternalFunctionId::External(external_function_id) => {
                         // Expand target if function returns a struct
-                        if let Some(CallReturnInfo(ret_types)) = return_info {
-                            if let Some(Type::Struct(struct_id)) = ret_types.first() {
-                                let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                                symtab.expand_struct_symbol(
-                                    target_symbol,
-                                    &target_name,
-                                    *struct_id,
-                                    expr.span,
-                                    self.struct_registry,
-                                );
-                            }
+                        if let Some(CallReturnInfo(ret_types)) = return_info
+                            && let Some(Type::Struct(struct_id)) = ret_types.first()
+                        {
+                            let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                            symtab.expand_struct_symbol(
+                                target_symbol,
+                                &target_name,
+                                *struct_id,
+                                expr.span,
+                                self.struct_registry,
+                            );
                         }
                         // Collect target leaf symbols
                         let mut targets = Vec::new();
