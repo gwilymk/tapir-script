@@ -1,0 +1,15 @@
+# all
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn make_point(x: int, y: int) -> Point {
+    return Point(x, y);
+}
+
+fn double_point(p: Point) -> Point {
+    return Point(p.x * 2, p.y * 2);
+}
+
+var p = make_point(3, 4);
+var q = double_point(p);
+int_prop = q.x + q.y;

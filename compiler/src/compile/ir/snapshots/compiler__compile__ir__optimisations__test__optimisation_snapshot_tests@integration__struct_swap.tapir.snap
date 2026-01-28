@@ -1,0 +1,115 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/struct_swap.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.33 = int 1
+temp.34 = int 2
+a.x.35 = temp.33
+a.y.36 = temp.34
+temp.37 = int 3
+temp.38 = int 4
+b.x.39 = temp.37
+b.y.40 = temp.38
+temp.12.x.41 = a.x.35
+temp.12.y.42 = a.y.36
+temp.x.43 = temp.12.x.41
+temp.y.44 = temp.12.y.42
+temp.17.x.45 = b.x.39
+temp.17.y.46 = b.y.40
+a.x.47 = temp.17.x.45
+a.y.48 = temp.17.y.46
+temp.20.x.49 = temp.x.43
+temp.20.y.50 = temp.y.44
+b.x.51 = temp.20.x.49
+b.y.52 = temp.20.y.50
+temp.26.x.53 = a.x.47
+temp.26.y.54 = a.y.48
+temp.55 = temp.26.x.53
+temp.29.x.56 = b.x.51
+temp.29.y.57 = b.y.52
+temp.58 = temp.29.y.57
+temp.59 = temp.55 + temp.58
+temp.60 = temp.59
+storeprop temp.60, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.33 = int 1
+temp.34 = int 2
+a.x.35 = temp.33
+a.y.36 = temp.34
+temp.37 = int 3
+temp.38 = int 4
+b.x.39 = temp.37
+b.y.40 = temp.38
+temp.12.x.41 = temp.33
+temp.12.y.42 = temp.34
+temp.x.43 = temp.33
+temp.y.44 = temp.34
+temp.17.x.45 = temp.37
+temp.17.y.46 = temp.38
+a.x.47 = temp.37
+a.y.48 = temp.38
+temp.20.x.49 = temp.33
+temp.20.y.50 = temp.34
+b.x.51 = temp.33
+b.y.52 = temp.34
+temp.26.x.53 = temp.37
+temp.26.y.54 = temp.38
+temp.55 = temp.37
+temp.29.x.56 = temp.33
+temp.29.y.57 = temp.34
+temp.58 = temp.34
+temp.59 = temp.37 + temp.34
+temp.60 = temp.59
+storeprop temp.59, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.33 = int 1
+temp.34 = int 2
+temp.37 = int 3
+temp.38 = int 4
+temp.59 = temp.37 + temp.34
+storeprop temp.59, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.33 = int 1
+temp.34 = int 2
+temp.37 = int 3
+temp.38 = int 4
+temp.59 = int 5
+storeprop temp.59, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.59 = int 5
+storeprop temp.59, 0
+return

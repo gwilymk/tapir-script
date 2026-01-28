@@ -1,0 +1,37 @@
+---
+source: vm/src/lib.rs
+expression: stack_at_waits
+input_file: vm/src/snapshot_tests/stack/structs/function_return.tapir
+---
+[
+  ([
+    [
+      -1,
+      4,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 3,
+  )),
+  ([
+    [
+      -1,
+      4,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 4,
+  )),
+  ([
+    [
+      -1,
+      8,
+      6,
+    ],
+  ], PropObj(
+    int_prop: 6,
+  )),
+  ([], PropObj(
+    int_prop: 8,
+  )),
+]

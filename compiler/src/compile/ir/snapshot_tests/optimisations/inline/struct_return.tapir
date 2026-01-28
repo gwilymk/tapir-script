@@ -1,0 +1,10 @@
+# inline_small_functions
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn origin() -> Point {
+    return Point(0, 0);
+}
+
+var p = origin();
+int_prop = p.x + p.y;

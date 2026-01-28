@@ -1,0 +1,10 @@
+# all
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn add_coordinates(p: Point) -> int {
+    return p.x + p.y;
+}
+
+var p = Point(5, 10);
+int_prop = add_coordinates(p);

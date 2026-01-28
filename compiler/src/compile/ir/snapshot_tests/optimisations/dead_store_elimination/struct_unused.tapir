@@ -1,0 +1,8 @@
+# dead_store_elimination
+struct Point { x: int, y: int }
+
+fn test() -> int {
+    var p = Point(1, 2);
+    var q = Point(3, 4);  # q is unused
+    return p.x + p.y;
+}

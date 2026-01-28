@@ -1,0 +1,18 @@
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn sum_point(p: Point) -> int {
+    return p.x + p.y;
+}
+
+fn get_x(p: Point) -> int {
+    return p.x;
+}
+
+var p = Point(7, 11);
+int_prop = sum_point(p);
+wait;
+int_prop = get_x(p);
+wait;
+# Pass a constructed Point directly
+int_prop = sum_point(Point(100, 200));

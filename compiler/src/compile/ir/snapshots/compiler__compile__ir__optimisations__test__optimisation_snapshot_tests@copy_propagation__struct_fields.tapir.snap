@@ -1,0 +1,51 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/copy_propagation/struct_fields.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.19 = int 1
+temp.20 = int 2
+p.x.21 = temp.19
+p.y.22 = temp.20
+temp.10.x.23 = p.x.21
+temp.10.y.24 = p.y.22
+temp.25 = temp.10.x.23
+a.26 = temp.25
+temp.14.x.27 = p.x.21
+temp.14.y.28 = p.y.22
+temp.29 = temp.14.y.28
+b.30 = temp.29
+temp.31 = a.26
+c.32 = temp.31
+temp.33 = b.30
+d.34 = temp.33
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.19 = int 1
+temp.20 = int 2
+p.x.21 = temp.19
+p.y.22 = temp.20
+temp.10.x.23 = temp.19
+temp.10.y.24 = temp.20
+temp.25 = temp.19
+a.26 = temp.19
+temp.14.x.27 = temp.19
+temp.14.y.28 = temp.20
+temp.29 = temp.20
+b.30 = temp.20
+temp.31 = temp.19
+c.32 = temp.19
+temp.33 = temp.20
+d.34 = temp.20
+return

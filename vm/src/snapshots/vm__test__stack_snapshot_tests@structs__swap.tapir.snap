@@ -1,0 +1,80 @@
+---
+source: vm/src/lib.rs
+expression: stack_at_waits
+input_file: vm/src/snapshot_tests/stack/structs/swap.tapir
+---
+[
+  ([
+    [
+      -1,
+      1,
+      2,
+      4,
+      1,
+      3,
+      100663306,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      3,
+      2,
+      4,
+      1,
+      3,
+      100663312,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 3,
+  )),
+  ([
+    [
+      -1,
+      3,
+      2,
+      4,
+      1,
+      3,
+      100663318,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 3,
+  )),
+  ([
+    [
+      -1,
+      1,
+      2,
+      4,
+      1,
+      3,
+      100663324,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      4,
+      2,
+      4,
+      1,
+      3,
+      100663330,
+      4,
+    ],
+  ], PropObj(
+    int_prop: 4,
+  )),
+  ([], PropObj(
+    int_prop: 2,
+  )),
+]

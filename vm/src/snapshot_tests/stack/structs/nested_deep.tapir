@@ -1,0 +1,21 @@
+struct Point { x: int, y: int }
+struct Rect { origin: Point, size: Point }
+struct Box { bounds: Rect }
+property int_prop: int;
+
+fn black_box(x: int) -> int {
+    return x;
+}
+
+var b = Box(Rect(Point(1, 2), Point(10, 20)));
+int_prop = black_box(b.bounds.origin.x);
+wait;
+int_prop = black_box(b.bounds.origin.y);
+wait;
+int_prop = black_box(b.bounds.size.x);
+wait;
+int_prop = black_box(b.bounds.size.y);
+wait;
+# Modify deeply nested field
+b.bounds.origin.x = 100;
+int_prop = black_box(b.bounds.origin.x);

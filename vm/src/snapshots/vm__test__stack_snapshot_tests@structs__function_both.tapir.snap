@@ -1,0 +1,37 @@
+---
+source: vm/src/lib.rs
+expression: stack_at_waits
+input_file: vm/src/snapshot_tests/stack/structs/function_both.tapir
+---
+[
+  ([
+    [
+      -1,
+      6,
+      4,
+    ],
+  ], PropObj(
+    int_prop: 4,
+  )),
+  ([
+    [
+      -1,
+      6,
+      4,
+    ],
+  ], PropObj(
+    int_prop: 6,
+  )),
+  ([
+    [
+      -1,
+      60,
+      40,
+    ],
+  ], PropObj(
+    int_prop: 40,
+  )),
+  ([], PropObj(
+    int_prop: 60,
+  )),
+]

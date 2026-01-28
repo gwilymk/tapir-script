@@ -1,0 +1,91 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/struct_field_assignment.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.18 = int 1
+temp.19 = int 2
+p.x.20 = temp.18
+p.y.21 = temp.19
+temp.22 = int 100
+p.x.23 = temp.22
+temp.24 = int 200
+p.y.25 = temp.24
+temp.11.x.26 = p.x.23
+temp.11.y.27 = p.y.25
+temp.28 = temp.11.x.26
+temp.14.x.29 = p.x.23
+temp.14.y.30 = p.y.25
+temp.31 = temp.14.y.30
+temp.32 = temp.28 + temp.31
+temp.33 = temp.32
+storeprop temp.33, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.18 = int 1
+temp.19 = int 2
+p.x.20 = temp.18
+p.y.21 = temp.19
+temp.22 = int 100
+p.x.23 = temp.22
+temp.24 = int 200
+p.y.25 = temp.24
+temp.11.x.26 = temp.22
+temp.11.y.27 = temp.24
+temp.28 = temp.22
+temp.14.x.29 = temp.22
+temp.14.y.30 = temp.24
+temp.31 = temp.24
+temp.32 = temp.22 + temp.24
+temp.33 = temp.32
+storeprop temp.32, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.18 = int 1
+temp.19 = int 2
+temp.22 = int 100
+temp.24 = int 200
+temp.32 = temp.22 + temp.24
+storeprop temp.32, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.18 = int 1
+temp.19 = int 2
+temp.22 = int 100
+temp.24 = int 200
+temp.32 = int 300
+storeprop temp.32, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.32 = int 300
+storeprop temp.32, 0
+return

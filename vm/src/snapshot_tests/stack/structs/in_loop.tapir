@@ -1,0 +1,22 @@
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn black_box(x: int) -> int {
+    return x;
+}
+
+var p = Point(0, 0);
+var i = 0;
+loop {
+    if i >= 3 {
+        break;
+    }
+    p.x = p.x + 1;
+    p.y = p.y + 2;
+    int_prop = black_box(p.x + p.y);
+    wait;
+    i = i + 1;
+}
+int_prop = black_box(p.x);
+wait;
+int_prop = black_box(p.y);

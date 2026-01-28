@@ -1,0 +1,79 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/struct_return.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2.x.22, temp.2.y.23 = origin()
+p.x.24 = temp.2.x.22
+p.y.25 = temp.2.y.23
+temp.10.x.26 = p.x.24
+temp.10.y.27 = p.y.25
+temp.28 = temp.10.x.26
+temp.13.x.29 = p.x.24
+temp.13.y.30 = p.y.25
+temp.31 = temp.13.y.30
+temp.32 = temp.28 + temp.31
+temp.33 = temp.32
+storeprop temp.33, 0
+return 
+
+=======================
+fn origin() -> int, int
+
+---- block 0 ----
+temp.34 = int 0
+temp.35 = int 0
+temp.17.x.36 = temp.34
+temp.17.y.37 = temp.35
+return temp.17.x.36, temp.17.y.37
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 2
+
+---- block 2 ----
+temp.40 = int 0
+temp.41 = int 0
+temp.17.x.42 = temp.40
+temp.17.y.43 = temp.41
+jmp 4
+
+---- block 4 ----
+temp.38 = φ(temp.17.x.42 from 2)
+temp.39 = φ(temp.17.y.43 from 2)
+temp.2.x.22 = temp.38
+temp.2.y.23 = temp.39
+jmp 1
+
+---- block 1 ----
+p.x.24 = temp.2.x.22
+p.y.25 = temp.2.y.23
+temp.10.x.26 = p.x.24
+temp.10.y.27 = p.y.25
+temp.28 = temp.10.x.26
+temp.13.x.29 = p.x.24
+temp.13.y.30 = p.y.25
+temp.31 = temp.13.y.30
+temp.32 = temp.28 + temp.31
+temp.33 = temp.32
+storeprop temp.33, 0
+return 
+
+=======================
+fn origin() -> int, int
+
+---- block 0 ----
+temp.34 = int 0
+temp.35 = int 0
+temp.17.x.36 = temp.34
+temp.17.y.37 = temp.35
+return temp.17.x.36, temp.17.y.37

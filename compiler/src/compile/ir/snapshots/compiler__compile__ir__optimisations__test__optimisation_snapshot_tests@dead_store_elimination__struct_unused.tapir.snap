@@ -1,0 +1,80 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_store_elimination/struct_unused.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.19 = int 1
+temp.20 = int 2
+p.x.21 = temp.19
+p.y.22 = temp.20
+temp.23 = int 3
+temp.24 = int 4
+q.x.25 = temp.23
+q.y.26 = temp.24
+temp.13.x.27 = p.x.21
+temp.13.y.28 = p.y.22
+temp.29 = temp.13.x.27
+temp.16.x.30 = p.x.21
+temp.16.y.31 = p.y.22
+temp.32 = temp.16.y.31
+temp.33 = temp.29 + temp.32
+return temp.33
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.19 = int 1
+temp.20 = int 2
+p.x.21 = temp.19
+p.y.22 = temp.20
+temp.23 = int 3
+temp.24 = int 4
+temp.13.x.27 = p.x.21
+temp.29 = temp.13.x.27
+temp.16.y.31 = p.y.22
+temp.32 = temp.16.y.31
+temp.33 = temp.29 + temp.32
+return temp.33
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.19 = int 1
+temp.20 = int 2
+p.x.21 = temp.19
+p.y.22 = temp.20
+temp.13.x.27 = p.x.21
+temp.29 = temp.13.x.27
+temp.16.y.31 = p.y.22
+temp.32 = temp.16.y.31
+temp.33 = temp.29 + temp.32
+return temp.33

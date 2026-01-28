@@ -1,0 +1,823 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/struct_nested.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = int 0
+temp.13.x.149 = temp.147
+temp.13.y.150 = temp.148
+temp.151 = int 10
+temp.152 = int 20
+temp.18.x.153 = temp.151
+temp.18.y.154 = temp.152
+r.origin.x.155 = temp.13.x.149
+r.origin.y.156 = temp.13.y.150
+r.size.x.157 = temp.18.x.153
+r.size.y.158 = temp.18.y.154
+temp.24.origin.x.159 = r.origin.x.155
+temp.24.origin.y.160 = r.origin.y.156
+temp.24.size.x.161 = r.size.x.157
+temp.24.size.y.162 = r.size.y.158
+temp.163 = int 5
+temp.164 = int 5
+temp.23.origin.x.165, temp.23.origin.y.166, temp.23.size.x.167, temp.23.size.y.168 = move_rect(temp.24.origin.x.159, temp.24.origin.y.160, temp.24.size.x.161, temp.24.size.y.162, temp.163, temp.164)
+moved.origin.x.169 = temp.23.origin.x.165
+moved.origin.y.170 = temp.23.origin.y.166
+moved.size.x.171 = temp.23.size.x.167
+moved.size.y.172 = temp.23.size.y.168
+temp.48.origin.x.173 = moved.origin.x.169
+temp.48.origin.y.174 = moved.origin.y.170
+temp.48.size.x.175 = moved.size.x.171
+temp.48.size.y.176 = moved.size.y.172
+temp.177 = rect_area(temp.48.origin.x.173, temp.48.origin.y.174, temp.48.size.x.175, temp.48.size.y.176)
+temp.56.origin.x.178 = moved.origin.x.169
+temp.56.origin.y.179 = moved.origin.y.170
+temp.56.size.x.180 = moved.size.x.171
+temp.56.size.y.181 = moved.size.y.172
+temp.55.x.182 = temp.56.origin.x.178
+temp.55.y.183 = temp.56.origin.y.179
+temp.184 = temp.55.x.182
+temp.185 = temp.177 + temp.184
+temp.186 = temp.185
+storeprop temp.186, 0
+return 
+
+=======================
+fn rect_area(r.origin.x.67, r.origin.y.68, r.size.x.70, r.size.y.71) -> int
+
+---- block 0 ----
+temp.76.origin.x.187 = r.origin.x.67
+temp.76.origin.y.188 = r.origin.y.68
+temp.76.size.x.189 = r.size.x.70
+temp.76.size.y.190 = r.size.y.71
+temp.75.x.191 = temp.76.size.x.189
+temp.75.y.192 = temp.76.size.y.190
+temp.193 = temp.75.x.191
+temp.86.origin.x.194 = r.origin.x.67
+temp.86.origin.y.195 = r.origin.y.68
+temp.86.size.x.196 = r.size.x.70
+temp.86.size.y.197 = r.size.y.71
+temp.85.x.198 = temp.86.size.x.196
+temp.85.y.199 = temp.86.size.y.197
+temp.200 = temp.85.y.199
+temp.201 = temp.193 * temp.200
+return temp.201
+
+=======================
+fn move_rect(r.origin.x.96, r.origin.y.97, r.size.x.99, r.size.y.100, dx.5, dy.6) -> int, int, int, int
+
+---- block 0 ----
+temp.115.origin.x.202 = r.origin.x.96
+temp.115.origin.y.203 = r.origin.y.97
+temp.115.size.x.204 = r.size.x.99
+temp.115.size.y.205 = r.size.y.100
+temp.114.x.206 = temp.115.origin.x.202
+temp.114.y.207 = temp.115.origin.y.203
+temp.208 = temp.114.x.206
+temp.209 = dx.5
+temp.210 = temp.208 + temp.209
+temp.128.origin.x.211 = r.origin.x.96
+temp.128.origin.y.212 = r.origin.y.97
+temp.128.size.x.213 = r.size.x.99
+temp.128.size.y.214 = r.size.y.100
+temp.127.x.215 = temp.128.origin.x.211
+temp.127.y.216 = temp.128.origin.y.212
+temp.217 = temp.127.y.216
+temp.218 = dy.6
+temp.219 = temp.217 + temp.218
+temp.108.x.220 = temp.210
+temp.108.y.221 = temp.219
+temp.138.origin.x.222 = r.origin.x.96
+temp.138.origin.y.223 = r.origin.y.97
+temp.138.size.x.224 = r.size.x.99
+temp.138.size.y.225 = r.size.y.100
+temp.137.x.226 = temp.138.size.x.224
+temp.137.y.227 = temp.138.size.y.225
+temp.101.origin.x.228 = temp.108.x.220
+temp.101.origin.y.229 = temp.108.y.221
+temp.101.size.x.230 = temp.137.x.226
+temp.101.size.y.231 = temp.137.y.227
+return temp.101.origin.x.228, temp.101.origin.y.229, temp.101.size.x.230, temp.101.size.y.231
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = int 0
+temp.13.x.149 = temp.147
+temp.13.y.150 = temp.148
+temp.151 = int 10
+temp.152 = int 20
+temp.18.x.153 = temp.151
+temp.18.y.154 = temp.152
+r.origin.x.155 = temp.147
+r.origin.y.156 = temp.148
+r.size.x.157 = temp.151
+r.size.y.158 = temp.152
+temp.24.origin.x.159 = temp.147
+temp.24.origin.y.160 = temp.148
+temp.24.size.x.161 = temp.151
+temp.24.size.y.162 = temp.152
+temp.163 = int 5
+temp.164 = int 5
+temp.23.origin.x.165, temp.23.origin.y.166, temp.23.size.x.167, temp.23.size.y.168 = move_rect(temp.147, temp.148, temp.151, temp.152, temp.163, temp.164)
+moved.origin.x.169 = temp.23.origin.x.165
+moved.origin.y.170 = temp.23.origin.y.166
+moved.size.x.171 = temp.23.size.x.167
+moved.size.y.172 = temp.23.size.y.168
+temp.48.origin.x.173 = temp.23.origin.x.165
+temp.48.origin.y.174 = temp.23.origin.y.166
+temp.48.size.x.175 = temp.23.size.x.167
+temp.48.size.y.176 = temp.23.size.y.168
+temp.177 = rect_area(temp.23.origin.x.165, temp.23.origin.y.166, temp.23.size.x.167, temp.23.size.y.168)
+temp.56.origin.x.178 = temp.23.origin.x.165
+temp.56.origin.y.179 = temp.23.origin.y.166
+temp.56.size.x.180 = temp.23.size.x.167
+temp.56.size.y.181 = temp.23.size.y.168
+temp.55.x.182 = temp.23.origin.x.165
+temp.55.y.183 = temp.23.origin.y.166
+temp.184 = temp.23.origin.x.165
+temp.185 = temp.177 + temp.23.origin.x.165
+temp.186 = temp.185
+storeprop temp.185, 0
+return 
+
+=======================
+fn rect_area(r.origin.x.67, r.origin.y.68, r.size.x.70, r.size.y.71) -> int
+
+---- block 0 ----
+temp.76.origin.x.187 = r.origin.x.67
+temp.76.origin.y.188 = r.origin.y.68
+temp.76.size.x.189 = r.size.x.70
+temp.76.size.y.190 = r.size.y.71
+temp.75.x.191 = r.size.x.70
+temp.75.y.192 = r.size.y.71
+temp.193 = r.size.x.70
+temp.86.origin.x.194 = r.origin.x.67
+temp.86.origin.y.195 = r.origin.y.68
+temp.86.size.x.196 = r.size.x.70
+temp.86.size.y.197 = r.size.y.71
+temp.85.x.198 = r.size.x.70
+temp.85.y.199 = r.size.y.71
+temp.200 = r.size.y.71
+temp.201 = r.size.x.70 * r.size.y.71
+return temp.201
+
+=======================
+fn move_rect(r.origin.x.96, r.origin.y.97, r.size.x.99, r.size.y.100, dx.5, dy.6) -> int, int, int, int
+
+---- block 0 ----
+temp.115.origin.x.202 = r.origin.x.96
+temp.115.origin.y.203 = r.origin.y.97
+temp.115.size.x.204 = r.size.x.99
+temp.115.size.y.205 = r.size.y.100
+temp.114.x.206 = r.origin.x.96
+temp.114.y.207 = r.origin.y.97
+temp.208 = r.origin.x.96
+temp.209 = dx.5
+temp.210 = r.origin.x.96 + dx.5
+temp.128.origin.x.211 = r.origin.x.96
+temp.128.origin.y.212 = r.origin.y.97
+temp.128.size.x.213 = r.size.x.99
+temp.128.size.y.214 = r.size.y.100
+temp.127.x.215 = r.origin.x.96
+temp.127.y.216 = r.origin.y.97
+temp.217 = r.origin.y.97
+temp.218 = dy.6
+temp.219 = r.origin.y.97 + dy.6
+temp.108.x.220 = temp.210
+temp.108.y.221 = temp.219
+temp.138.origin.x.222 = r.origin.x.96
+temp.138.origin.y.223 = r.origin.y.97
+temp.138.size.x.224 = r.size.x.99
+temp.138.size.y.225 = r.size.y.100
+temp.137.x.226 = r.size.x.99
+temp.137.y.227 = r.size.y.100
+temp.101.origin.x.228 = temp.210
+temp.101.origin.y.229 = temp.219
+temp.101.size.x.230 = r.size.x.99
+temp.101.size.y.231 = r.size.y.100
+return temp.210, temp.219, r.size.x.99, r.size.y.100
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = int 0
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.164 = int 5
+temp.23.origin.x.165, temp.23.origin.y.166, temp.23.size.x.167, temp.23.size.y.168 = move_rect(temp.147, temp.148, temp.151, temp.152, temp.163, temp.164)
+temp.177 = rect_area(temp.23.origin.x.165, temp.23.origin.y.166, temp.23.size.x.167, temp.23.size.y.168)
+temp.185 = temp.177 + temp.23.origin.x.165
+storeprop temp.185, 0
+return 
+
+=======================
+fn rect_area(r.origin.x.67, r.origin.y.68, r.size.x.70, r.size.y.71) -> int
+
+---- block 0 ----
+temp.201 = r.size.x.70 * r.size.y.71
+return temp.201
+
+=======================
+fn move_rect(r.origin.x.96, r.origin.y.97, r.size.x.99, r.size.y.100, dx.5, dy.6) -> int, int, int, int
+
+---- block 0 ----
+temp.210 = r.origin.x.96 + dx.5
+temp.219 = r.origin.y.97 + dy.6
+return temp.210, temp.219, r.size.x.99, r.size.y.100
+
+
+----------- duplicate_loads -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = temp.147
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.164 = temp.163
+temp.23.origin.x.165, temp.23.origin.y.166, temp.23.size.x.167, temp.23.size.y.168 = move_rect(temp.147, temp.148, temp.151, temp.152, temp.163, temp.164)
+temp.177 = rect_area(temp.23.origin.x.165, temp.23.origin.y.166, temp.23.size.x.167, temp.23.size.y.168)
+temp.185 = temp.177 + temp.23.origin.x.165
+storeprop temp.185, 0
+return 
+
+=======================
+fn rect_area(r.origin.x.67, r.origin.y.68, r.size.x.70, r.size.y.71) -> int
+
+---- block 0 ----
+temp.201 = r.size.x.70 * r.size.y.71
+return temp.201
+
+=======================
+fn move_rect(r.origin.x.96, r.origin.y.97, r.size.x.99, r.size.y.100, dx.5, dy.6) -> int, int, int, int
+
+---- block 0 ----
+temp.210 = r.origin.x.96 + dx.5
+temp.219 = r.origin.y.97 + dy.6
+return temp.210, temp.219, r.size.x.99, r.size.y.100
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = temp.147
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.164 = temp.163
+jmp 6
+
+---- block 6 ----
+temp.238 = temp.147 + temp.163
+temp.239 = temp.148 + temp.164
+jmp 8
+
+---- block 8 ----
+temp.234 = φ(temp.238 from 6)
+temp.235 = φ(temp.239 from 6)
+temp.236 = φ(temp.151 from 6)
+temp.237 = φ(temp.152 from 6)
+temp.23.origin.x.165 = temp.234
+temp.23.origin.y.166 = temp.235
+temp.23.size.x.167 = temp.236
+temp.23.size.y.168 = temp.237
+jmp 5
+
+---- block 5 ----
+jmp 2
+
+---- block 2 ----
+temp.233 = temp.23.size.x.167 * temp.23.size.y.168
+jmp 4
+
+---- block 4 ----
+temp.232 = φ(temp.233 from 2)
+temp.177 = temp.232
+jmp 1
+
+---- block 1 ----
+temp.185 = temp.177 + temp.23.origin.x.165
+storeprop temp.185, 0
+return 
+
+=======================
+fn rect_area(r.origin.x.67, r.origin.y.68, r.size.x.70, r.size.y.71) -> int
+
+---- block 0 ----
+temp.201 = r.size.x.70 * r.size.y.71
+return temp.201
+
+=======================
+fn move_rect(r.origin.x.96, r.origin.y.97, r.size.x.99, r.size.y.100, dx.5, dy.6) -> int, int, int, int
+
+---- block 0 ----
+temp.210 = r.origin.x.96 + dx.5
+temp.219 = r.origin.y.97 + dy.6
+return temp.210, temp.219, r.size.x.99, r.size.y.100
+
+
+----------- remove_unreferenced_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = temp.147
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.164 = temp.163
+jmp 6
+
+---- block 6 ----
+temp.238 = temp.147 + temp.163
+temp.239 = temp.148 + temp.164
+jmp 8
+
+---- block 8 ----
+temp.234 = φ(temp.238 from 6)
+temp.235 = φ(temp.239 from 6)
+temp.236 = φ(temp.151 from 6)
+temp.237 = φ(temp.152 from 6)
+temp.23.origin.x.165 = temp.234
+temp.23.origin.y.166 = temp.235
+temp.23.size.x.167 = temp.236
+temp.23.size.y.168 = temp.237
+jmp 5
+
+---- block 5 ----
+jmp 2
+
+---- block 2 ----
+temp.233 = temp.23.size.x.167 * temp.23.size.y.168
+jmp 4
+
+---- block 4 ----
+temp.232 = φ(temp.233 from 2)
+temp.177 = temp.232
+jmp 1
+
+---- block 1 ----
+temp.185 = temp.177 + temp.23.origin.x.165
+storeprop temp.185, 0
+return 
+
+
+----------- empty_phi -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = temp.147
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.164 = temp.163
+jmp 6
+
+---- block 6 ----
+temp.238 = temp.147 + temp.163
+temp.239 = temp.148 + temp.164
+jmp 8
+
+---- block 8 ----
+temp.23.origin.x.165 = temp.238
+temp.23.origin.y.166 = temp.239
+temp.23.size.x.167 = temp.151
+temp.23.size.y.168 = temp.152
+jmp 5
+
+---- block 5 ----
+jmp 2
+
+---- block 2 ----
+temp.233 = temp.23.size.x.167 * temp.23.size.y.168
+jmp 4
+
+---- block 4 ----
+temp.177 = temp.233
+jmp 1
+
+---- block 1 ----
+temp.185 = temp.177 + temp.23.origin.x.165
+storeprop temp.185, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = temp.147
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.164 = temp.163
+temp.238 = temp.147 + temp.163
+temp.239 = temp.148 + temp.164
+jmp 6
+
+---- block 6 ----
+temp.23.origin.x.165 = temp.238
+temp.23.origin.y.166 = temp.239
+temp.23.size.x.167 = temp.151
+temp.23.size.y.168 = temp.152
+jmp 8
+
+---- block 8 ----
+jmp 5
+
+---- block 5 ----
+temp.233 = temp.23.size.x.167 * temp.23.size.y.168
+jmp 2
+
+---- block 2 ----
+temp.177 = temp.233
+jmp 4
+
+---- block 4 ----
+temp.185 = temp.177 + temp.23.origin.x.165
+storeprop temp.185, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.148 = temp.147
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.164 = temp.163
+temp.238 = temp.147 + temp.163
+temp.239 = temp.147 + temp.163
+jmp 6
+
+---- block 6 ----
+temp.23.origin.x.165 = temp.238
+temp.23.origin.y.166 = temp.239
+temp.23.size.x.167 = temp.151
+temp.23.size.y.168 = temp.152
+jmp 8
+
+---- block 8 ----
+jmp 5
+
+---- block 5 ----
+temp.233 = temp.151 * temp.152
+jmp 2
+
+---- block 2 ----
+temp.177 = temp.233
+jmp 4
+
+---- block 4 ----
+temp.185 = temp.233 + temp.238
+storeprop temp.185, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.238 = temp.147 + temp.163
+temp.239 = temp.147 + temp.163
+jmp 6
+
+---- block 6 ----
+jmp 8
+
+---- block 8 ----
+jmp 5
+
+---- block 5 ----
+temp.233 = temp.151 * temp.152
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+temp.185 = temp.233 + temp.238
+storeprop temp.185, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.238 = int 5
+temp.239 = int 5
+jmp 6
+
+---- block 6 ----
+jmp 8
+
+---- block 8 ----
+jmp 5
+
+---- block 5 ----
+temp.233 = int 200
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+temp.185 = temp.233 + temp.238
+storeprop temp.185, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- duplicate_loads -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.238 = temp.163
+temp.239 = temp.163
+jmp 6
+
+---- block 6 ----
+jmp 8
+
+---- block 8 ----
+jmp 5
+
+---- block 5 ----
+temp.233 = int 200
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+temp.185 = temp.233 + temp.238
+storeprop temp.185, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.238 = temp.163
+temp.239 = temp.163
+jmp 8
+
+---- block 8 ----
+jmp 5
+
+---- block 5 ----
+temp.233 = int 200
+jmp 4
+
+---- block 4 ----
+temp.185 = temp.233 + temp.238
+storeprop temp.185, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.238 = temp.163
+temp.239 = temp.163
+jmp 8
+
+---- block 8 ----
+temp.233 = int 200
+jmp 5
+
+---- block 5 ----
+temp.185 = temp.233 + temp.238
+storeprop temp.185, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.147 = int 0
+temp.151 = int 10
+temp.152 = int 20
+temp.163 = int 5
+temp.238 = temp.163
+temp.239 = temp.163
+jmp 8
+
+---- block 8 ----
+temp.233 = int 200
+jmp 5
+
+---- block 5 ----
+temp.185 = temp.233 + temp.163
+storeprop temp.185, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.163 = int 5
+jmp 8
+
+---- block 8 ----
+temp.233 = int 200
+jmp 5
+
+---- block 5 ----
+temp.185 = temp.233 + temp.163
+storeprop temp.185, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.163 = int 5
+jmp 8
+
+---- block 8 ----
+temp.233 = int 200
+jmp 5
+
+---- block 5 ----
+temp.185 = int 205
+storeprop temp.185, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.163 = int 5
+jmp 8
+
+---- block 8 ----
+temp.233 = int 200
+jmp 5
+
+---- block 5 ----
+temp.185 = int 205
+storeprop temp.185, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.163 = int 5
+temp.233 = int 200
+jmp 8
+
+---- block 8 ----
+temp.185 = int 205
+storeprop temp.185, 0
+jmp 5
+
+---- block 5 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 8
+
+---- block 8 ----
+temp.185 = int 205
+storeprop temp.185, 0
+jmp 5
+
+---- block 5 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 8
+
+---- block 8 ----
+temp.185 = int 205
+storeprop temp.185, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.185 = int 205
+storeprop temp.185, 0
+jmp 8
+
+---- block 8 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.185 = int 205
+storeprop temp.185, 0
+return

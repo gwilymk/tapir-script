@@ -1,0 +1,8 @@
+# copy_propagation
+struct Point { x: int, y: int }
+
+var p = Point(10, 20);
+var q = p;
+var r = q;
+var x = r.x;
+var y = r.y;

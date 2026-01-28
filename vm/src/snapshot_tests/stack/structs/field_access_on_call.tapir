@@ -1,0 +1,14 @@
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn make_point(x: int, y: int) -> Point {
+    return Point(x, y);
+}
+
+# Access field directly on function call result
+int_prop = make_point(42, 99).x;
+wait;
+int_prop = make_point(42, 99).y;
+wait;
+# Use in expression
+int_prop = make_point(10, 20).x + make_point(30, 40).y;

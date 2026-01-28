@@ -1,0 +1,81 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_store_elimination/struct_partial_use.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.9 = int 10
+temp.10 = int 20
+p.x.11 = temp.9
+p.y.12 = temp.10
+temp.6.x.13 = p.x.11
+temp.6.y.14 = p.y.12
+temp.15 = temp.6.x.13
+return temp.15
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.9 = int 10
+temp.10 = int 20
+p.x.11 = temp.9
+p.y.12 = temp.10
+temp.6.x.13 = p.x.11
+temp.15 = temp.6.x.13
+return temp.15
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.9 = int 10
+temp.10 = int 20
+p.x.11 = temp.9
+temp.6.x.13 = p.x.11
+temp.15 = temp.6.x.13
+return temp.15
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.9 = int 10
+p.x.11 = temp.9
+temp.6.x.13 = p.x.11
+temp.15 = temp.6.x.13
+return temp.15

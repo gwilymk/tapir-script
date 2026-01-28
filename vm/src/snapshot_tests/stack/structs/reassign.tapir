@@ -1,0 +1,22 @@
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn black_box(x: int) -> int {
+    return x;
+}
+
+var p = Point(1, 2);
+int_prop = black_box(p.x);
+wait;
+# Reassign entire struct
+p = Point(100, 200);
+int_prop = black_box(p.x);
+wait;
+int_prop = black_box(p.y);
+wait;
+# Reassign from another variable
+var q = Point(999, 888);
+p = q;
+int_prop = black_box(p.x);
+wait;
+int_prop = black_box(p.y);

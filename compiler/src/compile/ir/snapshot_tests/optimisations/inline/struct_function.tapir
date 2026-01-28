@@ -1,0 +1,10 @@
+# inline_small_functions
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn get_x(p: Point) -> int {
+    return p.x;
+}
+
+var p = Point(42, 0);
+int_prop = get_x(p);

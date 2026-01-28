@@ -309,6 +309,7 @@ mod test {
         compile::{
             ir::{create_ir, make_ssa, pretty_print},
             loop_visitor::visit_loop_check,
+            struct_visitor,
             symtab_visitor::SymTabVisitor,
             type_visitor::TypeVisitor,
         },
@@ -339,7 +340,18 @@ mod test {
                 enable_optimisations: true,
             };
 
-            let struct_registry = StructRegistry::default();
+            // Register structs before symbol resolution
+            let mut struct_registry = StructRegistry::default();
+            let struct_names =
+                struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+            struct_visitor::resolve_struct_fields(
+                &mut script,
+                &mut struct_registry,
+                &struct_names,
+                &mut diagnostics,
+            );
+            struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
             let mut symtab_visitor = SymTabVisitor::new(
                 &compile_settings,
                 &mut script,

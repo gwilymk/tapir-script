@@ -1,0 +1,17 @@
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn black_box(x: int) -> int {
+    return x;
+}
+
+var p = Point(1, 2);
+int_prop = black_box(p.x);
+wait;
+p.x = 100;
+int_prop = black_box(p.x);
+wait;
+p.y = 200;
+int_prop = black_box(p.y);
+wait;
+int_prop = black_box(p.x + p.y);

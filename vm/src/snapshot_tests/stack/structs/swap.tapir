@@ -1,0 +1,22 @@
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn black_box(x: int) -> int {
+    return x;
+}
+
+var a = Point(1, 2);
+var b = Point(3, 4);
+int_prop = black_box(a.x);
+wait;
+int_prop = black_box(b.x);
+wait;
+# Swap without temp
+a, b = b, a;
+int_prop = black_box(a.x);
+wait;
+int_prop = black_box(b.x);
+wait;
+int_prop = black_box(a.y);
+wait;
+int_prop = black_box(b.y);

@@ -1,0 +1,68 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/struct_function.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.18 = int 42
+temp.19 = int 0
+p.x.20 = temp.18
+p.y.21 = temp.19
+temp.8.x.22 = p.x.20
+temp.8.y.23 = p.y.21
+temp.24 = get_x(temp.8.x.22, temp.8.y.23)
+temp.25 = temp.24
+storeprop temp.25, 0
+return 
+
+=======================
+fn get_x(p.x.12, p.y.13) -> int
+
+---- block 0 ----
+temp.15.x.26 = p.x.12
+temp.15.y.27 = p.y.13
+temp.28 = temp.15.x.26
+return temp.28
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.18 = int 42
+temp.19 = int 0
+p.x.20 = temp.18
+p.y.21 = temp.19
+temp.8.x.22 = p.x.20
+temp.8.y.23 = p.y.21
+jmp 2
+
+---- block 2 ----
+temp.15.x.30 = temp.8.x.22
+temp.15.y.32 = temp.8.y.23
+temp.31 = temp.15.x.30
+jmp 4
+
+---- block 4 ----
+temp.29 = φ(temp.31 from 2)
+temp.24 = temp.29
+jmp 1
+
+---- block 1 ----
+temp.25 = temp.24
+storeprop temp.25, 0
+return 
+
+=======================
+fn get_x(p.x.12, p.y.13) -> int
+
+---- block 0 ----
+temp.15.x.26 = p.x.12
+temp.15.y.27 = p.y.13
+temp.28 = temp.15.x.26
+return temp.28

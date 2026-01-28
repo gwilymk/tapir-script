@@ -1,0 +1,296 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/struct_basic.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+p.x.25 = temp.23
+p.y.26 = temp.24
+temp.8.x.27 = p.x.25
+temp.8.y.28 = p.y.26
+temp.29 = add_coordinates(temp.8.x.27, temp.8.y.28)
+temp.30 = temp.29
+storeprop temp.30, 0
+return 
+
+=======================
+fn add_coordinates(p.x.12, p.y.13) -> int
+
+---- block 0 ----
+temp.17.x.31 = p.x.12
+temp.17.y.32 = p.y.13
+temp.33 = temp.17.x.31
+temp.20.x.34 = p.x.12
+temp.20.y.35 = p.y.13
+temp.36 = temp.20.y.35
+temp.37 = temp.33 + temp.36
+return temp.37
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+p.x.25 = temp.23
+p.y.26 = temp.24
+temp.8.x.27 = temp.23
+temp.8.y.28 = temp.24
+temp.29 = add_coordinates(temp.23, temp.24)
+temp.30 = temp.29
+storeprop temp.29, 0
+return 
+
+=======================
+fn add_coordinates(p.x.12, p.y.13) -> int
+
+---- block 0 ----
+temp.17.x.31 = p.x.12
+temp.17.y.32 = p.y.13
+temp.33 = p.x.12
+temp.20.x.34 = p.x.12
+temp.20.y.35 = p.y.13
+temp.36 = p.y.13
+temp.37 = p.x.12 + p.y.13
+return temp.37
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+temp.29 = add_coordinates(temp.23, temp.24)
+storeprop temp.29, 0
+return 
+
+=======================
+fn add_coordinates(p.x.12, p.y.13) -> int
+
+---- block 0 ----
+temp.37 = p.x.12 + p.y.13
+return temp.37
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+jmp 2
+
+---- block 2 ----
+temp.39 = temp.23 + temp.24
+jmp 4
+
+---- block 4 ----
+temp.38 = φ(temp.39 from 2)
+temp.29 = temp.38
+jmp 1
+
+---- block 1 ----
+storeprop temp.29, 0
+return 
+
+=======================
+fn add_coordinates(p.x.12, p.y.13) -> int
+
+---- block 0 ----
+temp.37 = p.x.12 + p.y.13
+return temp.37
+
+
+----------- remove_unreferenced_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+jmp 2
+
+---- block 2 ----
+temp.39 = temp.23 + temp.24
+jmp 4
+
+---- block 4 ----
+temp.38 = φ(temp.39 from 2)
+temp.29 = temp.38
+jmp 1
+
+---- block 1 ----
+storeprop temp.29, 0
+return 
+
+
+----------- empty_phi -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+jmp 2
+
+---- block 2 ----
+temp.39 = temp.23 + temp.24
+jmp 4
+
+---- block 4 ----
+temp.29 = temp.39
+jmp 1
+
+---- block 1 ----
+storeprop temp.29, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+temp.39 = temp.23 + temp.24
+jmp 2
+
+---- block 2 ----
+temp.29 = temp.39
+jmp 4
+
+---- block 4 ----
+storeprop temp.29, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+temp.39 = temp.23 + temp.24
+jmp 2
+
+---- block 2 ----
+temp.29 = temp.39
+jmp 4
+
+---- block 4 ----
+storeprop temp.39, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+temp.39 = temp.23 + temp.24
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+storeprop temp.39, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+temp.39 = int 15
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+storeprop temp.39, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+temp.39 = int 15
+jmp 4
+
+---- block 4 ----
+storeprop temp.39, 0
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.23 = int 5
+temp.24 = int 10
+temp.39 = int 15
+storeprop temp.39, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.39 = int 15
+storeprop temp.39, 0
+jmp 4
+
+---- block 4 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.39 = int 15
+storeprop temp.39, 0
+return

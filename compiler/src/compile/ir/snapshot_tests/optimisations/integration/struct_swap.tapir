@@ -1,0 +1,10 @@
+# all
+struct Point { x: int, y: int }
+property int_prop: int;
+
+var a = Point(1, 2);
+var b = Point(3, 4);
+var temp = a;
+a = b;
+b = temp;
+int_prop = a.x + b.y;  # Should be 3 + 2 = 5

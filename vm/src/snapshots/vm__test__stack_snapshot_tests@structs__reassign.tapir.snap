@@ -1,0 +1,58 @@
+---
+source: vm/src/lib.rs
+expression: stack_at_waits
+input_file: vm/src/snapshot_tests/stack/structs/reassign.tapir
+---
+[
+  ([
+    [
+      -1,
+      1,
+      1,
+      0,
+      67108868,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      100,
+      200,
+      100,
+      67108878,
+      100,
+    ],
+  ], PropObj(
+    int_prop: 100,
+  )),
+  ([
+    [
+      -1,
+      200,
+      200,
+      100,
+      67108884,
+      200,
+    ],
+  ], PropObj(
+    int_prop: 200,
+  )),
+  ([
+    [
+      -1,
+      999,
+      888,
+      999,
+      67108894,
+      999,
+    ],
+  ], PropObj(
+    int_prop: 999,
+  )),
+  ([], PropObj(
+    int_prop: 888,
+  )),
+]

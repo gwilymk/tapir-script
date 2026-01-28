@@ -1,0 +1,19 @@
+# all
+struct Point { x: int, y: int }
+struct Rect { origin: Point, size: Point }
+property int_prop: int;
+
+fn rect_area(r: Rect) -> int {
+    return r.size.x * r.size.y;
+}
+
+fn move_rect(r: Rect, dx: int, dy: int) -> Rect {
+    return Rect(
+        Point(r.origin.x + dx, r.origin.y + dy),
+        r.size
+    );
+}
+
+var r = Rect(Point(0, 0), Point(10, 20));
+var moved = move_rect(r, 5, 5);
+int_prop = rect_area(moved) + moved.origin.x;

@@ -1,0 +1,22 @@
+struct Point { x: int, y: int }
+property int_prop: int;
+
+fn add_points(a: Point, b: Point) -> Point {
+    return Point(a.x + b.x, a.y + b.y);
+}
+
+fn scale_point(p: Point, s: int) -> Point {
+    return Point(p.x * s, p.y * s);
+}
+
+var p1 = Point(1, 2);
+var p2 = Point(3, 4);
+var sum = add_points(p1, p2);
+int_prop = sum.x;
+wait;
+int_prop = sum.y;
+wait;
+var scaled = scale_point(sum, 10);
+int_prop = scaled.x;
+wait;
+int_prop = scaled.y;

@@ -1,0 +1,46 @@
+---
+source: vm/src/lib.rs
+expression: stack_at_waits
+input_file: vm/src/snapshot_tests/stack/structs/struct_copy.tapir
+---
+[
+  ([
+    [
+      -1,
+      5,
+      10,
+      5,
+      67108870,
+      5,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [
+      -1,
+      10,
+      10,
+      5,
+      67108876,
+      10,
+    ],
+  ], PropObj(
+    int_prop: 10,
+  )),
+  ([
+    [
+      -1,
+      5,
+      999,
+      5,
+      67108884,
+      5,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([], PropObj(
+    int_prop: 999,
+  )),
+]
