@@ -14,7 +14,7 @@ use crate::{
     prelude::{self, USER_FILE_ID},
     reporting::Diagnostics,
     tokens::Span,
-    types::Type,
+    types::{StructRegistry, Type},
 };
 
 use self::symtab_visitor::SymTab;
@@ -25,19 +25,25 @@ mod disassemble;
 mod ir;
 mod loop_visitor;
 mod references;
+mod struct_visitor;
 pub(crate) mod symtab_visitor;
 pub(crate) mod type_visitor;
 
-/// Analyse an AST and return symbol table and type information.
+/// Analyse an AST and return symbol table, type information, and struct registry.
 ///
-/// This runs symbol resolution, loop checking, and type checking as three
-/// distinct phases. Returns the symbol table and type table needed for
-/// code generation or tooling.
+/// This runs struct registration, symbol resolution, loop checking, and type
+/// checking as distinct phases. Returns the symbol table, type table, and
+/// struct registry needed for code generation or tooling.
 pub fn analyse_ast<'input>(
     ast: &mut Script<'input>,
     settings: &CompileSettings,
     diagnostics: &mut Diagnostics,
-) -> (SymTab<'input>, TypeTable<'input>) {
+) -> (SymTab<'input>, TypeTable<'input>, StructRegistry) {
+    // Phase 0: Struct registration (must be before symbol resolution)
+    let mut struct_registry = StructRegistry::default();
+    let struct_names = struct_visitor::register_structs(ast, &mut struct_registry, diagnostics);
+    struct_visitor::resolve_struct_fields(ast, &mut struct_registry, &struct_names, diagnostics);
+
     // Phase 1: Symbol resolution (all functions)
     let mut symtab_visitor = SymTabVisitor::new(settings, ast, diagnostics);
     for function in &mut ast.functions {
@@ -62,7 +68,7 @@ pub fn analyse_ast<'input>(
     type_visitor.check_global_annotations(&ast.globals, symtab_visitor.get_symtab(), diagnostics);
 
     let type_table = type_visitor.into_type_table(symtab_visitor.get_symtab(), diagnostics);
-    (symtab_visitor.into_symtab(), type_table)
+    (symtab_visitor.into_symtab(), type_table, struct_registry)
 }
 
 use bytecode::Opcode;
@@ -101,7 +107,8 @@ pub fn compile(
         None => return Err(diagnostics),
     };
 
-    let (mut symtab, type_table) = analyse_ast(&mut ast, settings, &mut diagnostics);
+    let (mut symtab, type_table, _struct_registry) =
+        analyse_ast(&mut ast, settings, &mut diagnostics);
 
     if diagnostics.has_errors() {
         return Err(diagnostics);

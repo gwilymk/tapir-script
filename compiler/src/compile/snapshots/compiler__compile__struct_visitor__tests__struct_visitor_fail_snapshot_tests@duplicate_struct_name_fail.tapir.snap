@@ -1,0 +1,15 @@
+---
+source: compiler/src/compile/struct_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/struct_visitor/duplicate_struct_name_fail.tapir
+---
+[E0039] Error: struct `Point` is already defined
+   ╭─[ duplicate_struct_name_fail.tapir:2:8 ]
+   │
+ 1 │ struct Point { x: int, y: int }
+   │        ──┬──  
+   │          ╰──── Originally declared here
+ 2 │ struct Point { a: fix, b: fix }
+   │        ──┬──  
+   │          ╰──── Also declared here
+───╯

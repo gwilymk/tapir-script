@@ -1,0 +1,52 @@
+---
+source: compiler/src/compile/struct_visitor.rs
+expression: registry
+input_file: compiler/src/compile/snapshot_tests/struct_visitor/simple_struct_success.tapir
+---
+StructRegistry(
+  structs: [
+    StructDef(
+      name: "Point",
+      fields: [
+        StructField(
+          name: "x",
+          ty: Int,
+          span: "[span]",
+        ),
+        StructField(
+          name: "y",
+          ty: Int,
+          span: "[span]",
+        ),
+      ],
+      span: "[span]",
+    ),
+    StructDef(
+      name: "Size",
+      fields: [
+        StructField(
+          name: "width",
+          ty: Fix,
+          span: "[span]",
+        ),
+        StructField(
+          name: "height",
+          ty: Fix,
+          span: "[span]",
+        ),
+      ],
+      span: "[span]",
+    ),
+    StructDef(
+      name: "Rect",
+      fields: [
+        StructField(
+          name: "valid",
+          ty: Bool,
+          span: "[span]",
+        ),
+      ],
+      span: "[span]",
+    ),
+  ],
+)

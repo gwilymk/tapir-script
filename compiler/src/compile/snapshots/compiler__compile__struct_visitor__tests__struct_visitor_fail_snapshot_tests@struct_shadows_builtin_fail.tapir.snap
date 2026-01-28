@@ -1,0 +1,59 @@
+---
+source: compiler/src/compile/struct_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/struct_visitor/struct_shadows_builtin_fail.tapir
+---
+[E0026] Error: Unexpected token KeywordInt
+   ╭─[ struct_shadows_builtin_fail.tapir:1:8 ]
+   │
+ 1 │ struct int { value: fix }
+   │        ─┬─  
+   │         ╰─── Unexpected token
+   │ 
+   │ Note: Expected one of tokens identifier
+───╯
+[E0026] Error: Unexpected token Colon
+   ╭─[ struct_shadows_builtin_fail.tapir:1:19 ]
+   │
+ 1 │ struct int { value: fix }
+   │                   ┬  
+   │                   ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens "(", "=", ","
+───╯
+[E0026] Error: Unexpected token KeywordBool
+   ╭─[ struct_shadows_builtin_fail.tapir:2:8 ]
+   │
+ 2 │ struct bool { flag: int }
+   │        ──┬─  
+   │          ╰─── Unexpected token
+   │ 
+   │ Note: Expected one of tokens identifier
+───╯
+[E0026] Error: Unexpected token Colon
+   ╭─[ struct_shadows_builtin_fail.tapir:2:19 ]
+   │
+ 2 │ struct bool { flag: int }
+   │                   ┬  
+   │                   ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens "(", "=", ","
+───╯
+[E0026] Error: Unexpected token KeywordFix
+   ╭─[ struct_shadows_builtin_fail.tapir:3:8 ]
+   │
+ 3 │ struct fix { num: int }
+   │        ─┬─  
+   │         ╰─── Unexpected token
+   │ 
+   │ Note: Expected one of tokens identifier
+───╯
+[E0026] Error: Unexpected token Colon
+   ╭─[ struct_shadows_builtin_fail.tapir:3:17 ]
+   │
+ 3 │ struct fix { num: int }
+   │                 ┬  
+   │                 ╰── Unexpected token
+   │ 
+   │ Note: Expected one of tokens "(", "=", ","
+───╯

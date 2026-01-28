@@ -57,7 +57,8 @@ pub fn analyse(
         }
     };
 
-    let (symtab, type_table) = analyse_ast(&mut ast, settings, &mut diagnostics);
+    let (symtab, type_table, _struct_registry) =
+        analyse_ast(&mut ast, settings, &mut diagnostics);
 
     // Extract symbol information
     let symbols = extract_symbols(&symtab, &type_table);

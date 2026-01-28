@@ -137,6 +137,16 @@ pub enum DiagnosticMessage {
     BuiltinOutsidePrelude {
         name: String,
     },
+    StructShadowsBuiltinType {
+        name: String,
+    },
+    DuplicateStructName {
+        name: String,
+    },
+    DuplicateStructField {
+        struct_name: String,
+        field_name: String,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -332,6 +342,18 @@ impl DiagnosticMessage {
             }
             DiagnosticMessage::BuiltinOutsidePrelude { name } => {
                 format!("builtin function `{name}` can only be declared in the prelude")
+            }
+            DiagnosticMessage::StructShadowsBuiltinType { name } => {
+                format!("struct name `{name}` shadows a builtin type")
+            }
+            DiagnosticMessage::DuplicateStructName { name } => {
+                format!("struct `{name}` is already defined")
+            }
+            DiagnosticMessage::DuplicateStructField {
+                struct_name,
+                field_name,
+            } => {
+                format!("field `{field_name}` is already defined in struct `{struct_name}`")
             }
 
             // Parse errors
@@ -537,6 +559,19 @@ pub enum ErrorKind {
     BuiltinOutsidePrelude {
         name: String,
     },
+    /// Struct name shadows a builtin type (int, fix, bool)
+    StructShadowsBuiltinType {
+        name: String,
+    },
+    /// Two structs have the same name
+    DuplicateStructName {
+        name: String,
+    },
+    /// A struct has duplicate field names
+    DuplicateStructField {
+        struct_name: String,
+        field_name: String,
+    },
 
     // Parse errors
     UnrecognizedEof {
@@ -595,6 +630,9 @@ impl ErrorKind {
             Self::PropertyNotInStruct { .. } => "E0035",
             Self::TypeAnnotationMismatch { .. } => "E0036",
             Self::BuiltinOutsidePrelude { .. } => "E0037",
+            Self::StructShadowsBuiltinType { .. } => "E0038",
+            Self::DuplicateStructName { .. } => "E0039",
+            Self::DuplicateStructField { .. } => "E0040",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -728,6 +766,19 @@ impl ErrorKind {
             Self::BuiltinOutsidePrelude { name } => {
                 DiagnosticMessage::BuiltinOutsidePrelude { name: name.clone() }
             }
+            Self::StructShadowsBuiltinType { name } => {
+                DiagnosticMessage::StructShadowsBuiltinType { name: name.clone() }
+            }
+            Self::DuplicateStructName { name } => {
+                DiagnosticMessage::DuplicateStructName { name: name.clone() }
+            }
+            Self::DuplicateStructField {
+                struct_name,
+                field_name,
+            } => DiagnosticMessage::DuplicateStructField {
+                struct_name: struct_name.clone(),
+                field_name: field_name.clone(),
+            },
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {
                 token: token.clone(),
