@@ -27,7 +27,7 @@ pub use reporting::{
     Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind, Severity, SourcePosition, SourceRange,
 };
 pub use tokens::Span;
-pub use types::Type;
+pub use types::{StructDef, StructField, StructId, StructRegistry, Type};
 
 pub fn compile(
     filename: impl AsRef<Path>,

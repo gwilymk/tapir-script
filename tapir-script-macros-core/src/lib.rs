@@ -266,6 +266,7 @@ fn generate_event_handlers(
                         Type::Int => quote!(i32),
                         Type::Fix => quote!(::tapir_script::Fix),
                         Type::Bool => quote!(bool),
+                        Type::Struct(_id) => todo!("Cannot use structs yet"),
                         Type::Error => panic!("Should not have errors here"),
                     };
                     let name = format_ident!("{}", arg.name);
