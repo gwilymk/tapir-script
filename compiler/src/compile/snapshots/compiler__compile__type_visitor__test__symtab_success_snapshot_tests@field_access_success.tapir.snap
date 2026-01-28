@@ -1,0 +1,15 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/field_access_success.tapir
+---
+[
+  ("p", Struct(StructId(0))),
+  ("x", Int),
+  ("y", Int),
+  ("r", Struct(StructId(1))),
+  ("x", Int),
+  ("y", Int),
+  ("p", Struct(StructId(0))),
+  ("sum", Int),
+]

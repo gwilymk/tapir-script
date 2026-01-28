@@ -155,6 +155,8 @@ pub enum Token<'input> {
     Arrow,
     #[token(",")]
     Comma,
+    #[token(".")]
+    Dot,
 
     #[token("+")]
     OperatorAdd,

@@ -1,0 +1,17 @@
+# Nested field access
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+struct Rect {
+    origin: Point,
+    size: Point,
+}
+
+fn test_nested_access() {
+    var r = Rect(Point(0, 0), Point(10, 20));
+    var x = r.origin.x;
+    var y = r.size.y;
+}

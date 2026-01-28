@@ -381,6 +381,9 @@ impl<'input> Expression<'input> {
                     .chain(lhs.all_inner())
                     .chain(rhs.all_inner()),
             ),
+            ExpressionKind::FieldAccess { base, .. } => {
+                Box::new(iter::once(self).chain(base.all_inner()))
+            }
         }
     }
 }
@@ -403,6 +406,12 @@ pub enum ExpressionKind<'input> {
     Call {
         name: &'input str,
         arguments: Vec<Expression<'input>>,
+    },
+
+    /// Field access on a struct: `base.field`
+    FieldAccess {
+        base: Box<Expression<'input>>,
+        field: Ident<'input>,
     },
 }
 

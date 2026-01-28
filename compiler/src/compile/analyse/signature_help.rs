@@ -177,6 +177,9 @@ fn extract_from_expression(
             extract_from_expression(lhs, signatures, call_sites);
             extract_from_expression(rhs, signatures, call_sites);
         }
+        ExpressionKind::FieldAccess { base, .. } => {
+            extract_from_expression(base, signatures, call_sites);
+        }
         ExpressionKind::Variable(_)
         | ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)

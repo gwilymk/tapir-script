@@ -147,6 +147,13 @@ pub enum DiagnosticMessage {
         struct_name: String,
         field_name: String,
     },
+    UnknownField {
+        struct_name: String,
+        field_name: String,
+    },
+    FieldAccessOnNonStruct {
+        ty: Type,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -354,6 +361,15 @@ impl DiagnosticMessage {
                 field_name,
             } => {
                 format!("field `{field_name}` is already defined in struct `{struct_name}`")
+            }
+            DiagnosticMessage::UnknownField {
+                struct_name,
+                field_name,
+            } => {
+                format!("struct `{struct_name}` has no field `{field_name}`")
+            }
+            DiagnosticMessage::FieldAccessOnNonStruct { ty } => {
+                format!("cannot access field on type `{ty}` (not a struct)")
             }
 
             // Parse errors
@@ -572,6 +588,15 @@ pub enum ErrorKind {
         struct_name: String,
         field_name: String,
     },
+    /// Field access on unknown field
+    UnknownField {
+        struct_name: String,
+        field_name: String,
+    },
+    /// Field access on non-struct type
+    FieldAccessOnNonStruct {
+        ty: Type,
+    },
 
     // Parse errors
     UnrecognizedEof {
@@ -633,6 +658,8 @@ impl ErrorKind {
             Self::StructShadowsBuiltinType { .. } => "E0038",
             Self::DuplicateStructName { .. } => "E0039",
             Self::DuplicateStructField { .. } => "E0040",
+            Self::UnknownField { .. } => "E0041",
+            Self::FieldAccessOnNonStruct { .. } => "E0042",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -779,6 +806,16 @@ impl ErrorKind {
                 struct_name: struct_name.clone(),
                 field_name: field_name.clone(),
             },
+            Self::UnknownField {
+                struct_name,
+                field_name,
+            } => DiagnosticMessage::UnknownField {
+                struct_name: struct_name.clone(),
+                field_name: field_name.clone(),
+            },
+            Self::FieldAccessOnNonStruct { ty } => {
+                DiagnosticMessage::FieldAccessOnNonStruct { ty: *ty }
+            }
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {
                 token: token.clone(),

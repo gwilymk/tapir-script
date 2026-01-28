@@ -70,6 +70,7 @@ extern {
         "<=" => Token::OperatorLtEq,
         "||" => Token::OperatorOr,
         "&&" => Token::OperatorAnd,
+        "." => Token::Dot,
     }
 }
 
@@ -233,7 +234,7 @@ ElseBlock = "else" <Block>;
 
 Expression: Expression<'input> = {
     #[precedence(level="1")]
-    <Term>,
+    <PostfixExpr>,
 
     #[precedence(level="2")]
     #[assoc(side="left")]
@@ -286,6 +287,12 @@ ComparisonOp: BinaryOperator = {
     ">=" => BinaryOperator::GtEq,
     "<" => BinaryOperator::Lt,
     "<=" => BinaryOperator::LtEq,
+}
+
+PostfixExpr: Expression<'input> = {
+    <Term>,
+    <start:@L> <base:PostfixExpr> "." <field:Identifier> <end:@R> =>
+        ExpressionKind::FieldAccess { base: Box::new(base), field }.with_span(file_id, start, end),
 }
 
 Term: Expression<'input> = {

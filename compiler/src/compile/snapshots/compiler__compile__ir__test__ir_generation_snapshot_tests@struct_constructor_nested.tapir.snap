@@ -21,50 +21,50 @@ temp.9 = int 100
 temp.10 = int 200
 temp.8.x.11 = temp.9
 temp.8.y.12 = temp.10
-r.origin.x.13 = temp.3.x.6
-r.origin.y.14 = temp.3.y.7
-r.size.x.15 = temp.8.x.11
-r.size.y.16 = temp.8.y.12
+r.origin.x.14 = temp.3.x.6
+r.origin.y.15 = temp.3.y.7
+r.size.x.17 = temp.8.x.11
+r.size.y.18 = temp.8.y.12
 return 
 
 =======================
 fn test_mixed_fields() -> 
 
 ---- block 0 ----
-temp.18 = int 0
-temp.19 = int 0
-temp.17.x.20 = temp.18
-temp.17.y.21 = temp.19
-temp.22 = int 5
-temp.24 = int 100
-temp.25 = int 100
-temp.23.x.26 = temp.24
-temp.23.y.27 = temp.25
-line.start.x.28 = temp.17.x.20
-line.start.y.29 = temp.17.y.21
-line.thickness.30 = temp.22
-line.end.x.31 = temp.23.x.26
-line.end.y.32 = temp.23.y.27
+temp.20 = int 0
+temp.21 = int 0
+temp.19.x.22 = temp.20
+temp.19.y.23 = temp.21
+temp.24 = int 5
+temp.26 = int 100
+temp.27 = int 100
+temp.25.x.28 = temp.26
+temp.25.y.29 = temp.27
+line.start.x.31 = temp.19.x.22
+line.start.y.32 = temp.19.y.23
+line.thickness.33 = temp.24
+line.end.x.35 = temp.25.x.28
+line.end.y.36 = temp.25.y.29
 return 
 
 =======================
 fn test_deep_nesting() -> 
 
 ---- block 0 ----
-temp.35 = int 0
-temp.36 = int 0
-temp.34.x.37 = temp.35
-temp.34.y.38 = temp.36
-temp.40 = int 50
-temp.41 = int 50
-temp.39.x.42 = temp.40
-temp.39.y.43 = temp.41
-temp.33.origin.x.44 = temp.34.x.37
-temp.33.origin.y.45 = temp.34.y.38
-temp.33.size.x.46 = temp.39.x.42
-temp.33.size.y.47 = temp.39.y.43
-b.bounds.origin.x.48 = temp.33.origin.x.44
-b.bounds.origin.y.49 = temp.33.origin.y.45
-b.bounds.size.x.50 = temp.33.size.x.46
-b.bounds.size.y.51 = temp.33.size.y.47
+temp.39 = int 0
+temp.40 = int 0
+temp.38.x.41 = temp.39
+temp.38.y.42 = temp.40
+temp.44 = int 50
+temp.45 = int 50
+temp.43.x.46 = temp.44
+temp.43.y.47 = temp.45
+temp.37.origin.x.49 = temp.38.x.41
+temp.37.origin.y.50 = temp.38.y.42
+temp.37.size.x.52 = temp.43.x.46
+temp.37.size.y.53 = temp.43.y.47
+b.bounds.origin.x.56 = temp.37.origin.x.49
+b.bounds.origin.y.57 = temp.37.origin.y.50
+b.bounds.size.x.59 = temp.37.size.x.52
+b.bounds.size.y.60 = temp.37.size.y.53
 return

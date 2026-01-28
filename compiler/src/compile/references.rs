@@ -148,6 +148,10 @@ fn extract_references_from_expression(
             extract_references_from_expression(lhs, symtab, function_spans, references);
             extract_references_from_expression(rhs, symtab, function_spans, references);
         }
+        ExpressionKind::FieldAccess { base, .. } => {
+            extract_references_from_expression(base, symtab, function_spans, references);
+            // TODO: Add reference to field definition
+        }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)

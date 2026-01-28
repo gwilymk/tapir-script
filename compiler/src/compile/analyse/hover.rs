@@ -294,6 +294,10 @@ fn extract_from_expression(
             extract_from_expression(lhs, symtab, type_table, function_signatures, hover_info);
             extract_from_expression(rhs, symtab, type_table, function_signatures, hover_info);
         }
+        ExpressionKind::FieldAccess { base, .. } => {
+            extract_from_expression(base, symtab, type_table, function_signatures, hover_info);
+            // TODO: Add hover info for the field itself (show field type)
+        }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)

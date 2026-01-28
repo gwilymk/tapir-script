@@ -1,6 +1,9 @@
 use crate::{
     ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, SymbolId},
-    compile::symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
+    compile::{
+        symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
+        type_visitor::FieldAccessInfo,
+    },
     types::StructRegistry,
 };
 
@@ -473,6 +476,19 @@ impl<'a> BlockVisitor<'a> {
                         target: target_symbol,
                         global_index: global_id.0,
                     });
+                } else if let Some(source_expansion) = symtab.get_struct_expansion(source).cloned()
+                {
+                    // Struct-typed variable: copy all fields to target's expansion
+                    let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                    let target_expansion = symtab.expand_struct_symbol(
+                        target_symbol,
+                        &target_name,
+                        source_expansion.struct_id,
+                        expr.span,
+                        self.struct_registry,
+                    );
+
+                    self.copy_struct_fields(&source_expansion, &target_expansion, symtab);
                 } else {
                     self.current_block.push(TapIr::Move {
                         target: target_symbol,
@@ -595,57 +611,126 @@ impl<'a> BlockVisitor<'a> {
                         // Get the struct definition to know field types
                         let struct_def = self.struct_registry.get(struct_id);
 
-                        // Copy each argument to the corresponding field(s)
-                        let mut target_leaf_idx = 0;
-                        for (arg_symbol, field) in args.iter().zip(&struct_def.fields) {
+                        // Copy each argument to the corresponding target field
+                        for ((arg_symbol, field), &target_field) in args
+                            .iter()
+                            .zip(&struct_def.fields)
+                            .zip(&target_expansion.fields)
+                        {
                             match field.ty {
                                 crate::types::Type::Struct(nested_id) => {
-                                    // Argument is a struct - copy from arg's expanded fields
-                                    if let Some(arg_expansion) =
-                                        symtab.get_struct_expansion(*arg_symbol)
-                                    {
-                                        // Copy each leaf from arg to target
-                                        for &arg_leaf in &arg_expansion.leaf_symbols {
-                                            self.current_block.push(TapIr::Move {
-                                                target: target_expansion.leaf_symbols
-                                                    [target_leaf_idx],
-                                                source: arg_leaf,
-                                            });
-                                            target_leaf_idx += 1;
-                                        }
-                                    } else {
-                                        // Arg should be expanded but isn't - expand it now
-                                        let arg_name =
-                                            symtab.name_for_symbol(*arg_symbol).to_string();
-                                        let arg_expansion = symtab.expand_struct_symbol(
-                                            *arg_symbol,
-                                            &arg_name,
-                                            nested_id,
-                                            expr.span,
-                                            self.struct_registry,
-                                        );
-                                        for &arg_leaf in &arg_expansion.leaf_symbols {
-                                            self.current_block.push(TapIr::Move {
-                                                target: target_expansion.leaf_symbols
-                                                    [target_leaf_idx],
-                                                source: arg_leaf,
-                                            });
-                                            target_leaf_idx += 1;
-                                        }
-                                    }
+                                    // Argument is a struct - copy recursively
+                                    let arg_expansion =
+                                        if let Some(exp) = symtab.get_struct_expansion(*arg_symbol)
+                                        {
+                                            exp.clone()
+                                        } else {
+                                            let arg_name =
+                                                symtab.name_for_symbol(*arg_symbol).to_string();
+                                            symtab.expand_struct_symbol(
+                                                *arg_symbol,
+                                                &arg_name,
+                                                nested_id,
+                                                expr.span,
+                                                self.struct_registry,
+                                            )
+                                        };
+
+                                    let target_nested = symtab
+                                        .get_struct_expansion(target_field)
+                                        .expect("Nested field should be expanded")
+                                        .clone();
+
+                                    self.copy_struct_fields(&arg_expansion, &target_nested, symtab);
                                 }
                                 _ => {
                                     // Scalar field - simple move
                                     self.current_block.push(TapIr::Move {
-                                        target: target_expansion.leaf_symbols[target_leaf_idx],
+                                        target: target_field,
                                         source: *arg_symbol,
                                     });
-                                    target_leaf_idx += 1;
                                 }
                             }
                         }
                     }
                 }
+            }
+            ast::ExpressionKind::FieldAccess { base, .. } => {
+                // Get the field info from type checking
+                let info = expr
+                    .meta
+                    .get::<FieldAccessInfo>()
+                    .expect("FieldAccess should have FieldAccessInfo");
+
+                // Evaluate the base into a temp (handles any expression uniformly)
+                let base_temp = symtab.new_temporary();
+                self.blocks_for_expression(base, base_temp, symtab);
+
+                // Ensure the base is expanded. If not (e.g., function call result),
+                // expand it using the struct type from FieldAccessInfo.
+                if symtab.get_struct_expansion(base_temp).is_none() {
+                    let base_name = symtab.name_for_symbol(base_temp).to_string();
+                    symtab.expand_struct_symbol(
+                        base_temp,
+                        &base_name,
+                        info.base_struct_id,
+                        expr.span,
+                        self.struct_registry,
+                    );
+                }
+
+                let base_expansion = symtab
+                    .get_struct_expansion(base_temp)
+                    .expect("Base should be expanded")
+                    .clone();
+
+                // Get the field's symbol from the base expansion
+                let field_symbol = base_expansion.fields[info.field_index];
+
+                // Check if this field is struct-typed (has its own expansion)
+                if let Some(field_expansion) = symtab.get_struct_expansion(field_symbol).cloned() {
+                    // Field is struct-typed: create expansion for target and copy
+                    let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                    let target_expansion = symtab.expand_struct_symbol(
+                        target_symbol,
+                        &target_name,
+                        field_expansion.struct_id,
+                        expr.span,
+                        self.struct_registry,
+                    );
+
+                    self.copy_struct_fields(&field_expansion, &target_expansion, symtab);
+                } else {
+                    // Scalar field: simple move
+                    self.current_block.push(TapIr::Move {
+                        target: target_symbol,
+                        source: field_symbol,
+                    });
+                }
+            }
+        }
+    }
+
+    /// Recursively copy fields from one struct expansion to another.
+    fn copy_struct_fields(
+        &mut self,
+        source: &crate::compile::symtab_visitor::ExpandedStruct,
+        target: &crate::compile::symtab_visitor::ExpandedStruct,
+        symtab: &SymTab,
+    ) {
+        for (&source_field, &target_field) in source.fields.iter().zip(&target.fields) {
+            // Check if this field is struct-typed (has nested expansion)
+            if let Some(source_nested) = symtab.get_struct_expansion(source_field) {
+                let target_nested = symtab
+                    .get_struct_expansion(target_field)
+                    .expect("Target should have matching expansion");
+                self.copy_struct_fields(source_nested, target_nested, symtab);
+            } else {
+                // Scalar field
+                self.current_block.push(TapIr::Move {
+                    target: target_field,
+                    source: source_field,
+                });
             }
         }
     }

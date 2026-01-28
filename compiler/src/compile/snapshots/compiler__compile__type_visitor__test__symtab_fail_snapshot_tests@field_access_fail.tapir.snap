@@ -1,0 +1,19 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/field_access_fail.tapir
+---
+[E0041] Error: struct `Point` has no field `z`
+    ╭─[ field_access_fail.tapir:10:15 ]
+    │
+ 10 │     var z = p.z;
+    │               ┬  
+    │               ╰── struct `Point` has no field `z`
+────╯
+[E0042] Error: cannot access field on type `int` (not a struct)
+    ╭─[ field_access_fail.tapir:15:13 ]
+    │
+ 15 │     var y = x.foo;
+    │             ┬  
+    │             ╰── This has type int
+────╯

@@ -14,14 +14,23 @@ use crate::{
     types::{StructId, StructRegistry, Type},
 };
 
+/// Stored in FieldAccess expression metadata during type checking.
+/// Contains the struct type of the base expression and field index, needed for IR lowering.
+#[derive(Clone, Copy, Debug)]
+pub struct FieldAccessInfo {
+    pub base_struct_id: StructId,
+    pub field_index: usize,
+}
+
 use super::{
     loop_visitor::LoopContainsNoBreak,
     symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
 };
 
-pub struct TypeVisitor<'input> {
+pub struct TypeVisitor<'input, 'reg> {
     type_table: Vec<Option<(Type, Option<Span>)>>,
     functions: HashMap<InternalOrExternalFunctionId, FunctionInfo<'input>>,
+    struct_registry: &'reg StructRegistry,
 
     trigger_types: HashMap<&'input str, TriggerInfo>,
 }
@@ -56,12 +65,12 @@ struct AssignmentTargets<'a, 'input> {
     annotations: &'a [Option<&'a ast::TypeWithLocation<'input>>],
 }
 
-impl<'input> TypeVisitor<'input> {
+impl<'input, 'reg> TypeVisitor<'input, 'reg> {
     pub fn new(
         functions: &[Function<'input>],
         extern_functions: &[ExternFunctionDefinition<'input>],
         builtin_functions: &[BuiltinFunction<'input>],
-        struct_registry: &StructRegistry,
+        struct_registry: &'reg StructRegistry,
         symtab: &SymTab<'input>,
     ) -> Self {
         let mut resolved_functions = HashMap::new();
@@ -168,6 +177,7 @@ impl<'input> TypeVisitor<'input> {
                 .collect(),
 
             functions: resolved_functions,
+            struct_registry,
             trigger_types: HashMap::new(),
         }
     }
@@ -888,6 +898,54 @@ impl<'input> TypeVisitor<'input> {
                     Type::Error
                 } else {
                     types[0]
+                }
+            }
+            ast::ExpressionKind::FieldAccess { base, field } => {
+                let base_type = self.type_for_expression(base, symtab, diagnostics);
+
+                match base_type {
+                    Type::Struct(struct_id) => {
+                        let struct_def = self.struct_registry.get(struct_id);
+                        if let Some((field_index, field_def)) = struct_def
+                            .fields
+                            .iter()
+                            .enumerate()
+                            .find(|(_, f)| f.name == field.ident)
+                        {
+                            // Store info for IR lowering
+                            expression.meta.set(FieldAccessInfo {
+                                base_struct_id: struct_id,
+                                field_index,
+                            });
+                            field_def.ty
+                        } else {
+                            ErrorKind::UnknownField {
+                                struct_name: struct_def.name.clone(),
+                                field_name: field.ident.to_string(),
+                            }
+                            .at(field.span)
+                            .label(
+                                field.span,
+                                DiagnosticMessage::UnknownField {
+                                    struct_name: struct_def.name.clone(),
+                                    field_name: field.ident.to_string(),
+                                },
+                            )
+                            .emit(diagnostics);
+                            Type::Error
+                        }
+                    }
+                    Type::Error => Type::Error,
+                    _ => {
+                        ErrorKind::FieldAccessOnNonStruct { ty: base_type }
+                            .at(expression.span)
+                            .label(
+                                base.span,
+                                DiagnosticMessage::HasType { ty: base_type },
+                            )
+                            .emit(diagnostics);
+                        Type::Error
+                    }
                 }
             }
         }

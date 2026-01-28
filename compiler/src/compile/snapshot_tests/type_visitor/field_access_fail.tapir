@@ -1,0 +1,16 @@
+# Field access error cases
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn test_unknown_field() {
+    var p = Point(1, 2);
+    var z = p.z;
+}
+
+fn test_field_on_non_struct() {
+    var x = 5;
+    var y = x.foo;
+}

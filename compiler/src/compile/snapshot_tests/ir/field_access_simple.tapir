@@ -1,0 +1,17 @@
+# Simple field access
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn test_read_fields() {
+    var p = Point(1, 2);
+    var x = p.x;
+    var y = p.y;
+}
+
+fn test_field_in_expression() {
+    var p = Point(3, 4);
+    var sum = p.x + p.y;
+}

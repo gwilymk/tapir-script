@@ -1,0 +1,28 @@
+# Field access type checking
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+struct Rect {
+    origin: Point,
+    size: Point,
+}
+
+fn test_simple_field_access() {
+    var p = Point(1, 2);
+    var x = p.x;
+    var y = p.y;
+}
+
+fn test_nested_field_access() {
+    var r = Rect(Point(0, 0), Point(10, 20));
+    var x = r.origin.x;
+    var y = r.size.y;
+}
+
+fn test_field_in_expression() {
+    var p = Point(3, 4);
+    var sum = p.x + p.y;
+}
