@@ -327,7 +327,8 @@ impl Compiler {
                         // Emit call_builtin instruction
                         // builtin_id is i16 but we only support -128..127 range
                         let builtin_id = f.0 as i8;
-                        self.bytecode.call_builtin(v(target), builtin_id, first_argument);
+                        self.bytecode
+                            .call_builtin(v(target), builtin_id, first_argument);
                     }
                     TapIr::GetGlobal {
                         target,

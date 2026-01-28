@@ -2,9 +2,9 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::time::Instant;
 
+use compiler::Severity;
 use compiler::{AnalysisResult, CompileSettings};
 use lsp_server::{Connection, Message, Notification};
-use compiler::Severity;
 use lsp_types::{
     Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, PublishDiagnosticsParams, Url,
     notification::{Notification as _, PublishDiagnostics},

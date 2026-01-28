@@ -99,7 +99,9 @@ pub enum DiagnosticMessage {
     OperationOccursHere,
     IntegerOverflow,
     CausesOverflow,
-    BuiltinWillFail { name: String },
+    BuiltinWillFail {
+        name: String,
+    },
     EventFunctionsShouldNotHaveAReturnType {
         function_name: String,
     },
@@ -723,9 +725,9 @@ impl ErrorKind {
                     actual: *actual,
                 }
             }
-            Self::BuiltinOutsidePrelude { name } => DiagnosticMessage::BuiltinOutsidePrelude {
-                name: name.clone(),
-            },
+            Self::BuiltinOutsidePrelude { name } => {
+                DiagnosticMessage::BuiltinOutsidePrelude { name: name.clone() }
+            }
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {
                 token: token.clone(),
@@ -843,7 +845,9 @@ impl WarningKind {
         match self {
             Self::DivisionByZero => DiagnosticMessage::DivideByZero,
             Self::IntegerOverflow => DiagnosticMessage::IntegerOverflow,
-            Self::BuiltinWillFail { name } => DiagnosticMessage::BuiltinWillFail { name: name.clone() },
+            Self::BuiltinWillFail { name } => {
+                DiagnosticMessage::BuiltinWillFail { name: name.clone() }
+            }
         }
     }
 
