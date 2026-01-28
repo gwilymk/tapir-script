@@ -164,6 +164,33 @@ pub struct SymTabVisitor<'input> {
     function_names: HashMap<&'input str, InternalOrExternalFunctionId>,
 }
 
+/// Helper to register a function in the declaration maps.
+/// Returns true if registration succeeded, false if a duplicate was found.
+fn register_function<'input>(
+    name: &'input str,
+    span: Span,
+    id: InternalOrExternalFunctionId,
+    function_declarations: &mut HashMap<&'input str, Span>,
+    functions_map: &mut HashMap<&'input str, InternalOrExternalFunctionId>,
+    function_names: &mut HashMap<InternalOrExternalFunctionId, &'input str>,
+    diagnostics: &mut Diagnostics,
+) -> bool {
+    if let Some(other_span) = function_declarations.insert(name, span) {
+        ErrorKind::FunctionAlreadyDeclared {
+            name: name.to_string(),
+        }
+        .at(span)
+        .label(other_span, DiagnosticMessage::OriginallyDeclaredHere)
+        .label(span, DiagnosticMessage::AlsoDeclaredHere)
+        .emit(diagnostics);
+        return false;
+    }
+
+    functions_map.insert(name, id);
+    function_names.insert(id, name);
+    true
+}
+
 impl<'input> SymTabVisitor<'input> {
     pub fn new(
         settings: &CompileSettings,
@@ -177,19 +204,15 @@ impl<'input> SymTabVisitor<'input> {
         for (i, function) in script.extern_functions.iter_mut().enumerate() {
             let fid = ExternalFunctionId(i);
             function.meta.set(fid);
-
-            if let Some(other_span) = function_declarations.insert(function.name, function.span) {
-                ErrorKind::FunctionAlreadyDeclared {
-                    name: function.name.to_string(),
-                }
-                .at(function.span)
-                .label(other_span, DiagnosticMessage::OriginallyDeclaredHere)
-                .label(function.span, DiagnosticMessage::AlsoDeclaredHere)
-                .emit(diagnostics);
-            }
-
-            functions_map.insert(function.name, InternalOrExternalFunctionId::External(fid));
-            function_names.insert(InternalOrExternalFunctionId::External(fid), function.name);
+            register_function(
+                function.name,
+                function.span,
+                InternalOrExternalFunctionId::External(fid),
+                &mut function_declarations,
+                &mut functions_map,
+                &mut function_names,
+                diagnostics,
+            );
         }
 
         let mut builtin_function_infos = HashMap::new();
@@ -208,14 +231,16 @@ impl<'input> SymTabVisitor<'input> {
                 continue;
             }
 
-            if let Some(other_span) = function_declarations.insert(function.name, function.span) {
-                ErrorKind::FunctionAlreadyDeclared {
-                    name: function.name.to_string(),
-                }
-                .at(function.span)
-                .label(other_span, DiagnosticMessage::OriginallyDeclaredHere)
-                .label(function.span, DiagnosticMessage::AlsoDeclaredHere)
-                .emit(diagnostics);
+            if !register_function(
+                function.name,
+                function.span,
+                InternalOrExternalFunctionId::Builtin(fid),
+                &mut function_declarations,
+                &mut functions_map,
+                &mut function_names,
+                diagnostics,
+            ) {
+                continue;
             }
 
             // Extract return type (builtins should have exactly one return type)
@@ -233,27 +258,20 @@ impl<'input> SymTabVisitor<'input> {
                     return_type,
                 },
             );
-
-            functions_map.insert(function.name, InternalOrExternalFunctionId::Builtin(fid));
-            function_names.insert(InternalOrExternalFunctionId::Builtin(fid), function.name);
         }
 
         for (i, function) in script.functions.iter_mut().enumerate() {
             let fid = FunctionId(i);
             function.meta.set(fid);
-
-            if let Some(other_span) = function_declarations.insert(function.name, function.span) {
-                ErrorKind::FunctionAlreadyDeclared {
-                    name: function.name.to_string(),
-                }
-                .at(function.span)
-                .label(other_span, DiagnosticMessage::OriginallyDeclaredHere)
-                .label(function.span, DiagnosticMessage::AlsoDeclaredHere)
-                .emit(diagnostics);
-            }
-
-            functions_map.insert(function.name, InternalOrExternalFunctionId::Internal(fid));
-            function_names.insert(InternalOrExternalFunctionId::Internal(fid), function.name);
+            register_function(
+                function.name,
+                function.span,
+                InternalOrExternalFunctionId::Internal(fid),
+                &mut function_declarations,
+                &mut functions_map,
+                &mut function_names,
+                diagnostics,
+            );
         }
 
         // Extract properties from AST property declarations
