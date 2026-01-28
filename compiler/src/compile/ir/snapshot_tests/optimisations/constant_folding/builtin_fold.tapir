@@ -1,0 +1,16 @@
+# constant_folding
+
+builtin(0) fn sin(x: fix) -> fix;
+builtin(1) fn cos(x: fix) -> fix;
+builtin(2) fn sqrt(x: fix) -> fix;
+builtin(3) fn floor(x: fix) -> int;
+
+property prop: int;
+
+# These should all be folded to constants
+var s = sin(0.0);
+var c = cos(0.0);
+var r = sqrt(4.0);
+var f = floor(3.7);
+
+prop = f;

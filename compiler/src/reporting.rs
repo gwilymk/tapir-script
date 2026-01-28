@@ -99,6 +99,7 @@ pub enum DiagnosticMessage {
     OperationOccursHere,
     IntegerOverflow,
     CausesOverflow,
+    BuiltinWillFail { name: String },
     EventFunctionsShouldNotHaveAReturnType {
         function_name: String,
     },
@@ -296,6 +297,9 @@ impl DiagnosticMessage {
             DiagnosticMessage::OperationOccursHere => "This operation will fail".into(),
             DiagnosticMessage::IntegerOverflow => "Integer overflow detected".into(),
             DiagnosticMessage::CausesOverflow => "This causes overflow".into(),
+            DiagnosticMessage::BuiltinWillFail { name } => {
+                format!("Call to '{name}' will fail at runtime")
+            }
             DiagnosticMessage::EventFunctionsShouldNotHaveAReturnType { .. } => {
                 "Event handlers should not have a return type".into()
             }
@@ -812,6 +816,8 @@ pub enum WarningKind {
     DivisionByZero,
     /// Integer overflow detected at compile time.
     IntegerOverflow,
+    /// Builtin function call will fail at runtime (e.g., sqrt of negative).
+    BuiltinWillFail { name: String },
 }
 
 impl WarningKind {
@@ -820,6 +826,7 @@ impl WarningKind {
         match self {
             Self::DivisionByZero => "W0001",
             Self::IntegerOverflow => "W0002",
+            Self::BuiltinWillFail { .. } => "W0003",
         }
     }
 
@@ -828,6 +835,7 @@ impl WarningKind {
         match self {
             Self::DivisionByZero => DiagnosticMessage::DivideByZero,
             Self::IntegerOverflow => DiagnosticMessage::IntegerOverflow,
+            Self::BuiltinWillFail { name } => DiagnosticMessage::BuiltinWillFail { name: name.clone() },
         }
     }
 

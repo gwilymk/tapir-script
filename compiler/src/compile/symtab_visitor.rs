@@ -2,7 +2,7 @@ use std::{borrow::Cow, collections::HashMap};
 
 use crate::{
     ast::{
-        Expression, ExpressionKind, ExternalFunctionId, Function, FunctionId,
+        BuiltinFunctionId, Expression, ExpressionKind, ExternalFunctionId, Function, FunctionId,
         InternalOrExternalFunctionId, PropertyDeclaration, Script, Statement, StatementKind,
         SymbolId,
     },
@@ -50,6 +50,13 @@ pub struct GlobalInfo {
     pub ty: Type,
     pub initial_value: i32,
     pub span: Span,
+}
+
+/// Metadata about a declared builtin function.
+#[derive(Clone, Debug)]
+pub struct BuiltinFunctionInfo {
+    pub name: String,
+    pub return_type: Type,
 }
 
 use crate::ast::GlobalDeclaration;
@@ -199,6 +206,8 @@ impl<'input> SymTabVisitor<'input> {
             function_names.insert(InternalOrExternalFunctionId::External(fid), function.name);
         }
 
+        let mut builtin_function_infos = HashMap::new();
+
         for function in script.builtin_functions.iter_mut() {
             let fid = function.builtin_id;
             function.meta.set(fid);
@@ -212,6 +221,22 @@ impl<'input> SymTabVisitor<'input> {
                 .label(function.span, DiagnosticMessage::AlsoDeclaredHere)
                 .emit(diagnostics);
             }
+
+            // Extract return type (builtins should have exactly one return type)
+            let return_type = function
+                .return_type
+                .types
+                .first()
+                .map(|t| t.t)
+                .unwrap_or(Type::Error);
+
+            builtin_function_infos.insert(
+                fid,
+                BuiltinFunctionInfo {
+                    name: function.name.to_string(),
+                    return_type,
+                },
+            );
 
             functions_map.insert(function.name, InternalOrExternalFunctionId::Builtin(fid));
             function_names.insert(InternalOrExternalFunctionId::Builtin(fid), function.name);
@@ -244,7 +269,7 @@ impl<'input> SymTabVisitor<'input> {
         );
 
         let mut visitor = Self {
-            symtab: SymTab::new(&properties, function_names),
+            symtab: SymTab::new(&properties, function_names, builtin_function_infos),
             symbol_names: NameTable::new(&properties),
             function_names: functions_map,
         };
@@ -556,12 +581,15 @@ pub struct SymTab<'input> {
 
     globals: Vec<GlobalInfo>,
     global_names: HashMap<Cow<'input, str>, GlobalId>,
+
+    builtin_functions: HashMap<BuiltinFunctionId, BuiltinFunctionInfo>,
 }
 
 impl<'input> SymTab<'input> {
     fn new(
         properties: &[Property],
         function_names: HashMap<InternalOrExternalFunctionId, &'input str>,
+        builtin_functions: HashMap<BuiltinFunctionId, BuiltinFunctionInfo>,
     ) -> Self {
         let properties = properties.to_vec();
         let symbol_names = properties
@@ -575,6 +603,7 @@ impl<'input> SymTab<'input> {
             function_names,
             globals: vec![],
             global_names: HashMap::new(),
+            builtin_functions,
         }
     }
 
@@ -621,6 +650,13 @@ impl<'input> SymTab<'input> {
         self.function_names
             .get(&function_id)
             .expect("Should have a function name if you have an InternalOrExternalFunctionId")
+    }
+
+    pub(crate) fn builtin_function_info(
+        &self,
+        builtin_id: BuiltinFunctionId,
+    ) -> Option<&BuiltinFunctionInfo> {
+        self.builtin_functions.get(&builtin_id)
     }
 
     pub(crate) fn span_for_symbol(&self, symbol_id: SymbolId) -> Span {

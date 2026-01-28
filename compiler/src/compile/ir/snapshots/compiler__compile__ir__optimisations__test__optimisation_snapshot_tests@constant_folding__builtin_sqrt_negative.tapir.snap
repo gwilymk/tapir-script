@@ -1,0 +1,45 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/builtin_sqrt_negative.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.8 = fix 0
+temp.9 = fix 1
+temp.10 = temp.8 - temp.9
+temp.11 = builtin sqrt(temp.10)
+r.12 = temp.11
+temp.13 = r.12
+temp.14 = temp.13
+storeprop temp.14, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.8 = fix 0
+temp.9 = fix 1
+temp.10 = fix -1
+temp.11 = builtin sqrt(temp.10)
+r.12 = temp.11
+temp.13 = r.12
+temp.14 = temp.13
+storeprop temp.14, 0
+return 
+
+
+----------- warnings -------------
+[W0003] Warning: Call to 'sqrt' will fail at runtime
+   ╭─[ builtin_sqrt_negative.tapir:8:9 ]
+   │
+ 8 │ var r = sqrt(0.0 - 1.0);
+   │         ───────┬───────  
+   │                ╰───────── This operation will fail
+───╯

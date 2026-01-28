@@ -1,0 +1,49 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/builtin_fold.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.15 = fix 0
+temp.16 = builtin sin(temp.15)
+s.17 = temp.16
+temp.18 = fix 0
+temp.19 = builtin cos(temp.18)
+c.20 = temp.19
+temp.21 = fix 4
+temp.22 = builtin sqrt(temp.21)
+r.23 = temp.22
+temp.24 = fix 3.69921875
+temp.25 = builtin floor(temp.24)
+f.26 = temp.25
+temp.27 = f.26
+temp.28 = temp.27
+storeprop temp.28, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.15 = fix 0
+temp.16 = fix 0
+s.17 = temp.16
+temp.18 = fix 0
+temp.19 = fix 1
+c.20 = temp.19
+temp.21 = fix 4
+temp.22 = fix 2
+r.23 = temp.22
+temp.24 = fix 3.69921875
+temp.25 = int 3
+f.26 = temp.25
+temp.27 = f.26
+temp.28 = temp.27
+storeprop temp.28, 0
+return

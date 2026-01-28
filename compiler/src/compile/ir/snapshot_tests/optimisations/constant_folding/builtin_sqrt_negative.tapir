@@ -1,0 +1,10 @@
+# constant_folding
+
+builtin(2) fn sqrt(x: fix) -> fix;
+
+property prop: fix;
+
+# This should emit W0003 warning - sqrt of negative will fail at runtime
+var r = sqrt(0.0 - 1.0);
+
+prop = r;

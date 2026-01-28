@@ -13,7 +13,10 @@ use crate::{
     },
     reporting::{DiagnosticMessage, Diagnostics, WarningKind},
     tokens::Span,
+    types::Type,
 };
+
+use builtins::Fix;
 
 /// Errors that can occur during constant folding.
 #[derive(Debug, Clone, Copy)]
@@ -69,6 +72,71 @@ pub fn constant_folding(
         while index < instrs.len() {
             let instr = &mut instrs[index];
             index += 1;
+
+            // Handle CallBuiltin folding for pure builtins
+            if let TapIr::CallBuiltin {
+                target,
+                f: builtin_id,
+                args,
+            } = instr
+            {
+                // Only fold pure builtins (id >= 0)
+                if !builtin_id.is_pure() {
+                    continue;
+                }
+
+                // Check if all arguments are constants
+                let arg_constants: Vec<_> = args
+                    .iter()
+                    .filter_map(|a| constants.get(a).copied())
+                    .collect();
+                if arg_constants.len() != args.len() {
+                    continue;
+                }
+
+                // Convert constants to i32 values
+                let arg_values: Vec<i32> = arg_constants
+                    .iter()
+                    .map(|c| match c {
+                        Constant::Int(i) => *i,
+                        Constant::Fix(f) => f.to_raw(),
+                        Constant::Bool(b) => *b as i32,
+                    })
+                    .collect();
+
+                // Look up the builtin info from the symtab
+                let Some(builtin_info) = symtab.builtin_function_info(*builtin_id) else {
+                    continue;
+                };
+
+                // Try to execute the builtin at compile time
+                match builtins::execute_pure(builtin_id.0, &arg_values) {
+                    Some(Ok(result)) => {
+                        // Determine result type based on the declared return type
+                        let constant = match builtin_info.return_type {
+                            Type::Fix => Constant::Fix(Fix::from_raw(result)),
+                            Type::Int | Type::Bool | Type::Error => Constant::Int(result),
+                        };
+                        *instr = TapIr::Constant(*target, constant);
+                        did_something = OptimisationResult::DidSomething;
+                    }
+                    Some(Err(_)) => {
+                        // Builtin will fail at runtime - emit warning
+                        if let Some(span) = symbol_spans.get(*target) {
+                            WarningKind::BuiltinWillFail {
+                                name: builtin_info.name.clone(),
+                            }
+                            .at(span)
+                            .label(span, DiagnosticMessage::OperationOccursHere)
+                            .emit(diagnostics);
+                        }
+                    }
+                    None => {
+                        // Unknown builtin - shouldn't happen
+                    }
+                }
+                continue;
+            }
 
             let TapIr::BinOp {
                 target,
