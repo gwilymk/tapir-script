@@ -173,19 +173,14 @@ fn extract_from_statements(
             StatementKind::Loop { block } | StatementKind::Block { block } => {
                 extract_from_statements(block, symtab, type_table, function_signatures, hover_info);
             }
-            StatementKind::Call { name, arguments } => {
-                if let Some(sig) = function_signatures.get(name) {
-                    hover_info.insert(stmt.span, sig.clone());
-                }
-                for expr in arguments {
-                    extract_from_expression(
-                        expr,
-                        symtab,
-                        type_table,
-                        function_signatures,
-                        hover_info,
-                    );
-                }
+            StatementKind::Expression { expression } => {
+                extract_from_expression(
+                    expression,
+                    symtab,
+                    type_table,
+                    function_signatures,
+                    hover_info,
+                );
             }
             StatementKind::Spawn { name, arguments } => {
                 if let Some(sig) = function_signatures.get(name) {

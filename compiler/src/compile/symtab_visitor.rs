@@ -556,8 +556,10 @@ impl<'input> SymTabVisitor<'input> {
                 StatementKind::Block { block } => {
                     self.visit_block(block, diagnostics);
                 }
-                StatementKind::Call { arguments, name }
-                | StatementKind::Spawn { arguments, name } => {
+                StatementKind::Expression { expression } => {
+                    self.visit_expr(expression, diagnostics);
+                }
+                StatementKind::Spawn { arguments, name } => {
                     if let Some(function) = self.function_names.get(*name) {
                         statement.meta.set(*function);
                     } else {

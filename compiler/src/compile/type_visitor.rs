@@ -916,15 +916,23 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
 
                     return BlockAnalysisResult::AllBranchesReturn;
                 }
-                ast::StatementKind::Call { name, arguments } => {
-                    self.type_for_call(
-                        statement.span,
-                        name,
-                        statement.meta.get().copied(),
-                        arguments,
-                        symtab,
-                        diagnostics,
-                    );
+                ast::StatementKind::Expression { expression } => {
+                    // Type check the expression; the result is discarded.
+                    // For call expressions, use type_for_call directly to avoid
+                    // the "must return one value" check (which only applies when
+                    // the result is actually used).
+                    if let ast::ExpressionKind::Call { name, arguments } = &mut expression.kind {
+                        self.type_for_call(
+                            expression.span,
+                            name,
+                            expression.meta.get().copied(),
+                            arguments,
+                            symtab,
+                            diagnostics,
+                        );
+                    } else {
+                        self.type_for_expression(expression, symtab, diagnostics);
+                    }
                 }
                 ast::StatementKind::Spawn { name, arguments } => {
                     self.type_for_call(

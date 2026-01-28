@@ -14,24 +14,30 @@ Script(
       statements: [
         Statement(
           span: "[span]",
-          kind: Call(
-            name: "do_something",
-            arguments: [
-              Expression(
-                span: "[span]",
-                kind: Integer(3),
-                meta: {},
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: Call(
+                name: "do_something",
+                arguments: [
+                  Expression(
+                    span: "[span]",
+                    kind: Integer(3),
+                    meta: {},
+                  ),
+                  Expression(
+                    span: "[span]",
+                    kind: Fix,
+                    meta: {},
+                  ),
+                ],
               ),
-              Expression(
-                span: "[span]",
-                kind: Fix,
-                meta: {},
-              ),
-            ],
+              meta: {
+                "compiler::ast::InternalOrExternalFunctionId": "External(ExternalFunctionId(0))",
+              },
+            ),
           ),
-          meta: {
-            "compiler::ast::InternalOrExternalFunctionId": "External(ExternalFunctionId(0))",
-          },
+          meta: {},
         ),
       ],
       arguments: [],

@@ -31,6 +31,8 @@ return
 fn test_constructor_discarded() -> 
 
 ---- block 0 ----
-temp.15 = int 1
-temp.16 = int 2
+temp.18 = int 1
+temp.19 = int 2
+temp.15.x.16 = temp.18
+temp.15.y.17 = temp.19
 return

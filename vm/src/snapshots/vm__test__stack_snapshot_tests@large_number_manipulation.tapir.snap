@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/vm/src/lib.rs
+source: vm/src/lib.rs
 expression: stack_at_waits
-input_file: crates/tapir-script/vm/src/snapshot_tests/stack/large_number_manipulation.tapir
+input_file: vm/src/snapshot_tests/stack/large_number_manipulation.tapir
 ---
 [
   ([
@@ -16,7 +16,8 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/large_number_manipul
     [
       -1,
       6400,
-      33554440,
+      0,
+      50331656,
       6400,
     ],
   ], PropObj(

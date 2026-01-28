@@ -330,9 +330,10 @@ pub enum StatementKind<'input> {
         block: Vec<Statement<'input>>,
     },
 
-    Call {
-        name: &'input str,
-        arguments: Vec<Expression<'input>>,
+    /// An expression used as a statement (e.g., function call `foo();`)
+    /// The expression is evaluated for its side effects and the result is discarded.
+    Expression {
+        expression: Box<Expression<'input>>,
     },
     Spawn {
         name: &'input str,

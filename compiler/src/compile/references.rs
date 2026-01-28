@@ -80,7 +80,10 @@ fn extract_references_from_statements(
             StatementKind::Loop { block } | StatementKind::Block { block } => {
                 extract_references_from_statements(block, symtab, function_spans, references);
             }
-            StatementKind::Call { name, arguments } | StatementKind::Spawn { name, arguments } => {
+            StatementKind::Expression { expression } => {
+                extract_references_from_expression(expression, symtab, function_spans, references);
+            }
+            StatementKind::Spawn { name, arguments } => {
                 if let Some(&def_span) = function_spans.get(name) {
                     references.insert(stmt.span, def_span);
                 }

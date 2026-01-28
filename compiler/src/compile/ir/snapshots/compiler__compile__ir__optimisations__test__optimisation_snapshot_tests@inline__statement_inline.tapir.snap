@@ -1,25 +1,25 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/inline/statement_inline.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/statement_inline.tapir
 ---
 ----------- before -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.5 = int 6
-foo(temp.5)
+temp.6 = int 6
+temp.7 = foo(temp.6)
 return 
 
 =======================
 fn foo(x.0) -> int
 
 ---- block 0 ----
-temp.6 = x.0
-temp.7 = int 5
-temp.8 = temp.6 + temp.7
-return temp.8
+temp.8 = x.0
+temp.9 = int 5
+temp.10 = temp.8 + temp.9
+return temp.10
 
 
 ----------- inline_small_functions -------------
@@ -27,16 +27,18 @@ return temp.8
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.5 = int 6
+temp.6 = int 6
 jmp 2
 
 ---- block 2 ----
-temp.9 = temp.5
-temp.10 = int 5
-temp.11 = temp.9 + temp.10
+temp.12 = temp.6
+temp.13 = int 5
+temp.14 = temp.12 + temp.13
 jmp 4
 
 ---- block 4 ----
+temp.11 = φ(temp.14 from 2)
+temp.7 = temp.11
 jmp 1
 
 ---- block 1 ----
@@ -46,7 +48,7 @@ return
 fn foo(x.0) -> int
 
 ---- block 0 ----
-temp.6 = x.0
-temp.7 = int 5
-temp.8 = temp.6 + temp.7
-return temp.8
+temp.8 = x.0
+temp.9 = int 5
+temp.10 = temp.8 + temp.9
+return temp.10

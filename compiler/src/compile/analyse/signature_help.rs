@@ -112,7 +112,10 @@ fn extract_from_statements(
             StatementKind::Loop { block } | StatementKind::Block { block } => {
                 extract_from_statements(block, signatures, call_sites);
             }
-            StatementKind::Call { name, arguments } | StatementKind::Spawn { name, arguments } => {
+            StatementKind::Expression { expression } => {
+                extract_from_expression(expression, signatures, call_sites);
+            }
+            StatementKind::Spawn { name, arguments } => {
                 if signatures.contains_key(*name) {
                     let argument_start_offsets: Vec<usize> =
                         arguments.iter().map(|arg| arg.span.start()).collect();

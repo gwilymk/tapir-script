@@ -31,7 +31,7 @@ fn visit_block_in_loop(
             | StatementKind::Wait
             | StatementKind::Nop
             | StatementKind::Trigger { .. }
-            | StatementKind::Call { .. }
+            | StatementKind::Expression { .. }
             | StatementKind::Spawn { .. } => {}
             StatementKind::Return { .. } => {
                 // Not returning to ensure that we catch continues and break outside of loops

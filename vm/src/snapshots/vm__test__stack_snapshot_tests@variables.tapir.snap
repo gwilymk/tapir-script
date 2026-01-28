@@ -1,18 +1,21 @@
 ---
-source: crates/tapir-script/vm/src/lib.rs
+source: vm/src/lib.rs
 expression: stack_at_waits
-input_file: crates/tapir-script/vm/src/snapshot_tests/stack/variables.tapir
+input_file: vm/src/snapshot_tests/stack/variables.tapir
 ---
 [
   ([
     [
       -1,
       58,
+      0,
       55,
+      0,
       58,
+      0,
       55,
       3,
-      100663307,
+      150994955,
       58,
     ],
   ], PropObj(
@@ -22,11 +25,14 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/variables.tapir
     [
       -1,
       58,
+      0,
       58,
+      0,
       55,
+      0,
       55,
       3,
-      100663316,
+      150994964,
       58,
     ],
   ], PropObj(
@@ -36,11 +42,14 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/variables.tapir
     [
       -1,
       113,
+      0,
       58,
+      0,
       55,
+      0,
       55,
       58,
-      100663325,
+      150994973,
       58,
     ],
   ], PropObj(

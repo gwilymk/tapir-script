@@ -197,7 +197,12 @@ StatementKind: StatementKind<'input> = {
     },
     loop <block: Block> => StatementKind::Loop { <> },
 
-    <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Call { <> },
+    // Expression statement: restricted to call expressions to avoid grammar conflicts
+    // with assignment targets. The AST uses a general Expression variant for future extensibility.
+    <start: @L> <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" =>
+        StatementKind::Expression {
+            expression: Box::new(ExpressionKind::Call { name, arguments }.with_span(file_id, start, end))
+        },
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
 
     spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Spawn { <> },

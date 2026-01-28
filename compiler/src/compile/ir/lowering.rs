@@ -445,51 +445,10 @@ impl<'a> BlockVisitor<'a> {
 
                 self.finalize_block(BlockExitInstr::JumpToBlock(loop_entry), Some(loop_exit));
             }
-            ast::StatementKind::Call { arguments, .. } => {
-                let args = arguments
-                    .iter()
-                    .map(|a| {
-                        let symbol = symtab.new_temporary();
-                        self.blocks_for_expression(a, symbol, symtab);
-                        symbol
-                    })
-                    .collect();
-
-                let f: InternalOrExternalFunctionId = *statement
-                    .meta
-                    .get()
-                    .expect("Should have function IDs by now");
-
-                match f {
-                    InternalOrExternalFunctionId::Internal(function_id) => {
-                        self.current_block.push(TapIr::Call {
-                            target: Box::new([]),
-                            f: function_id,
-                            args,
-                        });
-                    }
-                    InternalOrExternalFunctionId::External(external_function_id) => {
-                        self.current_block.push(TapIr::CallExternal {
-                            target: Box::new([]),
-                            f: external_function_id,
-                            args,
-                        });
-                    }
-                    InternalOrExternalFunctionId::Builtin(builtin_id) => {
-                        // Builtin called as statement - discard result
-                        let target = symtab.new_temporary();
-                        self.current_block.push(TapIr::CallBuiltin {
-                            target,
-                            f: builtin_id,
-                            args,
-                        });
-                    }
-                    InternalOrExternalFunctionId::StructConstructor(_) => {
-                        // Struct constructor called as statement - discard result.
-                        // Arguments were already evaluated into temporaries above,
-                        // so we don't need to emit any IR here.
-                    }
-                }
+            ast::StatementKind::Expression { expression } => {
+                // Evaluate the expression for side effects, discard the result
+                let target = symtab.new_temporary();
+                self.blocks_for_expression(expression, target, symtab);
             }
             ast::StatementKind::Spawn { arguments, .. } => {
                 let args = arguments
