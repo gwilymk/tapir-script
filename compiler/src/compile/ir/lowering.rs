@@ -147,6 +147,10 @@ impl BlockVisitor {
                                 args,
                             });
                         }
+                        InternalOrExternalFunctionId::StructConstructor(_) => {
+                            // TODO: Implement struct constructor IR in 008b
+                            panic!("Struct constructor IR not yet implemented");
+                        }
                     }
 
                     temps
@@ -300,6 +304,11 @@ impl BlockVisitor {
                             args,
                         });
                     }
+                    InternalOrExternalFunctionId::StructConstructor(_) => {
+                        // Struct constructor called as statement - discard result
+                        // TODO: Implement struct constructor IR in 008b
+                        panic!("Struct constructor IR not yet implemented");
+                    }
                 }
             }
             ast::StatementKind::Spawn { arguments, .. } => {
@@ -329,6 +338,9 @@ impl BlockVisitor {
                     }
                     InternalOrExternalFunctionId::Builtin(_) => {
                         panic!("Shouldn't be able to spawn a builtin function")
+                    }
+                    InternalOrExternalFunctionId::StructConstructor(_) => {
+                        panic!("Shouldn't be able to spawn a struct constructor")
                     }
                 }
             }
@@ -525,6 +537,10 @@ impl BlockVisitor {
                             f: builtin_id,
                             args,
                         });
+                    }
+                    InternalOrExternalFunctionId::StructConstructor(_) => {
+                        // TODO: Implement struct constructor IR in 008b
+                        panic!("Struct constructor IR not yet implemented");
                     }
                 }
             }

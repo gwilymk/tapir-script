@@ -9,7 +9,7 @@ use crate::tokens::Span;
 /// This is an index into the StructRegistry. Struct types are identified
 /// by their ID rather than by name, enabling nominal typing (two structs
 /// with identical fields are distinct types).
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, PartialOrd, Ord)]
 pub struct StructId(pub u32);
 
 /// Definition of a struct type.
@@ -54,6 +54,11 @@ impl StructRegistry {
     /// Get a mutable reference to a struct definition by ID.
     pub fn get_mut(&mut self, id: StructId) -> &mut StructDef {
         &mut self.structs[id.0 as usize]
+    }
+
+    /// Iterate over all struct definitions.
+    pub fn iter(&self) -> impl Iterator<Item = &StructDef> {
+        self.structs.iter()
     }
 }
 

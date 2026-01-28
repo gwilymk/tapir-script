@@ -1,0 +1,8 @@
+# Basic struct constructor
+struct Point {
+    x: int,
+    y: int,
+}
+
+var p = Point(1, 2);
+var p2: Point = Point(3, 4);

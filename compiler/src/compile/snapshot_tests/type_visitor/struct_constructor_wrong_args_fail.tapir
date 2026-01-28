@@ -1,0 +1,11 @@
+# Wrong number of arguments
+struct Point {
+    x: int,
+    y: int,
+}
+
+var p1 = Point(1);
+var p2 = Point(1, 2, 3);
+
+# Wrong argument types
+var p3 = Point(true, false);

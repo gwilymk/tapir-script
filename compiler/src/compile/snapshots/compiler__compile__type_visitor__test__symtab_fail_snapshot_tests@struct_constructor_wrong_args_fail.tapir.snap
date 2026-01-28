@@ -1,0 +1,53 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/struct_constructor_wrong_args_fail.tapir
+---
+[E0013] Error: Incorrect number of argumets for function Point, expected 2 arguments but got 1.
+   ╭─[ struct_constructor_wrong_args_fail.tapir:7:10 ]
+   │
+ 2 │ ╭─▶ struct Point {
+   ┆ ┆   
+ 5 │ ├─▶ }
+   │ │       
+   │ ╰─────── Expected 2 arguments
+   │ 
+ 7 │     var p1 = Point(1);
+   │              ────┬───  
+   │                  ╰───── Got 1 arguments
+───╯
+[E0013] Error: Incorrect number of argumets for function Point, expected 2 arguments but got 3.
+   ╭─[ struct_constructor_wrong_args_fail.tapir:8:10 ]
+   │
+ 2 │ ╭─▶ struct Point {
+   ┆ ┆   
+ 5 │ ├─▶ }
+   │ │       
+   │ ╰─────── Expected 2 arguments
+   │ 
+ 8 │     var p2 = Point(1, 2, 3);
+   │              ───────┬──────  
+   │                     ╰──────── Got 3 arguments
+───╯
+[E0004] Error: Incorrect type for argument 'x' of function 'Point', expected int but got bool
+    ╭─[ struct_constructor_wrong_args_fail.tapir:11:16 ]
+    │
+  3 │     x: int,
+    │     ┬  
+    │     ╰── Expected int
+    │ 
+ 11 │ var p3 = Point(true, false);
+    │                ──┬─  
+    │                  ╰─── Passing bool
+────╯
+[E0004] Error: Incorrect type for argument 'y' of function 'Point', expected int but got bool
+    ╭─[ struct_constructor_wrong_args_fail.tapir:11:22 ]
+    │
+  4 │     y: int,
+    │     ┬  
+    │     ╰── Expected int
+    │ 
+ 11 │ var p3 = Point(true, false);
+    │                      ──┬──  
+    │                        ╰──── Passing bool
+────╯

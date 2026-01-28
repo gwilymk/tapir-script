@@ -11,7 +11,7 @@ use crate::{
     },
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
-    types::Type,
+    types::{StructId, StructRegistry, Type},
 };
 
 use super::{
@@ -61,9 +61,35 @@ impl<'input> TypeVisitor<'input> {
         functions: &[Function<'input>],
         extern_functions: &[ExternFunctionDefinition<'input>],
         builtin_functions: &[BuiltinFunction<'input>],
+        struct_registry: &StructRegistry,
         symtab: &SymTab<'input>,
     ) -> Self {
         let mut resolved_functions = HashMap::new();
+
+        // Register struct constructors
+        for (i, struct_def) in struct_registry.iter().enumerate() {
+            let struct_id = StructId(i as u32);
+            let args = struct_def
+                .fields
+                .iter()
+                .map(|field| FunctionArgumentInfo {
+                    name: Cow::Owned(field.name.clone()),
+                    ty: field.ty,
+                    span: field.span,
+                })
+                .collect();
+
+            resolved_functions.insert(
+                InternalOrExternalFunctionId::StructConstructor(struct_id),
+                FunctionInfo {
+                    name: Box::leak(struct_def.name.clone().into_boxed_str()),
+                    span: struct_def.span,
+                    args,
+                    rets: vec![Type::Struct(struct_id)],
+                    modifiers: FunctionModifiers::default(),
+                },
+            );
+        }
 
         for function in functions {
             let args = function
@@ -1063,12 +1089,14 @@ mod test {
                 available_fields: None,
                 enable_optimisations: false,
             };
-            let mut symtab_visitor = SymTabVisitor::new(&settings, &mut script, &mut diagnostics);
+            let mut symtab_visitor =
+                SymTabVisitor::new(&settings, &mut script, &struct_registry, &mut diagnostics);
 
             let mut type_visitor = TypeVisitor::new(
                 &script.functions,
                 &script.extern_functions,
                 &script.builtin_functions,
+                &struct_registry,
                 symtab_visitor.get_symtab(),
             );
 
@@ -1138,11 +1166,13 @@ mod test {
                 available_fields: None,
                 enable_optimisations: false,
             };
-            let mut symtab_visitor = SymTabVisitor::new(&settings, &mut script, &mut diagnostics);
+            let mut symtab_visitor =
+                SymTabVisitor::new(&settings, &mut script, &struct_registry, &mut diagnostics);
             let mut type_visitor = TypeVisitor::new(
                 &script.functions,
                 &script.extern_functions,
                 &script.builtin_functions,
+                &struct_registry,
                 symtab_visitor.get_symtab(),
             );
 

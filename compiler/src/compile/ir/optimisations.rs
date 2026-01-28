@@ -316,6 +316,7 @@ mod test {
         lexer::Lexer,
         reporting::Diagnostics,
         tokens::FileId,
+        types::StructRegistry,
     };
 
     use super::*;
@@ -338,12 +339,14 @@ mod test {
                 enable_optimisations: true,
             };
 
+            let struct_registry = StructRegistry::default();
             let mut symtab_visitor =
-                SymTabVisitor::new(&compile_settings, &mut script, &mut diagnostics);
+                SymTabVisitor::new(&compile_settings, &mut script, &struct_registry, &mut diagnostics);
             let mut type_visitor = TypeVisitor::new(
                 &script.functions,
                 &script.extern_functions,
                 &script.builtin_functions,
+                &struct_registry,
                 symtab_visitor.get_symtab(),
             );
 

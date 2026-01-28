@@ -2,7 +2,7 @@ use std::{fmt::Display, iter};
 
 use crate::{
     tokens::{FileId, Span},
-    types::Type,
+    types::{StructId, Type},
 };
 
 pub(crate) use metadata::Metadata;
@@ -46,6 +46,8 @@ pub enum InternalOrExternalFunctionId {
     Internal(FunctionId),
     External(ExternalFunctionId),
     Builtin(BuiltinFunctionId),
+    /// Implicit constructor function for a struct type
+    StructConstructor(StructId),
 }
 
 pub type Fix = agb_fixnum::Num<i32, 8>;

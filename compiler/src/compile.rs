@@ -46,7 +46,7 @@ pub fn analyse_ast<'input>(
     struct_visitor::resolve_all_types(ast, &struct_names, diagnostics);
 
     // Phase 1: Symbol resolution (all functions)
-    let mut symtab_visitor = SymTabVisitor::new(settings, ast, diagnostics);
+    let mut symtab_visitor = SymTabVisitor::new(settings, ast, &struct_registry, diagnostics);
     for function in &mut ast.functions {
         symtab_visitor.visit_function(function, diagnostics);
     }
@@ -61,6 +61,7 @@ pub fn analyse_ast<'input>(
         &ast.functions,
         &ast.extern_functions,
         &ast.builtin_functions,
+        &struct_registry,
         symtab_visitor.get_symtab(),
     );
     for function in &mut ast.functions {

@@ -9,7 +9,7 @@ use crate::{
     prelude::PRELUDE_FILE_ID,
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
-    types::Type,
+    types::{StructId, StructRegistry, Type},
 };
 
 /// Stores resolved symbol IDs for function arguments.
@@ -195,11 +195,30 @@ impl<'input> SymTabVisitor<'input> {
     pub fn new(
         settings: &CompileSettings,
         script: &mut Script<'input>,
+        struct_registry: &StructRegistry,
         diagnostics: &mut Diagnostics,
     ) -> Self {
         let mut function_declarations = HashMap::new();
         let mut function_names = HashMap::new();
         let mut functions_map = HashMap::new();
+
+        // Register struct constructors (implicit functions for each struct)
+        for (i, struct_def) in struct_registry.iter().enumerate() {
+            let struct_id = StructId(i as u32);
+            register_function(
+                // Use the struct name as the constructor function name
+                // This is a bit hacky since we need &'input str but struct_def.name is String.
+                // We'll use a leaked string for now - this is fine since compilation is short-lived.
+                // A better solution would be to store the name reference in the registry.
+                Box::leak(struct_def.name.clone().into_boxed_str()),
+                struct_def.span,
+                InternalOrExternalFunctionId::StructConstructor(struct_id),
+                &mut function_declarations,
+                &mut functions_map,
+                &mut function_names,
+                diagnostics,
+            );
+        }
 
         for (i, function) in script.extern_functions.iter_mut().enumerate() {
             let fid = ExternalFunctionId(i);
@@ -693,12 +712,14 @@ mod test {
 
             let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
 
+            let struct_registry = StructRegistry::default();
             let mut visitor = SymTabVisitor::new(
                 &CompileSettings {
                     available_fields: None,
                     enable_optimisations: false,
                 },
                 &mut script,
+                &struct_registry,
                 &mut diagnostics,
             );
 
@@ -727,12 +748,14 @@ mod test {
                 .parse(FileId::new(0), &mut diagnostics, lexer)
                 .unwrap();
 
+            let struct_registry = StructRegistry::default();
             let mut visitor = SymTabVisitor::new(
                 &CompileSettings {
                     available_fields: None,
                     enable_optimisations: false,
                 },
                 &mut script,
+                &struct_registry,
                 &mut diagnostics,
             );
 
@@ -761,6 +784,7 @@ mod test {
             .parse(FileId::new(0), &mut diagnostics, lexer)
             .unwrap();
 
+        let struct_registry = StructRegistry::default();
         // Only 'health' and 'position' exist in the struct, 'nonexistent' doesn't
         let _visitor = SymTabVisitor::new(
             &CompileSettings {
@@ -768,6 +792,7 @@ mod test {
                 enable_optimisations: false,
             },
             &mut script,
+            &struct_registry,
             &mut diagnostics,
         );
 

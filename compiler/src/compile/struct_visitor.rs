@@ -181,6 +181,46 @@ pub fn resolve_all_types<'input>(
             resolve_type_in_place(ty, struct_names, diagnostics);
         }
     }
+
+    // Resolve variable declaration types in function bodies
+    for function in &mut script.functions {
+        resolve_types_in_statements(&mut function.statements, struct_names, diagnostics);
+    }
+}
+
+fn resolve_types_in_statements<'input>(
+    statements: &mut [crate::ast::Statement<'input>],
+    struct_names: &HashMap<&'input str, StructId>,
+    diagnostics: &mut Diagnostics,
+) {
+    use crate::ast::StatementKind;
+
+    for statement in statements {
+        match &mut statement.kind {
+            StatementKind::VariableDeclaration { idents, .. } => {
+                for ident in idents {
+                    if let Some(ref mut ty) = ident.ty {
+                        resolve_type_in_place(ty, struct_names, diagnostics);
+                    }
+                }
+            }
+            StatementKind::Block { block } => {
+                resolve_types_in_statements(block, struct_names, diagnostics);
+            }
+            StatementKind::If {
+                true_block,
+                false_block,
+                ..
+            } => {
+                resolve_types_in_statements(true_block, struct_names, diagnostics);
+                resolve_types_in_statements(false_block, struct_names, diagnostics);
+            }
+            StatementKind::Loop { block, .. } => {
+                resolve_types_in_statements(block, struct_names, diagnostics);
+            }
+            _ => {}
+        }
+    }
 }
 
 /// Resolve a type annotation in place.
