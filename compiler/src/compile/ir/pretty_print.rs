@@ -74,6 +74,20 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 symtab.name_for_function(InternalOrExternalFunctionId::External(*f))
             )
         }
+        TapIr::CallBuiltin { target, f, args } => {
+            let args = args
+                .iter()
+                .map(|t| symtab.debug_name_for_symbol(*t))
+                .collect::<Vec<_>>()
+                .join(", ");
+
+            write!(
+                output,
+                "{} = builtin {}({args})",
+                symtab.debug_name_for_symbol(*target),
+                symtab.name_for_function(InternalOrExternalFunctionId::Builtin(*f))
+            )
+        }
         TapIr::Spawn { f, args } => {
             let args = args
                 .iter()

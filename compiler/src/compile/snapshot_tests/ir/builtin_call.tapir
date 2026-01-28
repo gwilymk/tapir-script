@@ -1,0 +1,3 @@
+builtin(0) fn sin(x: fix) -> fix;
+
+var result = sin(0.5);

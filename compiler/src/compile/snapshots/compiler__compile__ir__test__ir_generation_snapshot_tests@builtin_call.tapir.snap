@@ -1,0 +1,13 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/builtin_call.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2 = fix 0.5
+temp.1 = builtin sin(temp.2)
+result.0 = temp.1
+return

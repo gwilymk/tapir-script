@@ -139,8 +139,14 @@ impl BlockVisitor {
                                 args,
                             });
                         }
-                        InternalOrExternalFunctionId::Builtin(_) => {
-                            todo!("Builtin call in assignment - Stage C")
+                        InternalOrExternalFunctionId::Builtin(f) => {
+                            // Builtins return exactly one value
+                            debug_assert_eq!(temps.len(), 1);
+                            self.current_block.push(TapIr::CallBuiltin {
+                                target: temps[0],
+                                f,
+                                args,
+                            });
                         }
                     }
 
@@ -286,8 +292,14 @@ impl BlockVisitor {
                             args,
                         });
                     }
-                    InternalOrExternalFunctionId::Builtin(_) => {
-                        todo!("Builtin call as statement - Stage C")
+                    InternalOrExternalFunctionId::Builtin(builtin_id) => {
+                        // Builtin called as statement - discard result
+                        let target = symtab.new_temporary();
+                        self.current_block.push(TapIr::CallBuiltin {
+                            target,
+                            f: builtin_id,
+                            args,
+                        });
                     }
                 }
             }
@@ -513,8 +525,12 @@ impl BlockVisitor {
                             args,
                         });
                     }
-                    InternalOrExternalFunctionId::Builtin(_) => {
-                        todo!("Builtin call expression - Stage C")
+                    InternalOrExternalFunctionId::Builtin(builtin_id) => {
+                        self.current_block.push(TapIr::CallBuiltin {
+                            target: target_symbol,
+                            f: builtin_id,
+                            args,
+                        });
                     }
                 }
             }

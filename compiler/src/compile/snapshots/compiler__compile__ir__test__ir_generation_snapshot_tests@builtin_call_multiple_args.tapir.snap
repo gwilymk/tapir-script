@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/builtin_call_multiple_args.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2 = fix 1
+temp.3 = fix 2
+temp.1 = builtin atan2(temp.2, temp.3)
+angle.0 = temp.1
+return

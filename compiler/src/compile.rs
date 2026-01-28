@@ -324,6 +324,9 @@ impl Compiler {
                     TapIr::GetBuiltin { target, builtin } => {
                         self.bytecode.get_builtin(v(target), builtin.id());
                     }
+                    TapIr::CallBuiltin { .. } => {
+                        todo!("CallBuiltin bytecode emission - Stage D")
+                    }
                     TapIr::GetGlobal {
                         target,
                         global_index,

@@ -29,7 +29,7 @@ use symbol_iter::{SymbolIter, SymbolIterMut};
 
 use crate::{
     FunctionArgument, Type,
-    ast::{self, BinaryOperator, ExternalFunctionId, FunctionId, SymbolId},
+    ast::{self, BinaryOperator, BuiltinFunctionId, ExternalFunctionId, FunctionId, SymbolId},
     builtins::BuiltinVariable,
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
 };
@@ -56,6 +56,11 @@ pub enum TapIr {
     CallExternal {
         target: Box<[SymbolId]>,
         f: ExternalFunctionId,
+        args: Box<[SymbolId]>,
+    },
+    CallBuiltin {
+        target: SymbolId,
+        f: BuiltinFunctionId,
         args: Box<[SymbolId]>,
     },
     Spawn {
@@ -116,6 +121,8 @@ impl TapIr {
             | TapIr::GetProp { .. }
             | TapIr::GetBuiltin { .. }
             | TapIr::GetGlobal { .. } => false,
+            // Pure builtins (id >= 0) have no side effects
+            TapIr::CallBuiltin { f, .. } => !f.is_pure(),
             TapIr::Wait
             | TapIr::Call { .. }
             | TapIr::CallExternal { .. }
@@ -226,6 +233,10 @@ impl TapIrBlock {
                 TapIr::Wait => {}
                 TapIr::Call { target, args, .. } | TapIr::CallExternal { target, args, .. } => {
                     symbols.extend(target);
+                    symbols.extend(args);
+                }
+                TapIr::CallBuiltin { target, args, .. } => {
+                    symbols.insert(*target);
                     symbols.extend(args);
                 }
                 TapIr::Trigger { args, .. } | TapIr::Spawn { args, .. } => {
