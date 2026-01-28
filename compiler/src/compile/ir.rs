@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     fmt::Display,
     iter,
     ops::Add,
@@ -329,7 +329,7 @@ pub struct Phi {
 pub struct TapIrFunction {
     id: FunctionId,
 
-    blocks: HashMap<BlockId, TapIrBlock>,
+    blocks: BTreeMap<BlockId, TapIrBlock>,
     pub(super) root: BlockId,
 
     modifiers: FunctionModifiers,
@@ -431,15 +431,6 @@ impl TapIrFunction {
         if self.blocks.insert(block.id(), block).is_some() {
             panic!("Shouldn't be inserting a block if one already exists with the same ID");
         }
-    }
-
-    fn disjoint_blocks_mut<const N: usize>(
-        &mut self,
-        block_ids: [&BlockId; N],
-    ) -> [&mut TapIrBlock; N] {
-        self.blocks
-            .get_disjoint_mut(block_ids)
-            .map(|block| block.expect("Failed to find block with ID"))
     }
 }
 

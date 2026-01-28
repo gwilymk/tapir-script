@@ -40,7 +40,7 @@ pub fn simplify_blocks(f: &mut TapIrFunction) -> OptimisationResult {
         }
 
         // copy the content of the next block into this one, since there isn't another block jumping to it
-        let [this_block, next_block] = f.disjoint_blocks_mut([&block_id, &next_block_id]);
+        let next_block = f.block(next_block_id).unwrap();
 
         if next_block.instrs.is_empty() {
             // nothing to do here since there aren't any instructions in next
@@ -52,7 +52,9 @@ pub fn simplify_blocks(f: &mut TapIrFunction) -> OptimisationResult {
             continue;
         }
 
-        this_block.instrs.append(&mut next_block.instrs);
+        // Take the instructions from next_block by getting it mutably
+        let next_instrs = std::mem::take(&mut f.block_mut(next_block_id).unwrap().instrs);
+        f.block_mut(block_id).unwrap().instrs.extend(next_instrs);
 
         did_something = OptimisationResult::DidSomething;
     }

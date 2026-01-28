@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeSet, HashMap},
     mem,
 };
 
@@ -35,7 +35,7 @@ pub fn inline_small_functions(
     // blocks in that function. If it is less than MAX_BLOCKS_FOR_INLINE, it is probably worth inlining.
     //
     // Any function named 'black_box' is never allowed to be inlined (to allow for easier testing)
-    let mut inlinable_functions = HashSet::new();
+    let mut inlinable_functions = BTreeSet::new();
     for f in functions.iter() {
         if f.id().is_toplevel() {
             continue; // can't ever inline the toplevel (not that anything can call it)
@@ -79,7 +79,7 @@ pub fn inline_small_functions(
                 .count()
                 == 0
         })
-        .collect::<HashSet<_>>();
+        .collect::<BTreeSet<_>>();
 
     struct InlineTarget {
         function_to_inline_into: FunctionId,
