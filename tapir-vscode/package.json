@@ -35,6 +35,12 @@
         "path": "./syntaxes/tapir.tmLanguage.json"
       }
     ],
+    "commands": [
+      {
+        "command": "tapir.restartServer",
+        "title": "Tapir: Restart Language Server"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "Tapir Script",

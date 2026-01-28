@@ -7,37 +7,58 @@ import {
 
 let client: LanguageClient | undefined;
 
-export async function activate(
-  _context: vscode.ExtensionContext,
-): Promise<void> {
+function getServerOptions(): ServerOptions {
   const config = vscode.workspace.getConfiguration("tapir");
   let serverPath = config.get<string>("serverPath");
 
   if (!serverPath) {
-    // Default: assume tapir-lsp is in PATH or use a workspace-relative path
+    // Default: assume tapir-lsp is in PATH
     serverPath = "tapir-lsp";
   }
 
-  const serverOptions: ServerOptions = {
+  return {
     command: serverPath,
     args: [],
   };
+}
 
-  const clientOptions: LanguageClientOptions = {
+function getClientOptions(): LanguageClientOptions {
+  return {
     documentSelector: [{ scheme: "file", language: "tapir" }],
     synchronize: {
       fileEvents: vscode.workspace.createFileSystemWatcher("**/*.tapir"),
     },
   };
+}
 
+async function startClient(): Promise<void> {
   client = new LanguageClient(
     "tapir-lsp",
     "Tapir Language Server",
-    serverOptions,
-    clientOptions,
+    getServerOptions(),
+    getClientOptions(),
   );
 
   await client.start();
+}
+
+async function restartServer(): Promise<void> {
+  if (client) {
+    await client.stop();
+    client = undefined;
+  }
+  await startClient();
+  vscode.window.showInformationMessage("Tapir Language Server restarted");
+}
+
+export async function activate(
+  context: vscode.ExtensionContext,
+): Promise<void> {
+  context.subscriptions.push(
+    vscode.commands.registerCommand("tapir.restartServer", restartServer),
+  );
+
+  await startClient();
 }
 
 export async function deactivate(): Promise<void> {
