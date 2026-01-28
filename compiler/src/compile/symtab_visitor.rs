@@ -925,6 +925,17 @@ impl<'input> SymTab<'input> {
     }
 
     pub(crate) fn span_for_symbol(&self, symbol_id: SymbolId) -> Span {
+        // Check if this is a struct property base symbol
+        if symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0 {
+            let struct_id = StructId((symbol_id.0 & !(STRUCT_PROPERTY_BASE_BIT)) as u32);
+            for (_name, base) in &self.struct_property_bases {
+                if base.struct_id == struct_id {
+                    return base.span;
+                }
+            }
+            panic!("Struct property base not found for struct_id {}", struct_id.0);
+        }
+
         self.symbol_names[symbol_id.0 as usize]
             .1
             .expect("Symbol should have a span")
