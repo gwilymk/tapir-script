@@ -530,7 +530,8 @@ impl BinaryOperator {
         match (*self, lhs_type) {
             (B::Mul, Type::Fix) => *self = B::FixMul,
             (B::Div, Type::Fix) => *self = B::FixDiv,
-            (B::Div, Type::Int) => *self = B::RealDiv,
+            // Note: B::Div on Int stays as B::Div (floor division)
+            // B::RealDiv on Int stays as B::RealDiv (truncating division)
             (B::Mod, Type::Int) => *self = B::RealMod,
             _ => {}
         }

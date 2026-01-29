@@ -12,5 +12,10 @@ fn multiply_power_of_two_lhs(x: int) -> int {
     return 4 * x;
 }
 
+fn divide_power_of_two(x: int) -> int {
+    # Should be optimized to x >> 2 (floor division by 4)
+    return x / 4;
+}
+
 var v = 5;
-result = multiply_power_of_two(v) + multiply_power_of_two_lhs(v);
+result = multiply_power_of_two(v) + multiply_power_of_two_lhs(v) + divide_power_of_two(v);

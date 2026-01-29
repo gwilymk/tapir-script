@@ -332,6 +332,27 @@ pub fn constant_folding(
                     continue;
                 }
 
+                // ================================================
+                // Strength reduction: floor divide by power of 2 -> right shift
+                // Works for signed integers because >> is arithmetic shift
+                // ================================================
+                (_, B::Div, Some(C::Int(n))) if n > 0 && (n as u32).is_power_of_two() => {
+                    let shift = n.trailing_zeros() as i32;
+                    let temp = symtab.new_temporary();
+
+                    *instr = TapIr::BinOp {
+                        target: t,
+                        lhs: *lhs,
+                        op: B::Shr,
+                        rhs: temp,
+                    };
+
+                    instrs.insert(index - 1, TapIr::Constant(temp, C::Int(shift)));
+
+                    did_something = OptimisationResult::DidSomething;
+                    continue;
+                }
+
                 _ => continue,
             };
 
@@ -359,10 +380,13 @@ fn int_op(i1: i32, op: BinaryOperator, i2: i32) -> Result<Constant, FoldError> {
             .checked_mul(i2)
             .map(C::Int)
             .ok_or(FoldError::IntegerOverflow),
-        BinaryOperator::Div => i1
-            .checked_div(i2)
-            .map(C::Int)
-            .ok_or(FoldError::DivisionByZero),
+        BinaryOperator::Div => {
+            if i2 == 0 {
+                Err(FoldError::DivisionByZero)
+            } else {
+                Ok(C::Int(i1.div_euclid(i2)))
+            }
+        }
         BinaryOperator::Mod => {
             if i2 == 0 {
                 Err(FoldError::DivisionByZero)

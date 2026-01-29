@@ -14,6 +14,7 @@ pub enum Opcode {
     ///< `add a, b, c` => `a = b + c`
     Sub,
     Mul,
+    Div,
     RealMod,
     RealDiv,
 

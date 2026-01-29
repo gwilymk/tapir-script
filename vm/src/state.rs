@@ -85,8 +85,9 @@ impl State {
                 O::Add => binop!(a, b, a + b),
                 O::Sub => binop!(a, b, a - b),
                 O::Mul => binop!(a, b, a * b),
+                O::Div => binop!(a, b, a.div_euclid(b)),
                 O::RealMod => binop!(a, b, a.rem_euclid(b)),
-                O::RealDiv => binop!(a, b, a / b), // FIXME: div_floor
+                O::RealDiv => binop!(a, b, a / b),
                 O::EqEq => binop!(a, b, (a == b).into()),
                 O::NeEq => binop!(a, b, (a != b).into()),
                 O::Gt => binop!(a, b, (a > b).into()),

@@ -162,15 +162,19 @@ Unlike properties, globals are internal to the script and not accessible from Ru
 
 ### Arithmetic (work on `int` and `fix`)
 
-| Op   | Description                   |
-| ---- | ----------------------------- |
-| `+`  | Addition                      |
-| `-`  | Subtraction                   |
-| `*`  | Multiplication (fix-aware)    |
-| `/`  | Division (truncating for int) |
-| `%`  | Modulo (truncating for int)   |
-| `//` | Real division                 |
-| `%%` | Real modulo                   |
+| Op   | Description                                      |
+| ---- | ------------------------------------------------ |
+| `+`  | Addition                                         |
+| `-`  | Subtraction                                      |
+| `*`  | Multiplication (fix-aware)                       |
+| `/`  | Floor division (rounds toward negative infinity) |
+| `%`  | Euclidean modulo (always non-negative)           |
+| `//` | Truncating division (rounds toward zero)         |
+| `%%` | Truncating modulo                                |
+
+For positive numbers, `/` and `//` give the same result. For negative dividends:
+- `-7 / 4 = -2` (floor: rounds toward -infinity)
+- `-7 // 4 = -1` (truncating: rounds toward zero)
 
 ### Comparison (work on `int` and `fix`, return `bool`)
 

@@ -37,15 +37,16 @@ The VM uses a register-based model with a growable stack. Registers are addresse
 
 ### Arithmetic (Type 1: `r[target] = r[a] op r[b]`)
 
-| Opcode    | Operation                  |
-| --------- | -------------------------- |
-| `Add`     | `a + b`                    |
-| `Sub`     | `a - b`                    |
-| `Mul`     | `a * b`                    |
-| `RealDiv` | `a / b` (integer division) |
-| `RealMod` | `a.rem_euclid(b)`          |
-| `FixMul`  | Fixed-point multiply       |
-| `FixDiv`  | Fixed-point divide         |
+| Opcode    | Operation                                        |
+| --------- | ------------------------------------------------ |
+| `Add`     | `a + b`                                          |
+| `Sub`     | `a - b`                                          |
+| `Mul`     | `a * b`                                          |
+| `Div`     | `a.div_euclid(b)` (floor division)               |
+| `RealDiv` | `a / b` (truncating division)                    |
+| `RealMod` | `a.rem_euclid(b)`                                |
+| `FixMul`  | Fixed-point multiply                             |
+| `FixDiv`  | Fixed-point divide                               |
 
 ### Bitwise (Type 1: `r[target] = r[a] op r[b]`)
 
