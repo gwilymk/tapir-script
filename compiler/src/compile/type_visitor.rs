@@ -1313,10 +1313,8 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 // Return type is the function's return type
                 if return_types.len() == 1 {
                     return_types[0]
-                } else if return_types.is_empty() {
-                    Type::Error // void method used as expression
                 } else {
-                    Type::Error // multi-return method used as expression
+                    Type::Error // void or multi-return method used as expression
                 }
             }
         }

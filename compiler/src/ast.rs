@@ -251,11 +251,6 @@ impl<'input> Function<'input> {
 }
 
 impl<'input> BuiltinFunction<'input> {
-    /// Returns true if this is a method (has a receiver type)
-    pub fn is_method(&self) -> bool {
-        self.receiver_type.is_some()
-    }
-
     /// Returns the mangled function name.
     /// For methods: "Type@method", for regular functions: just the name.
     pub fn mangled_name(&self) -> Cow<'_, str> {

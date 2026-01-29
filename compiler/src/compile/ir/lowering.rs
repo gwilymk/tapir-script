@@ -1,5 +1,3 @@
-use std::borrow::Cow;
-
 use crate::{
     ast::{
         self, BinaryOperator, Expression, InternalOrExternalFunctionId, MethodCallInfo, SymbolId,
@@ -1027,7 +1025,7 @@ impl<'a> BlockVisitor<'a> {
     fn handle_struct_property_field_access(
         &mut self,
         target_symbol: SymbolId,
-        base_path: &Cow<'_, str>,
+        base_path: &str,
         field_name: &str,
         info: &FieldAccessInfo,
         span: crate::tokens::Span,

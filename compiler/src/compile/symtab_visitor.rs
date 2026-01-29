@@ -90,6 +90,7 @@ fn collect_struct_field_types(struct_id: StructId, registry: &StructRegistry, ou
 
 /// Recursively expand a struct-typed property into its component scalar properties.
 /// Each field becomes a property with a path name like "pos.x", "pos.y".
+#[allow(clippy::too_many_arguments)]
 fn expand_property_fields(
     path: &str,
     rust_field_name: &str,
@@ -391,13 +392,15 @@ impl<'input> SymTabVisitor<'input> {
             function.meta.set(fid);
 
             // Check for event modifier on methods (not allowed)
-            if function.is_method() && function.modifiers.is_event_handler.is_some() {
+            if let Some(event_span) = function.modifiers.is_event_handler
+                && function.is_method()
+            {
                 ErrorKind::MethodCannotBeEventHandler {
                     method_name: function.name.to_string(),
                 }
-                .at(function.modifiers.is_event_handler.unwrap())
+                .at(event_span)
                 .label(
-                    function.modifiers.is_event_handler.unwrap(),
+                    event_span,
                     DiagnosticMessage::MethodCannotBeEventHandlerLabel,
                 )
                 .label(function.span, DiagnosticMessage::MethodDefinedHere)
