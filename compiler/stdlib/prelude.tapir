@@ -4,9 +4,11 @@
 builtin(0) fn sin(x: fix) -> fix;
 builtin(1) fn cos(x: fix) -> fix;
 builtin(2) fn sqrt(x: fix) -> fix;
-builtin(3) fn floor(x: fix) -> int;
-builtin(4) fn ceil(x: fix) -> int;
-builtin(5) fn round(x: fix) -> int;
+
+# Rounding methods on fix
+builtin(3) fn fix.floor(self) -> int;
+builtin(4) fn fix.ceil(self) -> int;
+builtin(5) fn fix.round(self) -> int;
 
 # Runtime functions
 builtin(-1) fn frame() -> int;

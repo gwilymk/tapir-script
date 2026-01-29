@@ -210,15 +210,17 @@ Script(
             values: [
               Expression(
                 span: "[span]",
-                kind: Call(
-                  name: "floor",
-                  arguments: [
-                    Expression(
-                      span: "[span]",
-                      kind: Variable("self"),
-                      meta: {},
-                    ),
-                  ],
+                kind: MethodCall(
+                  receiver: Expression(
+                    span: "[span]",
+                    kind: Variable("self"),
+                    meta: {},
+                  ),
+                  method: Ident(
+                    span: "[span]",
+                    ident: "floor",
+                  ),
+                  arguments: [],
                 ),
                 meta: {},
               ),

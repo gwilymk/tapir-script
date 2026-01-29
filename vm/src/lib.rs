@@ -545,7 +545,7 @@ mod test {
             enable_optimisations: false,
         };
 
-        let source = "property prop: int;\nprop = floor(3.7);";
+        let source = "property prop: int;\nvar x: fix = 3.7;\nprop = x.floor();";
         let compile_result =
             compiler::compile("builtin_floor.tapir", source, compile_settings).unwrap();
 
@@ -560,7 +560,230 @@ mod test {
             vm.run_until_wait(&mut object_safe_props);
         }
 
-        // floor(3.7) should be 3
+        // x.floor() where x = 3.7 should be 3
         assert_eq!(prop_object.int_prop, 3);
+    }
+
+    #[test]
+    fn builtin_ceil() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = "property prop: int;\nvar x: fix = 3.2;\nprop = x.ceil();";
+        let compile_result =
+            compiler::compile("builtin_ceil.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // x.ceil() where x = 3.2 should be 4
+        assert_eq!(prop_object.int_prop, 4);
+    }
+
+    #[test]
+    fn builtin_round() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = "property prop: int;\nvar x: fix = 3.6;\nprop = x.round();";
+        let compile_result =
+            compiler::compile("builtin_round.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // x.round() where x = 3.6 should be 4
+        assert_eq!(prop_object.int_prop, 4);
+    }
+
+    #[test]
+    fn user_defined_method_on_int() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = r#"
+            property prop: int;
+            fn int.double(self) -> int {
+                return self + self;
+            }
+            var x: int = 7;
+            prop = x.double();
+        "#;
+        let compile_result =
+            compiler::compile("method_int.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // 7.double() should be 14
+        assert_eq!(prop_object.int_prop, 14);
+    }
+
+    #[test]
+    fn user_defined_method_with_args() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = r#"
+            property prop: int;
+            fn int.add(self, other: int) -> int {
+                return self + other;
+            }
+            var x: int = 5;
+            prop = x.add(3);
+        "#;
+        let compile_result =
+            compiler::compile("method_with_args.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // 5.add(3) should be 8
+        assert_eq!(prop_object.int_prop, 8);
+    }
+
+    #[test]
+    fn chained_method_calls() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = r#"
+            property prop: int;
+            fn int.double(self) -> int {
+                return self + self;
+            }
+            fn int.add(self, n: int) -> int {
+                return self + n;
+            }
+            var x: int = 3;
+            prop = x.double().add(1).double();
+        "#;
+        let compile_result =
+            compiler::compile("chained_methods.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // 3.double() = 6, 6.add(1) = 7, 7.double() = 14
+        assert_eq!(prop_object.int_prop, 14);
+    }
+
+    #[test]
+    fn method_on_struct() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = r#"
+            property prop: int;
+            struct Point { x: int, y: int }
+            fn Point.sum(self) -> int {
+                return self.x + self.y;
+            }
+            var p = Point(3, 4);
+            prop = p.sum();
+        "#;
+        let compile_result =
+            compiler::compile("method_struct.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // Point(3, 4).sum() should be 7
+        assert_eq!(prop_object.int_prop, 7);
+    }
+
+    #[test]
+    fn method_returning_struct() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+        };
+
+        let source = r#"
+            property prop: int;
+            struct Point { x: int, y: int }
+            fn Point.scale(self, factor: int) -> Point {
+                return Point(self.x * factor, self.y * factor);
+            }
+            var p = Point(2, 3);
+            var scaled = p.scale(3);
+            prop = scaled.x + scaled.y;
+        "#;
+        let compile_result =
+            compiler::compile("method_return_struct.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // Point(2, 3).scale(3) = Point(6, 9), sum = 15
+        assert_eq!(prop_object.int_prop, 15);
     }
 }

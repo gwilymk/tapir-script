@@ -10,7 +10,7 @@ fn int.add(self, other: int) -> int {
 
 # Method definition on fix type
 fn fix.floor_to_int(self) -> int {
-    return floor(self);
+    return self.floor();
 }
 
 # Method with multiple return values

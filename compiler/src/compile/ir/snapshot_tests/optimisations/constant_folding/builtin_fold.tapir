@@ -3,7 +3,7 @@
 builtin(0) fn sin(x: fix) -> fix;
 builtin(1) fn cos(x: fix) -> fix;
 builtin(2) fn sqrt(x: fix) -> fix;
-builtin(3) fn floor(x: fix) -> int;
+builtin(3) fn fix.floor(self) -> int;
 
 property prop: int;
 
@@ -11,6 +11,7 @@ property prop: int;
 var s = sin(0.0);
 var c = cos(0.0);
 var r = sqrt(4.0);
-var f = floor(3.7);
+var val: fix = 3.7;
+var f = val.floor();
 
 prop = f;

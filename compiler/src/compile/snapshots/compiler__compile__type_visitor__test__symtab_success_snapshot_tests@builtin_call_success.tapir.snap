@@ -8,6 +8,7 @@ input_file: compiler/src/compile/snapshot_tests/type_visitor/builtin_call_succes
   ("s", Fix),
   ("c", Fix),
   ("r", Fix),
+  ("val", Fix),
   ("f", Int),
   ("current_frame", Int),
 ]

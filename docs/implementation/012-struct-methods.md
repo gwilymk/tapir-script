@@ -907,3 +907,37 @@ This would require:
 - Grammar for static method calls: `identifier "." identifier "(" args ")"`
 - Distinguishing static vs instance at call site
 - No implicit receiver argument in IR
+
+## Implementation Notes
+
+This section documents differences between the plan above and what was actually implemented.
+
+### Grammar Differences
+
+1. **`IdentOrSelf` rule not used** - The plan suggested a separate `IdentOrSelf` rule to allow `self` as a variable. This caused grammar conflicts when `identifier` was followed by `(` (parser couldn't decide between reducing to `IdentOrSelf` or shifting for function call). Instead, `"self"` was added directly as an alternative in the `Term` rule.
+
+2. **`TypeIdentifier` rule added** - Not in the original plan. Method receiver types like `fn fix.round(self)` use keyword tokens (`t_fix`, `t_integer`, `t_bool`), not identifiers. A new `TypeIdentifier` rule was added that accepts both identifiers and builtin type keywords for receiver type positions.
+
+3. **Method call statement limitations** - The plan assumed method call statements would work automatically via `StatementKind::Expression`. Due to grammar conflicts with assignment targets (`a.b = x` vs `a.b()`), explicit grammar rules were added for method call statements on:
+   - `self`: `self.method();`
+   - Function results: `func().method();`
+   - Parenthesized expressions: `(expr).method();`
+
+   Plain `variable.method();` statements are **not supported** - use `(variable).method();` or assign to a temporary.
+
+### Symbol Table Differences
+
+1. **`lookup_method` simplified** - The plan suggested a `lookup_method(receiver_type, method_name)` function. Instead, `function_by_mangled_name(mangled)` was added, and type checking builds the mangled name (`Type@method`) directly before lookup.
+
+### Struct Visitor Differences
+
+1. **`ResolvedReceiverType` metadata not added** - The plan suggested storing this in function metadata. Since the receiver type is only needed to fill in `self`'s type, this is done inline in `resolve_all_types` without extra metadata.
+
+### Prelude Differences
+
+1. **Only rounding functions converted** - The plan suggested converting `sin`, `cos`, `sqrt` to methods. Only `floor`, `ceil`, `round` were converted since they make more sense as methods (`x.floor()` reads naturally, whereas `sin(angle)` matches mathematical notation better).
+
+### Not Implemented
+
+1. **Static methods** - Listed as future extension, not implemented
+2. **`extern` methods** - Plan said "not allowed for now", not implemented
