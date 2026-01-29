@@ -1,0 +1,31 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/method_on_struct.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.5 = int 3
+temp.6 = int 4
+p.x.3 = temp.5
+p.y.4 = temp.6
+temp.8.x.9 = p.x.3
+temp.8.y.10 = p.y.4
+temp.7 = Point@sum(temp.8.x.9, temp.8.y.10)
+total.1 = temp.7
+return 
+
+=======================
+fn Point@sum(self.x.11, self.y.12) -> int
+
+---- block 0 ----
+temp.16.x.17 = self.x.11
+temp.16.y.18 = self.y.12
+temp.14 = temp.16.x.17
+temp.19.x.20 = self.x.11
+temp.19.y.21 = self.y.12
+temp.15 = temp.19.y.21
+temp.13 = temp.14 + temp.15
+return temp.13

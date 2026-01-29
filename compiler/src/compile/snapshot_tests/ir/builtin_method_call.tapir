@@ -1,0 +1,5 @@
+# Builtin method call
+builtin(10) fn fix.round(self) -> int;
+
+var x: fix = 3.7;
+var result = x.round();

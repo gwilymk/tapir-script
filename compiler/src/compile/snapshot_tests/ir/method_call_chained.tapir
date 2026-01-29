@@ -1,0 +1,11 @@
+# Chained method calls
+fn int.double(self) -> int {
+    return self + self;
+}
+
+fn int.add(self, other: int) -> int {
+    return self + other;
+}
+
+var x: int = 3;
+var result = x.double().add(1).double();

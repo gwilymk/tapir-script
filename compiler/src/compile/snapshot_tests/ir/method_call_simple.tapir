@@ -1,0 +1,7 @@
+# Simple method call on builtin type
+fn int.double(self) -> int {
+    return self + self;
+}
+
+var x: int = 5;
+var result = x.double();

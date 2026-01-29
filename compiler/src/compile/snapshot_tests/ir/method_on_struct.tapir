@@ -1,0 +1,12 @@
+# Method on struct type
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn Point.sum(self) -> int {
+    return self.x + self.y;
+}
+
+var p = Point(3, 4);
+var total = p.sum();

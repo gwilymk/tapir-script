@@ -1,0 +1,36 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/method_call_chained.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.5 = int 3
+x.0 = temp.5
+temp.9 = x.0
+temp.8 = int@double(temp.9)
+temp.10 = int 1
+temp.7 = int@add(temp.8, temp.10)
+temp.6 = int@double(temp.7)
+result.1 = temp.6
+return 
+
+=======================
+fn int@double(self.2) -> int
+
+---- block 0 ----
+temp.12 = self.2
+temp.13 = self.2
+temp.11 = temp.12 + temp.13
+return temp.11
+
+=======================
+fn int@add(self.3, other.4) -> int
+
+---- block 0 ----
+temp.15 = self.3
+temp.16 = other.4
+temp.14 = temp.15 + temp.16
+return temp.14

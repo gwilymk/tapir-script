@@ -1,0 +1,7 @@
+# Method call with additional arguments
+fn int.add(self, other: int) -> int {
+    return self + other;
+}
+
+var x: int = 5;
+var result = x.add(10);

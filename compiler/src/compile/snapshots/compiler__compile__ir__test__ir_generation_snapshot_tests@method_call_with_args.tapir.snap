@@ -1,0 +1,25 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/method_call_with_args.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.4 = int 5
+x.0 = temp.4
+temp.6 = x.0
+temp.7 = int 10
+temp.5 = int@add(temp.6, temp.7)
+result.1 = temp.5
+return 
+
+=======================
+fn int@add(self.2, other.3) -> int
+
+---- block 0 ----
+temp.9 = self.2
+temp.10 = other.3
+temp.8 = temp.9 + temp.10
+return temp.8

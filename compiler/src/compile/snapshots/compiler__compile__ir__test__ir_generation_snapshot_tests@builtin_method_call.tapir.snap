@@ -1,0 +1,15 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/builtin_method_call.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2 = fix 3.69921875
+x.0 = temp.2
+temp.4 = x.0
+temp.3 = builtin fix@round(temp.4)
+result.1 = temp.3
+return

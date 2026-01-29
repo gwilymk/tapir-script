@@ -1,0 +1,24 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/method_call_simple.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.3 = int 5
+x.0 = temp.3
+temp.5 = x.0
+temp.4 = int@double(temp.5)
+result.1 = temp.4
+return 
+
+=======================
+fn int@double(self.2) -> int
+
+---- block 0 ----
+temp.7 = self.2
+temp.8 = self.2
+temp.6 = temp.7 + temp.8
+return temp.6
