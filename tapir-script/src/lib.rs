@@ -7,8 +7,39 @@ pub use tapir_script_macros::{ConvertBetweenTapir, TapirScript};
 pub use vm::{Script, TapirScript};
 
 pub type Fix = agb_fixnum::Num<i32, 8>;
+pub use agb_fixnum::Vector2D;
 
 pub use alloc::vec::Vec;
+
+impl ConvertBetweenTapir for Vector2D<i32> {
+    fn write_to_tapir(&self, target: &mut [i32]) -> usize {
+        target[0] = self.x;
+        target[1] = self.y;
+        2
+    }
+
+    fn read_from_tapir(values: &[i32]) -> (Self, usize) {
+        (Self { x: values[0], y: values[1] }, 2)
+    }
+}
+
+impl ConvertBetweenTapir for Vector2D<Fix> {
+    fn write_to_tapir(&self, target: &mut [i32]) -> usize {
+        target[0] = self.x.to_raw();
+        target[1] = self.y.to_raw();
+        2
+    }
+
+    fn read_from_tapir(values: &[i32]) -> (Self, usize) {
+        (
+            Self {
+                x: Fix::from_raw(values[0]),
+                y: Fix::from_raw(values[1]),
+            },
+            2,
+        )
+    }
+}
 
 /// Trait for converting Rust types to/from tapir's i32 stack representation.
 ///
