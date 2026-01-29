@@ -549,15 +549,16 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         diagnostics: &mut Diagnostics,
     ) -> Option<(Type, StructId, Vec<usize>)> {
         // Check if this is a struct property base symbol first
-        let mut current_type = if let Some(struct_id) = SymTab::struct_id_from_base_symbol(root_symbol) {
-            Type::Struct(struct_id)
-        } else {
-            // Get the root symbol's type from the type table
-            match self.type_table.get(root_symbol.0 as usize) {
-                Some(Some((ty, _))) => *ty,
-                _ => Type::Error,
-            }
-        };
+        let mut current_type =
+            if let Some(struct_id) = SymTab::struct_id_from_base_symbol(root_symbol) {
+                Type::Struct(struct_id)
+            } else {
+                // Get the root symbol's type from the type table
+                match self.type_table.get(root_symbol.0 as usize) {
+                    Some(Some((ty, _))) => *ty,
+                    _ => Type::Error,
+                }
+            };
 
         // The root must be a struct
         let root_struct_id = match current_type {
@@ -1214,7 +1215,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         method_name: method.ident.to_string(),
                     }
                     .at(method.span)
-                    .label(receiver.span, DiagnosticMessage::HasType { ty: receiver_type })
+                    .label(
+                        receiver.span,
+                        DiagnosticMessage::HasType { ty: receiver_type },
+                    )
                     .emit(diagnostics);
                     return Type::Error;
                 };
@@ -1278,7 +1282,9 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     for ((actual, actual_span), arg_info) in
                         argument_types.iter().zip(function_info.args.iter().skip(1))
                     {
-                        if *actual != arg_info.ty && *actual != Type::Error && arg_info.ty != Type::Error
+                        if *actual != arg_info.ty
+                            && *actual != Type::Error
+                            && arg_info.ty != Type::Error
                         {
                             ErrorKind::FunctionArgumentTypeError {
                                 function_name: format!("{}.{}", type_name, method.ident),
@@ -1287,7 +1293,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                                 actual: *actual,
                             }
                             .at(*actual_span)
-                            .label(arg_info.span, DiagnosticMessage::ExpectedType { ty: arg_info.ty })
+                            .label(
+                                arg_info.span,
+                                DiagnosticMessage::ExpectedType { ty: arg_info.ty },
+                            )
                             .label(*actual_span, DiagnosticMessage::PassingType { ty: *actual })
                             .emit(diagnostics);
                         }

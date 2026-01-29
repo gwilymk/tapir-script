@@ -77,11 +77,7 @@ pub struct BuiltinFunctionInfo {
 use crate::ast::GlobalDeclaration;
 
 /// Collect all leaf (scalar) types from a struct type recursively.
-fn collect_struct_field_types(
-    struct_id: StructId,
-    registry: &StructRegistry,
-    out: &mut Vec<Type>,
-) {
+fn collect_struct_field_types(struct_id: StructId, registry: &StructRegistry, out: &mut Vec<Type>) {
     let def = registry.get(struct_id);
     for field in &def.fields {
         if let Type::Struct(nested_id) = field.ty {
@@ -431,8 +427,16 @@ impl<'input> SymTabVisitor<'input> {
         );
 
         let mut visitor = Self {
-            symtab: SymTab::new(&properties, function_names, functions_map.clone(), builtin_function_infos),
-            symbol_names: NameTable::new(&properties, &struct_property_bases_for_name_table(&properties)),
+            symtab: SymTab::new(
+                &properties,
+                function_names,
+                functions_map.clone(),
+                builtin_function_infos,
+            ),
+            symbol_names: NameTable::new(
+                &properties,
+                &struct_property_bases_for_name_table(&properties),
+            ),
             function_names: functions_map,
         };
 
@@ -670,7 +674,9 @@ fn struct_property_bases_for_name_table(properties: &[Property]) -> HashMap<Stri
     let mut bases = HashMap::new();
     for prop in properties {
         if let Some(ref info) = prop.struct_info {
-            bases.entry(info.rust_field_name.clone()).or_insert(info.struct_id);
+            bases
+                .entry(info.rust_field_name.clone())
+                .or_insert(info.struct_id);
         }
     }
     bases
@@ -967,12 +973,15 @@ impl<'input> SymTab<'input> {
         // Check if this is a struct property base symbol
         if symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0 {
             let struct_id = StructId((symbol_id.0 & !(STRUCT_PROPERTY_BASE_BIT)) as u32);
-            for (_name, base) in &self.struct_property_bases {
+            for base in self.struct_property_bases.values() {
                 if base.struct_id == struct_id {
                     return base.span;
                 }
             }
-            panic!("Struct property base not found for struct_id {}", struct_id.0);
+            panic!(
+                "Struct property base not found for struct_id {}",
+                struct_id.0
+            );
         }
 
         self.symbol_names[symbol_id.0 as usize]
@@ -990,9 +999,7 @@ impl<'input> SymTab<'input> {
 
     pub fn get_property(&self, symbol_id: SymbolId) -> Option<&Property> {
         // Don't return properties for struct property bases or globals
-        if symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0
-            || symbol_id.0 & GlobalId::GLOBAL_BIT != 0
-        {
+        if symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0 || symbol_id.0 & GlobalId::GLOBAL_BIT != 0 {
             return None;
         }
         self.properties.get(symbol_id.0 as usize)

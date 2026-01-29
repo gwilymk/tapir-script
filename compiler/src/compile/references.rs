@@ -74,8 +74,7 @@ fn extract_references_from_statements(
                 // For assignments, LHS idents refer to existing definitions
                 let field_info: Option<&FieldAssignmentInfo> = stmt.meta.get();
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
-                    for (i, (path, symbol_id)) in
-                        targets.iter().zip(symbol_ids.iter()).enumerate()
+                    for (i, (path, symbol_id)) in targets.iter().zip(symbol_ids.iter()).enumerate()
                     {
                         // Add reference for the root variable (first ident in path)
                         if let Some(first) = path.first() {
@@ -83,24 +82,19 @@ fn extract_references_from_statements(
                         }
 
                         // Add references for field paths (e.g., pos.x = 10)
-                        if path.len() > 1 {
-                            if let Some(FieldAssignmentInfo(info_list)) = field_info {
-                                if let Some(Some((struct_id, field_indices))) =
-                                    info_list.get(i)
-                                {
-                                    let mut current_struct_id = *struct_id;
-                                    for (j, field_ident) in path.iter().skip(1).enumerate() {
-                                        if let Some(&field_index) = field_indices.get(j) {
-                                            let struct_def =
-                                                struct_registry.get(current_struct_id);
-                                            let field_def = &struct_def.fields[field_index];
-                                            references.insert(field_ident.span, field_def.span);
-                                            // Update current_struct_id for nested fields
-                                            if let Some(next_struct_id) = field_def.ty.as_struct()
-                                            {
-                                                current_struct_id = next_struct_id;
-                                            }
-                                        }
+                        if path.len() > 1
+                            && let Some(FieldAssignmentInfo(info_list)) = field_info
+                            && let Some(Some((struct_id, field_indices))) = info_list.get(i)
+                        {
+                            let mut current_struct_id = *struct_id;
+                            for (j, field_ident) in path.iter().skip(1).enumerate() {
+                                if let Some(&field_index) = field_indices.get(j) {
+                                    let struct_def = struct_registry.get(current_struct_id);
+                                    let field_def = &struct_def.fields[field_index];
+                                    references.insert(field_ident.span, field_def.span);
+                                    // Update current_struct_id for nested fields
+                                    if let Some(next_struct_id) = field_def.ty.as_struct() {
+                                        current_struct_id = next_struct_id;
                                     }
                                 }
                             }

@@ -18,7 +18,13 @@ pub fn extract_inlay_hints(
     let mut hints = Vec::new();
 
     for func in &ast.functions {
-        extract_from_statements(&func.statements, symtab, type_table, struct_registry, &mut hints);
+        extract_from_statements(
+            &func.statements,
+            symtab,
+            type_table,
+            struct_registry,
+            &mut hints,
+        );
     }
 
     hints

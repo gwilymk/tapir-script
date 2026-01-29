@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use petgraph::{
     graph::{DiGraph, NodeIndex},
-    visit::{depth_first_search, DfsEvent},
+    visit::{DfsEvent, depth_first_search},
 };
 
 use crate::{

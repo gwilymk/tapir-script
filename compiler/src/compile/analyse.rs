@@ -103,12 +103,15 @@ fn property_to_info(prop: &Property) -> PropertyInfo {
         ty: prop.ty,
         index: prop.index,
         span: prop.span,
-        struct_info: prop.struct_info.as_ref().map(|si| crate::StructPropertyInfo {
-            rust_field_name: si.rust_field_name.clone(),
-            tuple_position: si.tuple_position,
-            field_types: si.field_types.clone(),
-            struct_id: si.struct_id,
-        }),
+        struct_info: prop
+            .struct_info
+            .as_ref()
+            .map(|si| crate::StructPropertyInfo {
+                rust_field_name: si.rust_field_name.clone(),
+                tuple_position: si.tuple_position,
+                field_types: si.field_types.clone(),
+                struct_id: si.struct_id,
+            }),
     }
 }
 

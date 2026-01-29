@@ -155,18 +155,19 @@ pub fn resolve_all_types<'input>(
     for function in &mut script.functions {
         // For methods, resolve receiver type and fill in self's type
         if let Some(ref receiver) = function.receiver_type {
-            let receiver_type = resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
+            let receiver_type =
+                resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
 
             // Fill in self's type from receiver type (self never has explicit type)
-            if let Some(self_param) = function.arguments.first_mut() {
-                if self_param.name() == "self" {
-                    // Create a TypeWithLocation for self with the resolved receiver type
-                    self_param.ty = Some(crate::ast::TypeWithLocation {
-                        t: Some(receiver_type),
-                        name: receiver.ident,
-                        span: self_param.span(),
-                    });
-                }
+            if let Some(self_param) = function.arguments.first_mut()
+                && self_param.name() == "self"
+            {
+                // Create a TypeWithLocation for self with the resolved receiver type
+                self_param.ty = Some(crate::ast::TypeWithLocation {
+                    t: Some(receiver_type),
+                    name: receiver.ident,
+                    span: self_param.span(),
+                });
             }
         }
 
@@ -196,18 +197,19 @@ pub fn resolve_all_types<'input>(
     for function in &mut script.builtin_functions {
         // For builtin methods, resolve receiver type and fill in self's type
         if let Some(ref receiver) = function.receiver_type {
-            let receiver_type = resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
+            let receiver_type =
+                resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
 
             // Fill in self's type from receiver type (self never has explicit type)
-            if let Some(self_param) = function.arguments.first_mut() {
-                if self_param.name() == "self" {
-                    // Create a TypeWithLocation for self with the resolved receiver type
-                    self_param.ty = Some(crate::ast::TypeWithLocation {
-                        t: Some(receiver_type),
-                        name: receiver.ident,
-                        span: self_param.span(),
-                    });
-                }
+            if let Some(self_param) = function.arguments.first_mut()
+                && self_param.name() == "self"
+            {
+                // Create a TypeWithLocation for self with the resolved receiver type
+                self_param.ty = Some(crate::ast::TypeWithLocation {
+                    t: Some(receiver_type),
+                    name: receiver.ident,
+                    span: self_param.span(),
+                });
             }
         }
 

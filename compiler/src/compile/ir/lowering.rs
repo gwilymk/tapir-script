@@ -1,7 +1,9 @@
 use std::borrow::Cow;
 
 use crate::{
-    ast::{self, BinaryOperator, Expression, InternalOrExternalFunctionId, MethodCallInfo, SymbolId},
+    ast::{
+        self, BinaryOperator, Expression, InternalOrExternalFunctionId, MethodCallInfo, SymbolId,
+    },
     compile::{
         symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
         type_visitor::{CallReturnInfo, FieldAccessInfo, FieldAssignmentInfo},
@@ -291,11 +293,7 @@ impl<'a> BlockVisitor<'a> {
                                 });
                             } else {
                                 // Nested struct assignment - store all scalar fields
-                                self.store_struct_property_fields(
-                                    &prop_path,
-                                    temp,
-                                    symtab,
-                                );
+                                self.store_struct_property_fields(&prop_path, temp, symtab);
                             }
                         }
                         continue;
