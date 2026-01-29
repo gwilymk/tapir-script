@@ -155,7 +155,7 @@ FunctionArguments: Vec<TypedIdent<'input>> = CommaSeparated<TypedIdentifierRequi
 
 // Method arguments: optional self (never typed) followed by regular typed arguments
 // self's type is always implicitly the receiver type - no explicit type allowed
-// The rule handles: (), (self), (self, x: int), (x: int, y: int)
+// The rule handles: (), (self), (self,), (self, x: int), (self, x: int,), (x: int, y: int)
 MethodArguments: Vec<TypedIdent<'input>> = {
     // Just self (instance method with no other args)
     <start:@L> "self" <end:@R> =>
@@ -164,8 +164,15 @@ MethodArguments: Vec<TypedIdent<'input>> = {
             ty: None,
         }],
 
-    // self followed by more arguments (instance method with args)
-    <start:@L> "self" <end:@R> "," <rest:NonEmptyCommaSeparated<TypedIdentifierRequired>> => {
+    // self with trailing comma (instance method with no other args)
+    <start:@L> "self" <end:@R> "," =>
+        vec![TypedIdent {
+            ident: Ident { ident: "self", span: Span::new(file_id, start, end) },
+            ty: None,
+        }],
+
+    // self followed by at least one more argument (uses NonEmptyCommaSeparatedTrailing for trailing comma support)
+    <start:@L> "self" <end:@R> "," <rest:NonEmptyCommaSeparatedTrailing<TypedIdentifierRequired>> => {
         let mut args = vec![TypedIdent {
             ident: Ident { ident: "self", span: Span::new(file_id, start, end) },
             ty: None,
@@ -178,10 +185,10 @@ MethodArguments: Vec<TypedIdent<'input>> = {
     <FunctionArguments>,
 };
 
-// Non-empty comma-separated list (at least one element)
-NonEmptyCommaSeparated<T>: Vec<T> = {
-    <e:T> => vec![e],
-    <mut v:(<T> ",")+> <e:T> => {
+// Non-empty comma-separated list with optional trailing comma
+NonEmptyCommaSeparatedTrailing<T>: Vec<T> = {
+    <e:T> ","? => vec![e],
+    <mut v:(<T> ",")+> <e:T> ","? => {
         v.push(e);
         v
     },

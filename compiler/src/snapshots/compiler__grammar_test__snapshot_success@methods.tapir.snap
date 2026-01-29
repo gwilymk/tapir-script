@@ -12,53 +12,7 @@ Script(
       receiver_type: None,
       name: "@toplevel",
       span: "[span]",
-      statements: [
-        Statement(
-          span: "[span]",
-          kind: Block(
-            block: [
-              Statement(
-                span: "[span]",
-                kind: Return(
-                  values: [
-                    Expression(
-                      span: "[span]",
-                      kind: BinaryOperation(
-                        lhs: Expression(
-                          span: "[span]",
-                          kind: BinaryOperation(
-                            lhs: Expression(
-                              span: "[span]",
-                              kind: Variable("self"),
-                              meta: {},
-                            ),
-                            operator: Add,
-                            rhs: Expression(
-                              span: "[span]",
-                              kind: Variable("a"),
-                              meta: {},
-                            ),
-                          ),
-                          meta: {},
-                        ),
-                        operator: Add,
-                        rhs: Expression(
-                          span: "[span]",
-                          kind: Variable("b"),
-                          meta: {},
-                        ),
-                      ),
-                      meta: {},
-                    ),
-                  ],
-                ),
-                meta: {},
-              ),
-            ],
-          ),
-          meta: {},
-        ),
-      ],
+      statements: [],
       arguments: [],
       return_types: FunctionReturn(
         types: [],
@@ -363,6 +317,98 @@ Script(
       ],
       return_types: FunctionReturn(
         types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      receiver_type: Some(Ident(
+        span: "[span]",
+        ident: "int",
+      )),
+      name: "add_three",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Variable("self"),
+                        meta: {},
+                      ),
+                      operator: Add,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Variable("a"),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("b"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "self",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
         span: "[span]",
       ),
       modifiers: FunctionModifiers(
