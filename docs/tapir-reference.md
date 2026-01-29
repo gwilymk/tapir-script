@@ -23,11 +23,65 @@ loop {
 
 ## Types
 
+### Primitive Types
+
 | Type   | Description                              |
 | ------ | ---------------------------------------- |
 | `int`  | 32-bit signed integer                    |
 | `fix`  | 24.8 fixed-point number (via agb_fixnum) |
 | `bool` | Boolean (`true` or `false`)              |
+
+### Struct Types
+
+Define custom composite types with named fields:
+
+```tapir
+struct Point { x: int, y: int }
+struct Rectangle { origin: Point, size: Point }
+```
+
+Structs use nominal typing: two structs with identical fields are distinct types.
+
+#### Constructors
+
+Each struct has an implicit constructor function. Arguments are positional, matching field declaration order:
+
+```tapir
+var p = Point(1, 2);
+var r = Rectangle(Point(0, 0), Point(100, 50));
+```
+
+#### Field Access
+
+```tapir
+var p = Point(3, 4);
+var x = p.x;              # read field
+var sum = p.x + p.y;      # use in expressions
+var ox = r.origin.x;      # nested field access
+```
+
+#### Field Assignment
+
+```tapir
+p.x = 10;                 # assign to field
+r.origin.x = 5;           # nested field assignment
+```
+
+#### Struct Assignment
+
+```tapir
+var q = p;                # copies all fields
+```
+
+#### Structs in Functions
+
+```tapir
+fn add_points(a: Point, b: Point) -> Point {
+    return Point(a.x + b.x, a.y + b.y);
+}
+
+var result = add_points(Point(1, 2), Point(3, 4));  # Point(4, 6)
+```
 
 ## Literals
 
@@ -210,6 +264,104 @@ var x, y = swap(1, 2);      # unpack multiple returns
 side_effect();              # call as statement
 ```
 
+## Methods
+
+Methods are functions defined on a type. They are called using dot notation on a value of that type.
+
+### Defining Methods
+
+Methods use the syntax `fn Type.method_name(self, ...)`:
+
+```tapir
+struct Point { x: int, y: int }
+
+fn Point.sum(self) -> int {
+    return self.x + self.y;
+}
+
+fn Point.add(self, other: Point) -> Point {
+    return Point(self.x + other.x, self.y + other.y);
+}
+```
+
+Methods can also be defined on primitive types:
+
+```tapir
+fn int.double(self) -> int {
+    return self + self;
+}
+
+fn int.add(self, other: int) -> int {
+    return self + other;
+}
+```
+
+The first parameter must be named `self` with no type annotation (the type is inferred from the receiver type).
+
+### Calling Methods
+
+```tapir
+var p = Point(3, 4);
+var total = p.sum();                    # 7
+
+var p2 = Point(1, 2);
+var p3 = p.add(p2);                     # Point(4, 6)
+
+var x: int = 5;
+var doubled = x.double();               # 10
+```
+
+### Chained Method Calls
+
+Methods can be chained:
+
+```tapir
+var x: int = 3;
+var result = x.double().add(1).double();  # ((3*2)+1)*2 = 14
+```
+
+## Builtin Functions
+
+Tapir provides builtin math functions and methods.
+
+### Math Functions
+
+```tapir
+var angle: fix = 1.57;
+var s = sin(angle);         # sine
+var c = cos(angle);         # cosine
+var r = sqrt(2.0);          # square root (requires non-negative input)
+```
+
+### Rounding Methods
+
+The `fix` type has builtin methods for rounding to `int`:
+
+```tapir
+var x: fix = 3.7;
+var f = x.floor();          # 3 (round toward negative infinity)
+var c = x.ceil();           # 4 (round toward positive infinity)
+var r = x.round();          # 4 (round to nearest)
+```
+
+### Runtime Functions
+
+```tapir
+var current = frame();      # returns current frame number (starts at 0)
+```
+
+### Builtin Reference
+
+| Function/Method      | Args       | Returns | Description                    |
+| -------------------- | ---------- | ------- | ------------------------------ |
+| `sin(x)`             | `fix`      | `fix`   | Sine                           |
+| `cos(x)`             | `fix`      | `fix`   | Cosine                         |
+| `sqrt(x)`            | `fix`      | `fix`   | Square root (x must be >= 0)   |
+| `x.floor()`          | `fix`      | `int`   | Round toward negative infinity |
+| `x.ceil()`           | `fix`      | `int`   | Round toward positive infinity |
+| `x.round()`          | `fix`      | `int`   | Round to nearest integer       |
+| `frame()`            | none       | `int`   | Current frame number           |
+
 ## External Functions
 
 Declare functions implemented in Rust:
@@ -341,7 +493,7 @@ counter2
 
 ```
 break continue else event extern false fn global if int fix bool
-loop property return spawn then trigger true var wait
+loop property return spawn struct then trigger true var wait
 ```
 
 ## Rust Integration
@@ -523,3 +675,67 @@ Enum variant names must match trigger names. Variant fields correspond to trigge
 | `bool` | `bool`                                 |
 
 Use `agb_fixnum::num!()` macro for fix literals: `num!(3.5)`
+
+### Struct Properties
+
+Properties can use struct types. The Rust struct must implement `ConvertBetweenTapir`:
+
+```tapir
+# script.tapir
+struct Point { x: int, y: int }
+property pos: Point;
+
+pos.x = 10;
+pos.y = 20;
+```
+
+```rust
+use tapir_script::{ConvertBetweenTapir, TapirScript, Vector2D};
+
+#[derive(TapirScript)]
+#[tapir("script.tapir")]
+struct MyScript {
+    pos: Vector2D<i32>,  // Vector2D implements ConvertBetweenTapir
+}
+```
+
+### ConvertBetweenTapir Trait
+
+The `ConvertBetweenTapir` trait converts Rust types to/from tapir's internal representation. It's implemented for primitive types and `Vector2D`:
+
+```rust
+use tapir_script::ConvertBetweenTapir;
+
+// Built-in implementations:
+// - i32
+// - bool
+// - Fix
+// - Vector2D<i32>
+// - Vector2D<Fix>
+```
+
+For custom structs, derive the trait:
+
+```rust
+use tapir_script::ConvertBetweenTapir;
+
+#[derive(ConvertBetweenTapir)]
+struct Rectangle {
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
+}
+```
+
+The derive macro generates conversion code that handles each field recursively, so nested structs work automatically:
+
+```rust
+#[derive(ConvertBetweenTapir)]
+struct GameState {
+    position: Vector2D<i32>,  // nested type with ConvertBetweenTapir
+    health: i32,
+}
+```
+
+The field order in the Rust struct must match the field order in the tapir struct definition.
