@@ -1,0 +1,30 @@
+# Integration tests for methods on structs
+
+property result: int;
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn Point.sum(self) -> int {
+    return self.x + self.y;
+}
+
+fn Point.scale(self, factor: int) -> Point {
+    return Point(self.x * factor, self.y * factor);
+}
+
+fn Point.add(self, other: Point) -> Point {
+    return Point(self.x + other.x, self.y + other.y);
+}
+
+# Test struct method calls
+var p1 = Point(3, 4);
+var p2 = Point(1, 2);
+var scaled = p1.scale(2);
+var added = scaled.add(p2);
+result = added.sum();
+# p1.scale(2) = Point(6, 8)
+# Point(6, 8).add(Point(1, 2)) = Point(7, 10)
+# Point(7, 10).sum() = 17

@@ -1,0 +1,13 @@
+# Integration tests for builtin methods on fix
+
+property floor_result: int;
+property ceil_result: int;
+property round_result: int;
+
+var x: fix = 3.7;
+var y: fix = 3.2;
+var z: fix = 3.5;
+
+floor_result = x.floor();  # 3
+ceil_result = y.ceil();    # 4
+round_result = z.round();  # 4 (rounds to nearest, 0.5 rounds up)

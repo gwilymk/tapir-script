@@ -1,0 +1,17 @@
+# Integration tests for method calls
+
+property result: int;
+
+# User-defined method on int
+fn int.double(self) -> int {
+    return self + self;
+}
+
+fn int.add(self, other: int) -> int {
+    return self + other;
+}
+
+# Test basic method call and chaining
+var x: int = 5;
+result = x.double().add(3).double();
+# 5.double() = 10, 10.add(3) = 13, 13.double() = 26
