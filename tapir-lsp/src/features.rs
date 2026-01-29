@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+
 use lsp_types::{
     GotoDefinitionResponse, Hover, HoverContents, InlayHint, InlayHintLabel, Location,
-    MarkupContent, MarkupKind, ParameterInformation, ParameterLabel, Position, SignatureHelp,
-    SignatureInformation, Url,
+    MarkupContent, MarkupKind, ParameterInformation, ParameterLabel, Position,
+    PrepareRenameResponse, SignatureHelp, SignatureInformation, TextEdit, Url, WorkspaceEdit,
 };
 
 use crate::state::FileState;
@@ -287,4 +289,127 @@ pub fn find_references(
     } else {
         Some(locations)
     }
+}
+
+pub fn prepare_rename(
+    file_state: &mut FileState,
+    position: Position,
+) -> Option<PrepareRenameResponse> {
+    let offset = position_to_offset(&file_state.text, position)?;
+
+    // Check if cursor is on a usage span
+    for usage_span in file_state.analysis.references.keys() {
+        if usage_span.contains_offset(offset) {
+            let range = file_state
+                .analysis
+                .diagnostics
+                .span_to_range(*usage_span)
+                .map(source_range_to_lsp_range)?;
+
+            // Extract the current name from the source text
+            let start = usage_span.start();
+            let end = usage_span.end();
+            let placeholder = file_state.text.get(start..end)?.to_string();
+
+            return Some(PrepareRenameResponse::RangeWithPlaceholder { range, placeholder });
+        }
+    }
+
+    // Check if cursor is on a definition span
+    for def_span in file_state.analysis.references.values() {
+        if def_span.contains_offset(offset) {
+            let range = file_state
+                .analysis
+                .diagnostics
+                .span_to_range(*def_span)
+                .map(source_range_to_lsp_range)?;
+
+            let start = def_span.start();
+            let end = def_span.end();
+            let placeholder = file_state.text.get(start..end)?.to_string();
+
+            return Some(PrepareRenameResponse::RangeWithPlaceholder { range, placeholder });
+        }
+    }
+
+    None
+}
+
+pub fn find_rename(
+    file_state: &mut FileState,
+    uri: &Url,
+    position: Position,
+    new_name: String,
+) -> Option<WorkspaceEdit> {
+    let offset = position_to_offset(&file_state.text, position)?;
+
+    // Find the definition span for the symbol at cursor
+    let def_span = {
+        // Check if cursor is on a usage span
+        let mut found_def = None;
+        for (usage_span, def_span) in &file_state.analysis.references {
+            if usage_span.contains_offset(offset) {
+                found_def = Some(*def_span);
+                break;
+            }
+        }
+
+        // If not found as usage, check if cursor is on a definition span
+        if found_def.is_none() {
+            for def_span in file_state.analysis.references.values() {
+                if def_span.contains_offset(offset) {
+                    found_def = Some(*def_span);
+                    break;
+                }
+            }
+        }
+
+        found_def?
+    };
+
+    // Collect all text edits
+    let mut edits = Vec::new();
+
+    // Add edit for the definition
+    if let Some(range) = file_state
+        .analysis
+        .diagnostics
+        .span_to_range(def_span)
+        .map(source_range_to_lsp_range)
+    {
+        edits.push(TextEdit {
+            range,
+            new_text: new_name.clone(),
+        });
+    }
+
+    // Add edits for all usages (skip the definition itself since we already added it)
+    for (usage_span, usage_def_span) in &file_state.analysis.references {
+        if *usage_def_span == def_span
+            && *usage_span != def_span
+            && let Some(range) = file_state
+                .analysis
+                .diagnostics
+                .span_to_range(*usage_span)
+                .map(source_range_to_lsp_range)
+        {
+            edits.push(TextEdit {
+                range,
+                new_text: new_name.clone(),
+            });
+        }
+    }
+
+    if edits.is_empty() {
+        return None;
+    }
+
+    let mut changes = HashMap::new();
+    changes.insert(uri.clone(), edits);
+
+    Some(WorkspaceEdit {
+        changes: Some(changes),
+        document_changes: None,
+        change_annotations: None,
+    })
 }

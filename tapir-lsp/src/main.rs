@@ -9,8 +9,8 @@ use std::{collections::HashMap, error::Error};
 
 use lsp_server::{Connection, Message};
 use lsp_types::{
-    HoverProviderCapability, InitializeParams, OneOf, ServerCapabilities, SignatureHelpOptions,
-    TextDocumentSyncCapability, TextDocumentSyncKind, Url,
+    HoverProviderCapability, InitializeParams, OneOf, RenameOptions, ServerCapabilities,
+    SignatureHelpOptions, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
 };
 
 use handlers::{handle_notification, handle_request};
@@ -32,6 +32,10 @@ fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
             work_done_progress_options: Default::default(),
         }),
         inlay_hint_provider: Some(OneOf::Left(true)),
+        rename_provider: Some(OneOf::Right(RenameOptions {
+            prepare_provider: Some(true),
+            work_done_progress_options: Default::default(),
+        })),
         ..Default::default()
     };
 

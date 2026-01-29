@@ -4,16 +4,19 @@ use std::error::Error;
 use lsp_server::{Connection, Message, Notification, Response};
 use lsp_types::{
     DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams, HoverParams,
-    InlayHintParams, ReferenceParams, SignatureHelpParams, Url,
+    InlayHintParams, ReferenceParams, RenameParams, SignatureHelpParams,
+    TextDocumentPositionParams, Url,
     notification::{DidChangeTextDocument, DidOpenTextDocument, Notification as _},
     request::{
-        GotoDefinition, HoverRequest, InlayHintRequest, References, Request, SignatureHelpRequest,
+        GotoDefinition, HoverRequest, InlayHintRequest, PrepareRenameRequest, References, Rename,
+        Request, SignatureHelpRequest,
     },
 };
 
 use crate::diagnostics::analyse_and_publish;
 use crate::features::{
-    find_definition, find_hover, find_references, find_signature_help, get_inlay_hints,
+    find_definition, find_hover, find_references, find_rename, find_signature_help,
+    get_inlay_hints, prepare_rename,
 };
 use crate::state::FileState;
 
@@ -100,6 +103,38 @@ pub fn handle_request(
             let uri = params.text_document.uri;
 
             let response = files.get(&uri).map(get_inlay_hints);
+
+            let result = serde_json::to_value(response)?;
+            connection
+                .sender
+                .send(Message::Response(Response::new_ok(id, result)))?;
+        }
+        PrepareRenameRequest::METHOD => {
+            let (id, params): (_, TextDocumentPositionParams) =
+                request.extract(PrepareRenameRequest::METHOD)?;
+
+            let uri = params.text_document.uri;
+            let position = params.position;
+
+            let response = files
+                .get_mut(&uri)
+                .and_then(|state| prepare_rename(state, position));
+
+            let result = serde_json::to_value(response)?;
+            connection
+                .sender
+                .send(Message::Response(Response::new_ok(id, result)))?;
+        }
+        Rename::METHOD => {
+            let (id, params): (_, RenameParams) = request.extract(Rename::METHOD)?;
+
+            let uri = params.text_document_position.text_document.uri;
+            let position = params.text_document_position.position;
+            let new_name = params.new_name;
+
+            let response = files
+                .get_mut(&uri)
+                .and_then(|state| find_rename(state, &uri, position, new_name));
 
             let result = serde_json::to_value(response)?;
             connection
