@@ -291,6 +291,32 @@ pub fn find_references(
     }
 }
 
+/// Check if a definition span corresponds to a function definition.
+/// Returns true if the span is preceded by `fn `.
+fn is_function_definition(text: &str, def_start: usize) -> bool {
+    // Look backwards from the definition start, skipping whitespace
+    let bytes = text.as_bytes();
+    let mut pos = def_start;
+
+    // Skip whitespace backwards
+    while pos > 0 && (bytes[pos - 1] as char).is_whitespace() {
+        pos -= 1;
+    }
+
+    // Check for "fn" keyword (need at least 2 chars)
+    if pos >= 2 {
+        let potential_fn = &text[pos - 2..pos];
+        if potential_fn == "fn" {
+            // Make sure it's not part of a larger identifier
+            if pos == 2 || !bytes[pos - 3].is_ascii_alphanumeric() && bytes[pos - 3] != b'_' {
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
 pub fn prepare_rename(
     file_state: &mut FileState,
     position: Position,
@@ -298,37 +324,52 @@ pub fn prepare_rename(
     let offset = position_to_offset(&file_state.text, position)?;
 
     // Check if cursor is on a usage span
-    for usage_span in file_state.analysis.references.keys() {
+    for (usage_span, def_span) in &file_state.analysis.references {
         if usage_span.contains_offset(offset) {
+            // Refuse to rename if the definition is a function
+            if is_function_definition(&file_state.text, def_span.start()) {
+                return None;
+            }
+
+            let start = usage_span.start();
+            let end = usage_span.end();
+            let name = file_state.text.get(start..end)?;
+
             let range = file_state
                 .analysis
                 .diagnostics
                 .span_to_range(*usage_span)
                 .map(source_range_to_lsp_range)?;
 
-            // Extract the current name from the source text
-            let start = usage_span.start();
-            let end = usage_span.end();
-            let placeholder = file_state.text.get(start..end)?.to_string();
-
-            return Some(PrepareRenameResponse::RangeWithPlaceholder { range, placeholder });
+            return Some(PrepareRenameResponse::RangeWithPlaceholder {
+                range,
+                placeholder: name.to_string(),
+            });
         }
     }
 
     // Check if cursor is on a definition span
     for def_span in file_state.analysis.references.values() {
         if def_span.contains_offset(offset) {
+            // Refuse to rename if this is a function definition
+            if is_function_definition(&file_state.text, def_span.start()) {
+                return None;
+            }
+
+            let start = def_span.start();
+            let end = def_span.end();
+            let name = file_state.text.get(start..end)?;
+
             let range = file_state
                 .analysis
                 .diagnostics
                 .span_to_range(*def_span)
                 .map(source_range_to_lsp_range)?;
 
-            let start = def_span.start();
-            let end = def_span.end();
-            let placeholder = file_state.text.get(start..end)?.to_string();
-
-            return Some(PrepareRenameResponse::RangeWithPlaceholder { range, placeholder });
+            return Some(PrepareRenameResponse::RangeWithPlaceholder {
+                range,
+                placeholder: name.to_string(),
+            });
         }
     }
 
