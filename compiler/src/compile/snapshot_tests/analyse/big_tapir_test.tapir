@@ -1,8 +1,12 @@
 # Complex character animation controller
 # Controls a player character with multiple animation states, effects, and interactions
 
-property x: int;
-property y: int;
+# Struct definitions
+struct Vec2 { x: int, y: int }
+struct Rect { origin: Vec2, size: Vec2 }
+struct Stats { attack: int, defense: int, speed: fix }
+
+# Primitive properties
 property sprite_frame: int;
 property facing_direction: int;
 property health: int;
@@ -10,10 +14,17 @@ property is_invincible: bool;
 property opacity: fix;
 property scale: fix;
 
+# Struct-typed properties
+property position: Vec2;
+property velocity: Vec2;
+property hitbox: Rect;
+property player_stats: Stats;
+
 global animation_speed = 4;
 global idle_frame_count = 0;
 global attack_combo = 0;
 global is_attacking = false;
+global base_position = Vec2(100, 100);
 
 extern fn play_sound(sound_id: int);
 extern fn spawn_particle(x: int, y: int, particle_type: int);
@@ -21,9 +32,66 @@ extern fn get_input_x() -> int;
 extern fn get_input_y() -> int;
 extern fn is_button_pressed(button: int) -> bool;
 
+# Methods on Vec2 struct
+fn Vec2.length_squared(self) -> int {
+    return self.x * self.x + self.y * self.y;
+}
+
+fn Vec2.add(self, other: Vec2) -> Vec2 {
+    return Vec2(self.x + other.x, self.y + other.y);
+}
+
+fn Vec2.scale(self, factor: int) -> Vec2 {
+    return Vec2(self.x * factor, self.y * factor);
+}
+
+# Methods on Rect struct
+fn Rect.contains(self, point: Vec2) -> bool {
+    return point.x >= self.origin.x
+        && point.x < self.origin.x + self.size.x
+        && point.y >= self.origin.y
+        && point.y < self.origin.y + self.size.y;
+}
+
+fn Rect.center(self) -> Vec2 {
+    return Vec2(
+        self.origin.x + self.size.x / 2,
+        self.origin.y + self.size.y / 2
+    );
+}
+
+# Methods on primitive types
+fn int.abs(self) -> int {
+    if self < 0 {
+        return 0 - self;
+    }
+    return self;
+}
+
+fn int.clamp(self, min: int, max: int) -> int {
+    if self < min {
+        return min;
+    }
+    if self > max {
+        return max;
+    }
+    return self;
+}
+
+fn fix.clamp(self, min: fix, max: fix) -> fix {
+    if self < min {
+        return min;
+    }
+    if self > max {
+        return max;
+    }
+    return self;
+}
+
 # Main animation loop
 spawn idle_animation();
 spawn handle_movement();
+spawn update_hitbox();
 
 loop {
     # Check for attack input
@@ -74,8 +142,12 @@ fn handle_movement() {
         var dx = get_input_x();
         var dy = get_input_y();
 
-        x = x + dx * 2;
-        y = y + dy * 2;
+        # Update position using struct property
+        position.x = position.x + dx * 2;
+        position.y = position.y + dy * 2;
+
+        # Use velocity struct
+        velocity = Vec2(dx, dy).scale(2);
 
         # Update facing direction
         if dx > 0 {
@@ -95,9 +167,27 @@ fn handle_movement() {
     }
 }
 
+fn update_hitbox() {
+    loop {
+        # Update hitbox origin to follow position
+        hitbox.origin = position;
+
+        # Check if player is at base position using method
+        var dist_sq = position.add(Vec2(0 - base_position.x, 0 - base_position.y)).length_squared();
+        if dist_sq < 100 {
+            trigger AtBase;
+        }
+
+        wait;
+    }
+}
+
 fn attack_sequence() {
     is_attacking = true;
     attack_combo = attack_combo + 1;
+
+    # Use player stats for attack calculation
+    var damage = player_stats.attack + attack_combo * 2;
 
     play_sound(1);
 
@@ -106,7 +196,7 @@ fn attack_sequence() {
     wait;
     wait;
     sprite_frame = 11;
-    spawn_particle(x, y, 0);
+    spawn_particle(position.x, position.y, 0);
     wait;
     wait;
     sprite_frame = 12;
@@ -143,7 +233,9 @@ event fn on_damage(amount: int) {
         return;
     }
 
-    health = health - amount;
+    # Use defense stat to reduce damage
+    var actual_damage = (amount - player_stats.defense).clamp(1, 100);
+    health = health - actual_damage;
     play_sound(2);
 
     # ERROR: Undeclared variable 'damage_taken'
@@ -197,7 +289,7 @@ fn death_sequence() {
             break;
         }
 
-        y = y + 1;
+        position.y = position.y + 1;
         # ERROR: Binary operation between incompatible types (fix - int)
         opacity = opacity - 3;
         scale = scale - 0.02;
@@ -213,14 +305,12 @@ event fn on_heal(amount: int) {
     var new_health = health + amount;
 
     # Cap at max health (100)
-    if new_health > 100 {
-        new_health = 100;
-    }
+    new_health = new_health.clamp(0, 100);
 
     health = new_health;
 
     # Healing effect
-    spawn_particle(x, y - 10, 1);
+    spawn_particle(position.x, position.y - 10, 1);
     play_sound(4);
 
     # Brief scale pulse
@@ -243,11 +333,11 @@ fn charge_attack() {
         # Visual feedback for charge levels
         if charge_level == 30 {
             scale = 1.1;
-            spawn_particle(x, y, 2);
+            spawn_particle(position.x, position.y, 2);
         }
         if charge_level == 60 {
             scale = 1.2;
-            spawn_particle(x, y, 3);
+            spawn_particle(position.x, position.y, 3);
         }
 
         wait;
@@ -265,4 +355,28 @@ fn charge_attack() {
     }
 
     scale = 1.0;
+}
+
+# ERROR: Method on undefined struct
+fn Undefined.broken(self) -> int {
+    return 0;
+}
+
+# ERROR: Wrong self type in method body
+fn Vec2.bad_method(self) -> int {
+    # ERROR: Trying to access field on wrong type
+    return self.nonexistent;
+}
+
+fn test_chained_methods() {
+    var v = Vec2(3, 4);
+    # Chained method calls
+    var result = v.add(Vec2(1, 1)).scale(2).length_squared();
+
+    # Method on struct property
+    var pos_len = position.length_squared();
+
+    # Method on primitive
+    var clamped = health.clamp(0, 100);
+    var abs_val = (0 - 5).abs();
 }

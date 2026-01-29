@@ -271,10 +271,10 @@ mod test {
             "Expected errors in big_tapir_test.tapir"
         );
 
-        // Should have extracted properties
+        // Should have extracted properties (including struct-typed ones expanded to fields)
         assert!(!result.properties.is_empty(), "Expected properties");
-        assert!(result.properties.iter().any(|p| p.name == "x"));
-        assert!(result.properties.iter().any(|p| p.name == "health"));
+        assert!(result.properties.iter().any(|p| p.name == "position.x")); // struct property field
+        assert!(result.properties.iter().any(|p| p.name == "health")); // primitive property
 
         // Should have extracted globals
         assert!(!result.globals.is_empty(), "Expected globals");
