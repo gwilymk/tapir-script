@@ -3,12 +3,59 @@
 
 extern crate alloc;
 
-pub use tapir_script_macros::TapirScript;
+pub use tapir_script_macros::{ConvertBetweenTapir, TapirScript};
 pub use vm::{Script, TapirScript};
 
 pub type Fix = agb_fixnum::Num<i32, 8>;
 
 pub use alloc::vec::Vec;
+
+/// Trait for converting Rust types to/from tapir's i32 stack representation.
+///
+/// This trait handles both scalar types (i32, Fix, bool) and composite types (structs).
+/// For structs, derive this trait using `#[derive(ConvertBetweenTapir)]`.
+pub trait ConvertBetweenTapir: Sized {
+    /// Writes self into target slice, assuming target has enough space.
+    /// Returns the number of i32 slots used.
+    fn write_to_tapir(&self, target: &mut [i32]) -> usize;
+
+    /// Reads Self from the values slice.
+    /// Returns Self and the number of i32 slots consumed.
+    fn read_from_tapir(values: &[i32]) -> (Self, usize);
+}
+
+impl ConvertBetweenTapir for i32 {
+    fn write_to_tapir(&self, target: &mut [i32]) -> usize {
+        target[0] = *self;
+        1
+    }
+
+    fn read_from_tapir(values: &[i32]) -> (Self, usize) {
+        (values[0], 1)
+    }
+}
+
+impl ConvertBetweenTapir for bool {
+    fn write_to_tapir(&self, target: &mut [i32]) -> usize {
+        target[0] = (*self).into();
+        1
+    }
+
+    fn read_from_tapir(values: &[i32]) -> (Self, usize) {
+        (values[0] != 0, 1)
+    }
+}
+
+impl ConvertBetweenTapir for Fix {
+    fn write_to_tapir(&self, target: &mut [i32]) -> usize {
+        target[0] = self.to_raw();
+        1
+    }
+
+    fn read_from_tapir(values: &[i32]) -> (Self, usize) {
+        (Fix::from_raw(values[0]), 1)
+    }
+}
 
 pub trait TapirProperty {
     fn to_i32(&self) -> i32;

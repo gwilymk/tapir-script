@@ -107,68 +107,27 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
             let index = property.index as u8;
 
             if let Some(ref struct_info) = property.struct_info {
-                // Struct property - generate tuple conversion code
+                // Struct property - use ConvertBetweenTapir trait
                 let field_ident = format_ident!("{}", struct_info.rust_field_name);
                 let tuple_position = struct_info.tuple_position;
                 let total_fields = struct_info.total_fields();
 
-                // Generate the tuple type annotation (e.g., (i32, i32))
-                let tuple_types: Vec<_> = struct_info
-                    .field_types
-                    .iter()
-                    .map(|ty| match ty {
-                        Type::Int => quote!(i32),
-                        Type::Fix => quote!(i32),
-                        Type::Bool => quote!(i32),
-                        _ => panic!("Unexpected field type in struct property: {ty}"),
-                    })
-                    .collect();
-
-                // Generate getter - destructure and return the specific field
-                // e.g., let (v0, _, v2): (i32, i32, i32) = self.pos.clone().into(); v1
-                let getter_destructure: Vec<_> = (0..total_fields)
-                    .map(|i| {
-                        if i == tuple_position {
-                            format_ident!("v{}", i)
-                        } else {
-                            format_ident!("_")
-                        }
-                    })
-                    .collect();
-                let result_ident = format_ident!("v{}", tuple_position);
+                // Generate getter - convert struct to i32 buffer, return value at position
                 let getter = quote! {
                     #index => {
-                        let (#(#getter_destructure),*): (#(#tuple_types),*) = self.#field_ident.clone().into();
-                        #result_ident
+                        let mut buffer = [0i32; #total_fields];
+                        ::tapir_script::ConvertBetweenTapir::write_to_tapir(&self.#field_ident, &mut buffer);
+                        buffer[#tuple_position]
                     }
                 };
 
-                // Generate setter - get all values, replace one, reconstruct
-                // e.g., let (v0, _, v2): (i32, i32, i32) = self.pos.clone().into();
-                //       self.pos = From::from((v0, value, v2));
-                let setter_destructure: Vec<_> = (0..total_fields)
-                    .map(|i| {
-                        if i == tuple_position {
-                            format_ident!("_")
-                        } else {
-                            format_ident!("v{}", i)
-                        }
-                    })
-                    .collect();
-                let reconstruct_args: Vec<_> = (0..total_fields)
-                    .map(|i| {
-                        if i == tuple_position {
-                            quote!(value)
-                        } else {
-                            let ident = format_ident!("v{}", i);
-                            quote!(#ident)
-                        }
-                    })
-                    .collect();
+                // Generate setter - convert to buffer, modify value, reconstruct
                 let setter = quote! {
                     #index => {
-                        let (#(#setter_destructure),*): (#(#tuple_types),*) = self.#field_ident.clone().into();
-                        self.#field_ident = (#(#reconstruct_args),*).into();
+                        let mut buffer = [0i32; #total_fields];
+                        ::tapir_script::ConvertBetweenTapir::write_to_tapir(&self.#field_ident, &mut buffer);
+                        buffer[#tuple_position] = value;
+                        self.#field_ident = ::tapir_script::ConvertBetweenTapir::read_from_tapir(&buffer).0;
                     }
                 };
 
@@ -445,4 +404,69 @@ fn extract_field_names(named: &syn::FieldsNamed) -> Vec<String> {
         .iter()
         .map(|field| field.ident.as_ref().unwrap().to_string())
         .collect()
+}
+
+/// Derive macro implementation for ConvertBetweenTapir trait.
+/// Generates into_tapir and from_tapir implementations that recursively
+/// convert each field.
+pub fn convert_between_tapir_derive(struct_def: TokenStream) -> TokenStream {
+    let ast: DeriveInput = parse2(struct_def).unwrap();
+
+    let syn::Data::Struct(data) = &ast.data else {
+        panic!("ConvertBetweenTapir can only be derived on structs");
+    };
+
+    let syn::Fields::Named(named_fields) = &data.fields else {
+        panic!("ConvertBetweenTapir requires named fields");
+    };
+
+    let struct_name = &ast.ident;
+    let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
+
+    let field_idents: Vec<_> = named_fields
+        .named
+        .iter()
+        .map(|f| f.ident.as_ref().unwrap())
+        .collect();
+
+    // Generate into_tapir: write each field recursively
+    let into_tapir_writes: Vec<_> = field_idents
+        .iter()
+        .map(|ident| {
+            quote! {
+                index += ::tapir_script::ConvertBetweenTapir::write_to_tapir(&self.#ident, &mut target[index..]);
+            }
+        })
+        .collect();
+
+    // Generate from_tapir: read each field recursively
+    let from_tapir_reads: Vec<_> = field_idents
+        .iter()
+        .map(|ident| {
+            quote! {
+                let (#ident, next_idx) = ::tapir_script::ConvertBetweenTapir::read_from_tapir(&values[index..]);
+                index += next_idx;
+            }
+        })
+        .collect();
+
+    quote! {
+        #[automatically_derived]
+        impl #impl_generics ::tapir_script::ConvertBetweenTapir for #struct_name #ty_generics #where_clause {
+            fn write_to_tapir(&self, target: &mut [i32]) -> usize {
+                let mut index = 0;
+                #(#into_tapir_writes)*
+                index
+            }
+
+            fn read_from_tapir(values: &[i32]) -> (Self, usize) {
+                let mut index = 0;
+                #(#from_tapir_reads)*
+                (
+                    Self { #(#field_idents,)* },
+                    index
+                )
+            }
+        }
+    }
 }

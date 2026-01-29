@@ -1,23 +1,10 @@
-use tapir_script::TapirScript;
+use tapir_script::{ConvertBetweenTapir, TapirScript};
 
 /// A simple 2D vector for testing struct properties.
-/// Implements From/Into for (i32, i32) tuple conversion.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, ConvertBetweenTapir)]
 struct Vector2D {
     x: i32,
     y: i32,
-}
-
-impl From<(i32, i32)> for Vector2D {
-    fn from((x, y): (i32, i32)) -> Self {
-        Vector2D { x, y }
-    }
-}
-
-impl From<Vector2D> for (i32, i32) {
-    fn from(v: Vector2D) -> (i32, i32) {
-        (v.x, v.y)
-    }
 }
 
 #[derive(TapirScript)]
@@ -56,27 +43,11 @@ fn test_struct_property_initial_values() {
 }
 
 /// A rectangle composed of two Vector2D points.
-/// Implements From/Into for flat tuples: (i32, i32, i32, i32)
-/// Field order: origin.x, origin.y, size.x, size.y
-#[derive(Clone, Debug, PartialEq)]
+/// ConvertBetweenTapir recursively converts nested structs.
+#[derive(Clone, Debug, PartialEq, ConvertBetweenTapir)]
 struct Rectangle {
     origin: Vector2D,
     size: Vector2D,
-}
-
-impl From<(i32, i32, i32, i32)> for Rectangle {
-    fn from((ox, oy, sx, sy): (i32, i32, i32, i32)) -> Self {
-        Rectangle {
-            origin: Vector2D { x: ox, y: oy },
-            size: Vector2D { x: sx, y: sy },
-        }
-    }
-}
-
-impl From<Rectangle> for (i32, i32, i32, i32) {
-    fn from(r: Rectangle) -> (i32, i32, i32, i32) {
-        (r.origin.x, r.origin.y, r.size.x, r.size.y)
-    }
 }
 
 #[derive(TapirScript)]
