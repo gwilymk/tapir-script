@@ -300,4 +300,147 @@ mod test {
         // Should have extracted hover info
         assert!(!result.hover_info.is_empty(), "Expected hover info");
     }
+
+    // Smoke tests - ensure analyse doesn't panic on various inputs
+
+    fn default_settings() -> CompileSettings {
+        CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+        }
+    }
+
+    #[test]
+    fn analyse_smoke_structs() {
+        let input = r#"
+            struct Point { x: int, y: int }
+            struct Rect { origin: Point, size: Point }
+
+            fn test() {
+                var p = Point(1, 2);
+                var r = Rect(Point(0, 0), Point(10, 10));
+                p.x = 5;
+                var sum = p.x + p.y;
+            }
+        "#;
+        let _ = analyse("test.tapir", input, &default_settings());
+    }
+
+    #[test]
+    fn analyse_smoke_methods() {
+        let input = r#"
+            struct Point { x: int, y: int }
+
+            fn Point.sum(self) -> int {
+                return self.x + self.y;
+            }
+
+            fn int.double(self) -> int {
+                return self + self;
+            }
+
+            fn test() {
+                var p = Point(3, 4);
+                var total = p.sum();
+                var x: int = 5;
+                var doubled = x.double();
+            }
+        "#;
+        let _ = analyse("test.tapir", input, &default_settings());
+    }
+
+    #[test]
+    fn analyse_smoke_concurrency() {
+        let input = r#"
+            global counter = 0;
+
+            fn worker() {
+                loop {
+                    counter = counter + 1;
+                    wait;
+                }
+            }
+
+            spawn worker();
+            spawn worker();
+            wait;
+        "#;
+        let _ = analyse("test.tapir", input, &default_settings());
+    }
+
+    #[test]
+    fn analyse_smoke_properties() {
+        let input = r#"
+            struct Point { x: int, y: int }
+
+            property health: int;
+            property position: Point;
+            property speed: fix;
+
+            fn test() {
+                health = 100;
+                var h = health;
+                position = Point(10, 20);
+                position.x = 5;
+                var px = position.x;
+                speed = 1.5;
+            }
+        "#;
+        let _ = analyse("test.tapir", input, &default_settings());
+    }
+
+    #[test]
+    fn analyse_smoke_parse_errors() {
+        // Missing semicolons, braces, etc.
+        let inputs = [
+            "fn test() { var x = 1 }",  // missing semicolon
+            "fn test() { if true }",    // missing braces
+            "fn test( { }",             // missing close paren
+            "struct { x: int }",        // missing struct name
+            "",                         // empty input
+            "fn",                       // incomplete
+        ];
+
+        for input in inputs {
+            let _ = analyse("test.tapir", input, &default_settings());
+        }
+    }
+
+    #[test]
+    fn analyse_smoke_type_errors() {
+        let inputs = [
+            "fn test() { var x: int = true; }",   // type mismatch
+            "fn test() { var x = 1 + 1.0; }",     // int + fix
+            "fn test() { var x = unknown; }",    // undefined variable
+            "fn test() { unknown_fn(); }",       // undefined function
+            "fn test() { var p = Point(1, 2); }", // undefined struct
+        ];
+
+        for input in inputs {
+            let _ = analyse("test.tapir", input, &default_settings());
+        }
+    }
+
+    #[test]
+    fn analyse_smoke_edge_cases() {
+        let inputs = [
+            // Deeply nested
+            "fn test() { if true { if true { if true { var x = 1; } } } }",
+            // Many variables
+            "fn test() { var a, b, c, d, e = 1, 2, 3, 4, 5; }",
+            // Chained method calls
+            r#"
+                fn int.a(self) -> int { return self; }
+                fn test() { var x: int = 1; var y = x.a().a().a(); }
+            "#,
+            // Self-referential spawn
+            "fn recurse() { spawn recurse(); } fn test() { spawn recurse(); }",
+            // Shadowing
+            "global x = 1; fn test() { var x = 2; { var x = 3; } }",
+        ];
+
+        for input in inputs {
+            let _ = analyse("test.tapir", input, &default_settings());
+        }
+    }
 }

@@ -222,6 +222,11 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             return;
         }
 
+        // Skip struct property bases - they don't have entries in the type table
+        if SymTab::is_struct_property_base_symbol(symbol_id) {
+            return;
+        }
+
         if self.type_table.len() <= symbol_id.0 as usize {
             self.type_table.resize(symbol_id.0 as usize + 1, None);
         }
