@@ -506,6 +506,11 @@ pub enum BinaryOperator {
     FixMul,
     FixDiv,
 
+    Shl,
+    Shr,
+    BitAnd,
+    BitOr,
+
     EqEq,
     NeEq,
     Gt,
@@ -548,6 +553,7 @@ impl BinaryOperator {
                 matches!(lhs_type, Type::Fix | Type::Int)
             }
             B::FixMul | B::FixDiv => matches!(lhs_type, Type::Fix),
+            B::Shl | B::Shr | B::BitAnd | B::BitOr => matches!(lhs_type, Type::Int),
             B::EqEq | B::NeEq => !matches!(lhs_type, Type::Error),
             B::Then => true,
             B::And | B::Or => matches!(lhs_type, Type::Bool),
@@ -566,7 +572,11 @@ impl BinaryOperator {
             | B::RealDiv
             | B::RealMod
             | B::FixMul
-            | B::FixDiv => lhs_type,
+            | B::FixDiv
+            | B::Shl
+            | B::Shr
+            | B::BitAnd
+            | B::BitOr => lhs_type,
 
             B::EqEq | B::NeEq | B::Gt | B::GtEq | B::Lt | B::LtEq | B::And | B::Or => Type::Bool,
             B::Then => rhs_type,
@@ -589,6 +599,10 @@ impl Display for BinaryOperator {
                 BinaryOperator::RealMod => "%%",
                 BinaryOperator::FixMul => "f*",
                 BinaryOperator::FixDiv => "f/",
+                BinaryOperator::Shl => "<<",
+                BinaryOperator::Shr => ">>",
+                BinaryOperator::BitAnd => "&",
+                BinaryOperator::BitOr => "|",
                 BinaryOperator::EqEq => "==",
                 BinaryOperator::NeEq => "!=",
                 BinaryOperator::Gt => ">",

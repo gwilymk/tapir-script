@@ -1,0 +1,5 @@
+# Bitwise operators only work on int, not fix or bool
+var a = 3.5 << 1;
+var b = 1 & true;
+var c = 3.0 | 2;
+var d = false >> 1;

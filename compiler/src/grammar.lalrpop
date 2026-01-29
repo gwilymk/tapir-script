@@ -71,6 +71,10 @@ extern {
         "<=" => Token::OperatorLtEq,
         "||" => Token::OperatorOr,
         "&&" => Token::OperatorAnd,
+        "<<" => Token::OperatorShl,
+        ">>" => Token::OperatorShr,
+        "&" => Token::OperatorBitAnd,
+        "|" => Token::OperatorBitOr,
         "." => Token::Dot,
     }
 }
@@ -344,30 +348,45 @@ Expression: Expression<'input> = {
 
     #[precedence(level="2")]
     #[assoc(side="left")]
-    <start: @L> <lhs: Expression> <operator: MulDiv> <rhs: Expression> <end: @R> => 
+    <start: @L> <lhs: Expression> <operator: MulDiv> <rhs: Expression> <end: @R> =>
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
     #[precedence(level="3")]
     #[assoc(side="left")]
-    <start: @L> <lhs: Expression> <operator: AddSub> <rhs: Expression> <end: @R> => 
+    <start: @L> <lhs: Expression> <operator: AddSub> <rhs: Expression> <end: @R> =>
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
     #[precedence(level="4")]
-    #[assoc(side="none")]
-    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> =>
+    #[assoc(side="left")]
+    <start: @L> <lhs: Expression> <operator: Shift> <rhs: Expression> <end: @R> =>
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
     #[precedence(level="5")]
     #[assoc(side="left")]
+    <start: @L> <lhs: Expression> "&" <rhs: Expression> <end: @R> =>
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::BitAnd, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+
+    #[precedence(level="6")]
+    #[assoc(side="left")]
+    <start: @L> <lhs: Expression> "|" <rhs: Expression> <end: @R> =>
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::BitOr, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+
+    #[precedence(level="7")]
+    #[assoc(side="none")]
+    <start: @L> <lhs: Expression> <operator: ComparisonOp> <rhs: Expression> <end: @R> =>
+        ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator, rhs: Box::new(rhs) }.with_span(file_id, start, end),
+
+    #[precedence(level="8")]
+    #[assoc(side="left")]
     <start: @L> <lhs: Expression> "&&" <rhs: Expression> <end: @R> =>
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::And, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
-    #[precedence(level="6")]
+    #[precedence(level="9")]
     #[assoc(side="left")]
     <start: @L> <lhs: Expression> "||" <rhs: Expression> <end: @R> =>
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::Or, rhs: Box::new(rhs) }.with_span(file_id, start, end),
 
-    #[precedence(level="7")]
+    #[precedence(level="10")]
     #[assoc(side="none")]
     <start: @L> <lhs: Expression> <operator: then> <rhs: Expression> <end: @R> =>
         ExpressionKind::BinaryOperation { lhs: Box::new(lhs), operator: BinaryOperator::Then, rhs: Box::new(rhs) }.with_span(file_id, start, end),
@@ -384,6 +403,11 @@ MulDiv: BinaryOperator = {
 AddSub: BinaryOperator = {
     "+" => BinaryOperator::Add,
     "-" => BinaryOperator::Sub,
+}
+
+Shift: BinaryOperator = {
+    "<<" => BinaryOperator::Shl,
+    ">>" => BinaryOperator::Shr,
 }
 
 ComparisonOp: BinaryOperator = {

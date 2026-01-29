@@ -1,0 +1,162 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/strength_reduction.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.17 = int 5
+v.18 = temp.17
+temp.19 = v.18
+temp.20 = multiply_power_of_two(temp.19)
+temp.21 = v.18
+temp.22 = multiply_power_of_two_lhs(temp.21)
+temp.23 = temp.20 + temp.22
+temp.24 = temp.23
+storeprop temp.24, 0
+return 
+
+=======================
+fn multiply_power_of_two(x.2) -> int
+
+---- block 0 ----
+temp.25 = x.2
+temp.26 = int 8
+temp.27 = temp.25 * temp.26
+return temp.27
+
+=======================
+fn multiply_power_of_two_lhs(x.3) -> int
+
+---- block 0 ----
+temp.28 = int 4
+temp.29 = x.3
+temp.30 = temp.28 * temp.29
+return temp.30
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.17 = int 5
+v.18 = temp.17
+temp.19 = temp.17
+temp.20 = multiply_power_of_two(temp.17)
+temp.21 = temp.17
+temp.22 = multiply_power_of_two_lhs(temp.17)
+temp.23 = temp.20 + temp.22
+temp.24 = temp.23
+storeprop temp.23, 0
+return 
+
+=======================
+fn multiply_power_of_two(x.2) -> int
+
+---- block 0 ----
+temp.25 = x.2
+temp.26 = int 8
+temp.27 = x.2 * temp.26
+return temp.27
+
+=======================
+fn multiply_power_of_two_lhs(x.3) -> int
+
+---- block 0 ----
+temp.28 = int 4
+temp.29 = x.3
+temp.30 = temp.28 * x.3
+return temp.30
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.17 = int 5
+temp.20 = multiply_power_of_two(temp.17)
+temp.22 = multiply_power_of_two_lhs(temp.17)
+temp.23 = temp.20 + temp.22
+storeprop temp.23, 0
+return 
+
+=======================
+fn multiply_power_of_two(x.2) -> int
+
+---- block 0 ----
+temp.26 = int 8
+temp.27 = x.2 * temp.26
+return temp.27
+
+=======================
+fn multiply_power_of_two_lhs(x.3) -> int
+
+---- block 0 ----
+temp.28 = int 4
+temp.30 = temp.28 * x.3
+return temp.30
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.17 = int 5
+temp.20 = multiply_power_of_two(temp.17)
+temp.22 = multiply_power_of_two_lhs(temp.17)
+temp.23 = temp.20 + temp.22
+storeprop temp.23, 0
+return 
+
+=======================
+fn multiply_power_of_two(x.2) -> int
+
+---- block 0 ----
+temp.26 = int 8
+temp.31 = int 3
+temp.27 = x.2 << temp.31
+return temp.27
+
+=======================
+fn multiply_power_of_two_lhs(x.3) -> int
+
+---- block 0 ----
+temp.28 = int 4
+temp.32 = int 2
+temp.30 = x.3 << temp.32
+return temp.30
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.17 = int 5
+temp.20 = multiply_power_of_two(temp.17)
+temp.22 = multiply_power_of_two_lhs(temp.17)
+temp.23 = temp.20 + temp.22
+storeprop temp.23, 0
+return 
+
+=======================
+fn multiply_power_of_two(x.2) -> int
+
+---- block 0 ----
+temp.31 = int 3
+temp.27 = x.2 << temp.31
+return temp.27
+
+=======================
+fn multiply_power_of_two_lhs(x.3) -> int
+
+---- block 0 ----
+temp.32 = int 2
+temp.30 = x.3 << temp.32
+return temp.30

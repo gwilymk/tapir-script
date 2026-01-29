@@ -1,0 +1,85 @@
+---
+source: vm/src/lib.rs
+expression: stack_at_waits
+input_file: vm/src/snapshot_tests/stack/bitwise_ops.tapir
+---
+[
+  ([
+    [
+      -1,
+      8,
+      1,
+      1,
+      0,
+      3,
+      0,
+      117440516,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([
+    [
+      -1,
+      4,
+      16,
+      1,
+      2,
+      3,
+      0,
+      117440527,
+      16,
+    ],
+  ], PropObj(
+    int_prop: 8,
+  )),
+  ([
+    [
+      -1,
+      5,
+      1,
+      1,
+      2,
+      3,
+      5,
+      117440538,
+      5,
+    ],
+  ], PropObj(
+    int_prop: 4,
+  )),
+  ([
+    [
+      -1,
+      7,
+      5,
+      1,
+      2,
+      3,
+      5,
+      117440545,
+      5,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      6,
+      3,
+      1,
+      2,
+      3,
+      5,
+      117440552,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 7,
+  )),
+  ([], PropObj(
+    int_prop: 6,
+  )),
+]

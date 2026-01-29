@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/grammar_test.rs
+source: compiler/src/grammar_test.rs
 expression: diagnostics.pretty_string(false)
-input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/non_associative_comparison.tapir
+input_file: compiler/src/snapshot_tests/grammar/errors/non_associative_comparison.tapir
 ---
 [E0026] Error: Unexpected token OperatorEqEq
    ╭─[ non_associative_comparison.tapir:1:16 ]
@@ -10,5 +10,5 @@ input_file: crates/tapir-script/compiler/src/snapshot_tests/grammar/errors/non_a
    │                ─┬  
    │                 ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens then, ";", ",", "+", "-", "||", "&&"
+   │ Note: Expected one of tokens then, ";", ",", "||", "&&", "|"
 ───╯

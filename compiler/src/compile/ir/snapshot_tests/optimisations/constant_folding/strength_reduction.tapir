@@ -1,0 +1,16 @@
+# copy_propagation, dead_store_elimination, constant_folding
+
+property result: int;
+
+fn multiply_power_of_two(x: int) -> int {
+    # Should be optimized to x << 3
+    return x * 8;
+}
+
+fn multiply_power_of_two_lhs(x: int) -> int {
+    # Should be optimized to x << 2
+    return 4 * x;
+}
+
+var v = 5;
+result = multiply_power_of_two(v) + multiply_power_of_two_lhs(v);

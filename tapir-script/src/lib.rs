@@ -19,7 +19,13 @@ impl ConvertBetweenTapir for Vector2D<i32> {
     }
 
     fn read_from_tapir(values: &[i32]) -> (Self, usize) {
-        (Self { x: values[0], y: values[1] }, 2)
+        (
+            Self {
+                x: values[0],
+                y: values[1],
+            },
+            2,
+        )
     }
 }
 

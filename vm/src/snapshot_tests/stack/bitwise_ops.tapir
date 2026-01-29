@@ -1,0 +1,27 @@
+property int_prop: int;
+
+# Test bitwise operations at runtime (not compile time constant folded)
+fn black_box(x: int) -> int {
+    return x;
+}
+
+var a = black_box(1) << 3;  # 1 << 3 = 8
+wait;
+int_prop = a;
+
+var b = black_box(16) >> 2;  # 16 >> 2 = 4
+wait;
+int_prop = b;
+
+var c = black_box(5) & 3;    # 5 & 3 = 1
+wait;
+int_prop = c;
+
+var d = black_box(5) | 3;    # 5 | 3 = 7
+wait;
+int_prop = d;
+
+# Test precedence at runtime
+var e = black_box(1) + 2 << 1;  # (1 + 2) << 1 = 6
+wait;
+int_prop = e;

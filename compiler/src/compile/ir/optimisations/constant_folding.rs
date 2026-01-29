@@ -296,6 +296,42 @@ pub fn constant_folding(
                     continue;
                 }
 
+                // ================================================
+                // Strength reduction: multiply by power of 2 -> shift
+                // ================================================
+                (_, B::Mul, Some(C::Int(n))) if n > 0 && (n as u32).is_power_of_two() => {
+                    let shift = n.trailing_zeros() as i32;
+                    let temp = symtab.new_temporary();
+
+                    *instr = TapIr::BinOp {
+                        target: t,
+                        lhs: *lhs,
+                        op: B::Shl,
+                        rhs: temp,
+                    };
+
+                    instrs.insert(index - 1, TapIr::Constant(temp, C::Int(shift)));
+
+                    did_something = OptimisationResult::DidSomething;
+                    continue;
+                }
+                (Some(C::Int(n)), B::Mul, _) if n > 0 && (n as u32).is_power_of_two() => {
+                    let shift = n.trailing_zeros() as i32;
+                    let temp = symtab.new_temporary();
+
+                    *instr = TapIr::BinOp {
+                        target: t,
+                        lhs: *rhs,
+                        op: B::Shl,
+                        rhs: temp,
+                    };
+
+                    instrs.insert(index - 1, TapIr::Constant(temp, C::Int(shift)));
+
+                    did_something = OptimisationResult::DidSomething;
+                    continue;
+                }
+
                 _ => continue,
             };
 
@@ -350,6 +386,16 @@ fn int_op(i1: i32, op: BinaryOperator, i2: i32) -> Result<Constant, FoldError> {
         BinaryOperator::GtEq => Ok(C::Bool(i1 >= i2)),
         BinaryOperator::Lt => Ok(C::Bool(i1 < i2)),
         BinaryOperator::LtEq => Ok(C::Bool(i1 <= i2)),
+        BinaryOperator::Shl => {
+            let shift = i2 & 31;
+            Ok(C::Int(i1 << shift))
+        }
+        BinaryOperator::Shr => {
+            let shift = i2 & 31;
+            Ok(C::Int(i1 >> shift))
+        }
+        BinaryOperator::BitAnd => Ok(C::Int(i1 & i2)),
+        BinaryOperator::BitOr => Ok(C::Int(i1 | i2)),
         BinaryOperator::Then => Ok(C::Int(i2)),
         BinaryOperator::And => panic!("Should never be &&ing two integers"),
         BinaryOperator::Or => panic!("Should never be ||ing two integers"),
@@ -386,6 +432,12 @@ fn fix_op(n1: Num<i32, 8>, op: BinaryOperator, n2: Num<i32, 8>) -> Result<Consta
         BinaryOperator::Lt => Ok(C::Bool(n1 < n2)),
         BinaryOperator::LtEq => Ok(C::Bool(n1 <= n2)),
         BinaryOperator::Then => Ok(C::Fix(n2)),
+        BinaryOperator::Shl
+        | BinaryOperator::Shr
+        | BinaryOperator::BitAnd
+        | BinaryOperator::BitOr => {
+            panic!("Bitwise operations are not supported on fixnums")
+        }
         BinaryOperator::And => panic!("Should never be &&ing two fixnums"),
         BinaryOperator::Or => panic!("Should never be ||ing two fixnums"),
     }

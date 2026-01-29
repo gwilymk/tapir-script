@@ -96,6 +96,11 @@ impl State {
                 O::FixMul => binop!(a, b, (Fix::from_raw(a) * Fix::from_raw(b)).to_raw()),
                 O::FixDiv => binop!(a, b, (Fix::from_raw(a) / Fix::from_raw(b)).to_raw()),
 
+                O::Shl => binop!(a, b, a << (b & 31)),
+                O::Shr => binop!(a, b, a >> (b & 31)),
+                O::BitAnd => binop!(a, b, a & b),
+                O::BitOr => binop!(a, b, a | b),
+
                 O::GetProp => {
                     type1!(target, prop_index);
                     self.set_reg(target, properties.get_prop(prop_index));

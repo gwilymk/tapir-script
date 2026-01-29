@@ -393,12 +393,12 @@ mod test {
     fn analyse_smoke_parse_errors() {
         // Missing semicolons, braces, etc.
         let inputs = [
-            "fn test() { var x = 1 }",  // missing semicolon
-            "fn test() { if true }",    // missing braces
-            "fn test( { }",             // missing close paren
-            "struct { x: int }",        // missing struct name
-            "",                         // empty input
-            "fn",                       // incomplete
+            "fn test() { var x = 1 }", // missing semicolon
+            "fn test() { if true }",   // missing braces
+            "fn test( { }",            // missing close paren
+            "struct { x: int }",       // missing struct name
+            "",                        // empty input
+            "fn",                      // incomplete
         ];
 
         for input in inputs {
@@ -411,8 +411,8 @@ mod test {
         let inputs = [
             "fn test() { var x: int = true; }",   // type mismatch
             "fn test() { var x = 1 + 1.0; }",     // int + fix
-            "fn test() { var x = unknown; }",    // undefined variable
-            "fn test() { unknown_fn(); }",       // undefined function
+            "fn test() { var x = unknown; }",     // undefined variable
+            "fn test() { unknown_fn(); }",        // undefined function
             "fn test() { var p = Point(1, 2); }", // undefined struct
         ];
 

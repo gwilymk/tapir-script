@@ -1,0 +1,33 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/bitwise_type_errors_fail.tapir
+---
+[E0006] Error: Left hand side has type fix but right hand side has type int
+   ╭─[ bitwise_type_errors_fail.tapir:2:9 ]
+   │
+ 2 │ var a = 3.5 << 1;
+   │         ────┬───  
+   │             ╰───── Mismatching types on binary operator
+───╯
+[E0006] Error: Left hand side has type int but right hand side has type bool
+   ╭─[ bitwise_type_errors_fail.tapir:3:9 ]
+   │
+ 3 │ var b = 1 & true;
+   │         ────┬───  
+   │             ╰───── Mismatching types on binary operator
+───╯
+[E0006] Error: Left hand side has type fix but right hand side has type int
+   ╭─[ bitwise_type_errors_fail.tapir:4:9 ]
+   │
+ 4 │ var c = 3.0 | 2;
+   │         ───┬───  
+   │            ╰───── Mismatching types on binary operator
+───╯
+[E0006] Error: Left hand side has type bool but right hand side has type int
+   ╭─[ bitwise_type_errors_fail.tapir:5:9 ]
+   │
+ 5 │ var d = false >> 1;
+   │         ─────┬────  
+   │              ╰────── Mismatching types on binary operator
+───╯

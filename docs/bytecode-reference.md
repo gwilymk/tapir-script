@@ -47,6 +47,17 @@ The VM uses a register-based model with a growable stack. Registers are addresse
 | `FixMul`  | Fixed-point multiply       |
 | `FixDiv`  | Fixed-point divide         |
 
+### Bitwise (Type 1: `r[target] = r[a] op r[b]`)
+
+| Opcode   | Operation                            |
+| -------- | ------------------------------------ |
+| `Shl`    | `a << (b & 31)` (left shift)         |
+| `Shr`    | `a >> (b & 31)` (right shift signed) |
+| `BitAnd` | `a & b`                              |
+| `BitOr`  | `a \| b`                             |
+
+Note: Shift amounts are masked to 0-31 to match Rust's behavior.
+
 ### Comparison (Type 1: `r[target] = (r[a] op r[b]) ? 1 : 0`)
 
 | Opcode | Operation |

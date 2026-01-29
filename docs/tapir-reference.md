@@ -178,6 +178,17 @@ Unlike properties, globals are internal to the script and not accessible from Ru
 
 Comparison operators are non-associative: `a < b < c` is invalid.
 
+### Bitwise (work on `int` only, return `int`)
+
+| Op   | Description          |
+| ---- | -------------------- |
+| `<<` | Left shift           |
+| `>>` | Right shift (signed) |
+| `&`  | Bitwise AND          |
+| `\|` | Bitwise OR           |
+
+Shift amounts are masked to 0-31 (equivalent to `shift & 31`).
+
 ### Logical (work on `bool`, return `bool`)
 
 `&&` (and), `||` (or)
@@ -198,8 +209,13 @@ var x = foo() then 42;  # calls foo(), returns 42
 2. `||`
 3. `&&`
 4. Comparison (`==`, `!=`, `<`, `<=`, `>`, `>=`)
-5. Addition (`+`, `-`)
-6. Multiplication (`*`, `/`, `%`, `//`, `%%`)
+5. Bitwise OR (`|`)
+6. Bitwise AND (`&`)
+7. Shift (`<<`, `>>`)
+8. Addition (`+`, `-`)
+9. Multiplication (`*`, `/`, `%`, `//`, `%%`)
+
+This follows Rust's precedence order. Example: `1 + 2 << 3` is `(1 + 2) << 3` = 24.
 
 ## Control Flow
 

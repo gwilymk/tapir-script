@@ -190,4 +190,12 @@ pub enum Token<'input> {
     OperatorOr,
     #[token("&&")]
     OperatorAnd,
+    #[token("<<")]
+    OperatorShl,
+    #[token(">>")]
+    OperatorShr,
+    #[token("&")]
+    OperatorBitAnd,
+    #[token("|")]
+    OperatorBitOr,
 }

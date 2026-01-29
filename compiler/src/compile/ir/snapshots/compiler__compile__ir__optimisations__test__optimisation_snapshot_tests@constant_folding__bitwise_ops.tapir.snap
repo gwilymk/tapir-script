@@ -1,0 +1,211 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/bitwise_ops.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.25 = int 1
+temp.26 = int 3
+temp.27 = temp.25 << temp.26
+a.28 = temp.27
+temp.29 = int 16
+temp.30 = int 2
+temp.31 = temp.29 >> temp.30
+b.32 = temp.31
+temp.33 = int 5
+temp.34 = int 3
+temp.35 = temp.33 & temp.34
+c.36 = temp.35
+temp.37 = int 5
+temp.38 = int 3
+temp.39 = temp.37 | temp.38
+d.40 = temp.39
+temp.41 = a.28
+temp.42 = b.32
+temp.43 = temp.41 + temp.42
+temp.44 = c.36
+temp.45 = temp.43 + temp.44
+temp.46 = d.40
+temp.47 = temp.45 + temp.46
+temp.48 = temp.47
+storeprop temp.48, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.25 = int 1
+temp.26 = int 3
+temp.27 = temp.25 << temp.26
+a.28 = temp.27
+temp.29 = int 16
+temp.30 = int 2
+temp.31 = temp.29 >> temp.30
+b.32 = temp.31
+temp.33 = int 5
+temp.34 = int 3
+temp.35 = temp.33 & temp.34
+c.36 = temp.35
+temp.37 = int 5
+temp.38 = int 3
+temp.39 = temp.37 | temp.38
+d.40 = temp.39
+temp.41 = temp.27
+temp.42 = temp.31
+temp.43 = temp.27 + temp.31
+temp.44 = temp.35
+temp.45 = temp.43 + temp.35
+temp.46 = temp.39
+temp.47 = temp.45 + temp.39
+temp.48 = temp.47
+storeprop temp.47, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.25 = int 1
+temp.26 = int 3
+temp.27 = temp.25 << temp.26
+temp.29 = int 16
+temp.30 = int 2
+temp.31 = temp.29 >> temp.30
+temp.33 = int 5
+temp.34 = int 3
+temp.35 = temp.33 & temp.34
+temp.37 = int 5
+temp.38 = int 3
+temp.39 = temp.37 | temp.38
+temp.43 = temp.27 + temp.31
+temp.45 = temp.43 + temp.35
+temp.47 = temp.45 + temp.39
+storeprop temp.47, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.25 = int 1
+temp.26 = int 3
+temp.27 = int 8
+temp.29 = int 16
+temp.30 = int 2
+temp.31 = int 4
+temp.33 = int 5
+temp.34 = int 3
+temp.35 = int 1
+temp.37 = int 5
+temp.38 = int 3
+temp.39 = int 7
+temp.43 = temp.27 + temp.31
+temp.45 = temp.43 + temp.35
+temp.47 = temp.45 + temp.39
+storeprop temp.47, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.27 = int 8
+temp.31 = int 4
+temp.35 = int 1
+temp.39 = int 7
+temp.43 = temp.27 + temp.31
+temp.45 = temp.43 + temp.35
+temp.47 = temp.45 + temp.39
+storeprop temp.47, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.27 = int 8
+temp.31 = int 4
+temp.35 = int 1
+temp.39 = int 7
+temp.43 = int 12
+temp.45 = temp.43 + temp.35
+temp.47 = temp.45 + temp.39
+storeprop temp.47, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.35 = int 1
+temp.39 = int 7
+temp.43 = int 12
+temp.45 = temp.43 + temp.35
+temp.47 = temp.45 + temp.39
+storeprop temp.47, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.35 = int 1
+temp.39 = int 7
+temp.43 = int 12
+temp.45 = int 13
+temp.47 = temp.45 + temp.39
+storeprop temp.47, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.39 = int 7
+temp.45 = int 13
+temp.47 = temp.45 + temp.39
+storeprop temp.47, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.39 = int 7
+temp.45 = int 13
+temp.47 = int 20
+storeprop temp.47, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.47 = int 20
+storeprop temp.47, 0
+return

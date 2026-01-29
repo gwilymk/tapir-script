@@ -27,6 +27,11 @@ pub enum Opcode {
     FixMul,
     FixDiv,
 
+    Shl,
+    Shr,
+    BitAnd,
+    BitOr,
+
     GetProp,
     SetProp,
     GetGlobal,
@@ -146,7 +151,7 @@ impl Type1 {
 
     pub const fn binop(opcode: Opcode, target: u8, lhs: u8, rhs: u8) -> Self {
         assert!(
-            opcode as u8 >= Opcode::Add as u8 && opcode as u8 <= Opcode::FixDiv as u8,
+            opcode as u8 >= Opcode::Add as u8 && opcode as u8 <= Opcode::BitOr as u8,
             "Invalid opcode for binary operator",
         );
 
