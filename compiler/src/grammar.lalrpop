@@ -184,9 +184,6 @@ MethodArguments: Vec<TypedIdent<'input>> = {
         args.extend(rest);
         args
     },
-
-    // Static method - no self, just regular typed arguments (can be empty)
-    <FunctionArguments>,
 };
 
 // Non-empty comma-separated list with optional trailing comma
