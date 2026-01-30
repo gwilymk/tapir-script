@@ -72,8 +72,7 @@ Script(
   globals: [],
   functions: [
     Function(
-      operator_def: None,
-      receiver_type: None,
+      kind: Regular,
       name: "@toplevel",
       span: "[span]",
       statements: [],
@@ -88,7 +87,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Point",
@@ -99,7 +98,6 @@ Script(
           ident: "Point",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -227,7 +225,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Vec2",
@@ -238,7 +236,6 @@ Script(
           ident: "fix",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -346,7 +343,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "fix",
@@ -357,7 +354,6 @@ Script(
           ident: "Vec2",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -465,7 +461,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Vec2",
@@ -476,7 +472,6 @@ Script(
           ident: "Vec2",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -602,7 +597,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Point",
@@ -613,7 +608,6 @@ Script(
           ident: "Point",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -739,7 +733,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Point",
@@ -750,7 +744,6 @@ Script(
           ident: "Point",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -876,7 +869,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Point",
@@ -887,7 +880,6 @@ Script(
           ident: "Point",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -1013,7 +1005,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Vec2",
@@ -1024,7 +1016,6 @@ Script(
           ident: "fix",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -1132,7 +1123,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Vec2",
@@ -1143,7 +1134,6 @@ Script(
           ident: "fix",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -1251,7 +1241,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Point",
@@ -1262,7 +1252,6 @@ Script(
           ident: "int",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -1370,7 +1359,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Point",
@@ -1381,7 +1370,6 @@ Script(
           ident: "int",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -1489,7 +1477,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "Point",
@@ -1500,7 +1488,6 @@ Script(
           ident: "Point",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [
@@ -1628,7 +1615,7 @@ Script(
       meta: {},
     ),
     Function(
-      operator_def: Some(OperatorDef(
+      kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
           ident: "int",
@@ -1639,7 +1626,6 @@ Script(
           ident: "Point",
         ),
       )),
-      receiver_type: None,
       name: "",
       span: "[span]",
       statements: [

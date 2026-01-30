@@ -130,11 +130,11 @@ BuiltinId: BuiltinFunctionId = {
 FunctionDefinition: Function<'input> = {
     // Regular function: fn name(...) { ... }
     <modifiers: FunctionModifiers> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { operator_def: None, receiver_type: None, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+        Function { kind: FunctionKind::Regular, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 
     // Method: fn Type.name(...) { ... }
     <modifiers: FunctionModifiers> "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { operator_def: None, receiver_type: Some(receiver), name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+        Function { kind: FunctionKind::Method { receiver_type: receiver }, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 
     // Operator: fn LeftType op RightType(...) { ... }
     <modifiers: FunctionModifiers> "fn"
@@ -143,8 +143,7 @@ FunctionDefinition: Function<'input> = {
     <right_type: TypeIdentifier>
     "(" <arguments: OperatorArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
         Function {
-            operator_def: Some(OperatorDef { left_type, op, right_type }),
-            receiver_type: None,
+            kind: FunctionKind::Operator(OperatorDef { left_type, op, right_type }),
             name: "",
             arguments,
             return_types,

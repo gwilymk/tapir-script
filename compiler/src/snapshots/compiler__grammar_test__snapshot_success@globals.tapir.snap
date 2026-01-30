@@ -70,8 +70,7 @@ Script(
   ],
   functions: [
     Function(
-      operator_def: None,
-      receiver_type: None,
+      kind: Regular,
       name: "@toplevel",
       span: "[span]",
       statements: [

@@ -155,8 +155,7 @@ impl<'input> Script<'input> {
         }
 
         let top_level_function = Function {
-            operator_def: None,
-            receiver_type: None,
+            kind: FunctionKind::Regular,
             name: "@toplevel",
             span: Span::new(file_id, 0, 0),
             statements: top_level_function_statements,
@@ -228,14 +227,25 @@ pub struct OperatorDef<'input> {
     pub right_type: Ident<'input>,
 }
 
-/// A function definition - methods are functions with a receiver_type
+/// The kind of function: regular, method, or operator overload.
+#[derive(Clone, Debug, Serialize)]
+pub enum FunctionKind<'input> {
+    /// Regular standalone function: `fn foo()`
+    Regular,
+    /// Method on a type: `fn Type.method(self)`
+    Method {
+        /// The receiver type (e.g., "Point", "fix")
+        receiver_type: Ident<'input>,
+    },
+    /// Operator overload: `fn Type + Type(a, b)`
+    Operator(OperatorDef<'input>),
+}
+
+/// A function definition
 #[derive(Clone, Debug, Serialize)]
 pub struct Function<'input> {
-    /// If Some, this is an operator overload definition
-    pub operator_def: Option<OperatorDef<'input>>,
-    /// If Some, this is a method on the given type (e.g., "Point", "fix").
-    /// Uses Ident to preserve span for error messages.
-    pub receiver_type: Option<Ident<'input>>,
+    /// The kind of function (regular, method, or operator)
+    pub kind: FunctionKind<'input>,
     /// The function/method name (empty string for operators)
     pub name: &'input str,
     /// Span of the function name (or operator for operator overloads)
@@ -260,12 +270,28 @@ pub struct FunctionModifiers {
 impl<'input> Function<'input> {
     /// Returns true if this is a method (has a receiver type)
     pub fn is_method(&self) -> bool {
-        self.receiver_type.is_some()
+        matches!(self.kind, FunctionKind::Method { .. })
     }
 
     /// Returns true if this is an operator overload definition
     pub fn is_operator(&self) -> bool {
-        self.operator_def.is_some()
+        matches!(self.kind, FunctionKind::Operator(_))
+    }
+
+    /// Returns the receiver type if this is a method, None otherwise
+    pub fn receiver_type(&self) -> Option<&Ident<'input>> {
+        match &self.kind {
+            FunctionKind::Method { receiver_type } => Some(receiver_type),
+            _ => None,
+        }
+    }
+
+    /// Returns the operator definition if this is an operator overload, None otherwise
+    pub fn operator_def(&self) -> Option<&OperatorDef<'input>> {
+        match &self.kind {
+            FunctionKind::Operator(op_def) => Some(op_def),
+            _ => None,
+        }
     }
 
     /// Returns the mangled function name.
@@ -273,15 +299,15 @@ impl<'input> Function<'input> {
     /// For methods: "Type@method"
     /// For regular functions: just the name
     pub fn mangled_name(&self) -> Cow<'_, str> {
-        if let Some(ref op_def) = self.operator_def {
-            Cow::Owned(format!(
+        match &self.kind {
+            FunctionKind::Operator(op_def) => Cow::Owned(format!(
                 "{}@{}@{}",
                 op_def.left_type.ident, op_def.op, op_def.right_type.ident
-            ))
-        } else if let Some(ref receiver) = self.receiver_type {
-            Cow::Owned(format!("{}@{}", receiver.ident, self.name))
-        } else {
-            Cow::Borrowed(self.name)
+            )),
+            FunctionKind::Method { receiver_type } => {
+                Cow::Owned(format!("{}@{}", receiver_type.ident, self.name))
+            }
+            FunctionKind::Regular => Cow::Borrowed(self.name),
         }
     }
 }

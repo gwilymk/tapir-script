@@ -154,69 +154,73 @@ pub fn resolve_all_types<'input>(
 ) {
     // Resolve function argument and return types
     for function in &mut script.functions {
-        // For operators, resolve operand types from the pattern
-        if let Some(ref op_def) = function.operator_def {
-            let left_type = resolve_receiver_type(
-                op_def.left_type.ident,
-                struct_names,
-                op_def.left_type.span,
-                diagnostics,
-            );
-            let right_type = resolve_receiver_type(
-                op_def.right_type.ident,
-                struct_names,
-                op_def.right_type.span,
-                diagnostics,
-            );
-
-            // At least one operand must be a struct
-            if !left_type.is_struct() && !right_type.is_struct() {
-                ErrorKind::OperatorRequiresStruct {
-                    left: op_def.left_type.ident.to_string(),
-                    right: op_def.right_type.ident.to_string(),
-                }
-                .at(function.span)
-                .label(
+        match &function.kind {
+            // For operators, resolve operand types from the pattern
+            crate::ast::FunctionKind::Operator(op_def) => {
+                let left_type = resolve_receiver_type(
+                    op_def.left_type.ident,
+                    struct_names,
                     op_def.left_type.span,
-                    crate::reporting::DiagnosticMessage::HasType { ty: left_type },
-                )
-                .label(
+                    diagnostics,
+                );
+                let right_type = resolve_receiver_type(
+                    op_def.right_type.ident,
+                    struct_names,
                     op_def.right_type.span,
-                    crate::reporting::DiagnosticMessage::HasType { ty: right_type },
-                )
-                .emit(diagnostics);
-            }
+                    diagnostics,
+                );
 
-            // Fill in argument types from the pattern
-            if function.arguments.len() == 2 {
-                function.arguments[0].ty = Some(crate::ast::TypeWithLocation {
-                    t: Some(left_type),
-                    name: op_def.left_type.ident,
-                    span: function.arguments[0].span(),
-                });
-                function.arguments[1].ty = Some(crate::ast::TypeWithLocation {
-                    t: Some(right_type),
-                    name: op_def.right_type.ident,
-                    span: function.arguments[1].span(),
-                });
-            }
-        }
-        // For methods, resolve receiver type and fill in self's type
-        else if let Some(ref receiver) = function.receiver_type {
-            let receiver_type =
-                resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
+                // At least one operand must be a struct
+                if !left_type.is_struct() && !right_type.is_struct() {
+                    ErrorKind::OperatorRequiresStruct {
+                        left: op_def.left_type.ident.to_string(),
+                        right: op_def.right_type.ident.to_string(),
+                    }
+                    .at(function.span)
+                    .label(
+                        op_def.left_type.span,
+                        crate::reporting::DiagnosticMessage::HasType { ty: left_type },
+                    )
+                    .label(
+                        op_def.right_type.span,
+                        crate::reporting::DiagnosticMessage::HasType { ty: right_type },
+                    )
+                    .emit(diagnostics);
+                }
 
-            // Fill in self's type from receiver type (self never has explicit type)
-            if let Some(self_param) = function.arguments.first_mut()
-                && self_param.name() == "self"
-            {
-                // Create a TypeWithLocation for self with the resolved receiver type
-                self_param.ty = Some(crate::ast::TypeWithLocation {
-                    t: Some(receiver_type),
-                    name: receiver.ident,
-                    span: self_param.span(),
-                });
+                // Fill in argument types from the pattern
+                if function.arguments.len() == 2 {
+                    function.arguments[0].ty = Some(crate::ast::TypeWithLocation {
+                        t: Some(left_type),
+                        name: op_def.left_type.ident,
+                        span: function.arguments[0].span(),
+                    });
+                    function.arguments[1].ty = Some(crate::ast::TypeWithLocation {
+                        t: Some(right_type),
+                        name: op_def.right_type.ident,
+                        span: function.arguments[1].span(),
+                    });
+                }
             }
+            // For methods, resolve receiver type and fill in self's type
+            crate::ast::FunctionKind::Method { receiver_type: receiver } => {
+                let receiver_type =
+                    resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
+
+                // Fill in self's type from receiver type (self never has explicit type)
+                if let Some(self_param) = function.arguments.first_mut()
+                    && self_param.name() == "self"
+                {
+                    // Create a TypeWithLocation for self with the resolved receiver type
+                    self_param.ty = Some(crate::ast::TypeWithLocation {
+                        t: Some(receiver_type),
+                        name: receiver.ident,
+                        span: self_param.span(),
+                    });
+                }
+            }
+            // Regular functions don't need special handling
+            crate::ast::FunctionKind::Regular => {}
         }
 
         for arg in &mut function.arguments {
