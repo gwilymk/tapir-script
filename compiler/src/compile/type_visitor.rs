@@ -1110,20 +1110,20 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     }
 
                     // No overload found - emit helpful error
-                    let left_type_name = type_to_display_name(lhs_type, self.struct_registry);
-                    let right_type_name = type_to_display_name(rhs_type, self.struct_registry);
+                    let left_type_name = lhs_type.name(self.struct_registry);
+                    let right_type_name = rhs_type.name(self.struct_registry);
                     ErrorKind::NoOperatorOverload {
-                        left_type: left_type_name.clone(),
+                        left_type: left_type_name.to_string(),
                         operator: op.to_string(),
-                        right_type: right_type_name.clone(),
+                        right_type: right_type_name.to_string(),
                     }
                     .at(expression.span)
                     .label(lhs_span, DiagnosticMessage::HasType { ty: lhs_type })
                     .label(rhs_span, DiagnosticMessage::HasType { ty: rhs_type })
                     .help(DiagnosticMessage::DefineOperatorFunction {
-                        left: left_type_name,
+                        left: left_type_name.to_string(),
                         op: op.to_string(),
-                        right: right_type_name,
+                        right: right_type_name.to_string(),
                     })
                     .emit(diagnostics);
                     return Type::Error;
@@ -1248,20 +1248,14 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 }
 
                 // Build the mangled name based on receiver type
-                let type_name = match receiver_type {
-                    Type::Int => "int".to_string(),
-                    Type::Fix => "fix".to_string(),
-                    Type::Bool => "bool".to_string(),
-                    Type::Struct(id) => self.struct_registry.get(id).name.clone(),
-                    Type::Error => return Type::Error,
-                };
+                let type_name = receiver_type.name(self.struct_registry);
 
                 let mangled = format!("{}@{}", type_name, method.ident);
 
                 // Look up the method
                 let Some(function_id) = symtab.function_by_mangled_name(&mangled) else {
                     ErrorKind::UnknownMethod {
-                        type_name: type_name.clone(),
+                        type_name: type_name.to_string(),
                         method_name: method.ident.to_string(),
                     }
                     .at(method.span)
@@ -1527,17 +1521,6 @@ fn is_overloadable_operator(op: BinaryOperator) -> bool {
             | B::Gt
             | B::GtEq
     )
-}
-
-/// Convert a Type to a display name for error messages.
-fn type_to_display_name(ty: Type, struct_registry: &StructRegistry) -> String {
-    match ty {
-        Type::Int => "int".to_string(),
-        Type::Fix => "fix".to_string(),
-        Type::Bool => "bool".to_string(),
-        Type::Struct(id) => struct_registry.get(id).name.clone(),
-        Type::Error => "error".to_string(),
-    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]

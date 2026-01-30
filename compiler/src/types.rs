@@ -99,29 +99,20 @@ impl Type {
         }
     }
 
-    /// Display a type with access to the struct registry.
+    /// Returns the type's name as a string.
     ///
-    /// This is needed because struct types need to look up their name
-    /// in the registry. Use this method when you have a registry available;
-    /// the regular Display impl will just show "struct" for struct types.
-    pub fn display<'a>(self, registry: &'a StructRegistry) -> impl Display + 'a {
-        struct TypeDisplay<'a> {
-            ty: Type,
-            registry: &'a StructRegistry,
+    /// For struct types, looks up the name in the registry.
+    /// For primitive types, returns the canonical name ("int", "fix", "bool").
+    pub fn name(self, registry: &StructRegistry) -> &str {
+        match self {
+            Type::Int => "int",
+            Type::Fix => "fix",
+            Type::Bool => "bool",
+            Type::Struct(id) => &registry.get(id).name,
+            Type::Error => "error",
         }
-
-        impl Display for TypeDisplay<'_> {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                if let Type::Struct(id) = self.ty {
-                    write!(f, "{}", self.registry.get(id).name)
-                } else {
-                    write!(f, "{}", self.ty)
-                }
-            }
-        }
-
-        TypeDisplay { ty: self, registry }
     }
+
 }
 
 impl Display for Type {
@@ -131,7 +122,7 @@ impl Display for Type {
             Type::Fix => write!(f, "fix"),
             Type::Bool => write!(f, "bool"),
             Type::Struct(_) => write!(f, "struct"),
-            Type::Error => write!(f, "unknown"),
+            Type::Error => write!(f, "error"),
         }
     }
 }
@@ -250,7 +241,7 @@ mod tests {
     }
 
     #[test]
-    fn type_display_with_registry() {
+    fn type_name_with_registry() {
         let mut registry = StructRegistry::default();
         let id = registry.register(StructDef {
             name: "Point".to_string(),
@@ -258,11 +249,11 @@ mod tests {
             span: test_span(),
         });
 
-        assert_eq!(Type::Int.display(&registry).to_string(), "int");
-        assert_eq!(Type::Fix.display(&registry).to_string(), "fix");
-        assert_eq!(Type::Bool.display(&registry).to_string(), "bool");
-        assert_eq!(Type::Error.display(&registry).to_string(), "unknown");
-        assert_eq!(Type::Struct(id).display(&registry).to_string(), "Point");
+        assert_eq!(Type::Int.name(&registry), "int");
+        assert_eq!(Type::Fix.name(&registry), "fix");
+        assert_eq!(Type::Bool.name(&registry), "bool");
+        assert_eq!(Type::Error.name(&registry), "error");
+        assert_eq!(Type::Struct(id).name(&registry), "Point");
     }
 
     #[test]
@@ -270,7 +261,7 @@ mod tests {
         assert_eq!(Type::Int.to_string(), "int");
         assert_eq!(Type::Fix.to_string(), "fix");
         assert_eq!(Type::Bool.to_string(), "bool");
-        assert_eq!(Type::Error.to_string(), "unknown");
+        assert_eq!(Type::Error.to_string(), "error");
         assert_eq!(Type::Struct(StructId(0)).to_string(), "struct");
     }
 }

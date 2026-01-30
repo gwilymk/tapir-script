@@ -36,15 +36,15 @@ pub fn symbol_description(
     registry: &StructRegistry,
 ) -> String {
     match kind {
-        SymbolKind::Global => format!("global {}: {}", name, ty.display(registry)),
-        SymbolKind::Property => format!("property {}: {}", name, ty.display(registry)),
-        SymbolKind::Local => format!("var {}: {}", name, ty.display(registry)),
+        SymbolKind::Global => format!("global {}: {}", name, ty.name(registry)),
+        SymbolKind::Property => format!("property {}: {}", name, ty.name(registry)),
+        SymbolKind::Local => format!("var {}: {}", name, ty.name(registry)),
     }
 }
 
 /// Format a type for display, using the struct registry for struct names.
 pub fn format_type(ty: Type, registry: &StructRegistry) -> String {
-    ty.display(registry).to_string()
+    ty.name(registry).to_string()
 }
 
 /// The kind of symbol for description formatting.

@@ -814,17 +814,6 @@ pub struct SymTab<'input> {
     struct_property_bases: HashMap<String, StructPropertyBase>,
 }
 
-/// Convert a Type to its name string for operator mangling.
-fn type_to_name(ty: Type, struct_registry: &StructRegistry) -> &str {
-    match ty {
-        Type::Int => "int",
-        Type::Fix => "fix",
-        Type::Bool => "bool",
-        Type::Struct(id) => &struct_registry.get(id).name,
-        Type::Error => "error",
-    }
-}
-
 impl<'input> SymTab<'input> {
     fn new(
         properties: &[Property],
@@ -884,8 +873,8 @@ impl<'input> SymTab<'input> {
         right_type: Type,
         struct_registry: &StructRegistry,
     ) -> Option<InternalOrExternalFunctionId> {
-        let left_name = type_to_name(left_type, struct_registry);
-        let right_name = type_to_name(right_type, struct_registry);
+        let left_name = left_type.name(struct_registry);
+        let right_name = right_type.name(struct_registry);
         let mangled = format!("{}@{}@{}", left_name, op, right_name);
         self.function_by_mangled_name(&mangled)
     }

@@ -58,7 +58,7 @@ fn extract_from_statements(
                         if ty != Type::Error {
                             hints.push(InlayHintInfo {
                                 position: ident.span().end(),
-                                label: format!(": {}", ty.display(struct_registry)),
+                                label: format!(": {}", ty.name(struct_registry)),
                             });
                         }
                     }
