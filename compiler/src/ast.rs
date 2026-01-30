@@ -58,6 +58,14 @@ pub struct MethodCallInfo {
     pub function_id: InternalOrExternalFunctionId,
 }
 
+/// Stored in BinaryOperation expression metadata when the operator
+/// is resolved to a user-defined operator function.
+#[derive(Clone, Copy, Debug)]
+pub struct OperatorOverloadInfo {
+    /// The resolved function ID for the operator (mangled name like Point@+@Point)
+    pub function_id: InternalOrExternalFunctionId,
+}
+
 pub type Fix = agb_fixnum::Num<i32, 8>;
 
 #[derive(Clone, Debug, Serialize)]
@@ -147,6 +155,7 @@ impl<'input> Script<'input> {
         }
 
         let top_level_function = Function {
+            operator_def: None,
             receiver_type: None,
             name: "@toplevel",
             span: Span::new(file_id, 0, 0),
@@ -207,15 +216,29 @@ pub struct ExternFunctionDefinition<'input> {
     pub meta: Metadata,
 }
 
+/// Information about an operator function definition.
+/// Used for operator overloading: `fn Point + Point(a, b) -> Point { ... }`
+#[derive(Clone, Debug, Serialize)]
+pub struct OperatorDef<'input> {
+    /// Left operand type (e.g., "Point", "int")
+    pub left_type: Ident<'input>,
+    /// The operator being overloaded
+    pub op: BinaryOperator,
+    /// Right operand type (e.g., "Point", "fix")
+    pub right_type: Ident<'input>,
+}
+
 /// A function definition - methods are functions with a receiver_type
 #[derive(Clone, Debug, Serialize)]
 pub struct Function<'input> {
+    /// If Some, this is an operator overload definition
+    pub operator_def: Option<OperatorDef<'input>>,
     /// If Some, this is a method on the given type (e.g., "Point", "fix").
     /// Uses Ident to preserve span for error messages.
     pub receiver_type: Option<Ident<'input>>,
-    /// The function/method name
+    /// The function/method name (empty string for operators)
     pub name: &'input str,
-    /// Span of the function name
+    /// Span of the function name (or operator for operator overloads)
     pub span: Span,
     /// Function body
     pub statements: Vec<Statement<'input>>,
@@ -223,7 +246,7 @@ pub struct Function<'input> {
     pub arguments: Vec<TypedIdent<'input>>,
     /// Return type(s)
     pub return_types: FunctionReturn<'input>,
-    /// Modifiers (event not allowed for methods)
+    /// Modifiers (event not allowed for methods or operators)
     pub modifiers: FunctionModifiers,
     /// Metadata for compilation passes
     pub(crate) meta: Metadata,
@@ -240,12 +263,25 @@ impl<'input> Function<'input> {
         self.receiver_type.is_some()
     }
 
+    /// Returns true if this is an operator overload definition
+    pub fn is_operator(&self) -> bool {
+        self.operator_def.is_some()
+    }
+
     /// Returns the mangled function name.
-    /// For methods: "Type@method", for regular functions: just the name.
+    /// For operators: "LeftType@op@RightType"
+    /// For methods: "Type@method"
+    /// For regular functions: just the name
     pub fn mangled_name(&self) -> Cow<'_, str> {
-        match &self.receiver_type {
-            Some(receiver) => Cow::Owned(format!("{}@{}", receiver.ident, self.name)),
-            None => Cow::Borrowed(self.name),
+        if let Some(ref op_def) = self.operator_def {
+            Cow::Owned(format!(
+                "{}@{}@{}",
+                op_def.left_type.ident, op_def.op, op_def.right_type.ident
+            ))
+        } else if let Some(ref receiver) = self.receiver_type {
+            Cow::Owned(format!("{}@{}", receiver.ident, self.name))
+        } else {
+            Cow::Borrowed(self.name)
         }
     }
 }

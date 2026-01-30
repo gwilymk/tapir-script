@@ -1,0 +1,16 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/operator_overload_not_defined_fail.tapir
+---
+[E0050] Error: no operator `+` defined for `Point` and `Point`
+   ╭─[ operator_overload_not_defined_fail.tapir:5:10 ]
+   │
+ 5 │ var p3 = p1 + p2;
+   │          ─┬   ─┬  
+   │           ╰─────── This has type struct
+   │                │  
+   │                ╰── This has type struct
+   │ 
+   │ Help: define `fn Point + Point(a, b) -> ... { ... }` to enable this operator
+───╯

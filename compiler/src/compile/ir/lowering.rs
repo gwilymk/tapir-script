@@ -1,6 +1,7 @@
 use crate::{
     ast::{
-        self, BinaryOperator, Expression, InternalOrExternalFunctionId, MethodCallInfo, SymbolId,
+        self, BinaryOperator, Expression, InternalOrExternalFunctionId, MethodCallInfo,
+        OperatorOverloadInfo, SymbolId,
     },
     compile::{
         symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
@@ -623,6 +624,85 @@ impl<'a> BlockVisitor<'a> {
                 }
             }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
+                // Check if this is an overloaded operator (resolved during type checking)
+                if let Some(overload_info) = expr.meta.get::<OperatorOverloadInfo>() {
+                    // Lower as a function call
+                    let lhs_symbol = symtab.new_temporary();
+                    self.blocks_for_expression(lhs, lhs_symbol, symtab);
+
+                    let rhs_symbol = symtab.new_temporary();
+                    self.blocks_for_expression(rhs, rhs_symbol, symtab);
+
+                    // Collect arguments (expand structs if needed)
+                    let mut args = Vec::new();
+                    collect_leaf_symbols(lhs_symbol, symtab, &mut args);
+                    collect_leaf_symbols(rhs_symbol, symtab, &mut args);
+                    let args = args.into_boxed_slice();
+
+                    // Get return type info for struct return handling
+                    let return_info: Option<&CallReturnInfo> = expr.meta.get();
+
+                    match overload_info.function_id {
+                        InternalOrExternalFunctionId::Internal(function_id) => {
+                            // Expand target if function returns a struct
+                            if let Some(CallReturnInfo(ret_types)) = return_info
+                                && let Some(Type::Struct(struct_id)) = ret_types.first()
+                            {
+                                let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                                symtab.expand_struct_symbol(
+                                    target_symbol,
+                                    &target_name,
+                                    *struct_id,
+                                    expr.span,
+                                    self.struct_registry,
+                                );
+                            }
+                            let mut targets = Vec::new();
+                            collect_leaf_symbols(target_symbol, symtab, &mut targets);
+                            self.current_block.push(TapIr::Call {
+                                target: targets.into_boxed_slice(),
+                                f: function_id,
+                                args,
+                            });
+                        }
+                        InternalOrExternalFunctionId::External(external_function_id) => {
+                            // Expand target if function returns a struct
+                            if let Some(CallReturnInfo(ret_types)) = return_info
+                                && let Some(Type::Struct(struct_id)) = ret_types.first()
+                            {
+                                let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                                symtab.expand_struct_symbol(
+                                    target_symbol,
+                                    &target_name,
+                                    *struct_id,
+                                    expr.span,
+                                    self.struct_registry,
+                                );
+                            }
+                            let mut targets = Vec::new();
+                            collect_leaf_symbols(target_symbol, symtab, &mut targets);
+                            self.current_block.push(TapIr::CallExternal {
+                                target: targets.into_boxed_slice(),
+                                f: external_function_id,
+                                args,
+                            });
+                        }
+                        InternalOrExternalFunctionId::Builtin(builtin_id) => {
+                            // Builtins return single values
+                            self.current_block.push(TapIr::CallBuiltin {
+                                target: target_symbol,
+                                f: builtin_id,
+                                args,
+                            });
+                        }
+                        InternalOrExternalFunctionId::StructConstructor(_) => {
+                            unreachable!("Operator cannot be a struct constructor")
+                        }
+                    }
+                    return;
+                }
+
+                // Not an overloaded operator - use the default primitive handling
                 let lhs_target = symtab.new_temporary();
 
                 match operator {

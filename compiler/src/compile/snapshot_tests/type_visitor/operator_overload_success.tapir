@@ -1,0 +1,30 @@
+struct Point { x: int, y: int }
+
+fn Point + Point(a, b) -> Point {
+    return Point(a.x + b.x, a.y + b.y);
+}
+
+fn Point - Point(a, b) -> Point {
+    return Point(a.x - b.x, a.y - b.y);
+}
+
+fn Point * int(p, n) -> Point {
+    return Point(p.x * n, p.y * n);
+}
+
+fn int * Point(n, p) -> Point {
+    return Point(n * p.x, n * p.y);
+}
+
+fn Point == Point(a, b) -> bool {
+    return a.x == b.x && a.y == b.y;
+}
+
+var p1 = Point(1, 2);
+var p2 = Point(3, 4);
+var p3 = p1 + p2;
+var p4 = p1 - p2;
+var p5 = p1 * 2;
+var p6 = 2 * p1;
+var same = p1 == p2;
+var chain = p1 + p2 + Point(5, 6);

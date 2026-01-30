@@ -1,0 +1,4 @@
+# This should fail because operator functions require at least one struct type
+fn int + int(a, b) -> int {
+    return a + b;
+}

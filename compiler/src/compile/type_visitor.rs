@@ -7,7 +7,7 @@ use crate::{
     ast::{
         self, BinaryOperator, BuiltinFunction, Expression, ExpressionKind,
         ExternFunctionDefinition, Function, FunctionModifiers, FunctionReturn, GlobalDeclaration,
-        InternalOrExternalFunctionId, MethodCallInfo, SymbolId,
+        InternalOrExternalFunctionId, MethodCallInfo, OperatorOverloadInfo, SymbolId,
     },
     reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
@@ -1090,7 +1090,46 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     return Type::Error;
                 }
 
-                if lhs_type != rhs_type && *operator != BinaryOperator::Then {
+                // Extract spans before borrowing expression.kind
+                let lhs_span = lhs.span;
+                let rhs_span = rhs.span;
+                let op = *operator;
+
+                // Check for operator overload if at least one operand is a struct
+                // AND the operator is overloadable
+                if (lhs_type.is_struct() || rhs_type.is_struct()) && is_overloadable_operator(op) {
+                    if let Some(result) = self.try_operator_overload(
+                        lhs_type,
+                        op,
+                        rhs_type,
+                        expression,
+                        symtab,
+                        diagnostics,
+                    ) {
+                        return result;
+                    }
+
+                    // No overload found - emit helpful error
+                    let left_type_name = type_to_display_name(lhs_type, self.struct_registry);
+                    let right_type_name = type_to_display_name(rhs_type, self.struct_registry);
+                    ErrorKind::NoOperatorOverload {
+                        left_type: left_type_name.clone(),
+                        operator: op.to_string(),
+                        right_type: right_type_name.clone(),
+                    }
+                    .at(expression.span)
+                    .label(lhs_span, DiagnosticMessage::HasType { ty: lhs_type })
+                    .label(rhs_span, DiagnosticMessage::HasType { ty: rhs_type })
+                    .help(DiagnosticMessage::DefineOperatorFunction {
+                        left: left_type_name,
+                        op: op.to_string(),
+                        right: right_type_name,
+                    })
+                    .emit(diagnostics);
+                    return Type::Error;
+                }
+
+                if lhs_type != rhs_type && op != BinaryOperator::Then {
                     ErrorKind::BinaryOperatorTypeError { lhs_type, rhs_type }
                         .at(expression.span)
                         .label(
@@ -1102,18 +1141,24 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     return Type::Error;
                 }
 
-                if !operator.can_handle_type(lhs_type) {
-                    ErrorKind::InvalidTypeForBinaryOperator { type_: lhs_type }
-                        .at(lhs.span)
-                        .label(lhs.span, DiagnosticMessage::BinaryOperatorCannotHandleType)
-                        .emit(diagnostics);
+                // Re-borrow to update operator
+                if let ast::ExpressionKind::BinaryOperation { operator, .. } =
+                    &mut expression.kind
+                {
+                    if !operator.can_handle_type(lhs_type) {
+                        ErrorKind::InvalidTypeForBinaryOperator { type_: lhs_type }
+                            .at(lhs_span)
+                            .label(lhs_span, DiagnosticMessage::BinaryOperatorCannotHandleType)
+                            .emit(diagnostics);
 
-                    return Type::Error;
+                        return Type::Error;
+                    }
+
+                    operator.update_type_with_lhs(lhs_type);
+                    operator.resulting_type(lhs_type, rhs_type)
+                } else {
+                    unreachable!()
                 }
-
-                operator.update_type_with_lhs(lhs_type);
-
-                operator.resulting_type(lhs_type, rhs_type)
             }
             ast::ExpressionKind::Error => Type::Error,
             ast::ExpressionKind::Nop => Type::Error,
@@ -1421,6 +1466,77 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         }
 
         function_info.rets.clone()
+    }
+
+    /// Try to resolve an operator overload for the given operand types.
+    /// Returns Some(return_type) if an overload was found and resolved.
+    /// Returns None if no overload exists (caller should emit an error).
+    fn try_operator_overload(
+        &self,
+        lhs_type: Type,
+        operator: BinaryOperator,
+        rhs_type: Type,
+        expression: &mut Expression<'input>,
+        symtab: &SymTab,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<Type> {
+        // Look up the operator function
+        let function_id =
+            symtab.lookup_operator(lhs_type, &operator, rhs_type, self.struct_registry)?;
+
+        let function_info = self.functions.get(&function_id)?;
+
+        // Store operator overload info for IR lowering
+        expression.meta.set(OperatorOverloadInfo { function_id });
+
+        // Store return types for IR lowering (needed for struct returns)
+        let return_types = function_info.rets.clone();
+        expression.meta.set(CallReturnInfo(return_types.clone()));
+
+        // Operators must return exactly one value
+        if return_types.len() != 1 {
+            ErrorKind::OperatorMustReturnOneValue {
+                operator: operator.to_string(),
+                actual_count: return_types.len(),
+            }
+            .at(expression.span)
+            .emit(diagnostics);
+            return Some(Type::Error);
+        }
+
+        Some(return_types[0])
+    }
+}
+
+/// Check if an operator can be overloaded.
+fn is_overloadable_operator(op: BinaryOperator) -> bool {
+    use BinaryOperator as B;
+    matches!(
+        op,
+        B::Add
+            | B::Sub
+            | B::Mul
+            | B::Div
+            | B::Mod
+            | B::RealDiv
+            | B::RealMod
+            | B::EqEq
+            | B::NeEq
+            | B::Lt
+            | B::LtEq
+            | B::Gt
+            | B::GtEq
+    )
+}
+
+/// Convert a Type to a display name for error messages.
+fn type_to_display_name(ty: Type, struct_registry: &StructRegistry) -> String {
+    match ty {
+        Type::Int => "int".to_string(),
+        Type::Fix => "fix".to_string(),
+        Type::Bool => "bool".to_string(),
+        Type::Struct(id) => struct_registry.get(id).name.clone(),
+        Type::Error => "error".to_string(),
     }
 }
 

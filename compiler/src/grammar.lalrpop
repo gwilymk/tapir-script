@@ -130,11 +130,54 @@ BuiltinId: BuiltinFunctionId = {
 FunctionDefinition: Function<'input> = {
     // Regular function: fn name(...) { ... }
     <modifiers: FunctionModifiers> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { receiver_type: None, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+        Function { operator_def: None, receiver_type: None, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 
     // Method: fn Type.name(...) { ... }
     <modifiers: FunctionModifiers> "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { receiver_type: Some(receiver), name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+        Function { operator_def: None, receiver_type: Some(receiver), name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+
+    // Operator: fn LeftType op RightType(...) { ... }
+    <modifiers: FunctionModifiers> "fn"
+    <left_type: TypeIdentifier>
+    <start: @L> <op: OverloadableOp> <end: @R>
+    <right_type: TypeIdentifier>
+    "(" <arguments: OperatorArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
+        Function {
+            operator_def: Some(OperatorDef { left_type, op, right_type }),
+            receiver_type: None,
+            name: "",
+            arguments,
+            return_types,
+            statements,
+            span: Span::new(file_id, start, end),
+            modifiers,
+            meta: Metadata::new(),
+        },
+}
+
+// Operators that can be overloaded
+OverloadableOp: BinaryOperator = {
+    "+" => BinaryOperator::Add,
+    "-" => BinaryOperator::Sub,
+    "*" => BinaryOperator::Mul,
+    "/" => BinaryOperator::Div,
+    "%" => BinaryOperator::Mod,
+    "//" => BinaryOperator::RealDiv,
+    "%%" => BinaryOperator::RealMod,
+    "==" => BinaryOperator::EqEq,
+    "!=" => BinaryOperator::NeEq,
+    "<" => BinaryOperator::Lt,
+    "<=" => BinaryOperator::LtEq,
+    ">" => BinaryOperator::Gt,
+    ">=" => BinaryOperator::GtEq,
+}
+
+// Operator arguments: exactly 2 untyped identifiers (types come from pattern)
+OperatorArguments: Vec<TypedIdent<'input>> = {
+    <left: Identifier> "," <right: Identifier> => vec![
+        TypedIdent { ident: left, ty: None },
+        TypedIdent { ident: right, ty: None },
+    ],
 }
 
 ExternFunctionDefinition: ExternFunctionDefinition<'input> = {

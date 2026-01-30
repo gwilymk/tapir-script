@@ -146,6 +146,7 @@ pub fn resolve_struct_fields<'input>(
 /// This resolves `None` types (which represent user-defined types)
 /// to `Some(Type::Struct(id))` where appropriate, or emits errors for unknown types.
 /// For methods, also resolves the receiver type and fills in self's type.
+/// For operators, resolves operand types and validates constraints.
 pub fn resolve_all_types<'input>(
     script: &mut crate::ast::Script<'input>,
     struct_names: &HashMap<&'input str, StructId>,
@@ -153,8 +154,55 @@ pub fn resolve_all_types<'input>(
 ) {
     // Resolve function argument and return types
     for function in &mut script.functions {
+        // For operators, resolve operand types from the pattern
+        if let Some(ref op_def) = function.operator_def {
+            let left_type = resolve_receiver_type(
+                op_def.left_type.ident,
+                struct_names,
+                op_def.left_type.span,
+                diagnostics,
+            );
+            let right_type = resolve_receiver_type(
+                op_def.right_type.ident,
+                struct_names,
+                op_def.right_type.span,
+                diagnostics,
+            );
+
+            // At least one operand must be a struct
+            if !left_type.is_struct() && !right_type.is_struct() {
+                ErrorKind::OperatorRequiresStruct {
+                    left: op_def.left_type.ident.to_string(),
+                    right: op_def.right_type.ident.to_string(),
+                }
+                .at(function.span)
+                .label(
+                    op_def.left_type.span,
+                    crate::reporting::DiagnosticMessage::HasType { ty: left_type },
+                )
+                .label(
+                    op_def.right_type.span,
+                    crate::reporting::DiagnosticMessage::HasType { ty: right_type },
+                )
+                .emit(diagnostics);
+            }
+
+            // Fill in argument types from the pattern
+            if function.arguments.len() == 2 {
+                function.arguments[0].ty = Some(crate::ast::TypeWithLocation {
+                    t: Some(left_type),
+                    name: op_def.left_type.ident,
+                    span: function.arguments[0].span(),
+                });
+                function.arguments[1].ty = Some(crate::ast::TypeWithLocation {
+                    t: Some(right_type),
+                    name: op_def.right_type.ident,
+                    span: function.arguments[1].span(),
+                });
+            }
+        }
         // For methods, resolve receiver type and fill in self's type
-        if let Some(ref receiver) = function.receiver_type {
+        else if let Some(ref receiver) = function.receiver_type {
             let receiver_type =
                 resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
 

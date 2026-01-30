@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "@toplevel",
       span: "[span]",
@@ -24,6 +25,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: Some(Ident(
         span: "[span]",
         ident: "int",
@@ -104,6 +106,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "test_method_call_in_expression",
       span: "[span]",
@@ -186,6 +189,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "get_value",
       span: "[span]",
@@ -221,6 +225,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "test_chained",
       span: "[span]",
@@ -288,6 +293,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "test_method_with_args",
       span: "[span]",
@@ -373,6 +379,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "test_paren_method",
       span: "[span]",
@@ -438,6 +445,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "test_method_statement",
       span: "[span]",

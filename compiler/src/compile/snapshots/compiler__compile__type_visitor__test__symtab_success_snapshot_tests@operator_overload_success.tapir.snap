@@ -1,0 +1,25 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/operator_overload_success.tapir
+---
+[
+  ("p1", Struct(StructId(0))),
+  ("p2", Struct(StructId(0))),
+  ("p3", Struct(StructId(0))),
+  ("p4", Struct(StructId(0))),
+  ("p5", Struct(StructId(0))),
+  ("p6", Struct(StructId(0))),
+  ("same", Bool),
+  ("chain", Struct(StructId(0))),
+  ("a", Struct(StructId(0))),
+  ("b", Struct(StructId(0))),
+  ("a", Struct(StructId(0))),
+  ("b", Struct(StructId(0))),
+  ("p", Struct(StructId(0))),
+  ("n", Int),
+  ("n", Int),
+  ("p", Struct(StructId(0))),
+  ("a", Struct(StructId(0))),
+  ("b", Struct(StructId(0))),
+]

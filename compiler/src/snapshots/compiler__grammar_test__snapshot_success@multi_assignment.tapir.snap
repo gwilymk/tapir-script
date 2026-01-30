@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "@toplevel",
       span: "[span]",
@@ -310,6 +311,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "returns_two",
       span: "[span]",
@@ -355,6 +357,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "returns_three",
       span: "[span]",
@@ -410,6 +413,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "foo",
       span: "[span]",
@@ -445,6 +449,7 @@ Script(
       meta: {},
     ),
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "bar",
       span: "[span]",

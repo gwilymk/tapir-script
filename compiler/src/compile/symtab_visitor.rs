@@ -408,7 +408,27 @@ impl<'input> SymTabVisitor<'input> {
                 continue;
             }
 
-            // Use mangled_name() - returns "Type@method" for methods, "name" for functions
+            // Check for event modifier on operators (not allowed)
+            if let Some(event_span) = function.modifiers.is_event_handler
+                && function.is_operator()
+            {
+                ErrorKind::OperatorCannotBeEventHandler
+                    .at(event_span)
+                    .emit(diagnostics);
+                continue;
+            }
+
+            // Operator functions must have exactly 2 arguments
+            if function.is_operator() && function.arguments.len() != 2 {
+                ErrorKind::OperatorRequiresTwoArguments {
+                    actual: function.arguments.len(),
+                }
+                .at(function.span)
+                .emit(diagnostics);
+                continue;
+            }
+
+            // Use mangled_name() - returns "Type@op@Type" for operators, "Type@method" for methods, "name" for functions
             register_function(
                 function.mangled_name().into_owned(),
                 function.span,
@@ -794,6 +814,17 @@ pub struct SymTab<'input> {
     struct_property_bases: HashMap<String, StructPropertyBase>,
 }
 
+/// Convert a Type to its name string for operator mangling.
+fn type_to_name(ty: Type, struct_registry: &StructRegistry) -> &str {
+    match ty {
+        Type::Int => "int",
+        Type::Fix => "fix",
+        Type::Bool => "bool",
+        Type::Struct(id) => &struct_registry.get(id).name,
+        Type::Error => "error",
+    }
+}
+
 impl<'input> SymTab<'input> {
     fn new(
         properties: &[Property],
@@ -842,6 +873,21 @@ impl<'input> SymTab<'input> {
     /// For methods, use "Type@method" format (e.g., "Point@distance", "fix@round").
     pub fn function_by_mangled_name(&self, mangled: &str) -> Option<InternalOrExternalFunctionId> {
         self.functions_by_name.get(mangled).copied()
+    }
+
+    /// Look up an operator function by operand types.
+    /// Returns the function ID if an operator overload is defined for these types.
+    pub fn lookup_operator(
+        &self,
+        left_type: Type,
+        op: &crate::ast::BinaryOperator,
+        right_type: Type,
+        struct_registry: &StructRegistry,
+    ) -> Option<InternalOrExternalFunctionId> {
+        let left_name = type_to_name(left_type, struct_registry);
+        let right_name = type_to_name(right_type, struct_registry);
+        let mangled = format!("{}@{}@{}", left_name, op, right_name);
+        self.function_by_mangled_name(&mangled)
     }
 
     fn new_symbol(&mut self, ident: &'input str, span: Span) -> SymbolId {

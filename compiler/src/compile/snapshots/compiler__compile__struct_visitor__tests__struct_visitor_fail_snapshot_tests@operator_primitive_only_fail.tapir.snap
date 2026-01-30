@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile/struct_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/struct_visitor/operator_primitive_only_fail.tapir
+---
+[E0047] Error: operator function for `int` and `int` requires at least one struct type
+   ╭─[ operator_primitive_only_fail.tapir:2:8 ]
+   │
+ 2 │ fn int + int(a, b) -> int {
+   │    ─┬─   ─┬─  
+   │     ╰───────── This has type int
+   │           │   
+   │           ╰─── This has type int
+───╯

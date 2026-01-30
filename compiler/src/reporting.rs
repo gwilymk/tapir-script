@@ -167,6 +167,23 @@ pub enum DiagnosticMessage {
     MethodCannotBeEventHandler {
         method_name: String,
     },
+    OperatorRequiresStruct {
+        left: String,
+        right: String,
+    },
+    OperatorCannotBeEventHandler,
+    OperatorRequiresTwoArguments {
+        actual: usize,
+    },
+    NoOperatorOverload {
+        left_type: String,
+        operator: String,
+        right_type: String,
+    },
+    OperatorMustReturnOneValue {
+        operator: String,
+        actual_count: usize,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -286,6 +303,11 @@ pub enum DiagnosticMessage {
 
     // Help messages
     RemoveReturnTypeOrChangeToRegularFunction,
+    DefineOperatorFunction {
+        left: String,
+        op: String,
+        right: String,
+    },
 }
 
 impl DiagnosticMessage {
@@ -411,6 +433,30 @@ impl DiagnosticMessage {
             DiagnosticMessage::MethodCannotBeEventHandler { method_name } => {
                 format!("method `{method_name}` cannot be an event handler")
             }
+            DiagnosticMessage::OperatorRequiresStruct { left, right } => {
+                format!("operator function for `{left}` and `{right}` requires at least one struct type")
+            }
+            DiagnosticMessage::OperatorCannotBeEventHandler => {
+                "operator functions cannot be event handlers".into()
+            }
+            DiagnosticMessage::OperatorRequiresTwoArguments { actual } => {
+                format!("operator function must have exactly 2 arguments, but has {actual}")
+            }
+            DiagnosticMessage::NoOperatorOverload {
+                left_type,
+                operator,
+                right_type,
+            } => {
+                format!("no operator `{operator}` defined for `{left_type}` and `{right_type}`")
+            }
+            DiagnosticMessage::OperatorMustReturnOneValue {
+                operator,
+                actual_count,
+            } => {
+                format!(
+                    "operator `{operator}` function must return exactly one value, but returns {actual_count}"
+                )
+            }
 
             // Parse errors
             DiagnosticMessage::UnrecognizedEof => "Unexpected end of file".into(),
@@ -526,6 +572,9 @@ impl DiagnosticMessage {
             // Help messages
             DiagnosticMessage::RemoveReturnTypeOrChangeToRegularFunction => {
                 "Either remove the return type, or change this to be a regular function".into()
+            }
+            DiagnosticMessage::DefineOperatorFunction { left, op, right } => {
+                format!("define `fn {left} {op} {right}(a, b) -> ... {{ ... }}` to enable this operator")
             }
         }
     }
@@ -674,6 +723,33 @@ pub enum ErrorKind {
         method_name: String,
     },
 
+    /// Operator definition requires at least one struct type
+    OperatorRequiresStruct {
+        left: String,
+        right: String,
+    },
+
+    /// Operator function cannot be an event handler
+    OperatorCannotBeEventHandler,
+
+    /// Operator function must have exactly 2 arguments
+    OperatorRequiresTwoArguments {
+        actual: usize,
+    },
+
+    /// No operator overload found for types
+    NoOperatorOverload {
+        left_type: String,
+        operator: String,
+        right_type: String,
+    },
+
+    /// Operator function must return exactly one value
+    OperatorMustReturnOneValue {
+        operator: String,
+        actual_count: usize,
+    },
+
     // Parse errors
     UnrecognizedEof {
         expected: Box<[String]>,
@@ -740,6 +816,11 @@ impl ErrorKind {
             Self::UnknownMethodType { .. } => "E0044",
             Self::UnknownMethod { .. } => "E0045",
             Self::MethodCannotBeEventHandler { .. } => "E0046",
+            Self::OperatorRequiresStruct { .. } => "E0047",
+            Self::OperatorCannotBeEventHandler => "E0048",
+            Self::OperatorRequiresTwoArguments { .. } => "E0049",
+            Self::NoOperatorOverload { .. } => "E0050",
+            Self::OperatorMustReturnOneValue { .. } => "E0051",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -914,6 +995,32 @@ impl ErrorKind {
                     method_name: method_name.clone(),
                 }
             }
+            Self::OperatorRequiresStruct { left, right } => {
+                DiagnosticMessage::OperatorRequiresStruct {
+                    left: left.clone(),
+                    right: right.clone(),
+                }
+            }
+            Self::OperatorCannotBeEventHandler => DiagnosticMessage::OperatorCannotBeEventHandler,
+            Self::OperatorRequiresTwoArguments { actual } => {
+                DiagnosticMessage::OperatorRequiresTwoArguments { actual: *actual }
+            }
+            Self::NoOperatorOverload {
+                left_type,
+                operator,
+                right_type,
+            } => DiagnosticMessage::NoOperatorOverload {
+                left_type: left_type.clone(),
+                operator: operator.clone(),
+                right_type: right_type.clone(),
+            },
+            Self::OperatorMustReturnOneValue {
+                operator,
+                actual_count,
+            } => DiagnosticMessage::OperatorMustReturnOneValue {
+                operator: operator.clone(),
+                actual_count: *actual_count,
+            },
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {
                 token: token.clone(),

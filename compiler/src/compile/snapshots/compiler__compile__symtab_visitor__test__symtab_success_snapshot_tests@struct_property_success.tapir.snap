@@ -56,6 +56,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "@toplevel",
       span: "[span]",

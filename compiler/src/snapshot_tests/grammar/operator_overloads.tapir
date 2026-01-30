@@ -1,0 +1,64 @@
+# Struct for testing operator overloads
+struct Point { x: int, y: int }
+struct Vec2 { x: fix, y: fix }
+
+# Basic operator: Point + Point
+fn Point + Point(a, b) -> Point {
+    return Point(a.x + b.x, a.y + b.y);
+}
+
+# Operator with different types: Vec2 * fix
+fn Vec2 * fix(v, s) -> Vec2 {
+    return Vec2(v.x * s, v.y * s);
+}
+
+# Reverse: fix * Vec2
+fn fix * Vec2(s, v) -> Vec2 {
+    return Vec2(s * v.x, s * v.y);
+}
+
+# Dot product returns different type
+fn Vec2 * Vec2(a, b) -> fix {
+    return a.x * b.x + a.y * b.y;
+}
+
+# Comparison operators
+fn Point == Point(a, b) -> bool {
+    return a.x == b.x && a.y == b.y;
+}
+
+fn Point != Point(a, b) -> bool {
+    return a.x != b.x || a.y != b.y;
+}
+
+fn Point < Point(a, b) -> bool {
+    return a.x < b.x && a.y < b.y;
+}
+
+# Division operators
+fn Vec2 / fix(v, s) -> Vec2 {
+    return Vec2(v.x / s, v.y / s);
+}
+
+fn Vec2 // fix(v, s) -> Vec2 {
+    return Vec2(v.x // s, v.y // s);
+}
+
+# Modulo operators
+fn Point % int(p, n) -> Point {
+    return Point(p.x % n, p.y % n);
+}
+
+fn Point %% int(p, n) -> Point {
+    return Point(p.x %% n, p.y %% n);
+}
+
+# Subtraction
+fn Point - Point(a, b) -> Point {
+    return Point(a.x - b.x, a.y - b.y);
+}
+
+# With primitive on left
+fn int * Point(n, p) -> Point {
+    return Point(n * p.x, n * p.y);
+}

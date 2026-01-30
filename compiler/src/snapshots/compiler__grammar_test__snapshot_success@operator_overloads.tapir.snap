@@ -1,0 +1,1752 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/operator_overloads.tapir
+---
+Script(
+  struct_declarations: [
+    StructDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "Point",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "y",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+    StructDeclaration(
+      name: Ident(
+        span: "[span]",
+        ident: "Vec2",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Fix),
+            name: "fix",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "y",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Fix),
+            name: "fix",
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+  ],
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      operator_def: None,
+      receiver_type: None,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+        op: Add,
+        right_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Point",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("a"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Add,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("b"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("a"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Add,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("b"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Point",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Vec2",
+        ),
+        op: Mul,
+        right_type: Ident(
+          span: "[span]",
+          ident: "fix",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Vec2",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("v"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Mul,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("s"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("v"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Mul,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("s"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "v",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "s",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Vec2",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "fix",
+        ),
+        op: Mul,
+        right_type: Ident(
+          span: "[span]",
+          ident: "Vec2",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Vec2",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: Variable("s"),
+                          meta: {},
+                        ),
+                        operator: Mul,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("v"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: Variable("s"),
+                          meta: {},
+                        ),
+                        operator: Mul,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("v"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "s",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "v",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Vec2",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Vec2",
+        ),
+        op: Mul,
+        right_type: Ident(
+          span: "[span]",
+          ident: "Vec2",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("a"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "x",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: Mul,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("b"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "x",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("a"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "y",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: Mul,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("b"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "y",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Fix),
+            name: "fix",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+        op: EqEq,
+        right_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("a"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "x",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: EqEq,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("b"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "x",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: And,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("a"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "y",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: EqEq,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("b"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "y",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Bool),
+            name: "bool",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+        op: NeEq,
+        right_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("a"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "x",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: NeEq,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("b"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "x",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Or,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("a"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "y",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: NeEq,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("b"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "y",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Bool),
+            name: "bool",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+        op: Lt,
+        right_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("a"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "x",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: Lt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("b"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "x",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: And,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("a"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "y",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                      operator: Lt,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: FieldAccess(
+                          base: Expression(
+                            span: "[span]",
+                            kind: Variable("b"),
+                            meta: {},
+                          ),
+                          field: Ident(
+                            span: "[span]",
+                            ident: "y",
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Bool),
+            name: "bool",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Vec2",
+        ),
+        op: Div,
+        right_type: Ident(
+          span: "[span]",
+          ident: "fix",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Vec2",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("v"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Div,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("s"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("v"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Div,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("s"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "v",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "s",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Vec2",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Vec2",
+        ),
+        op: RealDiv,
+        right_type: Ident(
+          span: "[span]",
+          ident: "fix",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Vec2",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("v"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: RealDiv,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("s"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("v"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: RealDiv,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("s"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "v",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "s",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Vec2",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+        op: Mod,
+        right_type: Ident(
+          span: "[span]",
+          ident: "int",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Point",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("p"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Mod,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("n"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("p"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Mod,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("n"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "p",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "n",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Point",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+        op: RealMod,
+        right_type: Ident(
+          span: "[span]",
+          ident: "int",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Point",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("p"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: RealMod,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("n"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("p"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: RealMod,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: Variable("n"),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "p",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "n",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Point",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+        op: Sub,
+        right_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Point",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("a"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Sub,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("b"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("a"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                        operator: Sub,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("b"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Point",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      operator_def: Some(OperatorDef(
+        left_type: Ident(
+          span: "[span]",
+          ident: "int",
+        ),
+        op: Mul,
+        right_type: Ident(
+          span: "[span]",
+          ident: "Point",
+        ),
+      )),
+      receiver_type: None,
+      name: "",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "Point",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: Variable("n"),
+                          meta: {},
+                        ),
+                        operator: Mul,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("p"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: Variable("n"),
+                          meta: {},
+                        ),
+                        operator: Mul,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: FieldAccess(
+                            base: Expression(
+                              span: "[span]",
+                              kind: Variable("p"),
+                              meta: {},
+                            ),
+                            field: Ident(
+                              span: "[span]",
+                              ident: "y",
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "n",
+          ),
+          ty: None,
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "p",
+          ),
+          ty: None,
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: None,
+            name: "Point",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

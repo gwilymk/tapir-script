@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      operator_def: None,
       receiver_type: None,
       name: "@toplevel",
       span: "[span]",
@@ -93,6 +94,7 @@ Script(
       },
     ),
     Function(
+      operator_def: None,
       receiver_type: Some(Ident(
         span: "[span]",
         ident: "int",
