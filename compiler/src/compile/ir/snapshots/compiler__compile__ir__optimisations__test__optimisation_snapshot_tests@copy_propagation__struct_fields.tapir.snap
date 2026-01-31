@@ -8,22 +8,24 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/copy_propagatio
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.19 = int 1
-temp.20 = int 2
-p.x.21 = temp.19
-p.y.22 = temp.20
-temp.10.x.23 = p.x.21
-temp.10.y.24 = p.y.22
-temp.25 = temp.10.x.23
-a.26 = temp.25
-temp.14.x.27 = p.x.21
-temp.14.y.28 = p.y.22
-temp.29 = temp.14.y.28
-b.30 = temp.29
-temp.31 = a.26
-c.32 = temp.31
-temp.33 = b.30
-d.34 = temp.33
+temp.22 = int 1
+temp.23 = int 2
+temp.5.x.24 = temp.22
+temp.5.y.25 = temp.23
+p.x.26 = temp.5.x.24
+p.y.27 = temp.5.y.25
+temp.13.x.28 = p.x.26
+temp.13.y.29 = p.y.27
+temp.30 = temp.13.x.28
+a.31 = temp.30
+temp.17.x.32 = p.x.26
+temp.17.y.33 = p.y.27
+temp.34 = temp.17.y.33
+b.35 = temp.34
+temp.36 = a.31
+c.37 = temp.36
+temp.38 = b.35
+d.39 = temp.38
 return 
 
 
@@ -32,20 +34,22 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.19 = int 1
-temp.20 = int 2
-p.x.21 = temp.19
-p.y.22 = temp.20
-temp.10.x.23 = temp.19
-temp.10.y.24 = temp.20
-temp.25 = temp.19
-a.26 = temp.19
-temp.14.x.27 = temp.19
-temp.14.y.28 = temp.20
-temp.29 = temp.20
-b.30 = temp.20
-temp.31 = temp.19
-c.32 = temp.19
-temp.33 = temp.20
-d.34 = temp.20
+temp.22 = int 1
+temp.23 = int 2
+temp.5.x.24 = temp.22
+temp.5.y.25 = temp.23
+p.x.26 = temp.22
+p.y.27 = temp.23
+temp.13.x.28 = temp.22
+temp.13.y.29 = temp.23
+temp.30 = temp.22
+a.31 = temp.22
+temp.17.x.32 = temp.22
+temp.17.y.33 = temp.23
+temp.34 = temp.23
+b.35 = temp.23
+temp.36 = temp.22
+c.37 = temp.22
+temp.38 = temp.23
+d.39 = temp.23
 return

@@ -7,25 +7,27 @@ input_file: compiler/src/compile/snapshot_tests/ir/method_on_struct.tapir
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.5 = int 3
-temp.6 = int 4
-p.x.3 = temp.5
-p.y.4 = temp.6
-temp.8.x.9 = p.x.3
-temp.8.y.10 = p.y.4
-temp.7 = Point@sum(temp.8.x.9, temp.8.y.10)
-total.1 = temp.7
+temp.6 = int 3
+temp.7 = int 4
+temp.3.x.4 = temp.6
+temp.3.y.5 = temp.7
+p.x.8 = temp.3.x.4
+p.y.9 = temp.3.y.5
+temp.11.x.12 = p.x.8
+temp.11.y.13 = p.y.9
+temp.10 = Point@sum(temp.11.x.12, temp.11.y.13)
+total.1 = temp.10
 return 
 
 =======================
-fn Point@sum(self.x.11, self.y.12) -> int
+fn Point@sum(self.x.14, self.y.15) -> int
 
 ---- block 0 ----
-temp.16.x.17 = self.x.11
-temp.16.y.18 = self.y.12
-temp.14 = temp.16.x.17
-temp.19.x.20 = self.x.11
-temp.19.y.21 = self.y.12
-temp.15 = temp.19.y.21
-temp.13 = temp.14 + temp.15
-return temp.13
+temp.19.x.20 = self.x.14
+temp.19.y.21 = self.y.15
+temp.17 = temp.19.x.20
+temp.22.x.23 = self.x.14
+temp.22.y.24 = self.y.15
+temp.18 = temp.22.y.24
+temp.16 = temp.17 + temp.18
+return temp.16

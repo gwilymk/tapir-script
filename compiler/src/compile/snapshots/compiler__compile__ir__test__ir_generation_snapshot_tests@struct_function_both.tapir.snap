@@ -7,41 +7,47 @@ input_file: compiler/src/compile/snapshot_tests/ir/struct_function_both.tapir
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.7 = int 1
-temp.8 = int 2
-p1.x.5 = temp.7
-p1.y.6 = temp.8
-temp.11 = int 3
-temp.12 = int 4
-p2.x.9 = temp.11
-p2.y.10 = temp.12
-temp.14.x.15 = p1.x.5
-temp.14.y.16 = p1.y.6
-temp.17.x.18 = p2.x.9
-temp.17.y.19 = p2.y.10
-temp.13.x.20, temp.13.y.21 = add_points(temp.14.x.15, temp.14.y.16, temp.17.x.18, temp.17.y.19)
-sum.x.22 = temp.13.x.20
-sum.y.23 = temp.13.y.21
+temp.8 = int 1
+temp.9 = int 2
+temp.5.x.6 = temp.8
+temp.5.y.7 = temp.9
+p1.x.10 = temp.5.x.6
+p1.y.11 = temp.5.y.7
+temp.15 = int 3
+temp.16 = int 4
+temp.12.x.13 = temp.15
+temp.12.y.14 = temp.16
+p2.x.17 = temp.12.x.13
+p2.y.18 = temp.12.y.14
+temp.20.x.21 = p1.x.10
+temp.20.y.22 = p1.y.11
+temp.23.x.24 = p2.x.17
+temp.23.y.25 = p2.y.18
+temp.19.x.26, temp.19.y.27 = add_points(temp.20.x.21, temp.20.y.22, temp.23.x.24, temp.23.y.25)
+sum.x.28 = temp.19.x.26
+sum.y.29 = temp.19.y.27
 return 
 
 =======================
-fn add_points(a.x.24, a.y.25, b.x.26, b.y.27) -> int, int
+fn add_points(a.x.30, a.y.31, b.x.32, b.y.33) -> int, int
 
 ---- block 0 ----
-temp.34.x.35 = a.x.24
-temp.34.y.36 = a.y.25
-temp.32 = temp.34.x.35
-temp.37.x.38 = b.x.26
-temp.37.y.39 = b.y.27
-temp.33 = temp.37.x.38
-temp.31 = temp.32 + temp.33
-temp.43.x.44 = a.x.24
-temp.43.y.45 = a.y.25
-temp.41 = temp.43.y.45
-temp.46.x.47 = b.x.26
-temp.46.y.48 = b.y.27
-temp.42 = temp.46.y.48
-temp.40 = temp.41 + temp.42
-temp.28.x.29 = temp.31
-temp.28.y.30 = temp.40
-return temp.28.x.29, temp.28.y.30
+temp.41.x.42 = a.x.30
+temp.41.y.43 = a.y.31
+temp.39 = temp.41.x.42
+temp.44.x.45 = b.x.32
+temp.44.y.46 = b.y.33
+temp.40 = temp.44.x.45
+temp.38 = temp.39 + temp.40
+temp.50.x.51 = a.x.30
+temp.50.y.52 = a.y.31
+temp.48 = temp.50.y.52
+temp.53.x.54 = b.x.32
+temp.53.y.55 = b.y.33
+temp.49 = temp.53.y.55
+temp.47 = temp.48 + temp.49
+temp.35.x.36 = temp.38
+temp.35.y.37 = temp.47
+temp.34.x.56 = temp.35.x.36
+temp.34.y.57 = temp.35.y.37
+return temp.34.x.56, temp.34.y.57

@@ -7,12 +7,14 @@ input_file: compiler/src/compile/snapshot_tests/ir/struct_assignment_simple.tapi
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.4 = int 1
-temp.5 = int 2
-p.x.2 = temp.4
-p.y.3 = temp.5
-temp.6.x.7 = p.x.2
-temp.6.y.8 = p.y.3
-q.x.9 = temp.6.x.7
-q.y.10 = temp.6.y.8
+temp.5 = int 1
+temp.6 = int 2
+temp.2.x.3 = temp.5
+temp.2.y.4 = temp.6
+p.x.7 = temp.2.x.3
+p.y.8 = temp.2.y.4
+temp.9.x.10 = p.x.7
+temp.9.y.11 = p.y.8
+q.x.12 = temp.9.x.10
+q.y.13 = temp.9.y.11
 return

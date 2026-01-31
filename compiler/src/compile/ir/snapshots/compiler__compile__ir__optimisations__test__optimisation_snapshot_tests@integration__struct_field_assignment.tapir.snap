@@ -8,23 +8,25 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/str
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.18 = int 1
-temp.19 = int 2
-p.x.20 = temp.18
-p.y.21 = temp.19
-temp.22 = int 100
-p.x.23 = temp.22
-temp.24 = int 200
-p.y.25 = temp.24
-temp.11.x.26 = p.x.23
-temp.11.y.27 = p.y.25
-temp.28 = temp.11.x.26
-temp.14.x.29 = p.x.23
-temp.14.y.30 = p.y.25
-temp.31 = temp.14.y.30
-temp.32 = temp.28 + temp.31
-temp.33 = temp.32
-storeprop temp.33, 0
+temp.21 = int 1
+temp.22 = int 2
+temp.2.x.23 = temp.21
+temp.2.y.24 = temp.22
+p.x.25 = temp.2.x.23
+p.y.26 = temp.2.y.24
+temp.27 = int 100
+p.x.28 = temp.27
+temp.29 = int 200
+p.y.30 = temp.29
+temp.14.x.31 = p.x.28
+temp.14.y.32 = p.y.30
+temp.33 = temp.14.x.31
+temp.17.x.34 = p.x.28
+temp.17.y.35 = p.y.30
+temp.36 = temp.17.y.35
+temp.37 = temp.33 + temp.36
+temp.38 = temp.37
+storeprop temp.38, 0
 return 
 
 
@@ -33,23 +35,25 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.18 = int 1
-temp.19 = int 2
-p.x.20 = temp.18
-p.y.21 = temp.19
-temp.22 = int 100
-p.x.23 = temp.22
-temp.24 = int 200
-p.y.25 = temp.24
-temp.11.x.26 = temp.22
-temp.11.y.27 = temp.24
-temp.28 = temp.22
-temp.14.x.29 = temp.22
-temp.14.y.30 = temp.24
-temp.31 = temp.24
-temp.32 = temp.22 + temp.24
-temp.33 = temp.32
-storeprop temp.32, 0
+temp.21 = int 1
+temp.22 = int 2
+temp.2.x.23 = temp.21
+temp.2.y.24 = temp.22
+p.x.25 = temp.21
+p.y.26 = temp.22
+temp.27 = int 100
+p.x.28 = temp.27
+temp.29 = int 200
+p.y.30 = temp.29
+temp.14.x.31 = temp.27
+temp.14.y.32 = temp.29
+temp.33 = temp.27
+temp.17.x.34 = temp.27
+temp.17.y.35 = temp.29
+temp.36 = temp.29
+temp.37 = temp.27 + temp.29
+temp.38 = temp.37
+storeprop temp.37, 0
 return 
 
 
@@ -58,12 +62,12 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.18 = int 1
-temp.19 = int 2
-temp.22 = int 100
-temp.24 = int 200
-temp.32 = temp.22 + temp.24
-storeprop temp.32, 0
+temp.21 = int 1
+temp.22 = int 2
+temp.27 = int 100
+temp.29 = int 200
+temp.37 = temp.27 + temp.29
+storeprop temp.37, 0
 return 
 
 
@@ -72,12 +76,12 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.18 = int 1
-temp.19 = int 2
-temp.22 = int 100
-temp.24 = int 200
-temp.32 = int 300
-storeprop temp.32, 0
+temp.21 = int 1
+temp.22 = int 2
+temp.27 = int 100
+temp.29 = int 200
+temp.37 = int 300
+storeprop temp.37, 0
 return 
 
 
@@ -86,6 +90,6 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.32 = int 300
-storeprop temp.32, 0
+temp.37 = int 300
+storeprop temp.37, 0
 return

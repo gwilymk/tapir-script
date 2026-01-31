@@ -1,0 +1,10 @@
+# Test IR generation for initialized struct globals
+# Values should be stored in bytecode, GetGlobal for reads
+
+struct Point { x: int, y: int }
+
+extern fn test(value: int);
+
+global pos = Point(10, 20);
+test(pos.x);
+test(pos.y);

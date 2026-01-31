@@ -7,21 +7,23 @@ input_file: compiler/src/compile/snapshot_tests/ir/struct_function_param.tapir
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.5 = int 5
-temp.6 = int 10
-pt.x.3 = temp.5
-pt.y.4 = temp.6
-temp.8.x.9 = pt.x.3
-temp.8.y.10 = pt.y.4
-temp.7 = get_x(temp.8.x.9, temp.8.y.10)
-x.1 = temp.7
+temp.6 = int 5
+temp.7 = int 10
+temp.3.x.4 = temp.6
+temp.3.y.5 = temp.7
+pt.x.8 = temp.3.x.4
+pt.y.9 = temp.3.y.5
+temp.11.x.12 = pt.x.8
+temp.11.y.13 = pt.y.9
+temp.10 = get_x(temp.11.x.12, temp.11.y.13)
+x.1 = temp.10
 return 
 
 =======================
-fn get_x(p.x.11, p.y.12) -> int
+fn get_x(p.x.14, p.y.15) -> int
 
 ---- block 0 ----
-temp.14.x.15 = p.x.11
-temp.14.y.16 = p.y.12
-temp.13 = temp.14.x.15
-return temp.13
+temp.17.x.18 = p.x.14
+temp.17.y.19 = p.y.15
+temp.16 = temp.17.x.18
+return temp.16

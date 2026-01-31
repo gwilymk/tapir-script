@@ -8,12 +8,14 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_global_eli
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.6 = int 10
-temp.7 = int 20
-global.g.x.8 = temp.6
-global.g.y.9 = temp.7
-temp.10 = global.g.x.8
-temp.11 = extern test(temp.10)
+temp.7 = int 10
+temp.8 = int 20
+temp.0.x.9 = temp.7
+temp.0.y.10 = temp.8
+setglobal 1, temp.0.x.9
+setglobal 2, temp.0.y.10
+getglobal temp.11, 1
+temp.12 = extern test(temp.11)
 return 
 
 
@@ -22,12 +24,13 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.6 = int 10
-temp.7 = int 20
-global.g.x.8 = temp.6
-global.g.y.9 = temp.7
-temp.10 = global.g.x.8
-temp.11 = extern test(temp.10)
+temp.7 = int 10
+temp.8 = int 20
+temp.0.x.9 = temp.7
+temp.0.y.10 = temp.8
+setglobal 0, temp.0.x.9
+getglobal temp.11, 0
+temp.12 = extern test(temp.11)
 return 
 
 
@@ -36,11 +39,12 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.6 = int 10
-temp.7 = int 20
-global.g.x.8 = temp.6
-temp.10 = global.g.x.8
-temp.11 = extern test(temp.10)
+temp.7 = int 10
+temp.8 = int 20
+temp.0.x.9 = temp.7
+setglobal 0, temp.0.x.9
+getglobal temp.11, 0
+temp.12 = extern test(temp.11)
 return 
 
 
@@ -49,8 +53,9 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.6 = int 10
-global.g.x.8 = temp.6
-temp.10 = global.g.x.8
-temp.11 = extern test(temp.10)
+temp.7 = int 10
+temp.0.x.9 = temp.7
+setglobal 0, temp.0.x.9
+getglobal temp.11, 0
+temp.12 = extern test(temp.11)
 return

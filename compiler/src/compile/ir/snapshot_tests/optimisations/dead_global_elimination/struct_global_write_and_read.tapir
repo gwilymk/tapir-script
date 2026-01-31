@@ -1,0 +1,12 @@
+# eliminate_dead_globals, dead_store_elimination
+# Test that struct global assignment followed by read is preserved
+# Bug #2 regression test: assignments to struct globals were being eliminated
+
+struct Point { x: int, y: int }
+
+extern fn test(x: int);
+
+global g: Point;
+g = Point(10, 20);
+test(g.x);  # Both x and y writes should be preserved because we're reading after
+test(g.y);

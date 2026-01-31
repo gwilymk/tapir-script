@@ -13,26 +13,34 @@ return
 fn test_multiple_structs() -> 
 
 ---- block 0 ----
-temp.5 = int 1
-temp.6 = int 2
-p1.x.3 = temp.5
-p1.y.4 = temp.6
-temp.9 = int 3
-temp.10 = int 4
-p2.x.7 = temp.9
-p2.y.8 = temp.10
-temp.13 = int 5
-temp.14 = int 6
-p3.x.11 = temp.13
-p3.y.12 = temp.14
+temp.6 = int 1
+temp.7 = int 2
+temp.3.x.4 = temp.6
+temp.3.y.5 = temp.7
+p1.x.8 = temp.3.x.4
+p1.y.9 = temp.3.y.5
+temp.13 = int 3
+temp.14 = int 4
+temp.10.x.11 = temp.13
+temp.10.y.12 = temp.14
+p2.x.15 = temp.10.x.11
+p2.y.16 = temp.10.y.12
+temp.20 = int 5
+temp.21 = int 6
+temp.17.x.18 = temp.20
+temp.17.y.19 = temp.21
+p3.x.22 = temp.17.x.18
+p3.y.23 = temp.17.y.19
 return 
 
 =======================
 fn test_constructor_discarded() -> 
 
 ---- block 0 ----
-temp.18 = int 1
-temp.19 = int 2
-temp.15.x.16 = temp.18
-temp.15.y.17 = temp.19
+temp.28 = int 1
+temp.29 = int 2
+temp.25.x.26 = temp.28
+temp.25.y.27 = temp.29
+temp.24.x.30 = temp.25.x.26
+temp.24.y.31 = temp.25.y.27
 return

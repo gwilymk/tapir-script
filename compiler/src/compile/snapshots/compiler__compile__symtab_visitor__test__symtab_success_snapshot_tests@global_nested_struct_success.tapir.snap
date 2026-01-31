@@ -1,0 +1,344 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_nested_struct_success.tapir
+---
+Script(
+  struct_declarations: [
+    StructDeclaration(
+      doc_comment: None,
+      name: TypeWithLocation(
+        t: None,
+        name: "Point",
+        span: "[span]",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "y",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+    StructDeclaration(
+      doc_comment: None,
+      name: TypeWithLocation(
+        t: None,
+        name: "Rectangle",
+        span: "[span]",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "origin",
+          ),
+          ty: Some(TypeWithLocation(
+            t: None,
+            name: "Point",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "size",
+          ),
+          ty: Some(TypeWithLocation(
+            t: None,
+            name: "Point",
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+  ],
+  property_declarations: [],
+  globals: [
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "bounds",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: Call(
+          name: "Rectangle",
+          arguments: [
+            Expression(
+              span: "[span]",
+              kind: Call(
+                name: "Point",
+                arguments: [
+                  Expression(
+                    span: "[span]",
+                    kind: Integer(0),
+                    meta: {},
+                  ),
+                  Expression(
+                    span: "[span]",
+                    kind: Integer(0),
+                    meta: {},
+                  ),
+                ],
+              ),
+              meta: {},
+            ),
+            Expression(
+              span: "[span]",
+              kind: Call(
+                name: "Point",
+                arguments: [
+                  Expression(
+                    span: "[span]",
+                    kind: Integer(100),
+                    meta: {},
+                  ),
+                  Expression(
+                    span: "[span]",
+                    kind: Integer(50),
+                    meta: {},
+                  ),
+                ],
+              ),
+              meta: {},
+            ),
+          ],
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+  ],
+  functions: [
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("bounds"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "origin",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "x",
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "y1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("bounds"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "origin",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "y",
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(1)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("bounds"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "size",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "x",
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "y2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("bounds"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "size",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "y",
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3)]",
+          },
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
+      },
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

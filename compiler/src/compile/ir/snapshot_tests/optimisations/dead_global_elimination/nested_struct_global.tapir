@@ -1,0 +1,15 @@
+# eliminate_dead_globals, dead_store_elimination
+# Test that nested struct global assignments are preserved when fields are read
+# All nested field writes should be preserved since we read all four fields
+
+struct Point { x: int, y: int }
+struct Rect { origin: Point, size: Point }
+
+extern fn test(x: int);
+
+global r: Rect;
+r = Rect(Point(1, 2), Point(3, 4));
+test(r.origin.x);
+test(r.origin.y);
+test(r.size.x);
+test(r.size.y);

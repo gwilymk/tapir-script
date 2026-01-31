@@ -60,6 +60,21 @@ impl GlobalId {
     }
 }
 
+/// Where a symbol's value is stored.
+///
+/// This unifies the handling of locals, properties, and globals.
+/// All struct expansion uses the same mechanism; only the final
+/// load/store instruction differs based on storage class.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SymbolStorage {
+    /// Local register - use Move instruction
+    Local,
+    /// Property storage - use GetProp/StoreProp with this index
+    Property(usize),
+    /// Global storage - use GetGlobal/SetGlobal with this index
+    Global(usize),
+}
+
 /// Metadata about a declared global variable.
 #[derive(Clone, Debug)]
 pub struct GlobalInfo {
@@ -260,6 +275,127 @@ fn evaluate_constant_initializer(
             (Type::Error, 0)
         }
     }
+}
+
+/// Collect field types and names for a struct type (flattened, scalar only).
+fn collect_struct_field_info(
+    struct_id: StructId,
+    prefix: &str,
+    registry: &StructRegistry,
+    out_types: &mut Vec<Type>,
+    out_names: &mut Vec<String>,
+) {
+    let def = registry.get(struct_id);
+    for field in &def.fields {
+        let field_path = if prefix.is_empty() {
+            field.name.clone()
+        } else {
+            format!("{}.{}", prefix, field.name)
+        };
+
+        if let Type::Struct(nested_id) = field.ty {
+            collect_struct_field_info(nested_id, &field_path, registry, out_types, out_names);
+        } else {
+            out_types.push(field.ty);
+            out_names.push(field_path);
+        }
+    }
+}
+
+/// Result of evaluating a struct constructor initializer.
+struct StructInitializer {
+    /// The struct type.
+    #[allow(dead_code)]
+    struct_id: StructId,
+    /// Initial values for each scalar field (in flattened order).
+    field_values: Vec<i32>,
+    /// Types of each scalar field (in flattened order).
+    field_types: Vec<Type>,
+    /// Names of each scalar field (in flattened order, e.g., "x", "origin.x").
+    field_names: Vec<String>,
+}
+
+/// Try to evaluate an expression as a struct constructor with constant arguments.
+/// Returns None if the expression is not a struct constructor or has non-constant arguments.
+fn try_evaluate_struct_constructor(
+    expr: &Expression<'_>,
+    expected_struct_id: StructId,
+    registry: &StructRegistry,
+    diagnostics: &mut Diagnostics,
+    global_name: &str,
+) -> Option<StructInitializer> {
+    // Check if this is a Call expression (struct constructors are parsed as calls)
+    let ExpressionKind::Call { name, arguments } = &expr.kind else {
+        return None;
+    };
+
+    // Verify the name matches the struct
+    let struct_def = registry.get(expected_struct_id);
+    if *name != struct_def.name {
+        return None;
+    }
+
+    // Check argument count
+    if arguments.len() != struct_def.fields.len() {
+        return None;
+    }
+
+    // Evaluate each argument and collect field values
+    let mut field_values = Vec::new();
+    let mut field_types = Vec::new();
+    let mut field_names = Vec::new();
+
+    for (arg, field) in arguments.iter().zip(&struct_def.fields) {
+        if let Type::Struct(nested_id) = field.ty {
+            // Nested struct - recursively evaluate
+            if let Some(nested) =
+                try_evaluate_struct_constructor(arg, nested_id, registry, diagnostics, global_name)
+            {
+                for (i, name) in nested.field_names.iter().enumerate() {
+                    field_values.push(nested.field_values[i]);
+                    field_types.push(nested.field_types[i]);
+                    field_names.push(format!("{}.{}", field.name, name));
+                }
+            } else {
+                emit_constant_eval_error(
+                    ConstantEvalError::NotConstant { span: arg.span },
+                    diagnostics,
+                    global_name,
+                );
+                return None;
+            }
+        } else {
+            // Scalar field - evaluate as constant
+            match eval_constant_expr(arg) {
+                Ok(ConstantValue::Int(i)) => {
+                    field_values.push(i);
+                    field_types.push(Type::Int);
+                    field_names.push(field.name.clone());
+                }
+                Ok(ConstantValue::Fix(f)) => {
+                    field_values.push(f.to_raw());
+                    field_types.push(Type::Fix);
+                    field_names.push(field.name.clone());
+                }
+                Ok(ConstantValue::Bool(b)) => {
+                    field_values.push(b as i32);
+                    field_types.push(Type::Bool);
+                    field_names.push(field.name.clone());
+                }
+                Err(err) => {
+                    emit_constant_eval_error(err, diagnostics, global_name);
+                    return None;
+                }
+            }
+        }
+    }
+
+    Some(StructInitializer {
+        struct_id: expected_struct_id,
+        field_values,
+        field_types,
+        field_names,
+    })
 }
 
 /// Emit a diagnostic for a constant evaluation error.
@@ -549,7 +685,8 @@ impl<'input> SymTabVisitor<'input> {
         };
 
         // Process global declarations
-        for (index, global) in script.globals.iter().enumerate() {
+        let mut global_index = 0usize;
+        for global in &script.globals {
             let name = global.name.name();
 
             // Skip globals that conflict with properties (error already reported in extract_properties_from_ast)
@@ -557,20 +694,144 @@ impl<'input> SymTabVisitor<'input> {
                 continue;
             }
 
-            // Validate initializer (if present) and determine type
-            let (ty, initial_value) = evaluate_global_declaration(global, diagnostics);
+            // Check if this is a struct-typed global
+            // First check explicit type annotation
+            let ty = global
+                .name
+                .ty
+                .as_ref()
+                .map(|t| t.resolved())
+                .unwrap_or(Type::Error);
 
-            let global_id = GlobalId(index);
-            visitor.symtab.add_global(
-                name,
-                GlobalInfo {
-                    id: global_id,
-                    name: name.to_string(),
-                    ty,
-                    initial_value,
-                    span: global.span,
-                },
-            );
+            // If no type annotation but has an initializer, try to infer struct type from constructor call
+            let struct_id = if let Type::Struct(id) = ty {
+                Some(id)
+            } else if ty == Type::Error {
+                // No type annotation - try to infer from initializer
+                if let Some(expr) = &global.value {
+                    if let ExpressionKind::Call { name: call_name, .. } = &expr.kind {
+                        // Look up the constructor name in the struct registry
+                        struct_registry
+                            .iter()
+                            .enumerate()
+                            .find(|(_, def)| def.name == *call_name)
+                            .map(|(i, _)| StructId(i as u32))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            if let Some(struct_id) = struct_id {
+                // Struct global - expand into scalar globals for each field
+                let field_values = if let Some(expr) = &global.value {
+                    // Try to evaluate as struct constructor
+                    if let Some(init) = try_evaluate_struct_constructor(
+                        expr,
+                        struct_id,
+                        struct_registry,
+                        diagnostics,
+                        name,
+                    ) {
+                        init
+                    } else {
+                        // Error already emitted, use zeros
+                        let mut field_types = Vec::new();
+                        let mut field_names = Vec::new();
+                        collect_struct_field_info(
+                            struct_id,
+                            "",
+                            struct_registry,
+                            &mut field_types,
+                            &mut field_names,
+                        );
+                        StructInitializer {
+                            struct_id,
+                            field_values: vec![0; field_types.len()],
+                            field_types,
+                            field_names,
+                        }
+                    }
+                } else {
+                    // Uninitialized struct - zero all fields
+                    let mut field_types = Vec::new();
+                    let mut field_names = Vec::new();
+                    collect_struct_field_info(
+                        struct_id,
+                        "",
+                        struct_registry,
+                        &mut field_types,
+                        &mut field_names,
+                    );
+                    StructInitializer {
+                        struct_id,
+                        field_values: vec![0; field_types.len()],
+                        field_types,
+                        field_names,
+                    }
+                };
+
+                // First, add the struct base GlobalInfo for symbol resolution
+                // This allows `g` to be looked up and recognized as a struct global
+                let base_global_id = GlobalId(global_index);
+                visitor.symtab.add_global(
+                    name,
+                    GlobalInfo {
+                        id: base_global_id,
+                        name: name.to_string(),
+                        ty: Type::Struct(struct_id),
+                        initial_value: 0, // Not used for struct globals
+                        span: global.span,
+                    },
+                );
+                global_index += 1;
+
+                // Create GlobalInfo for each field
+                let fields_base_index = global_index;
+                for (i, field_name) in field_values.field_names.iter().enumerate() {
+                    let full_name = format!("{}.{}", name, field_name);
+                    let global_id = GlobalId(global_index);
+                    visitor.symtab.add_global_by_name(
+                        full_name.clone(),
+                        GlobalInfo {
+                            id: global_id,
+                            name: full_name,
+                            ty: field_values.field_types[i],
+                            initial_value: field_values.field_values[i],
+                            span: global.span,
+                        },
+                    );
+                    global_index += 1;
+                }
+
+                // Register the struct global expansion (points to field globals)
+                visitor.symtab.register_global_struct_expansion(
+                    name,
+                    struct_id,
+                    fields_base_index,
+                    field_values.field_names.len(),
+                );
+            } else {
+                // Scalar global - process as before
+                let (ty, initial_value) = evaluate_global_declaration(global, diagnostics);
+
+                let global_id = GlobalId(global_index);
+                visitor.symtab.add_global(
+                    name,
+                    GlobalInfo {
+                        id: global_id,
+                        name: name.to_string(),
+                        ty,
+                        initial_value,
+                        span: global.span,
+                    },
+                );
+                global_index += 1;
+            }
         }
 
         visitor
@@ -872,6 +1133,17 @@ pub struct StructPropertyBase {
     pub span: Span,
 }
 
+/// Information about a global struct's expansion into scalar globals.
+#[derive(Clone, Debug)]
+pub struct GlobalStructExpansion {
+    /// The struct type.
+    pub struct_id: StructId,
+    /// The GlobalId of the first field (subsequent fields have consecutive IDs).
+    pub base_global_id: GlobalId,
+    /// Number of scalar fields.
+    pub num_fields: usize,
+}
+
 pub struct SymTab<'input> {
     properties: Vec<Property>,
 
@@ -892,6 +1164,10 @@ pub struct SymTab<'input> {
     /// Tracks struct property bases (e.g., "pos" for "property pos: Point;").
     /// Maps the base property name to its struct information.
     struct_property_bases: HashMap<String, StructPropertyBase>,
+
+    /// Tracks global struct expansions (e.g., "global g: Point" expands to "g.x", "g.y").
+    /// Maps the global name to its expansion info.
+    global_struct_expansions: HashMap<String, GlobalStructExpansion>,
 }
 
 impl<'input> SymTab<'input> {
@@ -935,7 +1211,69 @@ impl<'input> SymTab<'input> {
             builtin_functions,
             struct_expansions: HashMap::new(),
             struct_property_bases,
+            global_struct_expansions: HashMap::new(),
         }
+    }
+
+    /// Register a global struct expansion (called during global processing).
+    pub fn register_global_struct_expansion(
+        &mut self,
+        name: &str,
+        struct_id: StructId,
+        base_index: usize,
+        num_fields: usize,
+    ) {
+        self.global_struct_expansions.insert(
+            name.to_string(),
+            GlobalStructExpansion {
+                struct_id,
+                base_global_id: GlobalId(base_index),
+                num_fields,
+            },
+        );
+    }
+
+    /// Get the global struct expansion for a global variable name.
+    pub fn get_global_struct_expansion(&self, name: &str) -> Option<&GlobalStructExpansion> {
+        self.global_struct_expansions.get(name)
+    }
+
+    /// Get the GlobalId for a specific field of a global struct.
+    /// `field_path` is the dot-separated path like "x" or "origin.x".
+    pub fn get_global_struct_field_id(&self, global_name: &str, field_path: &str) -> Option<GlobalId> {
+        // Verify this is a known global struct (not strictly necessary, but good for clarity)
+        let _expansion = self.global_struct_expansions.get(global_name)?;
+        // Find the field index by looking up the global by full path
+        let full_path = format!("{}.{}", global_name, field_path);
+        self.global_names.get(full_path.as_str()).copied()
+    }
+
+    /// Get the storage class for a symbol.
+    ///
+    /// This determines what instruction to use for loads/stores:
+    /// - Local: Move instruction (register-to-register)
+    /// - Property: GetProp/StoreProp instructions
+    /// - Global: GetGlobal/SetGlobal instructions
+    pub fn get_storage(&self, symbol_id: SymbolId) -> SymbolStorage {
+        // Check for global first (uses bit flag)
+        if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
+            return SymbolStorage::Global(global_id.0);
+        }
+
+        // Check for struct property base (uses bit flag)
+        if symbol_id.0 & STRUCT_PROPERTY_BASE_BIT != 0 {
+            // Struct property bases don't have direct storage - they're resolved to field paths
+            // For now, treat as local (the caller should handle struct property bases specially)
+            return SymbolStorage::Local;
+        }
+
+        // Check if it's a property (property symbols are the first N symbols)
+        if let Some(prop) = self.properties.get(symbol_id.0 as usize) {
+            return SymbolStorage::Property(prop.index);
+        }
+
+        // Otherwise it's a local
+        SymbolStorage::Local
     }
 
     /// Look up a function/method by its mangled name.
@@ -1183,6 +1521,12 @@ impl<'input> SymTab<'input> {
         self.globals.push(info);
     }
 
+    /// Add a global with an owned name (for struct field globals).
+    fn add_global_by_name(&mut self, name: String, info: GlobalInfo) {
+        self.global_names.insert(Cow::Owned(name), info.id);
+        self.globals.push(info);
+    }
+
     /// Test-only helper to add a global with an owned name.
     #[cfg(test)]
     pub fn add_global_owned(&mut self, name: String, info: GlobalInfo) {
@@ -1203,6 +1547,7 @@ impl<'input> SymTab<'input> {
             builtin_functions: HashMap::new(),
             struct_expansions: HashMap::new(),
             struct_property_bases: HashMap::new(),
+            global_struct_expansions: HashMap::new(),
         }
     }
 
@@ -1479,5 +1824,315 @@ mod test {
 
         assert_eq!(symtab.globals().len(), 0);
         assert_eq!(old_to_new.len(), 0);
+    }
+
+    /// Helper to create a SymTabVisitor from source code and return the globals
+    fn parse_and_get_globals(input: &str) -> (Vec<GlobalInfo>, Diagnostics) {
+        let file_id = FileId::new(0);
+        let lexer = Lexer::new(input, file_id);
+        let parser = grammar::ScriptParser::new();
+
+        let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
+
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+
+        // Struct registration and type resolution
+        let mut struct_registry = StructRegistry::default();
+        let struct_names =
+            struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+        struct_visitor::resolve_struct_fields(
+            &script,
+            &mut struct_registry,
+            &struct_names,
+            &mut diagnostics,
+        );
+        struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
+        let visitor = SymTabVisitor::new(
+            &CompileSettings {
+                available_fields: None,
+                enable_optimisations: false,
+                enable_prelude: false,
+            },
+            &mut script,
+            &struct_registry,
+            &mut diagnostics,
+        );
+
+        (visitor.symtab.globals().to_vec(), diagnostics)
+    }
+
+    #[test]
+    fn scalar_globals_have_correct_initial_values() {
+        let (globals, diagnostics) = parse_and_get_globals(
+            r#"
+            global a = 10;
+            global b = 20 + 5;
+            global c: int;
+            "#,
+        );
+
+        assert!(!diagnostics.has_errors(), "Should have no errors");
+        assert_eq!(globals.len(), 3);
+
+        assert_eq!(globals[0].name, "a");
+        assert_eq!(globals[0].initial_value, 10);
+        assert_eq!(globals[0].ty, Type::Int);
+
+        assert_eq!(globals[1].name, "b");
+        assert_eq!(globals[1].initial_value, 25);
+        assert_eq!(globals[1].ty, Type::Int);
+
+        assert_eq!(globals[2].name, "c");
+        assert_eq!(globals[2].initial_value, 0);
+        assert_eq!(globals[2].ty, Type::Int);
+    }
+
+    #[test]
+    fn struct_global_expands_to_scalar_fields() {
+        let (globals, diagnostics) = parse_and_get_globals(
+            r#"
+            struct Point { x: int, y: int }
+            global pos: Point;
+            "#,
+        );
+
+        assert!(!diagnostics.has_errors(), "Should have no errors");
+        // Point has 2 fields (x, y), plus one base entry for the struct itself
+        assert_eq!(globals.len(), 3);
+
+        // First is the struct base (for symbol resolution)
+        assert_eq!(globals[0].name, "pos");
+        assert!(globals[0].ty.is_struct());
+
+        // Then the expanded scalar fields
+        assert_eq!(globals[1].name, "pos.x");
+        assert_eq!(globals[1].ty, Type::Int);
+        assert_eq!(globals[1].initial_value, 0);
+
+        assert_eq!(globals[2].name, "pos.y");
+        assert_eq!(globals[2].ty, Type::Int);
+        assert_eq!(globals[2].initial_value, 0);
+    }
+
+    #[test]
+    fn struct_global_with_initializer_has_correct_values() {
+        let (globals, diagnostics) = parse_and_get_globals(
+            r#"
+            struct Point { x: int, y: int }
+            global pos = Point(10, 20);
+            "#,
+        );
+
+        assert!(!diagnostics.has_errors(), "Should have no errors");
+        assert_eq!(globals.len(), 3);
+
+        // Base struct entry
+        assert_eq!(globals[0].name, "pos");
+        assert!(globals[0].ty.is_struct());
+
+        // Fields with initialized values
+        assert_eq!(globals[1].name, "pos.x");
+        assert_eq!(globals[1].initial_value, 10);
+
+        assert_eq!(globals[2].name, "pos.y");
+        assert_eq!(globals[2].initial_value, 20);
+    }
+
+    #[test]
+    fn nested_struct_global_flattens_correctly() {
+        let (globals, diagnostics) = parse_and_get_globals(
+            r#"
+            struct Point { x: int, y: int }
+            struct Rect { origin: Point, size: Point }
+            global bounds = Rect(Point(1, 2), Point(100, 50));
+            "#,
+        );
+
+        assert!(!diagnostics.has_errors(), "Should have no errors");
+        // 1 base + 4 scalar fields (origin.x, origin.y, size.x, size.y)
+        assert_eq!(globals.len(), 5);
+
+        assert_eq!(globals[0].name, "bounds");
+        assert!(globals[0].ty.is_struct());
+
+        assert_eq!(globals[1].name, "bounds.origin.x");
+        assert_eq!(globals[1].initial_value, 1);
+
+        assert_eq!(globals[2].name, "bounds.origin.y");
+        assert_eq!(globals[2].initial_value, 2);
+
+        assert_eq!(globals[3].name, "bounds.size.x");
+        assert_eq!(globals[3].initial_value, 100);
+
+        assert_eq!(globals[4].name, "bounds.size.y");
+        assert_eq!(globals[4].initial_value, 50);
+    }
+
+    #[test]
+    fn global_struct_expansion_is_registered() {
+        let file_id = FileId::new(0);
+        let input = r#"
+            struct Point { x: int, y: int }
+            global pos = Point(10, 20);
+        "#;
+        let lexer = Lexer::new(input, file_id);
+        let parser = grammar::ScriptParser::new();
+
+        let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+
+        let mut struct_registry = StructRegistry::default();
+        let struct_names =
+            struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+        struct_visitor::resolve_struct_fields(
+            &script,
+            &mut struct_registry,
+            &struct_names,
+            &mut diagnostics,
+        );
+        struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
+        let visitor = SymTabVisitor::new(
+            &CompileSettings {
+                available_fields: None,
+                enable_optimisations: false,
+                enable_prelude: false,
+            },
+            &mut script,
+            &struct_registry,
+            &mut diagnostics,
+        );
+
+        // Check that the expansion is registered
+        let expansion = visitor.symtab.get_global_struct_expansion("pos");
+        assert!(expansion.is_some(), "Should have expansion for 'pos'");
+
+        let expansion = expansion.unwrap();
+        assert_eq!(expansion.num_fields, 2);
+        assert_eq!(expansion.base_global_id.0, 1); // Fields start at index 1 (after base)
+
+        // Check field ID lookup
+        let x_id = visitor.symtab.get_global_struct_field_id("pos", "x");
+        assert!(x_id.is_some(), "Should find pos.x");
+        assert_eq!(x_id.unwrap().0, 1);
+
+        let y_id = visitor.symtab.get_global_struct_field_id("pos", "y");
+        assert!(y_id.is_some(), "Should find pos.y");
+        assert_eq!(y_id.unwrap().0, 2);
+    }
+
+    #[test]
+    fn multiple_struct_globals_have_correct_indices() {
+        let (globals, diagnostics) = parse_and_get_globals(
+            r#"
+            struct Point { x: int, y: int }
+            global a = Point(1, 2);
+            global b = 42;
+            global c = Point(3, 4);
+            "#,
+        );
+
+        assert!(!diagnostics.has_errors(), "Should have no errors");
+        // a: 1 base + 2 fields = 3
+        // b: 1 scalar = 1
+        // c: 1 base + 2 fields = 3
+        // Total: 7
+        assert_eq!(globals.len(), 7);
+
+        // Check ordering and values
+        assert_eq!(globals[0].name, "a");
+        assert_eq!(globals[1].name, "a.x");
+        assert_eq!(globals[1].initial_value, 1);
+        assert_eq!(globals[2].name, "a.y");
+        assert_eq!(globals[2].initial_value, 2);
+
+        assert_eq!(globals[3].name, "b");
+        assert_eq!(globals[3].initial_value, 42);
+
+        assert_eq!(globals[4].name, "c");
+        assert_eq!(globals[5].name, "c.x");
+        assert_eq!(globals[5].initial_value, 3);
+        assert_eq!(globals[6].name, "c.y");
+        assert_eq!(globals[6].initial_value, 4);
+    }
+
+    #[test]
+    fn fix_typed_struct_global_has_correct_values() {
+        let (globals, diagnostics) = parse_and_get_globals(
+            r#"
+            struct FixPoint { x: fix, y: fix }
+            global pos = FixPoint(1.5, 2.25);
+            "#,
+        );
+
+        assert!(!diagnostics.has_errors(), "Should have no errors");
+        assert_eq!(globals.len(), 3);
+
+        assert_eq!(globals[1].name, "pos.x");
+        assert_eq!(globals[1].ty, Type::Fix);
+        // 1.5 in 24.8 fixed point = 384
+        assert_eq!(globals[1].initial_value, 384);
+
+        assert_eq!(globals[2].name, "pos.y");
+        assert_eq!(globals[2].ty, Type::Fix);
+        // 2.25 in 24.8 fixed point = 576
+        assert_eq!(globals[2].initial_value, 576);
+    }
+
+    #[test]
+    fn get_storage_returns_correct_class_for_globals() {
+        let mut symtab = SymTab::new_empty();
+
+        // Add a global
+        let global_id = GlobalId(0);
+        symtab.add_global_owned(
+            "g".to_string(),
+            GlobalInfo {
+                id: global_id,
+                name: "g".to_string(),
+                ty: Type::Int,
+                initial_value: 0,
+                span: Span::new(FileId::new(0), 0, 0),
+            },
+        );
+
+        // Get storage for the global's symbol
+        let global_symbol = global_id.to_symbol_id();
+        assert_eq!(symtab.get_storage(global_symbol), SymbolStorage::Global(0));
+    }
+
+    #[test]
+    fn get_storage_returns_local_for_temporaries() {
+        let mut symtab = SymTab::new_empty();
+
+        // Create a temporary symbol
+        let temp = symtab.new_temporary();
+
+        assert_eq!(symtab.get_storage(temp), SymbolStorage::Local);
+    }
+
+    #[test]
+    fn get_storage_returns_property_for_property_symbols() {
+        // Properties are the first N symbols in a symtab
+        // We need to create a symtab with properties to test this
+        let properties = vec![Property {
+            ty: Type::Int,
+            index: 0,
+            name: "health".to_string(),
+            span: Span::new(FileId::new(0), 0, 0),
+            struct_info: None,
+        }];
+
+        let symtab = SymTab::new(
+            &properties,
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+        );
+
+        // Property symbol is SymbolId(0)
+        let prop_symbol = SymbolId(0);
+        assert_eq!(symtab.get_storage(prop_symbol), SymbolStorage::Property(0));
     }
 }

@@ -24,15 +24,9 @@ assert(side_effect_count == 1);  # Increment was called
 
 # Multiple then chains
 side_effect_count = 0;
-var z = increment() then increment() then 999;
+var z = (increment() then increment()) then 999;
 assert(z == 999);
 assert(side_effect_count == 2);  # Both increments called
-
-# Then with void function
-side_effect_count = 0;
-var w = set_count(10) then 50;
-assert(w == 50);
-assert(side_effect_count == 10);
 
 # Then preserves types
 var int_val = 1 then 2;

@@ -1,0 +1,38 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/global_nested_struct_assignment.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.11 = int 1
+temp.12 = int 2
+temp.8.x.9 = temp.11
+temp.8.y.10 = temp.12
+temp.7.x.13 = temp.8.x.9
+temp.7.y.14 = temp.8.y.10
+temp.19 = int 100
+temp.20 = int 50
+temp.16.x.17 = temp.19
+temp.16.y.18 = temp.20
+temp.15.x.21 = temp.16.x.17
+temp.15.y.22 = temp.16.y.18
+temp.0.origin.x.2 = temp.7.x.13
+temp.0.origin.y.3 = temp.7.y.14
+temp.0.size.x.5 = temp.15.x.21
+temp.0.size.y.6 = temp.15.y.22
+setglobal 1, temp.0.origin.x.2
+setglobal 2, temp.0.origin.y.3
+setglobal 3, temp.0.size.x.5
+setglobal 4, temp.0.size.y.6
+getglobal temp.25.x.26, 1
+getglobal temp.25.y.27, 2
+temp.24 = temp.25.x.26
+temp.23 = extern test(temp.24)
+getglobal temp.30.x.31, 3
+getglobal temp.30.y.32, 4
+temp.29 = temp.30.y.32
+temp.28 = extern test(temp.29)
+return

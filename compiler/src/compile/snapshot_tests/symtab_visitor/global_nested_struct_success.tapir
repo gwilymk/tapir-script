@@ -1,0 +1,13 @@
+# Test nested struct globals are expanded correctly
+# Nested structs should flatten into scalar globals with dotted names
+
+struct Point { x: int, y: int }
+struct Rectangle { origin: Point, size: Point }
+
+global bounds = Rectangle(Point(0, 0), Point(100, 50));
+
+# Use all fields
+var x1 = bounds.origin.x;
+var y1 = bounds.origin.y;
+var x2 = bounds.size.x;
+var y2 = bounds.size.y;

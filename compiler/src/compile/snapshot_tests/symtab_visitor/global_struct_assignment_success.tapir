@@ -1,0 +1,9 @@
+# Test struct global assignment (bug #2 regression test)
+# Assigning to a struct global at runtime should work correctly
+
+extern fn test(value: int);
+
+global pos: int2;
+pos = int2(10, 20);
+test(pos.x);
+test(pos.y);

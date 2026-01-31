@@ -1,0 +1,12 @@
+# Test IR generation for nested struct global assignment
+# Should generate SetGlobal for each nested field
+
+struct Point { x: int, y: int }
+struct Rect { origin: Point, size: Point }
+
+extern fn test(value: int);
+
+global bounds: Rect;
+bounds = Rect(Point(1, 2), Point(100, 50));
+test(bounds.origin.x);
+test(bounds.size.y);

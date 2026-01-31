@@ -1,0 +1,183 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_struct_assignment_success.tapir
+---
+Script(
+  struct_declarations: [],
+  property_declarations: [],
+  globals: [
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "pos",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Error),
+          name: "int2",
+          span: "[span]",
+        )),
+      ),
+      value: None,
+      span: "[span]",
+    ),
+  ],
+  functions: [
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            targets: [
+              Expression(
+                span: "[span]",
+                kind: Variable("pos"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                },
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Call(
+                  name: "int2",
+                  arguments: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(10),
+                      meta: {},
+                    ),
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(20),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4611686018427387904)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: Call(
+                name: "test",
+                arguments: [
+                  Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("pos"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "x",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ],
+              ),
+              meta: {
+                "compiler::ast::InternalOrExternalFunctionId": "External(ExternalFunctionId(0))",
+              },
+            ),
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: Call(
+                name: "test",
+                arguments: [
+                  Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("pos"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "y",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ],
+              ),
+              meta: {
+                "compiler::ast::InternalOrExternalFunctionId": "External(ExternalFunctionId(0))",
+              },
+            ),
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
+      },
+    ),
+  ],
+  extern_functions: [
+    ExternFunctionDefinition(
+      doc_comment: None,
+      name: "test",
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "value",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      meta: {
+        "compiler::ast::ExternalFunctionId": "ExternalFunctionId(0)",
+      },
+    ),
+  ],
+  builtin_functions: [],
+)

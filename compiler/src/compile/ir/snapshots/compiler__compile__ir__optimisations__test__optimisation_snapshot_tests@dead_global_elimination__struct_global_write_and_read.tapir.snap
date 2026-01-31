@@ -1,0 +1,39 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_global_elimination/struct_global_write_and_read.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 10
+temp.10 = int 20
+temp.0.x.11 = temp.9
+temp.0.y.12 = temp.10
+setglobal 1, temp.0.x.11
+setglobal 2, temp.0.y.12
+getglobal temp.13, 1
+temp.14 = extern test(temp.13)
+getglobal temp.15, 2
+temp.16 = extern test(temp.15)
+return 
+
+
+----------- eliminate_dead_globals -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 10
+temp.10 = int 20
+temp.0.x.11 = temp.9
+temp.0.y.12 = temp.10
+setglobal 0, temp.0.x.11
+setglobal 1, temp.0.y.12
+getglobal temp.13, 0
+temp.14 = extern test(temp.13)
+getglobal temp.15, 1
+temp.16 = extern test(temp.15)
+return

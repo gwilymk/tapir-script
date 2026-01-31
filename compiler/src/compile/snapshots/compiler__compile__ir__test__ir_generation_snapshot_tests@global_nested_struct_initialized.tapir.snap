@@ -1,0 +1,26 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/global_nested_struct_initialized.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getglobal temp.2.x.3, 1
+getglobal temp.2.y.4, 2
+temp.1 = temp.2.x.3
+temp.0 = extern test(temp.1)
+getglobal temp.7.x.8, 1
+getglobal temp.7.y.9, 2
+temp.6 = temp.7.y.9
+temp.5 = extern test(temp.6)
+getglobal temp.12.x.13, 3
+getglobal temp.12.y.14, 4
+temp.11 = temp.12.x.13
+temp.10 = extern test(temp.11)
+getglobal temp.17.x.18, 3
+getglobal temp.17.y.19, 4
+temp.16 = temp.17.y.19
+temp.15 = extern test(temp.16)
+return

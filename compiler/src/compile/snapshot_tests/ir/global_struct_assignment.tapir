@@ -1,0 +1,10 @@
+# Test IR generation for struct global assignment
+# Should generate SetGlobal for each field
+
+struct Point { x: int, y: int }
+
+extern fn test(value: int);
+
+global pos: Point;
+pos = Point(10, 20);
+test(pos.x);

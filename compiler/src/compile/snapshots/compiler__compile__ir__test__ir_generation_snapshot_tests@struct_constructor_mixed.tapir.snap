@@ -14,10 +14,12 @@ fn test_scalar_then_struct() ->
 
 ---- block 0 ----
 temp.4 = int 2
-temp.7 = int 3
-temp.8 = int 5
-p.x.5 = temp.7
-p.y.6 = temp.8
+temp.8 = int 3
+temp.9 = int 5
+temp.5.x.6 = temp.8
+temp.5.y.7 = temp.9
+p.x.10 = temp.5.x.6
+p.y.11 = temp.5.y.7
 x.0 = temp.4
 return 
 
@@ -25,10 +27,12 @@ return
 fn test_struct_then_scalar() -> 
 
 ---- block 0 ----
-temp.11 = int 3
-temp.12 = int 5
-p.x.9 = temp.11
-p.y.10 = temp.12
-temp.13 = int 2
-x.3 = temp.13
+temp.15 = int 3
+temp.16 = int 5
+temp.12.x.13 = temp.15
+temp.12.y.14 = temp.16
+p.x.17 = temp.12.x.13
+p.y.18 = temp.12.y.14
+temp.19 = int 2
+x.3 = temp.19
 return

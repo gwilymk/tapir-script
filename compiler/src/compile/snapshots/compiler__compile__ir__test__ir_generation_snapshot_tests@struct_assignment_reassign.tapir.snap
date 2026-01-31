@@ -7,16 +7,20 @@ input_file: compiler/src/compile/snapshot_tests/ir/struct_assignment_reassign.ta
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.4 = int 1
-temp.5 = int 2
-p.x.2 = temp.4
-p.y.3 = temp.5
-temp.8 = int 3
-temp.9 = int 4
-q.x.6 = temp.8
-q.y.7 = temp.9
-temp.10.x.11 = q.x.6
-temp.10.y.12 = q.y.7
-p.x.2 = temp.10.x.11
-p.y.3 = temp.10.y.12
+temp.5 = int 1
+temp.6 = int 2
+temp.2.x.3 = temp.5
+temp.2.y.4 = temp.6
+p.x.7 = temp.2.x.3
+p.y.8 = temp.2.y.4
+temp.12 = int 3
+temp.13 = int 4
+temp.9.x.10 = temp.12
+temp.9.y.11 = temp.13
+q.x.14 = temp.9.x.10
+q.y.15 = temp.9.y.11
+temp.16.x.17 = q.x.14
+temp.16.y.18 = q.y.15
+p.x.7 = temp.16.x.17
+p.y.8 = temp.16.y.18
 return

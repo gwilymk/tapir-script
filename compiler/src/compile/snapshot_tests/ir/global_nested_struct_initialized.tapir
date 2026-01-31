@@ -1,0 +1,13 @@
+# Test IR generation for nested struct global initialization
+# Nested struct constructors should have their values stored in bytecode
+
+struct Point { x: int, y: int }
+struct Rect { origin: Point, size: Point }
+
+extern fn test(value: int);
+
+global bounds = Rect(Point(1, 2), Point(100, 50));
+test(bounds.origin.x);
+test(bounds.origin.y);
+test(bounds.size.x);
+test(bounds.size.y);

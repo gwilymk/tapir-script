@@ -13,58 +13,87 @@ return
 fn test_nested_constructor() -> 
 
 ---- block 0 ----
-temp.12 = int 0
-temp.13 = int 0
-temp.9.x.10 = temp.12
-temp.9.y.11 = temp.13
-temp.17 = int 100
-temp.18 = int 200
-temp.14.x.15 = temp.17
-temp.14.y.16 = temp.18
-r.origin.x.4 = temp.9.x.10
-r.origin.y.5 = temp.9.y.11
-r.size.x.7 = temp.14.x.15
-r.size.y.8 = temp.14.y.16
+temp.14 = int 0
+temp.15 = int 0
+temp.11.x.12 = temp.14
+temp.11.y.13 = temp.15
+temp.10.x.16 = temp.11.x.12
+temp.10.y.17 = temp.11.y.13
+temp.22 = int 100
+temp.23 = int 200
+temp.19.x.20 = temp.22
+temp.19.y.21 = temp.23
+temp.18.x.24 = temp.19.x.20
+temp.18.y.25 = temp.19.y.21
+temp.3.origin.x.5 = temp.10.x.16
+temp.3.origin.y.6 = temp.10.y.17
+temp.3.size.x.8 = temp.18.x.24
+temp.3.size.y.9 = temp.18.y.25
+r.origin.x.27 = temp.3.origin.x.5
+r.origin.y.28 = temp.3.origin.y.6
+r.size.x.30 = temp.3.size.x.8
+r.size.y.31 = temp.3.size.y.9
 return 
 
 =======================
 fn test_mixed_fields() -> 
 
 ---- block 0 ----
-temp.29 = int 0
-temp.30 = int 0
-temp.26.x.27 = temp.29
-temp.26.y.28 = temp.30
-temp.31 = int 5
-temp.35 = int 100
-temp.36 = int 100
-temp.32.x.33 = temp.35
-temp.32.y.34 = temp.36
-line.start.x.20 = temp.26.x.27
-line.start.y.21 = temp.26.y.28
-line.thickness.22 = temp.31
-line.end.x.24 = temp.32.x.33
-line.end.y.25 = temp.32.y.34
+temp.44 = int 0
+temp.45 = int 0
+temp.41.x.42 = temp.44
+temp.41.y.43 = temp.45
+temp.40.x.46 = temp.41.x.42
+temp.40.y.47 = temp.41.y.43
+temp.48 = int 5
+temp.53 = int 100
+temp.54 = int 100
+temp.50.x.51 = temp.53
+temp.50.y.52 = temp.54
+temp.49.x.55 = temp.50.x.51
+temp.49.y.56 = temp.50.y.52
+temp.32.start.x.34 = temp.40.x.46
+temp.32.start.y.35 = temp.40.y.47
+temp.32.thickness.36 = temp.48
+temp.32.end.x.38 = temp.49.x.55
+temp.32.end.y.39 = temp.49.y.56
+line.start.x.58 = temp.32.start.x.34
+line.start.y.59 = temp.32.start.y.35
+line.thickness.60 = temp.32.thickness.36
+line.end.x.62 = temp.32.end.x.38
+line.end.y.63 = temp.32.end.y.39
 return 
 
 =======================
 fn test_deep_nesting() -> 
 
 ---- block 0 ----
-temp.54 = int 0
-temp.55 = int 0
-temp.51.x.52 = temp.54
-temp.51.y.53 = temp.55
-temp.59 = int 50
-temp.60 = int 50
-temp.56.x.57 = temp.59
-temp.56.y.58 = temp.60
-temp.44.origin.x.46 = temp.51.x.52
-temp.44.origin.y.47 = temp.51.y.53
-temp.44.size.x.49 = temp.56.x.57
-temp.44.size.y.50 = temp.56.y.58
-b.bounds.origin.x.39 = temp.44.origin.x.46
-b.bounds.origin.y.40 = temp.44.origin.y.47
-b.bounds.size.x.42 = temp.44.size.x.49
-b.bounds.size.y.43 = temp.44.size.y.50
+temp.84 = int 0
+temp.85 = int 0
+temp.81.x.82 = temp.84
+temp.81.y.83 = temp.85
+temp.80.x.86 = temp.81.x.82
+temp.80.y.87 = temp.81.y.83
+temp.92 = int 50
+temp.93 = int 50
+temp.89.x.90 = temp.92
+temp.89.y.91 = temp.93
+temp.88.x.94 = temp.89.x.90
+temp.88.y.95 = temp.89.y.91
+temp.73.origin.x.75 = temp.80.x.86
+temp.73.origin.y.76 = temp.80.y.87
+temp.73.size.x.78 = temp.88.x.94
+temp.73.size.y.79 = temp.88.y.95
+temp.72.origin.x.97 = temp.73.origin.x.75
+temp.72.origin.y.98 = temp.73.origin.y.76
+temp.72.size.x.100 = temp.73.size.x.78
+temp.72.size.y.101 = temp.73.size.y.79
+temp.64.bounds.origin.x.67 = temp.72.origin.x.97
+temp.64.bounds.origin.y.68 = temp.72.origin.y.98
+temp.64.bounds.size.x.70 = temp.72.size.x.100
+temp.64.bounds.size.y.71 = temp.72.size.y.101
+b.bounds.origin.x.104 = temp.64.bounds.origin.x.67
+b.bounds.origin.y.105 = temp.64.bounds.origin.y.68
+b.bounds.size.x.107 = temp.64.bounds.size.x.70
+b.bounds.size.y.108 = temp.64.bounds.size.y.71
 return

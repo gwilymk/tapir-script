@@ -7,24 +7,32 @@ input_file: compiler/src/compile/snapshot_tests/ir/struct_assignment_nested.tapi
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.11 = int 0
-temp.12 = int 0
-temp.8.x.9 = temp.11
-temp.8.y.10 = temp.12
-temp.16 = int 10
-temp.17 = int 10
-temp.13.x.14 = temp.16
-temp.13.y.15 = temp.17
-r1.origin.x.3 = temp.8.x.9
-r1.origin.y.4 = temp.8.y.10
-r1.size.x.6 = temp.13.x.14
-r1.size.y.7 = temp.13.y.15
-temp.18.origin.x.20 = r1.origin.x.3
-temp.18.origin.y.21 = r1.origin.y.4
-temp.18.size.x.23 = r1.size.x.6
-temp.18.size.y.24 = r1.size.y.7
-r2.origin.x.26 = temp.18.origin.x.20
-r2.origin.y.27 = temp.18.origin.y.21
-r2.size.x.29 = temp.18.size.x.23
-r2.size.y.30 = temp.18.size.y.24
+temp.13 = int 0
+temp.14 = int 0
+temp.10.x.11 = temp.13
+temp.10.y.12 = temp.14
+temp.9.x.15 = temp.10.x.11
+temp.9.y.16 = temp.10.y.12
+temp.21 = int 10
+temp.22 = int 10
+temp.18.x.19 = temp.21
+temp.18.y.20 = temp.22
+temp.17.x.23 = temp.18.x.19
+temp.17.y.24 = temp.18.y.20
+temp.2.origin.x.4 = temp.9.x.15
+temp.2.origin.y.5 = temp.9.y.16
+temp.2.size.x.7 = temp.17.x.23
+temp.2.size.y.8 = temp.17.y.24
+r1.origin.x.26 = temp.2.origin.x.4
+r1.origin.y.27 = temp.2.origin.y.5
+r1.size.x.29 = temp.2.size.x.7
+r1.size.y.30 = temp.2.size.y.8
+temp.31.origin.x.33 = r1.origin.x.26
+temp.31.origin.y.34 = r1.origin.y.27
+temp.31.size.x.36 = r1.size.x.29
+temp.31.size.y.37 = r1.size.y.30
+r2.origin.x.39 = temp.31.origin.x.33
+r2.origin.y.40 = temp.31.origin.y.34
+r2.size.x.42 = temp.31.size.x.36
+r2.size.y.43 = temp.31.size.y.37
 return

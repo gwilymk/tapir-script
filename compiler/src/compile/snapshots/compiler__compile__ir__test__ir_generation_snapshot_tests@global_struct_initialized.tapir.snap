@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/global_struct_initialized.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getglobal temp.1, 1
+temp.0 = extern test(temp.1)
+getglobal temp.3, 2
+temp.2 = extern test(temp.3)
+return

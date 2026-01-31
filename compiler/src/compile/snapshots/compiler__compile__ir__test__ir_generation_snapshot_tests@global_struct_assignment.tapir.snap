@@ -1,0 +1,18 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/global_struct_assignment.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.3 = int 10
+temp.4 = int 20
+temp.0.x.1 = temp.3
+temp.0.y.2 = temp.4
+setglobal 1, temp.0.x.1
+setglobal 2, temp.0.y.2
+getglobal temp.6, 1
+temp.5 = extern test(temp.6)
+return

@@ -323,16 +323,33 @@ impl<'a> BlockVisitor<'a> {
 
                     // Check if temp has a struct expansion - if so, copy fields instead of single move
                     if let Some(temp_expansion) = symtab.get_struct_expansion(temp).cloned() {
-                        // Struct-to-struct assignment: expand target and copy all fields
-                        let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                        let target_expansion = symtab.expand_struct_symbol(
-                            target_symbol,
-                            &target_name,
-                            temp_expansion.struct_id,
-                            statement.span,
-                            self.struct_registry,
-                        );
-                        self.copy_struct_fields(&temp_expansion, &target_expansion, symtab);
+                        // Check if target is a global struct
+                        if GlobalId::from_symbol_id(target_symbol).is_some() {
+                            // Global struct assignment - use SetGlobal for each field
+                            let global_name = symtab.name_for_symbol(target_symbol);
+                            // Strip "global." prefix if present
+                            let global_name = global_name
+                                .strip_prefix("global.")
+                                .unwrap_or(&global_name)
+                                .to_string();
+                            self.write_global_struct_fields(
+                                &global_name,
+                                "",
+                                &temp_expansion,
+                                symtab,
+                            );
+                        } else {
+                            // Local struct-to-struct assignment: expand target and copy all fields
+                            let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                            let target_expansion = symtab.expand_struct_symbol(
+                                target_symbol,
+                                &target_name,
+                                temp_expansion.struct_id,
+                                statement.span,
+                                self.struct_registry,
+                            );
+                            self.copy_struct_fields(&temp_expansion, &target_expansion, symtab);
+                        }
                     } else {
                         // Scalar assignment
                         let is_property = symtab.get_property(target_symbol).is_some();
@@ -812,48 +829,50 @@ impl<'a> BlockVisitor<'a> {
                     return;
                 }
 
-                // Check if the base is a struct-typed global variable (e.g., "g" in "global g: int2;")
-                // We handle this specially to ensure the same field symbols are used for both
-                // reads and writes, preventing dead store elimination from removing assignments.
-                if let ast::ExpressionKind::Variable(_) = &base.kind
+                // Check if the base is a struct-typed global variable (e.g., "g" in "global g: Point;")
+                // Global structs are expanded into multiple scalar globals, so we use GetGlobal
+                // to read the specific field's global.
+                if let ast::ExpressionKind::Variable(var_name) = &base.kind
                     && let Some(base_symbol) = base.meta.get::<SymbolId>()
                     && GlobalId::from_symbol_id(*base_symbol).is_some()
                 {
-                    // Get or create the global's struct expansion
-                    let base_name = symtab.name_for_symbol(*base_symbol).to_string();
-                    let base_expansion = symtab.expand_struct_symbol(
-                        *base_symbol,
-                        &base_name,
-                        info.base_struct_id,
-                        expr.span,
-                        self.struct_registry,
-                    );
+                    // Build the field path for this access
+                    let struct_def = self.struct_registry.get(info.base_struct_id);
+                    let field_def = &struct_def.fields[info.field_index];
+                    let field_path = &field_def.name;
 
-                    // Get the field's symbol from the global's expansion
-                    let field_symbol = base_expansion.fields[info.field_index];
-
-                    // Check if this field is struct-typed (has its own expansion)
-                    if let Some(field_expansion) = symtab.get_struct_expansion(field_symbol).cloned()
-                    {
-                        // Field is struct-typed: create expansion for target and copy
+                    if let Type::Struct(nested_struct_id) = field_def.ty {
+                        // Nested struct field - need to read multiple globals
                         let target_name = symtab.name_for_symbol(target_symbol).to_string();
                         let target_expansion = symtab.expand_struct_symbol(
                             target_symbol,
                             &target_name,
-                            field_expansion.struct_id,
+                            nested_struct_id,
                             expr.span,
                             self.struct_registry,
                         );
 
-                        self.copy_struct_fields(&field_expansion, &target_expansion, symtab);
-                    } else {
-                        // Scalar field: simple move
-                        self.current_block.push(TapIr::Move {
-                            target: target_symbol,
-                            source: field_symbol,
-                        });
+                        // Read each scalar field from its global
+                        self.read_global_struct_fields(
+                            var_name,
+                            field_path,
+                            &target_expansion,
+                            symtab,
+                        );
+                        return;
                     }
-                    return;
+
+                    // Scalar field - look up GlobalId and use GetGlobal
+                    if let Some(field_global_id) =
+                        symtab.get_global_struct_field_id(var_name, field_path)
+                    {
+                        self.current_block.push(TapIr::GetGlobal {
+                            target: target_symbol,
+                            global_index: field_global_id.0,
+                        });
+                        return;
+                    }
+                    // Fall through to regular handling if not found (shouldn't happen)
                 }
 
                 // Regular field access (not a struct property base or global struct)
@@ -956,11 +975,12 @@ impl<'a> BlockVisitor<'a> {
         span: crate::tokens::Span,
         symtab: &mut SymTab,
     ) {
-        // Expand target
-        let target_name = symtab.name_for_symbol(target_symbol).to_string();
+        // Create a temporary to hold the constructed struct value
+        let temp_symbol = symtab.new_temporary();
+        let temp_name = symtab.name_for_symbol(temp_symbol).to_string();
         symtab.expand_struct_symbol(
-            target_symbol,
-            &target_name,
+            temp_symbol,
+            &temp_name,
             struct_id,
             span,
             self.struct_registry,
@@ -974,14 +994,20 @@ impl<'a> BlockVisitor<'a> {
             collect_leaf_symbols(arg_sym, symtab, &mut arg_leaves);
         }
 
-        // Collect target leaves
-        let mut target_leaves = Vec::new();
-        collect_leaf_symbols(target_symbol, symtab, &mut target_leaves);
-
-        // Copy leaf-to-leaf
-        for (&target, &source) in target_leaves.iter().zip(&arg_leaves) {
+        // Copy args to temp leaves
+        let mut temp_leaves = Vec::new();
+        collect_leaf_symbols(temp_symbol, symtab, &mut temp_leaves);
+        for (&target, &source) in temp_leaves.iter().zip(&arg_leaves) {
             self.current_block.push(TapIr::Move { target, source });
         }
+
+        // Copy temp to target (handles local, global, and property targets uniformly)
+        let temp_expansion = symtab
+            .get_struct_expansion(temp_symbol)
+            .expect("Just expanded temp")
+            .clone();
+        let target_name = symtab.name_for_symbol(target_symbol).to_string();
+        self.copy_struct_to_target(&temp_expansion, target_symbol, &target_name, span, symtab);
     }
 
     /// Emit a function call, handling struct return expansion and target collection.
@@ -1054,7 +1080,7 @@ impl<'a> BlockVisitor<'a> {
         }
     }
 
-    /// Recursively copy fields from one struct expansion to another.
+    /// Recursively copy fields from one struct expansion to another (local-to-local).
     fn copy_struct_fields(
         &mut self,
         source: &crate::compile::symtab_visitor::ExpandedStruct,
@@ -1074,6 +1100,128 @@ impl<'a> BlockVisitor<'a> {
                     target: target_field,
                     source: source_field,
                 });
+            }
+        }
+    }
+
+    /// Copy a struct from a source expansion to a target symbol.
+    /// Dispatches based on target's storage class:
+    /// - Local: expand target and copy with Move
+    /// - Global: use global field lookups with SetGlobal
+    fn copy_struct_to_target(
+        &mut self,
+        source: &crate::compile::symtab_visitor::ExpandedStruct,
+        target_symbol: SymbolId,
+        target_name: &str,
+        span: crate::tokens::Span,
+        symtab: &mut SymTab,
+    ) {
+        use crate::compile::symtab_visitor::SymbolStorage;
+
+        match symtab.get_storage(target_symbol) {
+            SymbolStorage::Local => {
+                // Expand target and copy field-by-field
+                let target_expansion = symtab.expand_struct_symbol(
+                    target_symbol,
+                    target_name,
+                    source.struct_id,
+                    span,
+                    self.struct_registry,
+                );
+                self.copy_struct_fields(source, &target_expansion, symtab);
+            }
+            SymbolStorage::Global(_) => {
+                // Target is a global struct - use global field lookups
+                // Strip "global." prefix if present
+                let global_name = target_name
+                    .strip_prefix("global.")
+                    .unwrap_or(target_name);
+                self.write_global_struct_fields(global_name, "", source, symtab);
+            }
+            SymbolStorage::Property(_) => {
+                // Struct property targets are handled separately via StructPropertyBase
+                // detection in the assignment code path. This case shouldn't be reached
+                // for struct constructors, but if it is, we need the existing
+                // store_struct_property_fields which uses different resolution.
+                unreachable!("Struct property assignment should be handled via StructPropertyBase path");
+            }
+        }
+    }
+
+    /// Read scalar fields from a global struct into an expanded target.
+    /// `global_name` is the name of the global (e.g., "g").
+    /// `field_prefix` is the path prefix for nested fields (e.g., "origin" for "g.origin.x").
+    fn read_global_struct_fields(
+        &mut self,
+        global_name: &str,
+        field_prefix: &str,
+        target: &crate::compile::symtab_visitor::ExpandedStruct,
+        symtab: &SymTab,
+    ) {
+        let struct_def = self.struct_registry.get(target.struct_id);
+        for (i, field_def) in struct_def.fields.iter().enumerate() {
+            let field_path = if field_prefix.is_empty() {
+                field_def.name.clone()
+            } else {
+                format!("{}.{}", field_prefix, field_def.name)
+            };
+
+            let target_symbol = target.fields[i];
+
+            if let Type::Struct(_) = field_def.ty {
+                // Nested struct - recurse
+                let nested_expansion = symtab
+                    .get_struct_expansion(target_symbol)
+                    .expect("Nested struct should be expanded")
+                    .clone();
+                self.read_global_struct_fields(global_name, &field_path, &nested_expansion, symtab);
+            } else {
+                // Scalar field - GetGlobal
+                if let Some(global_id) = symtab.get_global_struct_field_id(global_name, &field_path)
+                {
+                    self.current_block.push(TapIr::GetGlobal {
+                        target: target_symbol,
+                        global_index: global_id.0,
+                    });
+                }
+            }
+        }
+    }
+
+    /// Write scalar fields from an expanded source to a global struct.
+    fn write_global_struct_fields(
+        &mut self,
+        global_name: &str,
+        field_prefix: &str,
+        source: &crate::compile::symtab_visitor::ExpandedStruct,
+        symtab: &SymTab,
+    ) {
+        let struct_def = self.struct_registry.get(source.struct_id);
+        for (i, field_def) in struct_def.fields.iter().enumerate() {
+            let field_path = if field_prefix.is_empty() {
+                field_def.name.clone()
+            } else {
+                format!("{}.{}", field_prefix, field_def.name)
+            };
+
+            let source_symbol = source.fields[i];
+
+            if let Type::Struct(_) = field_def.ty {
+                // Nested struct - recurse
+                let nested_expansion = symtab
+                    .get_struct_expansion(source_symbol)
+                    .expect("Nested struct should be expanded")
+                    .clone();
+                self.write_global_struct_fields(global_name, &field_path, &nested_expansion, symtab);
+            } else {
+                // Scalar field - SetGlobal
+                if let Some(global_id) = symtab.get_global_struct_field_id(global_name, &field_path)
+                {
+                    self.current_block.push(TapIr::SetGlobal {
+                        global_index: global_id.0,
+                        value: source_symbol,
+                    });
+                }
             }
         }
     }

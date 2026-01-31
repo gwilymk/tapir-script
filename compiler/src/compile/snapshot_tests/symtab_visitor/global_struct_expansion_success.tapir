@@ -1,0 +1,11 @@
+# Test that struct-typed globals are expanded into scalar globals
+# Each field should become a separate global with the correct type and initial value
+
+struct Point { x: int, y: int }
+
+global origin: Point;
+global offset = int2(10, 20);
+
+# Use the globals to prevent dead code elimination
+var a = origin.x + offset.x;
+var b = origin.y + offset.y;
