@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    ast::{Expression, ExpressionKind, InternalOrExternalFunctionId, Script, Statement, StatementKind, SymbolId},
+    ast::{Expression, ExpressionKind, InternalOrExternalFunctionId, MethodCallInfo, Script, Statement, StatementKind, SymbolId},
     tokens::Span,
     types::StructRegistry,
 };
@@ -23,7 +23,7 @@ pub fn extract_hover_info(
     struct_registry: &StructRegistry,
 ) -> HashMap<Span, HoverInfo> {
     let mut hover_info = HashMap::new();
-    let mut function_signatures: HashMap<&str, HoverInfo> = HashMap::new();
+    let mut function_signatures: HashMap<InternalOrExternalFunctionId, HoverInfo> = HashMap::new();
 
     // Add hover info for struct definitions
     for struct_def in struct_registry.iter() {
@@ -124,7 +124,9 @@ pub fn extract_hover_info(
         };
 
         hover_info.insert(function.span, info.clone());
-        function_signatures.insert(function.name, info);
+        if let Some(fid) = function.meta.get::<crate::ast::FunctionId>() {
+            function_signatures.insert(InternalOrExternalFunctionId::Internal(*fid), info);
+        }
     }
 
     // Add hover info for extern functions and build signature map
@@ -145,7 +147,35 @@ pub fn extract_hover_info(
         };
 
         hover_info.insert(function.span, info.clone());
-        function_signatures.insert(function.name, info);
+        if let Some(fid) = function.meta.get::<crate::ast::ExternalFunctionId>() {
+            function_signatures.insert(InternalOrExternalFunctionId::External(*fid), info);
+        }
+    }
+
+    // Add hover info for builtin functions and build signature map
+    for function in &ast.builtin_functions {
+        let args = format_arguments(&function.arguments);
+        let return_str = format_return_types(&function.return_type);
+
+        // Format the function signature based on whether it's a method or regular function
+        let description = if let Some(receiver) = &function.receiver_type {
+            format!("builtin fn {}.{}({}){}", receiver.ident, function.name, args, return_str)
+        } else {
+            format!("builtin fn {}({}){}", function.name, args, return_str)
+        };
+        let description = if let Some(doc) = &function.doc_comment {
+            format!("{}\n\n{}", description, doc)
+        } else {
+            description
+        };
+
+        let info = HoverInfo {
+            name: function.name.to_string(),
+            description,
+        };
+
+        hover_info.insert(function.span, info.clone());
+        function_signatures.insert(InternalOrExternalFunctionId::Builtin(function.builtin_id), info);
     }
 
     // Walk all functions to extract hover info for variables and function calls
@@ -168,7 +198,7 @@ fn extract_from_statements(
     symtab: &SymTab<'_>,
     type_table: &TypeTable<'_>,
     struct_registry: &StructRegistry,
-    function_signatures: &HashMap<&str, HoverInfo>,
+    function_signatures: &HashMap<InternalOrExternalFunctionId, HoverInfo>,
     hover_info: &mut HashMap<Span, HoverInfo>,
 ) {
     for stmt in statements {
@@ -436,7 +466,7 @@ fn extract_from_expression(
     symtab: &SymTab<'_>,
     type_table: &TypeTable<'_>,
     struct_registry: &StructRegistry,
-    function_signatures: &HashMap<&str, HoverInfo>,
+    function_signatures: &HashMap<InternalOrExternalFunctionId, HoverInfo>,
     hover_info: &mut HashMap<Span, HoverInfo>,
 ) {
     match &expr.kind {
@@ -452,30 +482,32 @@ fn extract_from_expression(
                 );
             }
         }
-        ExpressionKind::Call { name, arguments } => {
-            // Check if this is a struct constructor call
-            if let Some(InternalOrExternalFunctionId::StructConstructor(struct_id)) = expr.meta.get() {
-                let struct_def = struct_registry.get(*struct_id);
-                let fields: Vec<String> = struct_def
-                    .fields
-                    .iter()
-                    .map(|f| format!("{}: {}", f.name, format_type(f.ty, struct_registry)))
-                    .collect();
-                let description = format!("struct {}({})", struct_def.name, fields.join(", "));
-                let description = if let Some(doc) = &struct_def.doc_comment {
-                    format!("{}\n\n{}", description, doc)
-                } else {
-                    description
-                };
-                hover_info.insert(
-                    expr.span,
-                    HoverInfo {
-                        name: struct_def.name.clone(),
-                        description,
-                    },
-                );
-            } else if let Some(sig) = function_signatures.get(name) {
-                hover_info.insert(expr.span, sig.clone());
+        ExpressionKind::Call { arguments, .. } => {
+            // Check if this is a struct constructor call or regular function call
+            if let Some(function_id) = expr.meta.get::<InternalOrExternalFunctionId>() {
+                if let InternalOrExternalFunctionId::StructConstructor(struct_id) = function_id {
+                    let struct_def = struct_registry.get(*struct_id);
+                    let fields: Vec<String> = struct_def
+                        .fields
+                        .iter()
+                        .map(|f| format!("{}: {}", f.name, format_type(f.ty, struct_registry)))
+                        .collect();
+                    let description = format!("struct {}({})", struct_def.name, fields.join(", "));
+                    let description = if let Some(doc) = &struct_def.doc_comment {
+                        format!("{}\n\n{}", description, doc)
+                    } else {
+                        description
+                    };
+                    hover_info.insert(
+                        expr.span,
+                        HoverInfo {
+                            name: struct_def.name.clone(),
+                            description,
+                        },
+                    );
+                } else if let Some(sig) = function_signatures.get(function_id) {
+                    hover_info.insert(expr.span, sig.clone());
+                }
             }
             for arg in arguments {
                 extract_from_expression(
@@ -535,9 +567,15 @@ fn extract_from_expression(
         }
         ExpressionKind::MethodCall {
             receiver,
+            method,
             arguments,
-            ..
         } => {
+            // Add hover info for the method name
+            if let Some(info) = expr.meta.get::<MethodCallInfo>() {
+                if let Some(sig) = function_signatures.get(&info.function_id) {
+                    hover_info.insert(method.span, sig.clone());
+                }
+            }
             extract_from_expression(
                 receiver,
                 symtab,
