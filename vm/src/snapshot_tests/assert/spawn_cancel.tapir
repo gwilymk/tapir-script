@@ -1,0 +1,30 @@
+# Tests for task cancellation
+extern fn assert(value: bool);
+
+global task_started = 0;
+global task_finished = 0;
+
+fn long_running_task() {
+    task_started = 1;
+    wait 3;
+    task_finished = 1;  # This should NOT run if cancelled
+}
+
+# Spawn and immediately cancel before it runs
+var t = spawn long_running_task();
+assert(task_started == 0);
+t.cancel();
+wait 4;
+assert(task_started == 0);   # Never started because cancelled immediately
+assert(task_finished == 0);
+
+# Reset and test cancel after task starts
+task_started = 0;
+task_finished = 0;
+var t2 = spawn long_running_task();
+wait;  # Let it start
+assert(task_started == 1);
+assert(task_finished == 0);  # Not finished yet
+t2.cancel();
+wait 4;
+assert(task_finished == 0);  # Should never finish because cancelled

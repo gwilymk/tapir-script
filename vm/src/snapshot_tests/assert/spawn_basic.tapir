@@ -1,0 +1,18 @@
+# Tests for spawn and task cancellation
+extern fn assert(value: bool);
+
+# Global to track spawned task execution
+global task_ran = 0;
+global task_value = 0;
+
+fn worker() {
+    task_ran = 1;
+    task_value = 42;
+}
+
+# Test basic spawn - task runs after wait
+spawn worker();
+assert(task_ran == 0);  # Not run yet
+wait;
+assert(task_ran == 1);  # Now it ran
+assert(task_value == 42);

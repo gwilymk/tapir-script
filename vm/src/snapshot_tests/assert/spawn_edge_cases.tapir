@@ -1,0 +1,60 @@
+# Edge case tests for spawn/cancel
+extern fn assert(value: bool);
+
+global task_a_ran = 0;
+global task_b_ran = 0;
+
+fn task_a() {
+    task_a_ran = 1;
+}
+
+fn task_b() {
+    task_b_ran = 1;
+}
+
+# Cancel a task that has already finished (should be no-op)
+var t = spawn task_a();
+wait;
+assert(task_a_ran == 1);
+t.cancel();  # Task already finished, this should do nothing
+wait;
+
+# Spawn same function multiple times
+global multi_count = 0;
+
+fn increment_multi() {
+    multi_count = multi_count + 1;
+}
+
+spawn increment_multi();
+spawn increment_multi();
+spawn increment_multi();
+wait;
+assert(multi_count == 3);
+
+# Cancel one of multiple tasks
+global cancel_test_a = 0;
+global cancel_test_b = 0;
+
+fn set_a() {
+    wait;
+    cancel_test_a = 1;
+}
+
+fn set_b() {
+    wait;
+    cancel_test_b = 1;
+}
+
+var ta = spawn set_a();
+var tb = spawn set_b();
+ta.cancel();  # Cancel a but not b
+wait 2;
+assert(cancel_test_a == 0);  # a was cancelled
+assert(cancel_test_b == 1);  # b ran
+
+# Double cancel (should be safe no-op)
+var t2 = spawn task_b();
+t2.cancel();
+t2.cancel();  # Should be safe
+wait;

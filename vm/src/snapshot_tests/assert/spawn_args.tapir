@@ -1,0 +1,43 @@
+# Tests for spawn with arguments
+extern fn assert(value: bool);
+
+global result = 0;
+global sum = 0;
+
+fn set_result(value: int) {
+    result = value;
+}
+
+fn add_to_sum(a: int, b: int) {
+    sum = sum + a + b;
+}
+
+fn multiply_and_store(x: int, y: int) {
+    result = x * y;
+}
+
+# Spawn with single argument
+spawn set_result(42);
+assert(result == 0);
+wait;
+assert(result == 42);
+
+# Spawn with multiple arguments
+result = 0;
+spawn add_to_sum(10, 20);
+wait;
+assert(sum == 30);
+
+spawn add_to_sum(5, 15);
+wait;
+assert(sum == 50);
+
+# Spawn multiple tasks with different arguments
+result = 0;
+spawn multiply_and_store(6, 7);
+wait;
+assert(result == 42);
+
+spawn multiply_and_store(8, 9);
+wait;
+assert(result == 72);

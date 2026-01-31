@@ -1,0 +1,81 @@
+# Tests for wait with various expressions
+extern fn assert(value: bool);
+
+# wait 0 should be a no-op (doesn't wait at all)
+global zero_wait_done = 0;
+
+fn task_wait_zero() {
+    zero_wait_done = 1;
+    wait 0;
+    zero_wait_done = 2;
+    wait 0;
+    zero_wait_done = 3;
+}
+
+spawn task_wait_zero();
+wait;  # Task runs to completion immediately (wait 0 doesn't pause)
+assert(zero_wait_done == 3);
+
+# wait with negative should be treated as no-op
+global neg_wait_done = 0;
+
+fn task_wait_negative() {
+    neg_wait_done = 1;
+    wait 0 - 5;  # negative wait
+    neg_wait_done = 2;
+}
+
+spawn task_wait_negative();
+wait;
+assert(neg_wait_done == 2);
+
+# wait 1 is same as wait
+global one_wait_step = 0;
+
+fn task_wait_one() {
+    one_wait_step = 1;
+    wait 1;
+    one_wait_step = 2;
+}
+
+spawn task_wait_one();
+wait;
+assert(one_wait_step == 1);
+wait;
+assert(one_wait_step == 2);
+
+# wait with expression involving multiple variables
+global multi_var_step = 0;
+global a = 2;
+global b = 3;
+
+fn task_multi_var_wait() {
+    multi_var_step = 1;
+    wait a + b;  # wait 5
+    multi_var_step = 2;
+}
+
+spawn task_multi_var_wait();
+wait;
+assert(multi_var_step == 1);
+wait 4;  # still waiting through frames 2-5
+assert(multi_var_step == 1);
+wait;  # done waiting
+assert(multi_var_step == 2);
+
+# wait with expression using method call
+global method_wait_step = 0;
+
+fn task_method_wait() {
+    method_wait_step = 1;
+    wait (0 - 3).abs();  # wait 3
+    method_wait_step = 2;
+}
+
+spawn task_method_wait();
+wait;
+assert(method_wait_step == 1);
+wait 2;  # still waiting
+assert(method_wait_step == 1);
+wait;  # done waiting
+assert(method_wait_step == 2);

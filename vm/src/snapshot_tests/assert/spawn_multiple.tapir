@@ -1,0 +1,47 @@
+# Tests for multiple concurrent spawned tasks
+extern fn assert(value: bool);
+
+global counter = 0;
+global task1_done = 0;
+global task2_done = 0;
+global task3_done = 0;
+
+fn increment_counter() {
+    counter = counter + 1;
+}
+
+fn task1() {
+    increment_counter();
+    task1_done = 1;
+}
+
+fn task2() {
+    increment_counter();
+    increment_counter();
+    task2_done = 1;
+}
+
+fn task3() {
+    increment_counter();
+    increment_counter();
+    increment_counter();
+    task3_done = 1;
+}
+
+# Spawn multiple tasks
+spawn task1();
+spawn task2();
+spawn task3();
+
+assert(counter == 0);
+assert(task1_done == 0);
+assert(task2_done == 0);
+assert(task3_done == 0);
+
+wait;
+
+# All tasks should have run
+assert(task1_done == 1);
+assert(task2_done == 1);
+assert(task3_done == 1);
+assert(counter == 6);  # 1 + 2 + 3 = 6

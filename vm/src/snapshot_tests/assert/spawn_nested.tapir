@@ -1,0 +1,39 @@
+# Tests for nested spawns (task spawning other tasks)
+extern fn assert(value: bool);
+
+global leaf_count = 0;
+global inner_started = 0;
+global outer_finished = 0;
+
+fn leaf_task() {
+    leaf_count = leaf_count + 1;
+}
+
+fn inner_task() {
+    inner_started = 1;
+    spawn leaf_task();
+    spawn leaf_task();
+    wait;
+}
+
+fn outer_task() {
+    spawn inner_task();
+    wait 2;
+    outer_finished = 1;
+}
+
+# Spawn outer which spawns inner which spawns leaves
+spawn outer_task();
+assert(leaf_count == 0);
+assert(inner_started == 0);
+assert(outer_finished == 0);
+
+wait;  # outer starts, spawns inner, inner starts, spawns 2 leaves
+assert(inner_started == 1);
+assert(leaf_count == 2);
+
+wait;  # outer continues
+assert(outer_finished == 0);
+
+wait;  # outer finishes
+assert(outer_finished == 1);
