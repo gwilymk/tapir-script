@@ -6,6 +6,7 @@ input_file: compiler/src/compile/snapshot_tests/symtab_visitor/struct_property_n
 Script(
   struct_declarations: [
     StructDeclaration(
+      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Point",
@@ -38,6 +39,7 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
+      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Rect",
@@ -72,6 +74,7 @@ Script(
   ],
   property_declarations: [
     PropertyDeclaration(
+      doc_comment: None,
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -89,6 +92,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",

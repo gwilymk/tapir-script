@@ -6,6 +6,7 @@ input_file: compiler/src/snapshot_tests/grammar/struct_declarations.tapir
 Script(
   struct_declarations: [
     StructDeclaration(
+      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Point",
@@ -38,6 +39,7 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
+      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Empty",
@@ -47,6 +49,7 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
+      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Single",
@@ -68,6 +71,7 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
+      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Nested",
@@ -100,6 +104,7 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
+      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "WithTrailingComma",
@@ -136,6 +141,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",

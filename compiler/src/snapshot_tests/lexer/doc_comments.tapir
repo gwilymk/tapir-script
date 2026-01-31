@@ -1,0 +1,6 @@
+# regular comment
+## doc comment
+## another doc comment line
+# back to regular
+##no space after hashes
+wait;

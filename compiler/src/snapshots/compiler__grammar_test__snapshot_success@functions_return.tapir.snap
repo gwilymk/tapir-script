@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -24,6 +25,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function",
       span: "[span]",
@@ -47,6 +49,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_second_function",
       span: "[span]",
@@ -81,6 +84,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_third_function",
       span: "[span]",
@@ -110,6 +114,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_fourth_function",
       span: "[span]",

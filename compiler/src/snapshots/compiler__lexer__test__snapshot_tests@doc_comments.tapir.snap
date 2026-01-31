@@ -1,0 +1,12 @@
+---
+source: compiler/src/lexer.rs
+expression: output
+input_file: compiler/src/snapshot_tests/lexer/doc_comments.tapir
+---
+[
+  Ok(DocComment("doc comment")),
+  Ok(DocComment("another doc comment line")),
+  Ok(DocComment("no space after hashes")),
+  Ok(KeywordWait),
+  Ok(Semicolon),
+]

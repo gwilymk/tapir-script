@@ -6,6 +6,7 @@ input_file: compiler/src/compile/snapshot_tests/struct_visitor/struct_type_in_fu
 StructRegistry(
   structs: [
     StructDef(
+      doc_comment: None,
       name: "Point",
       fields: [
         StructField(

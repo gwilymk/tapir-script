@@ -15,6 +15,8 @@ pub struct StructId(pub u32);
 /// Definition of a struct type.
 #[derive(Clone, Debug, Serialize)]
 pub struct StructDef {
+    /// Doc comment for this struct, if any
+    pub doc_comment: Option<String>,
     pub name: String,
     pub fields: Vec<StructField>,
     pub span: Span,
@@ -143,6 +145,7 @@ mod tests {
     fn struct_registry_register_and_get() {
         let mut registry = StructRegistry::default();
         let def = StructDef {
+            doc_comment: None,
             name: "Point".to_string(),
             fields: vec![
                 StructField {
@@ -174,11 +177,13 @@ mod tests {
         let mut registry = StructRegistry::default();
 
         let id1 = registry.register(StructDef {
+            doc_comment: None,
             name: "First".to_string(),
             fields: vec![],
             span: test_span(),
         });
         let id2 = registry.register(StructDef {
+            doc_comment: None,
             name: "Second".to_string(),
             fields: vec![],
             span: test_span(),
@@ -194,6 +199,7 @@ mod tests {
     fn struct_registry_get_mut() {
         let mut registry = StructRegistry::default();
         let id = registry.register(StructDef {
+            doc_comment: None,
             name: "Mutable".to_string(),
             fields: vec![],
             span: test_span(),
@@ -247,6 +253,7 @@ mod tests {
     fn type_name_with_registry() {
         let mut registry = StructRegistry::default();
         let id = registry.register(StructDef {
+            doc_comment: None,
             name: "Point".to_string(),
             fields: vec![],
             span: test_span(),

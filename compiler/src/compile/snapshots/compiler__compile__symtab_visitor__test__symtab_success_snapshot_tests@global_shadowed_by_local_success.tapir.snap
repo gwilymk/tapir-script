@@ -7,6 +7,7 @@ Script(
   struct_declarations: [],
   property_declarations: [
     PropertyDeclaration(
+      doc_comment: None,
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -23,6 +24,7 @@ Script(
   ],
   globals: [
     GlobalDeclaration(
+      doc_comment: None,
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -40,6 +42,7 @@ Script(
   ],
   functions: [
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",

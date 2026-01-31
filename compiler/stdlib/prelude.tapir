@@ -1,21 +1,30 @@
 # Tapir-script prelude - utility functions available to all scripts
 
-# Math functions
+## Returns the sine of x (in radians).
 builtin(0) fn sin(x: fix) -> fix;
+
+## Returns the cosine of x (in radians).
 builtin(1) fn cos(x: fix) -> fix;
+
+## Returns the square root of x.
 builtin(2) fn sqrt(x: fix) -> fix;
 
-# Rounding methods on fix
+## Rounds down to the nearest integer.
 builtin(3) fn fix.floor(self) -> int;
+
+## Rounds up to the nearest integer.
 builtin(4) fn fix.ceil(self) -> int;
+
+## Rounds to the nearest integer.
 builtin(5) fn fix.round(self) -> int;
 
-# Runtime functions
+## Returns the current frame number since script execution started.
 builtin(-1) fn frame() -> int;
 
-# Task methods
+## Cancels this task, stopping its execution.
 builtin(-2) fn task.cancel(self);
 
+## Returns the absolute value.
 fn int.abs(self) -> int {
     if self < 0 {
         return 0 - self;
@@ -24,6 +33,7 @@ fn int.abs(self) -> int {
     return self;
 }
 
+## Returns the smaller of self and other.
 fn int.min(self, other: int) -> int {
     if self < other {
         return self;
@@ -32,6 +42,7 @@ fn int.min(self, other: int) -> int {
     return other;
 }
 
+## Returns the larger of self and other.
 fn int.max(self, other: int) -> int {
     if self < other {
         return other;
@@ -40,6 +51,7 @@ fn int.max(self, other: int) -> int {
     return self;
 }
 
+## Returns the absolute value.
 fn fix.abs(self) -> fix {
     if self < 0.0 {
         return 0.0 - self;
@@ -48,6 +60,7 @@ fn fix.abs(self) -> fix {
     return self;
 }
 
+## Returns the smaller of self and other.
 fn fix.min(self, other: fix) -> fix {
     if self < other {
         return self;
@@ -56,6 +69,7 @@ fn fix.min(self, other: fix) -> fix {
     return other;
 }
 
+## Returns the larger of self and other.
 fn fix.max(self, other: fix) -> fix {
     if self < other {
         return other;
@@ -64,129 +78,160 @@ fn fix.max(self, other: fix) -> fix {
     return self;
 }
 
+## A 2D vector with integer components.
 struct int2 {
     x: int,
     y: int,
 }
 
+## A 2D vector with fixed-point components.
 struct fix2 {
     x: fix,
     y: fix,
 }
 
+## Adds two int2 vectors component-wise.
 fn int2 + int2(lhs, rhs) -> int2 {
     return int2(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 
+## Subtracts two int2 vectors component-wise.
 fn int2 - int2(lhs, rhs) -> int2 {
     return int2(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 
+## Scales an int2 vector by an integer.
 fn int2 * int(lhs, rhs) -> int2 {
     return int2(lhs.x * rhs, lhs.y * rhs);
 }
 
+## Scales an int2 vector by an integer.
 fn int * int2(lhs, rhs) -> int2 {
     return int2(lhs * rhs.x, lhs * rhs.y);
 }
 
+## Divides an int2 vector by an integer.
 fn int2 / int(lhs, rhs) -> int2 {
     return int2(lhs.x / rhs, lhs.y / rhs);
 }
 
+## Returns the dot product of two vectors.
 fn int2.dot(self, other: int2) -> int {
     return self.x * other.x + self.y * other.y;
 }
 
+## Returns a vector with absolute values of each component.
 fn int2.abs(self) -> int2 {
     return int2(self.x.abs(), self.y.abs());
 }
 
+## Returns the squared magnitude (avoids sqrt).
 fn int2.magnitude_squared(self) -> int {
     return self.x * self.x + self.y * self.y;
 }
 
+## Returns the component-wise product (Hadamard product).
 fn int2.hadamard(self, other: int2) -> int2 {
     return int2(self.x * other.x, self.y * other.y);
 }
 
+## Returns the 2D cross product (z-component of 3D cross).
 fn int2.cross(self, other: int2) -> int {
     return self.x * other.y - self.y * other.x;
 }
 
+## Returns a vector with x and y swapped.
 fn int2.swap(self) -> int2 {
     return int2(self.y, self.x);
 }
 
+## Adds two fix2 vectors component-wise.
 fn fix2 + fix2(lhs, rhs) -> fix2 {
     return fix2(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 
+## Subtracts two fix2 vectors component-wise.
 fn fix2 - fix2(lhs, rhs) -> fix2 {
     return fix2(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 
+## Scales a fix2 vector by a fixed-point number.
 fn fix2 * fix(lhs, rhs) -> fix2 {
     return fix2(lhs.x * rhs, lhs.y * rhs);
 }
 
+## Scales a fix2 vector by a fixed-point number.
 fn fix * fix2(lhs, rhs) -> fix2 {
     return fix2(lhs * rhs.x, lhs * rhs.y);
 }
 
+## Divides a fix2 vector by a fixed-point number.
 fn fix2 / fix(lhs, rhs) -> fix2 {
     return fix2(lhs.x / rhs, lhs.y / rhs);
 }
 
+## Returns the dot product of two vectors.
 fn fix2.dot(self, other: fix2) -> fix {
     return self.x * other.x + self.y * other.y;
 }
 
+## Returns a vector with absolute values of each component.
 fn fix2.abs(self) -> fix2 {
     return fix2(self.x.abs(), self.y.abs());
 }
 
+## Returns the squared magnitude (avoids sqrt).
 fn fix2.magnitude_squared(self) -> fix {
     return self.x * self.x + self.y * self.y;
 }
 
+## Returns the magnitude (length) of the vector.
 fn fix2.magnitude(self) -> fix {
     return sqrt(self.magnitude_squared());
 }
 
+## Returns the component-wise product (Hadamard product).
 fn fix2.hadamard(self, other: fix2) -> fix2 {
     return fix2(self.x * other.x, self.y * other.y);
 }
 
+## Returns the 2D cross product (z-component of 3D cross).
 fn fix2.cross(self, other: fix2) -> fix {
     return self.x * other.y - self.y * other.x;
 }
 
+## Returns a vector with x and y swapped.
 fn fix2.swap(self) -> fix2 {
     return fix2(self.y, self.x);
 }
 
+## Rounds each component to the nearest integer.
 fn fix2.round(self) -> int2 {
     return int2(self.x.round(), self.y.round());
 }
 
+## Rounds each component down to the nearest integer.
 fn fix2.floor(self) -> int2 {
     return int2(self.x.floor(), self.y.floor());
 }
 
+## Rounds each component up to the nearest integer.
 fn fix2.ceil(self) -> int2 {
     return int2(self.x.ceil(), self.y.ceil());
 }
 
+## Returns an approximation of the magnitude (faster but less accurate).
 fn fix2.fast_magnitude(self) -> fix {
     var abs = self.abs();
     return 0.960433870103 * abs.x.max(abs.y) + 0.397824734759 * abs.x.min(abs.y);
 }
 
+## Returns a unit vector in the same direction.
 fn fix2.normalise(self) -> fix2 {
     return self / self.magnitude();
 }
 
+## Returns an approximate unit vector (faster but less accurate).
 fn fix2.fast_normalise(self) -> fix2 {
     return self / self.fast_magnitude();
 }

@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -47,6 +48,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function_with_no_args_or_return",
       span: "[span]",
@@ -62,6 +64,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function_with_an_arg_no_return",
       span: "[span]",
@@ -89,6 +92,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function_with_no_args_one_return",
       span: "[span]",
@@ -110,6 +114,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function_with_no_args_multiple_returns",
       span: "[span]",
@@ -136,6 +141,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function_with_args_and_mulitple_returns",
       span: "[span]",
@@ -185,6 +191,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function_trailing_comma_in_args",
       span: "[span]",
@@ -223,6 +230,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function_trailing_comma_in_return",
       span: "[span]",
@@ -249,6 +257,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "my_function_single_return_in_brackets",
       span: "[span]",

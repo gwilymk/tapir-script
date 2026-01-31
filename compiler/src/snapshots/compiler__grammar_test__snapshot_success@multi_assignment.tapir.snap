@@ -9,6 +9,7 @@ Script(
   globals: [],
   functions: [
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -304,6 +305,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "returns_two",
       span: "[span]",
@@ -349,6 +351,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "returns_three",
       span: "[span]",
@@ -404,6 +407,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "foo",
       span: "[span]",
@@ -439,6 +443,7 @@ Script(
       meta: {},
     ),
     Function(
+      doc_comment: None,
       kind: Regular,
       name: "bar",
       span: "[span]",

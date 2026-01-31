@@ -1,0 +1,20 @@
+## A documented struct.
+struct Point { x: int, y: int }
+
+## A documented global.
+global G: int = 10;
+
+## A documented property.
+property p: int;
+
+## Adds two numbers.
+## Returns their sum.
+fn add(a: int, b: int) -> int {
+    return a + b;
+}
+
+## An extern function with docs.
+extern fn log(value: int);
+
+# A function with only regular comments (no doc)
+fn undocumented() {}

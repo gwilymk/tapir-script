@@ -80,8 +80,18 @@ impl LexicalErrorKind {
 }
 
 #[derive(Logos, Clone, Debug, PartialEq, Serialize)]
-#[logos(skip r"[ \t\n\f\r]+", skip r"#.*\n?", error = LexicalErrorKind)]
+#[logos(skip r"[ \t\n\f\r]+", error = LexicalErrorKind)]
 pub enum Token<'input> {
+    /// Doc comment starting with ##
+    #[regex(r"##[^\n]*", |lex| lex.slice()[2..].trim_start())]
+    DocComment(&'input str),
+
+    /// Regular comment starting with single # (skipped/ignored)
+    #[regex(r"#[^#\n][^\n]*", logos::skip)]
+    #[regex(r"#\n", logos::skip)]
+    #[token("#", logos::skip)]
+    Comment,
+
     #[token("wait")]
     KeywordWait,
     #[token("var")]

@@ -1,0 +1,212 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/doc_comments.tapir
+---
+Script(
+  struct_declarations: [
+    StructDeclaration(
+      doc_comment: Some("A documented struct."),
+      name: TypeWithLocation(
+        t: None,
+        name: "Point",
+        span: "[span]",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "y",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+  ],
+  property_declarations: [
+    PropertyDeclaration(
+      doc_comment: Some("A documented property."),
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "p",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Int),
+          name: "int",
+          span: "[span]",
+        )),
+      ),
+      span: "[span]",
+    ),
+  ],
+  globals: [
+    GlobalDeclaration(
+      doc_comment: Some("A documented global."),
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "G",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Int),
+          name: "int",
+          span: "[span]",
+        )),
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: Integer(10),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+  ],
+  functions: [
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      doc_comment: Some("Adds two numbers.\nReturns their sum."),
+      kind: Regular,
+      name: "add",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Variable("a"),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Variable("b"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "b",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "undocumented",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [
+    ExternFunctionDefinition(
+      doc_comment: Some("An extern function with docs."),
+      name: "log",
+      span: "[span]",
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "value",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      meta: {},
+    ),
+  ],
+  builtin_functions: [],
+)

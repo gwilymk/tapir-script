@@ -58,6 +58,7 @@ pub fn register_structs<'input>(
 
         // Register the struct with empty fields (populated in second pass)
         let def = StructDef {
+            doc_comment: decl.doc_comment.clone(),
             name: name.to_string(),
             fields: vec![],
             span: decl.span,
@@ -455,6 +456,7 @@ mod tests {
         fields: Vec<(&'a str, Type)>,
     ) -> StructDeclaration<'a> {
         StructDeclaration {
+            doc_comment: None,
             name: TypeWithLocation {
                 t,
                 name,
