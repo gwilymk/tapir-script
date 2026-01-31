@@ -1,0 +1,84 @@
+# Tests for bitwise operators: <<, >>, &, |
+extern fn assert(value: bool);
+
+# Left shift
+assert(1 << 0 == 1);
+assert(1 << 1 == 2);
+assert(1 << 2 == 4);
+assert(1 << 3 == 8);
+assert(1 << 4 == 16);
+assert(1 << 8 == 256);
+assert(1 << 16 == 65536);
+
+# Left shift with larger base
+assert(3 << 1 == 6);
+assert(5 << 2 == 20);
+assert(7 << 3 == 56);
+
+# Right shift (signed)
+assert(8 >> 1 == 4);
+assert(8 >> 2 == 2);
+assert(8 >> 3 == 1);
+assert(16 >> 4 == 1);
+assert(256 >> 8 == 1);
+
+# Right shift with larger values
+assert(100 >> 2 == 25);
+assert(1000 >> 3 == 125);
+
+# Signed right shift (arithmetic shift)
+assert((0 - 8) >> 1 == 0 - 4);
+assert((0 - 16) >> 2 == 0 - 4);
+assert((0 - 100) >> 2 == 0 - 25);
+
+# Bitwise AND
+assert(0 & 0 == 0);
+assert(1 & 0 == 0);
+assert(0 & 1 == 0);
+assert(1 & 1 == 1);
+assert(3 & 1 == 1);    # 011 & 001 = 001
+assert(7 & 3 == 3);    # 111 & 011 = 011
+assert(15 & 9 == 9);   # 1111 & 1001 = 1001
+assert(255 & 170 == 170);  # masking
+
+# Bitwise OR
+assert(0 | 0 == 0);
+assert(1 | 0 == 1);
+assert(0 | 1 == 1);
+assert(1 | 1 == 1);
+assert(3 | 1 == 3);    # 011 | 001 = 011
+assert(4 | 2 == 6);    # 100 | 010 = 110
+assert(8 | 7 == 15);   # 1000 | 0111 = 1111
+
+# Combined operations
+var flags = 0;
+flags = flags | 1;     # set bit 0
+assert(flags == 1);
+flags = flags | 4;     # set bit 2
+assert(flags == 5);
+flags = flags | 2;     # set bit 1
+assert(flags == 7);
+
+# Check bits
+assert((flags & 1) == 1);  # bit 0 is set
+assert((flags & 2) == 2);  # bit 1 is set
+assert((flags & 4) == 4);  # bit 2 is set
+assert((flags & 8) == 0);  # bit 3 is not set
+
+# Clear bit
+flags = flags & (0 - 1 - 2);  # clear bit 1 (AND with ~2)
+assert((flags & 2) == 0);
+assert((flags & 1) == 1);
+assert((flags & 4) == 4);
+
+# Shift amount masking (shift amounts masked to 0-31)
+assert(1 << 31 != 0);  # Valid shift
+assert(1 << 32 == 1);  # 32 & 31 = 0, so same as << 0
+
+# Common patterns
+# Extract low byte
+var value = 0x1234;
+assert((value & 255) == 0x34);
+
+# Extract bits 8-15
+assert(((value >> 8) & 255) == 0x12);

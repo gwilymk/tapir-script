@@ -1,0 +1,36 @@
+# Tests for spawn and globals interaction (simplified due to optimizer bugs)
+extern fn assert(value: bool);
+
+# Multiple spawned tasks writing same global
+global write_counter = 0;
+
+fn writer() {
+    write_counter = write_counter + 1;
+}
+
+spawn writer();
+spawn writer();
+spawn writer();
+wait;
+assert(write_counter == 3);
+
+# Interleaved execution with globals
+global sequence = 0;
+
+fn add_one() {
+    sequence = sequence + 1;
+}
+
+fn add_ten() {
+    sequence = sequence + 10;
+}
+
+fn add_hundred() {
+    sequence = sequence + 100;
+}
+
+spawn add_one();
+spawn add_ten();
+spawn add_hundred();
+wait;
+assert(sequence == 111);

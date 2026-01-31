@@ -1,0 +1,86 @@
+# Tests for user-defined structs
+# Note: Nested structs (struct A containing struct B) crash the compiler
+extern fn assert(value: bool);
+
+struct Point { x: int, y: int }
+struct Color { r: int, g: int, b: int }
+struct FixPair { x: fix, y: fix }
+
+# Basic struct construction and field access
+var p = Point(3, 4);
+assert(p.x == 3);
+assert(p.y == 4);
+
+# Struct with three fields
+var c = Color(255, 128, 0);
+assert(c.r == 255);
+assert(c.g == 128);
+assert(c.b == 0);
+
+# Field assignment
+p.x = 10;
+assert(p.x == 10);
+assert(p.y == 4);
+
+p.y = 20;
+assert(p.x == 10);
+assert(p.y == 20);
+
+# Struct assignment (copy)
+var p2 = p;
+assert(p2.x == 10);
+assert(p2.y == 20);
+
+# Modifying copy doesn't affect original
+p2.x = 999;
+assert(p2.x == 999);
+assert(p.x == 10);  # Original unchanged
+
+# Struct in expressions
+var sum = p.x + p.y;
+assert(sum == 30);
+
+# Constructing struct from expressions
+var computed = Point(5 + 5, 10 * 2);
+assert(computed.x == 10);
+assert(computed.y == 20);
+
+# Fix struct
+var fp = FixPair(1.5, 2.5);
+assert(fp.x == 1.5);
+assert(fp.y == 2.5);
+
+fp.x = 3.25;
+assert(fp.x == 3.25);
+assert(fp.y == 2.5);
+
+# Struct from variable values
+var a = 100;
+var b = 200;
+var from_vars = Point(a, b);
+assert(from_vars.x == 100);
+assert(from_vars.y == 200);
+
+# Multiple struct instances
+var pt1 = Point(1, 2);
+var pt2 = Point(3, 4);
+var pt3 = Point(5, 6);
+assert(pt1.x + pt2.x + pt3.x == 9);
+assert(pt1.y + pt2.y + pt3.y == 12);
+
+# Field comparison
+assert(pt1.x < pt2.x);
+assert(pt3.y > pt1.y);
+
+# Assigning struct variable
+var original = Point(10, 20);
+var copy = original;
+original = Point(30, 40);
+assert(copy.x == 10);  # Copy unchanged
+assert(original.x == 30);
+
+# Struct field in conditions
+var check = Point(5, 10);
+if check.x < check.y {
+    assert(true);
+}

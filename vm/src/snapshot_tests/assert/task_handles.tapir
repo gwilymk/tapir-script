@@ -1,0 +1,104 @@
+# Tests for task handle behavior
+extern fn assert(value: bool);
+
+global task1_value = 0;
+global task2_value = 0;
+global task3_value = 0;
+
+fn set_task1(v: int) {
+    wait;
+    task1_value = v;
+}
+
+fn set_task2(v: int) {
+    wait;
+    task2_value = v;
+}
+
+fn set_task3(v: int) {
+    wait;
+    task3_value = v;
+}
+
+# Multiple task handles
+var t1 = spawn set_task1(10);
+var t2 = spawn set_task2(20);
+var t3 = spawn set_task3(30);
+
+wait;
+assert(task1_value == 10);
+assert(task2_value == 20);
+assert(task3_value == 30);
+
+# Cancel specific task
+task1_value = 0;
+task2_value = 0;
+task3_value = 0;
+
+t1 = spawn set_task1(100);
+t2 = spawn set_task2(200);
+t3 = spawn set_task3(300);
+
+t2.cancel();  # Cancel middle one
+
+wait;
+assert(task1_value == 100);  # Ran
+assert(task2_value == 0);    # Cancelled
+assert(task3_value == 300);  # Ran
+
+# Task handle reassignment
+global reassign_value = 0;
+
+fn set_reassign(v: int) {
+    wait;
+    reassign_value = v;
+}
+
+var t = spawn set_reassign(50);
+t = spawn set_reassign(100);  # Reassign handle (first task still runs!)
+wait;
+# Both tasks ran because we only reassigned the handle
+assert(reassign_value == 100 || reassign_value == 50);
+
+# Cancel then reassign
+global cancel_reassign = 0;
+
+fn set_cancel_reassign(v: int) {
+    wait;
+    cancel_reassign = v;
+}
+
+var tr = spawn set_cancel_reassign(1000);
+tr.cancel();
+tr = spawn set_cancel_reassign(2000);
+wait;
+assert(cancel_reassign == 2000);
+
+# Empty task cancel (should be no-op)
+global empty_task_var: task;
+empty_task_var.cancel();  # Should not crash
+
+# Store task in global
+global stored_task: task;
+global stored_task_result = 0;
+
+fn stored_task_fn() {
+    wait 2;
+    stored_task_result = 999;
+}
+
+stored_task = spawn stored_task_fn();
+wait;
+assert(stored_task_result == 0);  # Still waiting
+wait;
+assert(stored_task_result == 0);  # Still waiting
+wait;
+assert(stored_task_result == 999);  # Done
+
+# Cancel stored task
+stored_task_result = 0;
+stored_task = spawn stored_task_fn();
+wait;
+stored_task.cancel();
+wait 3;
+assert(stored_task_result == 0);  # Cancelled before completion

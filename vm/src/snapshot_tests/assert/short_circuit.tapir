@@ -1,0 +1,93 @@
+# Tests for short-circuit evaluation of && and ||
+extern fn assert(value: bool);
+
+global side_effect_count = 0;
+
+fn increment_and_return_true() -> bool {
+    side_effect_count = side_effect_count + 1;
+    return true;
+}
+
+fn increment_and_return_false() -> bool {
+    side_effect_count = side_effect_count + 1;
+    return false;
+}
+
+# && short-circuits on false
+side_effect_count = 0;
+var result = false && increment_and_return_true();
+assert(result == false);
+assert(side_effect_count == 0);  # Right side never evaluated
+
+# && evaluates both when left is true
+side_effect_count = 0;
+result = true && increment_and_return_true();
+assert(result == true);
+assert(side_effect_count == 1);  # Right side was evaluated
+
+# && with function on left
+side_effect_count = 0;
+result = increment_and_return_false() && increment_and_return_true();
+assert(result == false);
+assert(side_effect_count == 1);  # Only left side evaluated
+
+side_effect_count = 0;
+result = increment_and_return_true() && increment_and_return_false();
+assert(result == false);
+assert(side_effect_count == 2);  # Both sides evaluated
+
+# || short-circuits on true
+side_effect_count = 0;
+result = true || increment_and_return_false();
+assert(result == true);
+assert(side_effect_count == 0);  # Right side never evaluated
+
+# || evaluates both when left is false
+side_effect_count = 0;
+result = false || increment_and_return_true();
+assert(result == true);
+assert(side_effect_count == 1);  # Right side was evaluated
+
+# || with function on left
+side_effect_count = 0;
+result = increment_and_return_true() || increment_and_return_false();
+assert(result == true);
+assert(side_effect_count == 1);  # Only left side evaluated
+
+side_effect_count = 0;
+result = increment_and_return_false() || increment_and_return_true();
+assert(result == true);
+assert(side_effect_count == 2);  # Both sides evaluated
+
+# Chained &&
+side_effect_count = 0;
+result = true && true && increment_and_return_true();
+assert(result == true);
+assert(side_effect_count == 1);
+
+side_effect_count = 0;
+result = true && false && increment_and_return_true();
+assert(result == false);
+assert(side_effect_count == 0);  # Third never evaluated
+
+# Chained ||
+side_effect_count = 0;
+result = false || false || increment_and_return_true();
+assert(result == true);
+assert(side_effect_count == 1);
+
+side_effect_count = 0;
+result = false || true || increment_and_return_true();
+assert(result == true);
+assert(side_effect_count == 0);  # Third never evaluated
+
+# Mixed && and ||
+side_effect_count = 0;
+result = true && (false || increment_and_return_true());
+assert(result == true);
+assert(side_effect_count == 1);
+
+side_effect_count = 0;
+result = false && (true || increment_and_return_true());
+assert(result == false);
+assert(side_effect_count == 0);  # Entire right side skipped

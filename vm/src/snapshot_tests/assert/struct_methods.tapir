@@ -1,0 +1,85 @@
+# Tests for methods on user-defined structs
+# Note: Methods returning different struct types cause compiler issues
+extern fn assert(value: bool);
+
+struct Point { x: int, y: int }
+struct Vec2 { x: fix, y: fix }
+struct Rect { x: int, y: int, w: int, h: int }
+
+fn Point.sum(self) -> int {
+    return self.x + self.y;
+}
+
+fn Point.scale(self, factor: int) -> Point {
+    return Point(self.x * factor, self.y * factor);
+}
+
+fn Point.add(self, other: Point) -> Point {
+    return Point(self.x + other.x, self.y + other.y);
+}
+
+fn Point.distance_squared(self, other: Point) -> int {
+    var dx = self.x - other.x;
+    var dy = self.y - other.y;
+    return dx * dx + dy * dy;
+}
+
+fn Vec2.length_squared(self) -> fix {
+    return self.x * self.x + self.y * self.y;
+}
+
+fn Rect.area(self) -> int {
+    return self.w * self.h;
+}
+
+# Basic method call
+var p = Point(3, 4);
+assert(p.sum() == 7);
+
+# Method with parameter
+var scaled = p.scale(2);
+assert(scaled.x == 6);
+assert(scaled.y == 8);
+
+# Method returning same struct type
+var p2 = Point(1, 2);
+var p3 = p.add(p2);
+assert(p3.x == 4);
+assert(p3.y == 6);
+
+# Method with computation
+var dist = p.distance_squared(Point(0, 0));
+assert(dist == 25);  # 3*3 + 4*4 = 25
+
+# Method on fix struct
+var v = Vec2(3.0, 4.0);
+var len_sq = v.length_squared();
+assert(len_sq == 25.0);
+
+# Method returning int from Rect
+var rect = Rect(10, 20, 100, 50);
+assert(rect.area() == 5000);
+
+# Chained method calls (same type)
+var chained = Point(1, 1).scale(3).add(Point(2, 2));
+assert(chained.x == 5);
+assert(chained.y == 5);
+
+# Method on constructor result
+assert(Point(5, 7).sum() == 12);
+
+# Method on computed struct
+var base = Point(10, 10);
+assert(base.add(Point(5, 5)).sum() == 30);
+
+# Method after field assignment
+var mod = Point(1, 1);
+mod.x = 10;
+mod.y = 20;
+assert(mod.sum() == 30);
+
+# Multiple method calls on same struct
+var multi = Point(2, 3);
+assert(multi.sum() == 5);
+var multi_scaled = multi.scale(4);
+assert(multi_scaled.sum() == 20);

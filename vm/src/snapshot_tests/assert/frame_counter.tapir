@@ -1,0 +1,38 @@
+# Tests for frame() function across waits
+extern fn assert(value: bool);
+
+# Frame starts at 0
+assert(frame() == 0);
+
+# Frame increments after wait
+wait;
+assert(frame() == 1);
+
+wait;
+assert(frame() == 2);
+
+wait;
+assert(frame() == 3);
+
+# wait N increments by N
+wait 5;
+assert(frame() == 8);
+
+# Frame in function call
+fn get_frame() -> int {
+    return frame();
+}
+
+assert(get_frame() == 8);
+wait;
+assert(get_frame() == 9);
+
+# Multiple frame() calls in same expression
+var sum = frame() + frame();
+assert(sum == 18);  # 9 + 9
+
+# Frame persists during computation
+var start = frame();
+var computed = start * 2;
+assert(computed == 18);
+assert(frame() == 9);  # Still same frame

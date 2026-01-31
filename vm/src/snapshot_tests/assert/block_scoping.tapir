@@ -1,0 +1,107 @@
+# Tests for block scoping
+extern fn assert(value: bool);
+
+# Variables are block-scoped
+var outer = 10;
+
+{
+    var inner = 20;
+    assert(inner == 20);
+    assert(outer == 10);  # Outer visible inside block
+
+    {
+        var deep = 30;
+        assert(deep == 30);
+        assert(inner == 20);
+        assert(outer == 10);
+    }
+    # deep not accessible here
+}
+# inner not accessible here
+
+assert(outer == 10);
+
+# Shadowing in nested blocks
+var shadow = 1;
+assert(shadow == 1);
+
+{
+    var shadow = 2;
+    assert(shadow == 2);
+
+    {
+        var shadow = 3;
+        assert(shadow == 3);
+    }
+
+    assert(shadow == 2);
+}
+
+assert(shadow == 1);
+
+# Modification in block affects outer scope if not shadowed
+var modify_me = 100;
+
+{
+    modify_me = 200;
+    assert(modify_me == 200);
+}
+
+assert(modify_me == 200);
+
+# But shadowing creates a new variable
+var dont_modify = 100;
+
+{
+    var dont_modify = 200;
+    dont_modify = 300;
+    assert(dont_modify == 300);
+}
+
+assert(dont_modify == 100);  # Original unchanged
+
+# Block in if statement
+var if_result = 0;
+if true {
+    var temp = 42;
+    if_result = temp;
+}
+assert(if_result == 42);
+
+# Block in loop
+var loop_sum = 0;
+var i = 0;
+loop {
+    if i >= 3 {
+        break;
+    }
+    {
+        var contribution = i * 10;
+        loop_sum = loop_sum + contribution;
+    }
+    i = i + 1;
+}
+assert(loop_sum == 30);  # 0 + 10 + 20
+
+# Variable declared in if used after
+var cond_var = 0;
+if true {
+    cond_var = 50;
+}
+assert(cond_var == 50);
+
+# Complex nesting
+var a = 1;
+{
+    var b = 2;
+    {
+        var c = 3;
+        {
+            var d = 4;
+            assert(a + b + c + d == 10);
+        }
+        assert(a + b + c == 6);
+    }
+    assert(a + b == 3);
+}
+assert(a == 1);

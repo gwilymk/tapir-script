@@ -1,0 +1,104 @@
+# Tests for void functions (no return value)
+extern fn assert(value: bool);
+
+global effect_counter = 0;
+global last_value = 0;
+
+fn increment_effect() {
+    effect_counter = effect_counter + 1;
+}
+
+fn set_value(v: int) {
+    last_value = v;
+}
+
+fn conditional_set(cond: bool, v: int) {
+    if cond {
+        last_value = v;
+    }
+}
+
+fn early_return(cond: bool) {
+    if cond {
+        return;
+    }
+    effect_counter = effect_counter + 100;
+}
+
+fn multiple_effects(a: int, b: int) {
+    last_value = a;
+    effect_counter = b;
+}
+
+# Basic void function
+effect_counter = 0;
+increment_effect();
+assert(effect_counter == 1);
+increment_effect();
+increment_effect();
+assert(effect_counter == 3);
+
+# Void function with parameter
+set_value(42);
+assert(last_value == 42);
+set_value(100);
+assert(last_value == 100);
+
+# Void function with conditional
+last_value = 0;
+conditional_set(true, 50);
+assert(last_value == 50);
+conditional_set(false, 100);
+assert(last_value == 50);  # Unchanged
+
+# Early return from void function
+effect_counter = 0;
+early_return(true);
+assert(effect_counter == 0);  # Returned early, didn't add 100
+early_return(false);
+assert(effect_counter == 100);  # Didn't return early
+
+# Multiple effects
+multiple_effects(77, 88);
+assert(last_value == 77);
+assert(effect_counter == 88);
+
+# Calling void function as statement
+effect_counter = 0;
+increment_effect();  # Just a statement
+var x = 5;  # Next statement
+assert(effect_counter == 1);
+
+# Void function in loop
+effect_counter = 0;
+var i = 0;
+loop {
+    if i >= 5 {
+        break;
+    }
+    increment_effect();
+    i = i + 1;
+}
+assert(effect_counter == 5);
+
+# Void function calling void function
+fn double_increment() {
+    increment_effect();
+    increment_effect();
+}
+
+effect_counter = 0;
+double_increment();
+assert(effect_counter == 2);
+double_increment();
+assert(effect_counter == 4);
+
+# Nested void function calls
+fn triple_increment() {
+    double_increment();
+    increment_effect();
+}
+
+effect_counter = 0;
+triple_increment();
+assert(effect_counter == 3);

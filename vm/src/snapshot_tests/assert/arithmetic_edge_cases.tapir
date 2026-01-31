@@ -1,0 +1,102 @@
+# Tests for arithmetic edge cases
+extern fn assert(value: bool);
+
+# Zero handling
+assert(0 + 0 == 0);
+assert(0 - 0 == 0);
+assert(0 * 100 == 0);
+assert(100 * 0 == 0);
+assert(0 / 1 == 0);
+assert(0 % 5 == 0);
+
+# Identity operations
+assert(5 + 0 == 5);
+assert(5 - 0 == 5);
+assert(5 * 1 == 5);
+assert(5 / 1 == 5);
+assert(0 - 5 + 5 == 0);
+
+# Commutativity
+assert(3 + 5 == 5 + 3);
+assert(3 * 5 == 5 * 3);
+
+# Associativity
+assert((2 + 3) + 4 == 2 + (3 + 4));
+assert((2 * 3) * 4 == 2 * (3 * 4));
+
+# Distributivity
+assert(2 * (3 + 4) == 2 * 3 + 2 * 4);
+
+# Subtraction is not commutative
+assert(5 - 3 != 3 - 5);
+assert(5 - 3 == 2);
+assert(3 - 5 == 0 - 2);
+
+# Division is not commutative
+assert(10 / 2 != 2 / 10);
+assert(10 / 2 == 5);
+assert(2 / 10 == 0);  # Integer division
+
+# Large numbers
+var large = 1000000;
+assert(large + large == 2000000);
+assert(large - large == 0);
+assert(large / 1000 == 1000);
+
+# Overflow behavior (32-bit signed int)
+# Maximum positive: 2147483647
+# Minimum negative: -2147483648
+# These tests check that operations work near the boundaries
+var max_safe = 1000000000;  # 1 billion, safe from overflow
+assert(max_safe + max_safe == 2000000000);
+
+# Negative multiplication
+assert((0 - 1) * (0 - 1) == 1);
+assert((0 - 2) * (0 - 3) == 6);
+assert((0 - 2) * 3 == 0 - 6);
+assert(2 * (0 - 3) == 0 - 6);
+
+# Division rounding
+assert(7 / 2 == 3);   # Floor division
+assert(7 // 2 == 3);  # Truncating division
+assert(9 / 4 == 2);
+assert(9 // 4 == 2);
+
+# Modulo with small numbers
+assert(5 % 3 == 2);
+assert(6 % 3 == 0);
+assert(7 % 3 == 1);
+
+# Powers of 2
+assert(1 << 0 == 1);
+assert(1 << 1 == 2);
+assert(1 << 2 == 4);
+assert(1 << 10 == 1024);
+assert(16 >> 2 == 4);
+assert(1024 >> 10 == 1);
+
+# Bit operations
+assert((0 - 1) & 255 == 255);  # Low byte of -1
+assert(255 | 256 == 511);
+assert(170 & 85 == 0);  # 10101010 & 01010101 = 0
+
+# Fix precision
+var f1 = 1.0 / 3.0;
+var f2 = f1 * 3.0;
+# Due to fixed-point, this won't be exactly 1.0
+assert(f2 > 0.99 && f2 < 1.01);
+
+# Fix small values (use 0.125 = 1/8, exactly representable in 24.8)
+var small = 0.125;
+var small_sum = small + small + small + small + small;
+assert(small_sum == 0.625);  # 5 * 0.125 = 0.625, exactly representable
+
+# Mixed precision chain
+var chain = 10 * 3 + 5 * 2 - 4;
+assert(chain == 36);
+
+# Expression with same operand multiple times
+var x = 7;
+assert(x + x + x == 21);
+assert(x * x == 49);
+assert(x - x == 0);

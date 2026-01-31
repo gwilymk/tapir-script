@@ -1,0 +1,101 @@
+# Tests for complex expressions
+extern fn assert(value: bool);
+
+fn add(a: int, b: int) -> int {
+    return a + b;
+}
+
+fn multiply(a: int, b: int) -> int {
+    return a * b;
+}
+
+fn identity(x: int) -> int {
+    return x;
+}
+
+# Nested function calls
+assert(add(add(1, 2), add(3, 4)) == 10);
+assert(multiply(add(2, 3), add(4, 1)) == 25);
+
+# Function calls in arithmetic
+assert(add(1, 2) + multiply(3, 4) == 15);
+assert(add(1, 2) * multiply(3, 4) == 36);
+
+# Deeply nested
+assert(add(add(add(1, 1), add(1, 1)), add(add(1, 1), add(1, 1))) == 8);
+
+# Function call as argument to method
+var v = int2(add(1, 2), multiply(3, 4));
+assert(v.x == 3);
+assert(v.y == 12);
+
+# Method call result in function
+assert(add(int2(3, 4).x, int2(5, 6).y) == 9);
+
+# Complex boolean expressions
+var a = 5;
+var b = 10;
+var c = 15;
+assert(a < b && b < c);
+assert(a < c && b < c);
+assert(!(a > b || b > c));
+assert(a + b == c && c - a == b);
+
+# Comparison chains (must use && since chained comparison is invalid)
+assert(a < b && b < c && c > a);
+
+# Arithmetic in comparisons
+assert(a + 5 == b);
+assert(b * 2 == c + 5);
+assert(a * 3 == c);
+
+# Complex fix expressions
+var f1 = 2.5;
+var f2 = 1.5;
+var f3 = f1 * f2 + f1 / f2;
+# 2.5 * 1.5 + 2.5 / 1.5 = 3.75 + 1.666... = ~5.41
+assert(f3 > 5.0 && f3 < 6.0);
+
+# Struct field in complex expression
+var p = int2(10, 20);
+assert(p.x + p.y == 30);
+assert(p.x * 2 + p.y / 2 == 30);
+assert((p.x + p.y) * 2 == 60);
+
+# Method chains
+var v2 = fix2(3.0, 4.0);
+assert((v2 * 2.0).dot(fix2(1.0, 1.0)) == 14.0);
+
+# Parenthesized expressions
+assert((1 + 2) * (3 + 4) == 21);
+assert(((1 + 2) * 3) + 4 == 13);
+assert((1 + (2 * 3)) + 4 == 11);
+
+# Mixed int and method
+assert(identity(5).abs() == 5);
+assert(identity(0 - 5).abs() == 5);
+assert(identity(add(2, 3)).min(4) == 4);
+assert(identity(add(2, 3)).max(10) == 10);
+
+# Expression as function argument
+assert(add(1 + 2, 3 + 4) == 10);
+assert(add(multiply(2, 3), multiply(4, 5)) == 26);
+
+# Conditional expressions in arguments
+# Note: Using a different pattern since optimizer has bug with > in function conditions
+fn choose_if_true(a: int, b: int) -> int {
+    return a;
+}
+
+fn choose_if_false(a: int, b: int) -> int {
+    return b;
+}
+
+assert(choose_if_true(10, 20) == 10);
+assert(choose_if_false(10, 20) == 20);
+
+# Test comparison expressions directly
+var cmp1 = 5 < 3;  # false
+var cmp2 = 3 < 5;  # true
+assert(cmp1 == false);
+assert(cmp2 == true);

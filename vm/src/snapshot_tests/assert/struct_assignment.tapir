@@ -1,0 +1,55 @@
+# Tests for struct assignment edge cases (using prelude structs)
+# Note: User-defined nested structs cause compiler issues
+extern fn assert(value: bool);
+
+# Basic struct copy with int2
+var v1 = int2(10, 20);
+var v2 = v1;
+assert(v2.x == 10);
+assert(v2.y == 20);
+
+# Modifying copy doesn't affect original
+v2.x = 100;
+assert(v2.x == 100);
+assert(v1.x == 10);
+
+# fix2 copy
+var f1 = fix2(1.5, 2.5);
+var f2 = f1;
+assert(f2.x == 1.5);
+assert(f2.y == 2.5);
+
+f2.x = 9.9;
+assert(f1.x == 1.5);  # Original unchanged
+assert(f2.x == 9.9);
+
+# Self-referential assignment
+var v3 = int2(1, 2);
+v3.x = v3.y;
+assert(v3.x == 2);
+assert(v3.y == 2);
+
+# Chain of assignments
+var a = int2(1, 1);
+var b = int2(2, 2);
+var c = int2(3, 3);
+a = b;
+b = c;
+assert(a.x == 2);
+assert(b.x == 3);
+assert(c.x == 3);
+
+# Struct from expression
+var computed = int2(5 + 5, 10 * 2);
+assert(computed.x == 10);
+assert(computed.y == 20);
+
+# Method returning struct
+var swapped = int2(5, 10).swap();
+assert(swapped.x == 10);
+assert(swapped.y == 5);
+
+# Struct operations
+var sum = int2(1, 2) + int2(3, 4);
+assert(sum.x == 4);
+assert(sum.y == 6);

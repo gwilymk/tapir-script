@@ -1,0 +1,88 @@
+# Tests for multiple return values and destructuring
+extern fn assert(value: bool);
+
+fn swap(a: int, b: int) -> (int, int) {
+    return b, a;
+}
+
+fn get_coords() -> (int, int) {
+    return 10, 20;
+}
+
+fn get_three() -> (int, int, int) {
+    return 1, 2, 3;
+}
+
+fn get_mixed() -> (int, fix, bool) {
+    return 42, 3.14, true;
+}
+
+fn minmax(a: int, b: int) -> (int, int) {
+    if a < b {
+        return a, b;
+    }
+    return b, a;
+}
+
+# Basic multiple return
+var x, y = swap(5, 10);
+assert(x == 10);
+assert(y == 5);
+
+# Get coords
+var cx, cy = get_coords();
+assert(cx == 10);
+assert(cy == 20);
+
+# Three values
+var a, b, c = get_three();
+assert(a == 1);
+assert(b == 2);
+assert(c == 3);
+
+# Mixed types
+var i, f, bl = get_mixed();
+assert(i == 42);
+assert(f == 3.14);
+assert(bl == true);
+
+# Conditional return
+var min1, max1 = minmax(5, 10);
+assert(min1 == 5);
+assert(max1 == 10);
+
+var min2, max2 = minmax(10, 5);
+assert(min2 == 5);
+assert(max2 == 10);
+
+# Chained swaps
+var p, q = swap(1, 2);
+p, q = swap(p, q);
+assert(p == 1);
+assert(q == 2);
+
+# Variable swap using multiple assignment
+var m = 100;
+var n = 200;
+m, n = n, m;
+assert(m == 200);
+assert(n == 100);
+
+# Swap with expressions
+var s = 5;
+var t = 10;
+s, t = t + 1, s + 2;
+assert(s == 11);
+assert(t == 7);
+
+# Multiple declaration with same value type
+var d, e = 1, 2;
+assert(d == 1);
+assert(e == 2);
+
+# Multiple assignment to existing variables
+d, e = 10, 20;
+assert(d == 10);
+assert(e == 20);
+
+# Note: Tuple comparison (swap(1, 2) == (2, 1)) not supported

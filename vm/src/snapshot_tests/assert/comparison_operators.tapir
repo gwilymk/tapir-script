@@ -1,0 +1,140 @@
+# Comprehensive tests for comparison operators
+extern fn assert(value: bool);
+
+# int equality
+assert(5 == 5);
+assert(0 == 0);
+assert((0 - 5) == (0 - 5));
+assert(!(5 == 6));
+assert(!(0 == 1));
+
+# int inequality
+assert(5 != 6);
+assert(0 != 1);
+assert((0 - 5) != 5);
+assert(!(5 != 5));
+assert(!(0 != 0));
+
+# int less than
+assert(3 < 5);
+assert(0 < 1);
+assert((0 - 5) < 0);
+assert((0 - 10) < (0 - 5));
+assert(!(5 < 3));
+assert(!(5 < 5));
+
+# int less than or equal
+assert(3 <= 5);
+assert(5 <= 5);
+assert(0 <= 0);
+assert((0 - 5) <= (0 - 5));
+assert((0 - 10) <= (0 - 5));
+assert(!(6 <= 5));
+
+# int greater than
+assert(5 > 3);
+assert(1 > 0);
+assert(0 > (0 - 5));
+assert((0 - 5) > (0 - 10));
+assert(!(3 > 5));
+assert(!(5 > 5));
+
+# int greater than or equal
+assert(5 >= 3);
+assert(5 >= 5);
+assert(0 >= 0);
+assert((0 - 5) >= (0 - 5));
+assert((0 - 5) >= (0 - 10));
+assert(!(5 >= 6));
+
+# fix equality
+assert(1.5 == 1.5);
+assert(0.0 == 0.0);
+assert((0.0 - 1.5) == (0.0 - 1.5));
+assert(!(1.5 == 2.5));
+
+# fix inequality
+assert(1.5 != 2.5);
+assert(0.0 != 0.1);
+assert(!(1.5 != 1.5));
+
+# fix less than
+assert(1.5 < 2.5);
+assert(0.0 < 0.1);
+assert((0.0 - 2.5) < (0.0 - 1.5));
+assert(!(2.5 < 1.5));
+assert(!(1.5 < 1.5));
+
+# fix less than or equal
+assert(1.5 <= 2.5);
+assert(1.5 <= 1.5);
+assert(!(2.5 <= 1.5));
+
+# fix greater than
+assert(2.5 > 1.5);
+assert(0.1 > 0.0);
+assert((0.0 - 1.5) > (0.0 - 2.5));
+assert(!(1.5 > 2.5));
+assert(!(1.5 > 1.5));
+
+# fix greater than or equal
+assert(2.5 >= 1.5);
+assert(1.5 >= 1.5);
+assert(!(1.5 >= 2.5));
+
+# bool equality
+assert(true == true);
+assert(false == false);
+assert(!(true == false));
+assert(!(false == true));
+
+# bool inequality
+assert(true != false);
+assert(false != true);
+assert(!(true != true));
+assert(!(false != false));
+
+# Comparison with expressions
+assert((2 + 3) == 5);
+assert((10 - 5) == (3 + 2));
+assert((2 * 3) < (4 * 3));
+assert((8 / 2) >= (6 / 3));
+
+# Comparison with function calls
+fn get_five() -> int {
+    return 5;
+}
+
+assert(get_five() == 5);
+assert(get_five() == get_five());
+assert(get_five() < 10);
+assert(get_five() > 3);
+
+# Comparison with variables
+var a = 10;
+var b = 20;
+assert(a < b);
+assert(b > a);
+assert(a != b);
+assert(a == a);
+
+# Boundary values
+var zero = 0;
+var one = 1;
+var neg_one = 0 - 1;
+assert(zero < one);
+assert(neg_one < zero);
+assert(neg_one < one);
+assert(zero == 0);
+assert(one > zero);
+
+# Comparison result used in other expressions
+var result = 5 > 3;  # true
+assert(result == true);
+result = 5 < 3;  # false
+assert(result == false);
+
+# Chained comparisons via && (chained comparison like a < b < c is invalid)
+var x = 5;
+assert(0 < x && x < 10);
+assert(!(0 > x && x > 10));

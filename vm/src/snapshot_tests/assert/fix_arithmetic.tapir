@@ -1,0 +1,94 @@
+# Tests for fixed-point arithmetic edge cases
+extern fn assert(value: bool);
+
+# Basic fix arithmetic
+var a = 1.5;
+var b = 2.5;
+assert(a + b == 4.0);
+assert(b - a == 1.0);
+assert(a * b == 3.75);
+assert(b / a > 1.6 && b / a < 1.7);
+
+# Small values (use 0.25 = 1/4, exactly representable in 24.8)
+var small = 0.25;
+var result = small * 4.0;
+assert(result == 1.0);
+
+# Fractional parts
+assert(2.25 + 0.75 == 3.0);
+assert(3.5 - 1.25 == 2.25);
+
+# Multiplication preserving precision
+assert(0.5 * 0.5 == 0.25);
+assert(0.5 * 2.0 == 1.0);
+assert(0.25 * 4.0 == 1.0);
+
+# Division
+assert(1.0 / 2.0 == 0.5);
+assert(1.0 / 4.0 == 0.25);
+assert(3.0 / 2.0 == 1.5);
+
+# Larger values
+var large = 100.5;
+assert(large + 0.5 == 101.0);
+assert(large * 2.0 == 201.0);
+
+# Negative fix values
+var neg = 0.0 - 2.5;
+assert(neg + 3.0 == 0.5);
+assert(neg * 2.0 == 0.0 - 5.0);
+assert(neg * neg == 6.25);
+
+# Comparison
+assert(1.5 < 2.0);
+assert(2.0 > 1.5);
+assert(1.5 <= 1.5);
+assert(1.5 >= 1.5);
+assert(1.5 != 2.0);
+assert(1.5 == 1.5);
+
+# Fix in struct
+var v = fix2(1.5, 2.5);
+assert(v.x + v.y == 4.0);
+assert(v.dot(fix2(2.0, 2.0)) == 8.0);
+
+# Accumulation (use 0.125 which is exactly representable)
+var acc = 0.0;
+var i = 0;
+loop {
+    if i < 8 {
+        acc = acc + 0.125;
+        i = i + 1;
+    } else {
+        break;
+    }
+}
+assert(acc == 1.0);
+
+# sqrt of fix values (exact results)
+assert(sqrt(4.0) == 2.0);
+assert(sqrt(9.0) == 3.0);
+assert(sqrt(0.25) == 0.5);
+assert(sqrt(1.0) == 1.0);
+assert(sqrt(0.0) == 0.0);
+
+# sin/cos basic
+var angle = 0.0;
+assert(sin(angle) == 0.0);
+assert(cos(angle) == 1.0);
+
+# Operations with 1.0 and 0.0
+assert(5.5 * 1.0 == 5.5);
+assert(5.5 + 0.0 == 5.5);
+assert(5.5 - 0.0 == 5.5);
+assert(5.5 / 1.0 == 5.5);
+assert(0.0 * 5.5 == 0.0);
+
+# Rounding edge cases
+var r2 = 1.4;
+assert(r2.floor() == 1);
+assert(r2.ceil() == 2);
+var r3 = 1.6;
+assert(r3.floor() == 1);
+assert(r3.ceil() == 2);
+assert(r3.round() == 2);

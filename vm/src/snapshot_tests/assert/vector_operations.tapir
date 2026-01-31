@@ -1,0 +1,144 @@
+# Comprehensive tests for int2 and fix2 operations
+extern fn assert(value: bool);
+
+# int2 construction variants
+var zero = int2(0, 0);
+var pos = int2(5, 10);
+var neg = int2(0 - 3, 0 - 7);
+var mixed = int2(5, 0 - 3);
+
+assert(zero.x == 0);
+assert(zero.y == 0);
+assert(pos.x == 5);
+assert(pos.y == 10);
+assert(neg.x == 0 - 3);
+assert(neg.y == 0 - 7);
+assert(mixed.x == 5);
+assert(mixed.y == 0 - 3);
+
+# int2 addition
+var sum = pos + neg;
+assert(sum.x == 2);
+assert(sum.y == 3);
+
+# int2 subtraction
+var diff = pos - neg;
+assert(diff.x == 8);
+assert(diff.y == 17);
+
+# int2 scalar multiplication
+var scaled = pos * 3;
+assert(scaled.x == 15);
+assert(scaled.y == 30);
+
+var scaled2 = 2 * pos;
+assert(scaled2.x == 10);
+assert(scaled2.y == 20);
+
+# int2 scalar division
+var divided = int2(20, 30) / 5;
+assert(divided.x == 4);
+assert(divided.y == 6);
+
+# int2 dot product
+assert(int2(1, 0).dot(int2(0, 1)) == 0);  # Perpendicular
+assert(int2(1, 0).dot(int2(1, 0)) == 1);  # Parallel
+assert(int2(3, 4).dot(int2(3, 4)) == 25); # Self dot = magnitude squared
+
+# int2 cross product (2D cross = z-component)
+assert(int2(1, 0).cross(int2(0, 1)) == 1);
+assert(int2(0, 1).cross(int2(1, 0)) == 0 - 1);
+
+# int2 magnitude squared
+assert(int2(3, 4).magnitude_squared() == 25);
+assert(int2(0, 5).magnitude_squared() == 25);
+assert(int2(5, 0).magnitude_squared() == 25);
+
+# int2 hadamard product
+var h = int2(2, 3).hadamard(int2(4, 5));
+assert(h.x == 8);
+assert(h.y == 15);
+
+# int2 swap
+var swapped = int2(10, 20).swap();
+assert(swapped.x == 20);
+assert(swapped.y == 10);
+
+# int2 abs
+var abs_neg = neg.abs();
+assert(abs_neg.x == 3);
+assert(abs_neg.y == 7);
+
+# fix2 operations
+var fzero = fix2(0.0, 0.0);
+var fpos = fix2(1.5, 2.5);
+var fneg = fix2(0.0 - 1.0, 0.0 - 2.0);
+
+# fix2 addition
+var fsum = fpos + fneg;
+assert(fsum.x == 0.5);
+assert(fsum.y == 0.5);
+
+# fix2 subtraction
+var fdiff = fpos - fneg;
+assert(fdiff.x == 2.5);
+assert(fdiff.y == 4.5);
+
+# fix2 scalar multiplication
+var fscaled = fpos * 2.0;
+assert(fscaled.x == 3.0);
+assert(fscaled.y == 5.0);
+
+var fscaled2 = 3.0 * fpos;
+assert(fscaled2.x == 4.5);
+assert(fscaled2.y == 7.5);
+
+# fix2 scalar division
+var fdivided = fix2(6.0, 9.0) / 3.0;
+assert(fdivided.x == 2.0);
+assert(fdivided.y == 3.0);
+
+# fix2 dot product
+assert(fix2(1.0, 0.0).dot(fix2(0.0, 1.0)) == 0.0);
+assert(fpos.dot(fpos) == 8.5);  # 1.5*1.5 + 2.5*2.5 = 2.25 + 6.25 = 8.5
+
+# fix2 magnitude
+var v34 = fix2(3.0, 4.0);
+assert(v34.magnitude_squared() == 25.0);
+assert(v34.magnitude() == 5.0);
+
+# fix2 normalize
+var normalized = v34.normalise();
+assert(normalized.x > 0.59 && normalized.x < 0.61);  # ~0.6
+assert(normalized.y > 0.79 && normalized.y < 0.81);  # ~0.8
+
+# fix2 round/floor/ceil
+var to_round = fix2(1.4, 1.6);
+var rounded = to_round.round();
+var floored = to_round.floor();
+var ceiled = to_round.ceil();
+
+assert(rounded.x == 1);
+assert(rounded.y == 2);
+assert(floored.x == 1);
+assert(floored.y == 1);
+assert(ceiled.x == 2);
+assert(ceiled.y == 2);
+
+# fix2 abs
+var fabs = fneg.abs();
+assert(fabs.x == 1.0);
+assert(fabs.y == 2.0);
+
+# fix2 swap
+var fswapped = fpos.swap();
+assert(fswapped.x == 2.5);
+assert(fswapped.y == 1.5);
+
+# fix2 cross product
+assert(fix2(1.0, 0.0).cross(fix2(0.0, 1.0)) == 1.0);
+
+# fix2 hadamard
+var fh = fix2(2.0, 3.0).hadamard(fix2(0.5, 0.5));
+assert(fh.x == 1.0);
+assert(fh.y == 1.5);

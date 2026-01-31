@@ -1,0 +1,153 @@
+# Tests for if/else edge cases
+extern fn assert(value: bool);
+
+# Nested if without else
+var result = 0;
+if true {
+    if true {
+        result = 1;
+    }
+}
+assert(result == 1);
+
+# Nested if with outer else only
+result = 0;
+if true {
+    if false {
+        result = 1;
+    }
+} else {
+    result = 2;
+}
+assert(result == 0);
+
+# Nested if with inner else only
+result = 0;
+if true {
+    if false {
+        result = 1;
+    } else {
+        result = 2;
+    }
+}
+assert(result == 2);
+
+# Chain of if-else-if
+fn classify(x: int) -> int {
+    if x < 0 {
+        return 0 - 1;
+    } else {
+        if x == 0 {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+}
+
+assert(classify(0 - 5) == 0 - 1);
+assert(classify(0) == 0);
+assert(classify(5) == 1);
+
+# Deeply nested
+var deep = 0;
+if true {
+    if true {
+        if true {
+            if true {
+                if true {
+                    deep = 5;
+                }
+            }
+        }
+    }
+}
+assert(deep == 5);
+
+# Complex condition
+var a = 5;
+var b = 10;
+var c = 15;
+result = 0;
+if a < b && b < c {
+    result = 1;
+}
+assert(result == 1);
+
+if a > b || b > c {
+    result = 2;
+}
+assert(result == 1);  # Unchanged
+
+# Condition with function call
+fn is_positive(x: int) -> bool {
+    return x > 0;
+}
+
+result = 0;
+if is_positive(5) {
+    result = 1;
+}
+assert(result == 1);
+
+result = 0;
+if is_positive(0 - 5) {
+    result = 1;
+}
+assert(result == 0);
+
+# If with side effects in condition
+global side_effect = 0;
+
+fn check_and_increment(x: int) -> bool {
+    side_effect = side_effect + 1;
+    return x > 0;
+}
+
+side_effect = 0;
+if check_and_increment(5) {
+    result = 10;
+}
+assert(result == 10);
+assert(side_effect == 1);
+
+# Condition not evaluated if short-circuited
+side_effect = 0;
+if false && check_and_increment(5) {
+    result = 20;
+}
+assert(side_effect == 0);  # Not called due to short-circuit
+
+# Both branches set same variable
+var branch_result = 0;
+if true {
+    branch_result = 100;
+} else {
+    branch_result = 200;
+}
+assert(branch_result == 100);
+
+if false {
+    branch_result = 300;
+} else {
+    branch_result = 400;
+}
+assert(branch_result == 400);
+
+# Return from within if
+fn early_return_if(x: int) -> int {
+    if x > 10 {
+        return 100;
+    }
+    return x;
+}
+
+assert(early_return_if(5) == 5);
+assert(early_return_if(15) == 100);
+
+# If with empty body (just for side effects)
+side_effect = 0;
+if true {
+    side_effect = 1;
+}
+assert(side_effect == 1);

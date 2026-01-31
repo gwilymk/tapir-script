@@ -1,0 +1,59 @@
+# Tests for the 'then' operator
+extern fn assert(value: bool);
+
+global side_effect_count = 0;
+
+fn increment() -> int {
+    side_effect_count = side_effect_count + 1;
+    return side_effect_count;
+}
+
+fn set_count(n: int) {
+    side_effect_count = n;
+}
+
+# Basic then - evaluates left, returns right
+var x = 5 then 42;
+assert(x == 42);
+
+# Then with function call on left (side effect should happen)
+side_effect_count = 0;
+var y = increment() then 100;
+assert(y == 100);
+assert(side_effect_count == 1);  # Increment was called
+
+# Multiple then chains
+side_effect_count = 0;
+var z = increment() then increment() then 999;
+assert(z == 999);
+assert(side_effect_count == 2);  # Both increments called
+
+# Then with void function
+side_effect_count = 0;
+var w = set_count(10) then 50;
+assert(w == 50);
+assert(side_effect_count == 10);
+
+# Then preserves types
+var int_val = 1 then 2;
+assert(int_val == 2);
+
+var fix_val = 1.0 then 2.5;
+assert(fix_val == 2.5);
+
+var bool_val = true then false;
+assert(bool_val == false);
+
+# Then in more complex expressions
+side_effect_count = 0;
+var result = (increment() then 10) + (increment() then 20);
+assert(result == 30);
+assert(side_effect_count == 2);
+
+# Then precedence (lowest precedence)
+var a = 1 + 2 then 3 + 4;  # (1 + 2) then (3 + 4)
+assert(a == 7);
+
+# Then with comparison (then is lower than comparison)
+var b = 1 < 2 then true;
+assert(b == true);

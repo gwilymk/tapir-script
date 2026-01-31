@@ -257,25 +257,44 @@ mod test {
             };
 
             let compile_result =
-                compiler::compile(path.file_name().unwrap(), &input, compiler_settings).unwrap();
-
-            let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
-            let mut test_obj = AssertTestObj { assertion_count: 0 };
-
-            let mut max_iterations = 1000;
-
-            while !vm.states.is_empty() && max_iterations >= 0 {
-                let mut object_safe_props = ObjectSafePropertiesImpl {
-                    properties: &mut test_obj,
-                    events: vec![],
+                match compiler::compile(path.file_name().unwrap(), &input, compiler_settings) {
+                    Ok(result) => result,
+                    Err(mut diagnostic) => {
+                        std::eprintln!("{}", diagnostic.pretty_string(true));
+                        panic!("Failed to compile: {}", path.display());
+                    }
                 };
 
-                vm.run_until_wait(&mut object_safe_props);
-                max_iterations -= 1;
-            }
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+                let mut test_obj = AssertTestObj { assertion_count: 0 };
 
-            if max_iterations == 0 {
-                panic!("ran for over 1000 waits, something seems to have gone wrong...");
+                let mut max_iterations = 1000;
+
+                while !vm.states.is_empty() && max_iterations >= 0 {
+                    let mut object_safe_props = ObjectSafePropertiesImpl {
+                        properties: &mut test_obj,
+                        events: vec![],
+                    };
+
+                    vm.run_until_wait(&mut object_safe_props);
+                    max_iterations -= 1;
+                }
+
+                if max_iterations == 0 {
+                    panic!("ran for over 1000 waits, something seems to have gone wrong...");
+                }
+            }));
+
+            if let Err(e) = result {
+                let msg: std::string::String = if let Some(s) = e.downcast_ref::<&str>() {
+                    (*s).into()
+                } else if let Some(s) = e.downcast_ref::<std::string::String>() {
+                    s.clone()
+                } else {
+                    "unknown error".into()
+                };
+                panic!("Test failed in {}: {}", path.display(), msg);
             }
         });
     }

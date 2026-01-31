@@ -1,0 +1,115 @@
+# Tests for recursion
+extern fn assert(value: bool);
+
+fn factorial(n: int) -> int {
+    if n <= 1 {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+fn fibonacci(n: int) -> int {
+    if n <= 1 {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+fn sum_to(n: int) -> int {
+    if n <= 0 {
+        return 0;
+    }
+    return n + sum_to(n - 1);
+}
+
+fn count_down(n: int) -> int {
+    if n <= 0 {
+        return 0;
+    }
+    return 1 + count_down(n - 1);
+}
+
+fn power(base: int, exp: int) -> int {
+    if exp == 0 {
+        return 1;
+    }
+    return base * power(base, exp - 1);
+}
+
+fn gcd(a: int, b: int) -> int {
+    if b == 0 {
+        return a;
+    }
+    return gcd(b, a % b);
+}
+
+# Factorial tests
+assert(factorial(0) == 1);
+assert(factorial(1) == 1);
+assert(factorial(2) == 2);
+assert(factorial(3) == 6);
+assert(factorial(4) == 24);
+assert(factorial(5) == 120);
+assert(factorial(6) == 720);
+
+# Fibonacci tests
+assert(fibonacci(0) == 0);
+assert(fibonacci(1) == 1);
+assert(fibonacci(2) == 1);
+assert(fibonacci(3) == 2);
+assert(fibonacci(4) == 3);
+assert(fibonacci(5) == 5);
+assert(fibonacci(6) == 8);
+assert(fibonacci(7) == 13);
+
+# Sum to N tests
+assert(sum_to(0) == 0);
+assert(sum_to(1) == 1);
+assert(sum_to(5) == 15);
+assert(sum_to(10) == 55);
+
+# Count down tests
+assert(count_down(0) == 0);
+assert(count_down(5) == 5);
+assert(count_down(10) == 10);
+
+# Power tests
+assert(power(2, 0) == 1);
+assert(power(2, 1) == 2);
+assert(power(2, 4) == 16);
+assert(power(3, 3) == 27);
+assert(power(10, 3) == 1000);
+
+# GCD tests
+assert(gcd(12, 8) == 4);
+assert(gcd(8, 12) == 4);
+assert(gcd(17, 5) == 1);
+assert(gcd(100, 25) == 25);
+assert(gcd(48, 18) == 6);
+
+# Mutual recursion
+fn is_even(n: int) -> bool {
+    if n == 0 {
+        return true;
+    }
+    return is_odd(n - 1);
+}
+
+fn is_odd(n: int) -> bool {
+    if n == 0 {
+        return false;
+    }
+    return is_even(n - 1);
+}
+
+assert(is_even(0) == true);
+assert(is_even(1) == false);
+assert(is_even(2) == true);
+assert(is_even(5) == false);
+assert(is_even(10) == true);
+
+assert(is_odd(0) == false);
+assert(is_odd(1) == true);
+assert(is_odd(2) == false);
+assert(is_odd(5) == true);
+assert(is_odd(10) == false);

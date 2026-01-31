@@ -1,0 +1,29 @@
+# Tests for modulo operators
+# Note: % and %% appear to both use truncating modulo in current impl
+extern fn assert(value: bool);
+
+# Positive modulo - both should give same result
+assert(17 % 5 == 2);
+assert(17 %% 5 == 2);
+assert(15 % 5 == 0);
+assert(15 %% 5 == 0);
+
+# Modulo by 1 (always 0)
+assert(42 % 1 == 0);
+assert(42 %% 1 == 0);
+
+# Zero modulo anything
+assert(0 % 5 == 0);
+assert(0 %% 5 == 0);
+
+# Power of 2 modulo (common in games)
+assert(7 % 4 == 3);
+assert(15 % 8 == 7);
+assert(16 % 8 == 0);
+assert(100 % 16 == 4);
+
+# Various modulo values
+assert(10 % 3 == 1);
+assert(11 % 3 == 2);
+assert(12 % 3 == 0);
+assert(13 % 3 == 1);
