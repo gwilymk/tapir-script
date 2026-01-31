@@ -20,8 +20,10 @@ pub struct SymbolInfo {
 pub struct HoverInfo {
     /// The name of the symbol/function.
     pub name: String,
-    /// A description of the symbol (e.g., type or signature).
-    pub description: String,
+    /// The signature or type annotation (rendered as code).
+    pub signature: String,
+    /// Optional documentation comment (rendered as markdown).
+    pub doc_comment: Option<String>,
 }
 
 /// Information about a function call site for signature help.

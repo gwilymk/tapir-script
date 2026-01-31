@@ -369,7 +369,9 @@ impl<'a> BlockVisitor<'a> {
                     self.blocks_for_expression(expr, symbol, symtab);
                     symbol
                 });
-                self.current_block.push(TapIr::Wait { frames: frames_symbol });
+                self.current_block.push(TapIr::Wait {
+                    frames: frames_symbol,
+                });
             }
             ast::StatementKind::Block { block } => {
                 for statement in block {

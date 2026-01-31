@@ -822,7 +822,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                                 expected: Type::Int,
                                 got: frames_ty,
                             }
-                            .at(frames_expr.span, DiagnosticMessage::HasType { ty: frames_ty })
+                            .at(
+                                frames_expr.span,
+                                DiagnosticMessage::HasType { ty: frames_ty },
+                            )
                             .emit(diagnostics);
                         }
                     }

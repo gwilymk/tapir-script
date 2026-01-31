@@ -47,7 +47,9 @@ pub enum TapIr {
         rhs: SymbolId,
     },
     /// Wait for frames. None means 1 frame.
-    Wait { frames: Option<SymbolId> },
+    Wait {
+        frames: Option<SymbolId>,
+    },
     Call {
         target: Box<[SymbolId]>,
         f: FunctionId,
@@ -582,7 +584,9 @@ mod test {
 
     #[test]
     fn test_sources_iter_wait_with_frames() {
-        let instr = TapIr::Wait { frames: Some(SymbolId(10)) };
+        let instr = TapIr::Wait {
+            frames: Some(SymbolId(10)),
+        };
         assert_eq!(instr.sources().collect::<Vec<_>>(), vec![SymbolId(10)]);
     }
 

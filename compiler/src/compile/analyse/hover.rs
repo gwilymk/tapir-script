@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use crate::{
-    ast::{Expression, ExpressionKind, InternalOrExternalFunctionId, MethodCallInfo, Script, Statement, StatementKind, SymbolId},
+    ast::{
+        Expression, ExpressionKind, InternalOrExternalFunctionId, MethodCallInfo, Script,
+        Statement, StatementKind, SymbolId,
+    },
     tokens::Span,
     types::StructRegistry,
 };
@@ -32,17 +35,13 @@ pub fn extract_hover_info(
             .iter()
             .map(|f| format!("{}: {}", f.name, format_type(f.ty, struct_registry)))
             .collect();
-        let description = format!("struct {} {{ {} }}", struct_def.name, fields.join(", "));
-        let description = if let Some(doc) = &struct_def.doc_comment {
-            format!("{}\n\n{}", description, doc)
-        } else {
-            description
-        };
+        let signature = format!("struct {} {{ {} }}", struct_def.name, fields.join(", "));
         hover_info.insert(
             struct_def.span,
             HoverInfo {
                 name: struct_def.name.clone(),
-                description,
+                signature,
+                doc_comment: struct_def.doc_comment.clone(),
             },
         );
     }
@@ -55,7 +54,8 @@ pub fn extract_hover_info(
             base.span,
             HoverInfo {
                 name: name.to_string(),
-                description: format!("property {}: {}", name, struct_def.name),
+                signature: format!("property {}: {}", name, struct_def.name),
+                doc_comment: None,
             },
         );
     }
@@ -70,12 +70,13 @@ pub fn extract_hover_info(
             prop.span,
             HoverInfo {
                 name: prop.name.clone(),
-                description: symbol_description(
+                signature: symbol_description(
                     SymbolKind::Property,
                     &prop.name,
                     prop.ty,
                     struct_registry,
                 ),
+                doc_comment: None,
             },
         );
     }
@@ -86,12 +87,13 @@ pub fn extract_hover_info(
             global.span,
             HoverInfo {
                 name: global.name.clone(),
-                description: symbol_description(
+                signature: symbol_description(
                     SymbolKind::Global,
                     &global.name,
                     global.ty,
                     struct_registry,
                 ),
+                doc_comment: None,
             },
         );
     }
@@ -111,16 +113,12 @@ pub fn extract_hover_info(
             "fn"
         };
 
-        let description = format!("{} {}({}){}", prefix, function.name, args, return_str);
-        let description = if let Some(doc) = &function.doc_comment {
-            format!("{}\n\n{}", description, doc)
-        } else {
-            description
-        };
+        let signature = format!("{} {}({}){}", prefix, function.name, args, return_str);
 
         let info = HoverInfo {
             name: function.name.to_string(),
-            description,
+            signature,
+            doc_comment: function.doc_comment.clone(),
         };
 
         hover_info.insert(function.span, info.clone());
@@ -134,16 +132,12 @@ pub fn extract_hover_info(
         let args = format_arguments(&function.arguments);
         let return_str = format_return_types(&function.return_types);
 
-        let description = format!("extern fn {}({}){}", function.name, args, return_str);
-        let description = if let Some(doc) = &function.doc_comment {
-            format!("{}\n\n{}", description, doc)
-        } else {
-            description
-        };
+        let signature = format!("extern fn {}({}){}", function.name, args, return_str);
 
         let info = HoverInfo {
             name: function.name.to_string(),
-            description,
+            signature,
+            doc_comment: function.doc_comment.clone(),
         };
 
         hover_info.insert(function.span, info.clone());
@@ -158,24 +152,26 @@ pub fn extract_hover_info(
         let return_str = format_return_types(&function.return_type);
 
         // Format the function signature based on whether it's a method or regular function
-        let description = if let Some(receiver) = &function.receiver_type {
-            format!("builtin fn {}.{}({}){}", receiver.ident, function.name, args, return_str)
+        let signature = if let Some(receiver) = &function.receiver_type {
+            format!(
+                "builtin fn {}.{}({}){}",
+                receiver.ident, function.name, args, return_str
+            )
         } else {
             format!("builtin fn {}({}){}", function.name, args, return_str)
-        };
-        let description = if let Some(doc) = &function.doc_comment {
-            format!("{}\n\n{}", description, doc)
-        } else {
-            description
         };
 
         let info = HoverInfo {
             name: function.name.to_string(),
-            description,
+            signature,
+            doc_comment: function.doc_comment.clone(),
         };
 
         hover_info.insert(function.span, info.clone());
-        function_signatures.insert(InternalOrExternalFunctionId::Builtin(function.builtin_id), info);
+        function_signatures.insert(
+            InternalOrExternalFunctionId::Builtin(function.builtin_id),
+            info,
+        );
     }
 
     // Walk all functions to extract hover info for variables and function calls
@@ -260,12 +256,13 @@ fn extract_from_statements(
                                             *field_span,
                                             HoverInfo {
                                                 name: field_def.name.clone(),
-                                                description: format!(
+                                                signature: format!(
                                                     "(field) {}.{}: {}",
                                                     struct_def.name,
                                                     field_def.name,
                                                     format_type(field_def.ty, struct_registry)
                                                 ),
+                                                doc_comment: None,
                                             },
                                         );
                                         // Update current_struct_id for nested fields
@@ -408,12 +405,13 @@ fn add_symbol_hover(
             span,
             HoverInfo {
                 name: global.name.clone(),
-                description: symbol_description(
+                signature: symbol_description(
                     SymbolKind::Global,
                     &global.name,
                     global.ty,
                     struct_registry,
                 ),
+                doc_comment: None,
             },
         );
         return;
@@ -427,7 +425,8 @@ fn add_symbol_hover(
             span,
             HoverInfo {
                 name: name.to_string(),
-                description: format!("property {}: {}", name, struct_def.name),
+                signature: format!("property {}: {}", name, struct_def.name),
+                doc_comment: None,
             },
         );
         return;
@@ -438,12 +437,13 @@ fn add_symbol_hover(
             span,
             HoverInfo {
                 name: property.name.clone(),
-                description: symbol_description(
+                signature: symbol_description(
                     SymbolKind::Property,
                     &property.name,
                     property.ty,
                     struct_registry,
                 ),
+                doc_comment: None,
             },
         );
         return;
@@ -456,7 +456,8 @@ fn add_symbol_hover(
         span,
         HoverInfo {
             name: name.to_string(),
-            description: symbol_description(SymbolKind::Local, &name, ty, struct_registry),
+            signature: symbol_description(SymbolKind::Local, &name, ty, struct_registry),
+            doc_comment: None,
         },
     );
 }
@@ -492,17 +493,13 @@ fn extract_from_expression(
                         .iter()
                         .map(|f| format!("{}: {}", f.name, format_type(f.ty, struct_registry)))
                         .collect();
-                    let description = format!("struct {}({})", struct_def.name, fields.join(", "));
-                    let description = if let Some(doc) = &struct_def.doc_comment {
-                        format!("{}\n\n{}", description, doc)
-                    } else {
-                        description
-                    };
+                    let signature = format!("struct {}({})", struct_def.name, fields.join(", "));
                     hover_info.insert(
                         expr.span,
                         HoverInfo {
                             name: struct_def.name.clone(),
-                            description,
+                            signature,
+                            doc_comment: struct_def.doc_comment.clone(),
                         },
                     );
                 } else if let Some(sig) = function_signatures.get(function_id) {
@@ -555,12 +552,13 @@ fn extract_from_expression(
                     field.span,
                     HoverInfo {
                         name: field_def.name.clone(),
-                        description: format!(
+                        signature: format!(
                             "(field) {}.{}: {}",
                             struct_def.name,
                             field_def.name,
                             format_type(field_def.ty, struct_registry)
                         ),
+                        doc_comment: None,
                     },
                 );
             }

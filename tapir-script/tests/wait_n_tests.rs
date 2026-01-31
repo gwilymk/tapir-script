@@ -12,7 +12,10 @@ fn wait_n_tests() {
 
     // Test wait 0 is no-op (frame 0)
     script.run();
-    assert_eq!(script.properties.result, 0, "wait 0 should not advance frames");
+    assert_eq!(
+        script.properties.result, 0,
+        "wait 0 should not advance frames"
+    );
 
     // Test wait 1 same as wait (needs 1 extra frame)
     script.run(); // hits wait 1
@@ -24,23 +27,35 @@ fn wait_n_tests() {
         script.run();
     }
     script.run(); // completes wait 5
-    assert_eq!(script.properties.result, 5, "wait 5 should advance 5 frames");
+    assert_eq!(
+        script.properties.result, 5,
+        "wait 5 should advance 5 frames"
+    );
 
     // Test wait with variable n=3 (needs 3 extra frames)
     for _ in 0..3 {
         script.run();
     }
     script.run(); // completes wait n
-    assert_eq!(script.properties.result, 3, "wait n (n=3) should advance 3 frames");
+    assert_eq!(
+        script.properties.result, 3,
+        "wait n (n=3) should advance 3 frames"
+    );
 
     // Test wait with expression n+3 where n=2 (needs 5 extra frames)
     for _ in 0..5 {
         script.run();
     }
     script.run(); // completes wait n+3
-    assert_eq!(script.properties.result, 5, "wait n+3 (n=2) should advance 5 frames");
+    assert_eq!(
+        script.properties.result, 5,
+        "wait n+3 (n=2) should advance 5 frames"
+    );
 
     // Test negative wait is no-op
     script.run();
-    assert_eq!(script.properties.result, 0, "wait with negative value should not advance frames");
+    assert_eq!(
+        script.properties.result, 0,
+        "wait with negative value should not advance frames"
+    );
 }

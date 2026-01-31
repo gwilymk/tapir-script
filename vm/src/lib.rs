@@ -875,8 +875,7 @@ mod test {
 
         // wait 1 should behave the same as wait
         let source = "property prop: int;\nvar f1 = frame();\nwait 1;\nprop = frame() - f1;";
-        let compile_result =
-            compiler::compile("wait_one.tapir", source, compile_settings).unwrap();
+        let compile_result = compiler::compile("wait_one.tapir", source, compile_settings).unwrap();
 
         let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
         let mut prop_object = PropObj { int_prop: 999 };
@@ -904,8 +903,7 @@ mod test {
 
         // wait 5 should wait 5 frames
         let source = "property prop: int;\nvar start = frame();\nwait 5;\nprop = frame() - start;";
-        let compile_result =
-            compiler::compile("wait_n.tapir", source, compile_settings).unwrap();
+        let compile_result = compiler::compile("wait_n.tapir", source, compile_settings).unwrap();
 
         let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
         let mut prop_object = PropObj { int_prop: 999 };
@@ -963,8 +961,7 @@ mod test {
         // wait with variable
         let source =
             "property prop: int;\nvar n = 3;\nvar start = frame();\nwait n;\nprop = frame() - start;";
-        let compile_result =
-            compiler::compile("wait_var.tapir", source, compile_settings).unwrap();
+        let compile_result = compiler::compile("wait_var.tapir", source, compile_settings).unwrap();
 
         let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
         let mut prop_object = PropObj { int_prop: 999 };

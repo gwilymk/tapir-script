@@ -50,10 +50,16 @@ pub fn find_hover(file_state: &mut FileState, position: Position) -> Option<Hove
                 .span_to_range(*span)
                 .map(source_range_to_lsp_range);
 
+            let value = if let Some(doc) = &info.doc_comment {
+                format!("```tapir\n{}\n```\n\n{}", info.signature, doc)
+            } else {
+                format!("```tapir\n{}\n```", info.signature)
+            };
+
             return Some(Hover {
                 contents: HoverContents::Markup(MarkupContent {
                     kind: MarkupKind::Markdown,
-                    value: format!("```tapir\n{}\n```", info.description),
+                    value,
                 }),
                 range,
             });
