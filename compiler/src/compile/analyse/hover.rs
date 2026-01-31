@@ -324,8 +324,19 @@ fn extract_from_statements(
                     );
                 }
             }
-            StatementKind::Wait { .. }
-            | StatementKind::Break
+            StatementKind::Wait { frames } => {
+                if let Some(frames_expr) = frames {
+                    extract_from_expression(
+                        frames_expr,
+                        symtab,
+                        type_table,
+                        struct_registry,
+                        function_signatures,
+                        hover_info,
+                    );
+                }
+            }
+            StatementKind::Break
             | StatementKind::Continue
             | StatementKind::Nop
             | StatementKind::Error => {}

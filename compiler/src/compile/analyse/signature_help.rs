@@ -125,8 +125,12 @@ fn extract_from_statements(
                     extract_from_expression(expr, signatures, call_sites);
                 }
             }
-            StatementKind::Wait { .. }
-            | StatementKind::Break
+            StatementKind::Wait { frames } => {
+                if let Some(frames_expr) = frames {
+                    extract_from_expression(frames_expr, signatures, call_sites);
+                }
+            }
+            StatementKind::Break
             | StatementKind::Continue
             | StatementKind::Nop
             | StatementKind::Error => {}

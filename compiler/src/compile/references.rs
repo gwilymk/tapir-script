@@ -191,8 +191,18 @@ fn extract_references_from_statements(
                     );
                 }
             }
-            StatementKind::Wait { .. }
-            | StatementKind::Break
+            StatementKind::Wait { frames } => {
+                if let Some(frames_expr) = frames {
+                    extract_references_from_expression(
+                        frames_expr,
+                        symtab,
+                        struct_registry,
+                        function_spans,
+                        references,
+                    );
+                }
+            }
+            StatementKind::Break
             | StatementKind::Continue
             | StatementKind::Nop
             | StatementKind::Error => {}
