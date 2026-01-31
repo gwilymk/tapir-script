@@ -9,7 +9,7 @@ use std::{collections::HashMap, path::Path};
 use crate::{
     PropertyInfo,
     ast::Script,
-    prelude::{self, USER_FILE_ID},
+    prelude::{self, PRELUDE_FILE_ID, USER_FILE_ID},
     reporting::Diagnostics,
 };
 
@@ -37,7 +37,13 @@ pub fn analyse(
     input: &str,
     settings: &CompileSettings,
 ) -> AnalysisResult {
-    let mut diagnostics = Diagnostics::new(USER_FILE_ID, &filename, input);
+    // When prelude is disabled, the user file is treated as the prelude itself
+    let file_id = if settings.enable_prelude {
+        USER_FILE_ID
+    } else {
+        PRELUDE_FILE_ID
+    };
+    let mut diagnostics = Diagnostics::new(file_id, &filename, input);
 
     let mut ast = match prelude::parse_with_prelude(
         &filename,

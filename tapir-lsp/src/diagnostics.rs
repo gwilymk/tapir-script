@@ -21,10 +21,14 @@ pub fn analyse_and_publish(
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     let filename = uri.path();
 
+    // When editing the prelude itself, disable prelude loading
+    // so the file is treated as the prelude (allowing builtin declarations)
+    let is_prelude = filename.ends_with("prelude.tapir");
+
     let settings = CompileSettings {
         available_fields: None,
         enable_optimisations: false,
-        enable_prelude: true,
+        enable_prelude: !is_prelude,
     };
 
     let start = Instant::now();
