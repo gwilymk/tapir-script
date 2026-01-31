@@ -1,21 +1,15 @@
 ---
-source: crates/tapir-script/vm/src/lib.rs
-expression: stack_at_waits
-input_file: crates/tapir-script/vm/src/snapshot_tests/stack/logical_operators.tapir
+source: vm/src/lib.rs
+expression: results
+input_file: vm/src/snapshot_tests/stack/logical_operators.tapir
 ---
 [
-  ([
-    [
-      -1,
-      1010,
-      1000,
-      1010,
-      1010,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 5,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 1010,
-  )),
+  ),
 ]

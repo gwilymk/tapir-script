@@ -1,57 +1,27 @@
 ---
-source: crates/tapir-script/vm/src/lib.rs
-expression: stack_at_waits
-input_file: crates/tapir-script/vm/src/snapshot_tests/stack/short_circuit_evaluation.tapir
+source: vm/src/lib.rs
+expression: results
+input_file: vm/src/snapshot_tests/stack/short_circuit_evaluation.tapir
 ---
 [
-  ([
-    [
-      -1,
-      0,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 0,
-  )),
-  ([
-    [
-      -1,
-      1,
-      0,
-      0,
-      0,
-      0,
-      1,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 1,
-  )),
-  ([
-    [
-      -1,
-      1,
-      0,
-      0,
-      0,
-      0,
-      1,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 1,
-  )),
-  ([
-    [
-      -1,
-      1,
-      1,
-      2,
-      1,
-      0,
-      1,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 2,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 112,
-  )),
+  ),
 ]

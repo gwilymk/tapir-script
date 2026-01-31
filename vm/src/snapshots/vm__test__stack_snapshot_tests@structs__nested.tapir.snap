@@ -1,66 +1,27 @@
 ---
 source: vm/src/lib.rs
-expression: stack_at_waits
+expression: results
 input_file: vm/src/snapshot_tests/stack/structs/nested.tapir
 ---
 [
-  ([
-    [
-      -1,
-      10,
-      200,
-      100,
-      20,
-      10,
-      100663306,
-      10,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 10,
-  )),
-  ([
-    [
-      -1,
-      20,
-      200,
-      100,
-      20,
-      10,
-      100663312,
-      20,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 20,
-  )),
-  ([
-    [
-      -1,
-      100,
-      200,
-      100,
-      20,
-      10,
-      100663318,
-      100,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 100,
-  )),
-  ([
-    [
-      -1,
-      200,
-      200,
-      100,
-      20,
-      10,
-      100663324,
-      200,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 200,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 50,
-  )),
+  ),
 ]

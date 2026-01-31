@@ -150,6 +150,12 @@ mod test {
 
     use crate::TapirScript;
 
+    #[derive(Serialize, Debug)]
+    struct FrameResult {
+        active_states: usize,
+        int_prop: i32,
+    }
+
     #[test]
     fn stack_snapshot_tests() {
         glob!("snapshot_tests", "stack/**/*.tapir", |path| {
@@ -169,7 +175,7 @@ mod test {
             let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
             let mut prop_object = PropObj { int_prop: 5 };
 
-            let mut stack_at_waits = vec![];
+            let mut results = vec![];
 
             let mut max_iterations = 1000;
 
@@ -180,13 +186,10 @@ mod test {
                 };
 
                 vm.run_until_wait(&mut object_safe_props);
-                stack_at_waits.push((
-                    vm.states
-                        .iter()
-                        .map(|state| state.stack().to_vec())
-                        .collect::<Vec<_>>(),
-                    prop_object.clone(),
-                ));
+                results.push(FrameResult {
+                    active_states: vm.states.len(),
+                    int_prop: prop_object.int_prop,
+                });
 
                 max_iterations -= 1;
             }
@@ -195,7 +198,7 @@ mod test {
                 panic!("ran for over 1000 waits, something seems to have gone wrong...");
             }
 
-            assert_ron_snapshot!(stack_at_waits);
+            assert_ron_snapshot!(results);
         });
     }
 

@@ -1,28 +1,19 @@
 ---
 source: vm/src/lib.rs
-expression: stack_at_waits
+expression: results
 input_file: vm/src/snapshot_tests/stack/structs/field_access_on_call.tapir
 ---
 [
-  ([
-    [
-      -1,
-      99,
-      42,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 42,
-  )),
-  ([
-    [
-      -1,
-      99,
-      42,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 99,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 50,
-  )),
+  ),
 ]

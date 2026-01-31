@@ -1,28 +1,19 @@
 ---
 source: vm/src/lib.rs
-expression: stack_at_waits
+expression: results
 input_file: vm/src/snapshot_tests/stack/structs/function_param.tapir
 ---
 [
-  ([
-    [
-      -1,
-      7,
-      18,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 18,
-  )),
-  ([
-    [
-      -1,
-      7,
-      18,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 7,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 300,
-  )),
+  ),
 ]

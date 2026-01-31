@@ -1,77 +1,23 @@
 ---
 source: vm/src/lib.rs
-expression: stack_at_waits
+expression: results
 input_file: vm/src/snapshot_tests/stack/spawn/spawn_conditional_wait.tapir
 ---
 [
-  ([
-    [
-      -1,
-      0,
-      7,
-      2,
-      1,
-      0,
-      0,
-      7,
-    ],
-    [
-      -1,
-      1,
-      2,
-    ],
-    [
-      -1,
-      0,
-      7,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 3,
     int_prop: 5,
-  )),
-  ([
-    [
-      -1,
-      0,
-      7,
-      2,
-      1,
-      0,
-      0,
-      7,
-    ],
-    [
-      -1,
-      1,
-      2,
-    ],
-    [
-      -1,
-      0,
-      7,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 3,
     int_prop: 7,
-  )),
-  ([
-    [
-      -1,
-      0,
-      7,
-      2,
-      1,
-      0,
-      0,
-      7,
-    ],
-    [
-      -1,
-      1,
-      2,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 2,
     int_prop: 2,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 4,
-  )),
+  ),
 ]

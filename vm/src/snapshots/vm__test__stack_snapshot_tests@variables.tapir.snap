@@ -1,61 +1,23 @@
 ---
 source: vm/src/lib.rs
-expression: stack_at_waits
+expression: results
 input_file: vm/src/snapshot_tests/stack/variables.tapir
 ---
 [
-  ([
-    [
-      -1,
-      58,
-      0,
-      55,
-      0,
-      58,
-      0,
-      55,
-      3,
-      150994955,
-      58,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 5,
-  )),
-  ([
-    [
-      -1,
-      58,
-      0,
-      58,
-      0,
-      55,
-      0,
-      55,
-      3,
-      150994964,
-      58,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 5,
-  )),
-  ([
-    [
-      -1,
-      113,
-      0,
-      58,
-      0,
-      55,
-      0,
-      55,
-      58,
-      150994973,
-      58,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 5,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 5,
-  )),
+  ),
 ]

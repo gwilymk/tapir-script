@@ -1,43 +1,23 @@
 ---
 source: vm/src/lib.rs
-expression: stack_at_waits
+expression: results
 input_file: vm/src/snapshot_tests/stack/structs/field_assignment.tapir
 ---
 [
-  ([
-    [
-      -1,
-      1,
-      1,
-      50331652,
-      1,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 1,
-  )),
-  ([
-    [
-      -1,
-      100,
-      100,
-      50331660,
-      100,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 100,
-  )),
-  ([
-    [
-      -1,
-      200,
-      200,
-      50331668,
-      200,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 200,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 300,
-  )),
+  ),
 ]

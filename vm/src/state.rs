@@ -52,11 +52,6 @@ impl State {
         }
     }
 
-    #[cfg(test)]
-    pub(crate) fn stack(&self) -> &[i32] {
-        &self.stack
-    }
-
     pub(crate) fn run_until_wait(
         &mut self,
         bytecode: &[u32],

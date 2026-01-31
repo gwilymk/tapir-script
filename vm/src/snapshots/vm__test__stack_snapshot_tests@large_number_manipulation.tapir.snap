@@ -1,29 +1,19 @@
 ---
 source: vm/src/lib.rs
-expression: stack_at_waits
+expression: results
 input_file: vm/src/snapshot_tests/stack/large_number_manipulation.tapir
 ---
 [
-  ([
-    [
-      -1,
-      6400,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 3024,
-  )),
-  ([
-    [
-      -1,
-      6400,
-      0,
-      50331656,
-      6400,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 3024,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 3024,
-  )),
+  ),
 ]

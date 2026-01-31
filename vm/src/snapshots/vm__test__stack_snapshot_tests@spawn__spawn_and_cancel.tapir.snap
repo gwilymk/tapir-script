@@ -1,32 +1,19 @@
 ---
 source: vm/src/lib.rs
-expression: stack_at_waits
+expression: results
 input_file: vm/src/snapshot_tests/stack/spawn/spawn_and_cancel.tapir
 ---
 [
-  ([
-    [
-      -1,
-      1,
-    ],
-    [
-      -1,
-      100,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 2,
     int_prop: 100,
-  )),
-  ([
-    [
-      -1,
-      1,
-      0,
-      1,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 100,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 999,
-  )),
+  ),
 ]

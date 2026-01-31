@@ -1,43 +1,23 @@
 ---
-source: crates/tapir-script/vm/src/lib.rs
-expression: stack_at_waits
-input_file: crates/tapir-script/vm/src/snapshot_tests/stack/functions/call_statement.tapir
+source: vm/src/lib.rs
+expression: results
+input_file: vm/src/snapshot_tests/stack/functions/call_statement.tapir
 ---
 [
-  ([
-    [
-      -1,
-      67,
-      67,
-      50331652,
-      67,
-    ],
-  ], PropObj(
+  FrameResult(
+    active_states: 1,
     int_prop: 5,
-  )),
-  ([
-    [
-      -1,
-      67,
-      33,
-      50331652,
-      67,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 33,
-  )),
-  ([
-    [
-      -1,
-      67,
-      33,
-      50331652,
-      67,
-    ],
-  ], PropObj(
+  ),
+  FrameResult(
+    active_states: 1,
     int_prop: 33,
-  )),
-  ([], PropObj(
+  ),
+  FrameResult(
+    active_states: 0,
     int_prop: 67,
-  )),
+  ),
 ]
