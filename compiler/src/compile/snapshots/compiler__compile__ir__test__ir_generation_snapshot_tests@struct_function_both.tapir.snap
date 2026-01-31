@@ -19,35 +19,49 @@ temp.12.x.13 = temp.15
 temp.12.y.14 = temp.16
 p2.x.17 = temp.12.x.13
 p2.y.18 = temp.12.y.14
-temp.20.x.21 = p1.x.10
-temp.20.y.22 = p1.y.11
-temp.23.x.24 = p2.x.17
-temp.23.y.25 = p2.y.18
-temp.19.x.26, temp.19.y.27 = add_points(temp.20.x.21, temp.20.y.22, temp.23.x.24, temp.23.y.25)
-sum.x.28 = temp.19.x.26
-sum.y.29 = temp.19.y.27
+temp.23 = p1.x.10
+temp.20.x.21 = temp.23
+temp.24 = p1.y.11
+temp.20.y.22 = temp.24
+temp.28 = p2.x.17
+temp.25.x.26 = temp.28
+temp.29 = p2.y.18
+temp.25.y.27 = temp.29
+temp.19.x.30, temp.19.y.31 = add_points(temp.20.x.21, temp.20.y.22, temp.25.x.26, temp.25.y.27)
+temp.34 = temp.19.x.30
+sum.x.32 = temp.34
+temp.35 = temp.19.y.31
+sum.y.33 = temp.35
 return 
 
 =======================
-fn add_points(a.x.30, a.y.31, b.x.32, b.y.33) -> int, int
+fn add_points(a.x.36, a.y.37, b.x.38, b.y.39) -> int, int
 
 ---- block 0 ----
-temp.41.x.42 = a.x.30
-temp.41.y.43 = a.y.31
-temp.39 = temp.41.x.42
-temp.44.x.45 = b.x.32
-temp.44.y.46 = b.y.33
-temp.40 = temp.44.x.45
-temp.38 = temp.39 + temp.40
-temp.50.x.51 = a.x.30
-temp.50.y.52 = a.y.31
-temp.48 = temp.50.y.52
-temp.53.x.54 = b.x.32
-temp.53.y.55 = b.y.33
-temp.49 = temp.53.y.55
-temp.47 = temp.48 + temp.49
-temp.35.x.36 = temp.38
-temp.35.y.37 = temp.47
-temp.34.x.56 = temp.35.x.36
-temp.34.y.57 = temp.35.y.37
-return temp.34.x.56, temp.34.y.57
+temp.50 = a.x.36
+temp.47.x.48 = temp.50
+temp.51 = a.y.37
+temp.47.y.49 = temp.51
+temp.45 = temp.47.x.48
+temp.55 = b.x.38
+temp.52.x.53 = temp.55
+temp.56 = b.y.39
+temp.52.y.54 = temp.56
+temp.46 = temp.52.x.53
+temp.44 = temp.45 + temp.46
+temp.63 = a.x.36
+temp.60.x.61 = temp.63
+temp.64 = a.y.37
+temp.60.y.62 = temp.64
+temp.58 = temp.60.y.62
+temp.68 = b.x.38
+temp.65.x.66 = temp.68
+temp.69 = b.y.39
+temp.65.y.67 = temp.69
+temp.59 = temp.65.y.67
+temp.57 = temp.58 + temp.59
+temp.41.x.42 = temp.44
+temp.41.y.43 = temp.57
+temp.40.x.70 = temp.41.x.42
+temp.40.y.71 = temp.41.y.43
+return temp.40.x.70, temp.40.y.71

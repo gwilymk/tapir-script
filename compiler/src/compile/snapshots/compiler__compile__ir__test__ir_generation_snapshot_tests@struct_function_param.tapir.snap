@@ -13,17 +13,21 @@ temp.3.x.4 = temp.6
 temp.3.y.5 = temp.7
 pt.x.8 = temp.3.x.4
 pt.y.9 = temp.3.y.5
-temp.11.x.12 = pt.x.8
-temp.11.y.13 = pt.y.9
+temp.14 = pt.x.8
+temp.11.x.12 = temp.14
+temp.15 = pt.y.9
+temp.11.y.13 = temp.15
 temp.10 = get_x(temp.11.x.12, temp.11.y.13)
 x.1 = temp.10
 return 
 
 =======================
-fn get_x(p.x.14, p.y.15) -> int
+fn get_x(p.x.16, p.y.17) -> int
 
 ---- block 0 ----
-temp.17.x.18 = p.x.14
-temp.17.y.19 = p.y.15
-temp.16 = temp.17.x.18
-return temp.16
+temp.22 = p.x.16
+temp.19.x.20 = temp.22
+temp.23 = p.y.17
+temp.19.y.21 = temp.23
+temp.18 = temp.19.x.20
+return temp.18

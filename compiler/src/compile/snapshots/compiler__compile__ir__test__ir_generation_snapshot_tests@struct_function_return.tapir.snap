@@ -10,18 +10,20 @@ fn @toplevel() ->
 temp.4 = int 3
 temp.5 = int 4
 temp.3.x.6, temp.3.y.7 = make_point(temp.4, temp.5)
-p.x.8 = temp.3.x.6
-p.y.9 = temp.3.y.7
+temp.10 = temp.3.x.6
+p.x.8 = temp.10
+temp.11 = temp.3.y.7
+p.y.9 = temp.11
 return 
 
 =======================
 fn make_point(x.1, y.2) -> int, int
 
 ---- block 0 ----
-temp.14 = x.1
-temp.15 = y.2
-temp.11.x.12 = temp.14
-temp.11.y.13 = temp.15
-temp.10.x.16 = temp.11.x.12
-temp.10.y.17 = temp.11.y.13
-return temp.10.x.16, temp.10.y.17
+temp.16 = x.1
+temp.17 = y.2
+temp.13.x.14 = temp.16
+temp.13.y.15 = temp.17
+temp.12.x.18 = temp.13.x.14
+temp.12.y.19 = temp.13.y.15
+return temp.12.x.18, temp.12.y.19

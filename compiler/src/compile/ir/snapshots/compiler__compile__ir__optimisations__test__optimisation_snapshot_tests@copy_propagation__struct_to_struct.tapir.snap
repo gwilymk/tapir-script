@@ -8,28 +8,40 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/copy_propagatio
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.30 = int 10
-temp.31 = int 20
-temp.5.x.32 = temp.30
-temp.5.y.33 = temp.31
-p.x.34 = temp.5.x.32
-p.y.35 = temp.5.y.33
-temp.12.x.36 = p.x.34
-temp.12.y.37 = p.y.35
-q.x.38 = temp.12.x.36
-q.y.39 = temp.12.y.37
-temp.17.x.40 = q.x.38
-temp.17.y.41 = q.y.39
-r.x.42 = temp.17.x.40
-r.y.43 = temp.17.y.41
-temp.23.x.44 = r.x.42
-temp.23.y.45 = r.y.43
-temp.46 = temp.23.x.44
-x.47 = temp.46
-temp.27.x.48 = r.x.42
-temp.27.y.49 = r.y.43
-temp.50 = temp.27.y.49
-y.51 = temp.50
+temp.42 = int 10
+temp.43 = int 20
+temp.5.x.44 = temp.42
+temp.5.y.45 = temp.43
+p.x.46 = temp.5.x.44
+p.y.47 = temp.5.y.45
+temp.48 = p.x.46
+temp.12.x.49 = temp.48
+temp.50 = p.y.47
+temp.12.y.51 = temp.50
+temp.52 = temp.12.x.49
+q.x.53 = temp.52
+temp.54 = temp.12.y.51
+q.y.55 = temp.54
+temp.56 = q.x.53
+temp.21.x.57 = temp.56
+temp.58 = q.y.55
+temp.21.y.59 = temp.58
+temp.60 = temp.21.x.57
+r.x.61 = temp.60
+temp.62 = temp.21.y.59
+r.y.63 = temp.62
+temp.64 = r.x.61
+temp.31.x.65 = temp.64
+temp.66 = r.y.63
+temp.31.y.67 = temp.66
+temp.68 = temp.31.x.65
+x.69 = temp.68
+temp.70 = r.x.61
+temp.37.x.71 = temp.70
+temp.72 = r.y.63
+temp.37.y.73 = temp.72
+temp.74 = temp.37.y.73
+y.75 = temp.74
 return 
 
 
@@ -38,26 +50,38 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.30 = int 10
-temp.31 = int 20
-temp.5.x.32 = temp.30
-temp.5.y.33 = temp.31
-p.x.34 = temp.30
-p.y.35 = temp.31
-temp.12.x.36 = temp.30
-temp.12.y.37 = temp.31
-q.x.38 = temp.30
-q.y.39 = temp.31
-temp.17.x.40 = temp.30
-temp.17.y.41 = temp.31
-r.x.42 = temp.30
-r.y.43 = temp.31
-temp.23.x.44 = temp.30
-temp.23.y.45 = temp.31
-temp.46 = temp.30
-x.47 = temp.30
-temp.27.x.48 = temp.30
-temp.27.y.49 = temp.31
-temp.50 = temp.31
-y.51 = temp.31
+temp.42 = int 10
+temp.43 = int 20
+temp.5.x.44 = temp.42
+temp.5.y.45 = temp.43
+p.x.46 = temp.42
+p.y.47 = temp.43
+temp.48 = temp.42
+temp.12.x.49 = temp.42
+temp.50 = temp.43
+temp.12.y.51 = temp.43
+temp.52 = temp.42
+q.x.53 = temp.42
+temp.54 = temp.43
+q.y.55 = temp.43
+temp.56 = temp.42
+temp.21.x.57 = temp.42
+temp.58 = temp.43
+temp.21.y.59 = temp.43
+temp.60 = temp.42
+r.x.61 = temp.42
+temp.62 = temp.43
+r.y.63 = temp.43
+temp.64 = temp.42
+temp.31.x.65 = temp.42
+temp.66 = temp.43
+temp.31.y.67 = temp.43
+temp.68 = temp.42
+x.69 = temp.42
+temp.70 = temp.42
+temp.37.x.71 = temp.42
+temp.72 = temp.43
+temp.37.y.73 = temp.43
+temp.74 = temp.43
+y.75 = temp.43
 return

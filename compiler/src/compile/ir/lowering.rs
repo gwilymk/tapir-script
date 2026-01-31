@@ -321,35 +321,31 @@ impl<'a> BlockVisitor<'a> {
                         continue;
                     }
 
-                    // Check if temp has a struct expansion - if so, copy fields instead of single move
-                    if let Some(temp_expansion) = symtab.get_struct_expansion(temp).cloned() {
-                        // Check if target is a global struct
-                        if GlobalId::from_symbol_id(target_symbol).is_some() {
-                            // Global struct assignment - use SetGlobal for each field
-                            let global_name = symtab.name_for_symbol(target_symbol);
-                            // Strip "global." prefix if present
-                            let global_name = global_name
-                                .strip_prefix("global.")
-                                .unwrap_or(&global_name)
-                                .to_string();
-                            self.write_global_struct_fields(
-                                &global_name,
-                                "",
-                                &temp_expansion,
-                                symtab,
-                            );
+                    // Check if temp has a struct layout - if so, copy fields instead of single move
+                    if let Some(temp_layout) = symtab.get_struct_layout(temp).cloned() {
+                        // Get or create the target layout
+                        let target_layout = if let Some(layout) =
+                            symtab.get_struct_layout(target_symbol).cloned()
+                        {
+                            // Target already has a layout (e.g., global struct)
+                            layout
                         } else {
-                            // Local struct-to-struct assignment: expand target and copy all fields
+                            // Local target - expand it to create layout
                             let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                            let target_expansion = symtab.expand_struct_symbol(
+                            symtab.expand_struct_symbol(
                                 target_symbol,
                                 &target_name,
-                                temp_expansion.struct_id,
+                                temp_layout.struct_id,
                                 statement.span,
                                 self.struct_registry,
                             );
-                            self.copy_struct_fields(&temp_expansion, &target_expansion, symtab);
-                        }
+                            symtab
+                                .get_struct_layout(target_symbol)
+                                .expect("Just expanded")
+                                .clone()
+                        };
+
+                        self.copy_struct_layout(&temp_layout, &target_layout, symtab);
                     } else {
                         // Scalar assignment to any storage class
                         self.emit_store_symbol(target_symbol, temp, symtab);
@@ -560,18 +556,22 @@ impl<'a> BlockVisitor<'a> {
             }
             ast::ExpressionKind::Variable(_) => {
                 let source = *expr.meta.get().expect("Should've resolved variable");
-                if let Some(source_expansion) = symtab.get_struct_expansion(source).cloned() {
+                if let Some(source_layout) = symtab.get_struct_layout(source).cloned() {
                     // Struct-typed variable: copy all fields to target's expansion
                     let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    let target_expansion = symtab.expand_struct_symbol(
+                    symtab.expand_struct_symbol(
                         target_symbol,
                         &target_name,
-                        source_expansion.struct_id,
+                        source_layout.struct_id,
                         expr.span,
                         self.struct_registry,
                     );
+                    let target_layout = symtab
+                        .get_struct_layout(target_symbol)
+                        .expect("Just expanded")
+                        .clone();
 
-                    self.copy_struct_fields(&source_expansion, &target_expansion, symtab);
+                    self.copy_struct_layout(&source_layout, &target_layout, symtab);
                 } else {
                     // Scalar: load from any storage class (property, global, or local)
                     self.emit_load_symbol(target_symbol, source, symtab);
@@ -864,19 +864,23 @@ impl<'a> BlockVisitor<'a> {
                 // Get the field's symbol from the base expansion
                 let field_symbol = base_expansion.fields[info.field_index];
 
-                // Check if this field is struct-typed (has its own expansion)
-                if let Some(field_expansion) = symtab.get_struct_expansion(field_symbol).cloned() {
-                    // Field is struct-typed: create expansion for target and copy
+                // Check if this field is struct-typed (has its own layout)
+                if let Some(field_layout) = symtab.get_struct_layout(field_symbol).cloned() {
+                    // Field is struct-typed: create layout for target and copy
                     let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    let target_expansion = symtab.expand_struct_symbol(
+                    symtab.expand_struct_symbol(
                         target_symbol,
                         &target_name,
-                        field_expansion.struct_id,
+                        field_layout.struct_id,
                         expr.span,
                         self.struct_registry,
                     );
+                    let target_layout = symtab
+                        .get_struct_layout(target_symbol)
+                        .expect("Just expanded")
+                        .clone();
 
-                    self.copy_struct_fields(&field_expansion, &target_expansion, symtab);
+                    self.copy_struct_layout(&field_layout, &target_layout, symtab);
                 } else {
                     // Scalar field: simple move
                     self.current_block.push(TapIr::Move {
@@ -1179,6 +1183,7 @@ impl<'a> BlockVisitor<'a> {
     }
 
     /// Copy a single field accessor from source to destination.
+    /// Always goes through a temp for simplicity - optimizer will clean up redundant moves.
     fn copy_field_accessor(
         &mut self,
         src: &FieldAccessor,

@@ -19,8 +19,12 @@ temp.9.x.10 = temp.12
 temp.9.y.11 = temp.13
 q.x.14 = temp.9.x.10
 q.y.15 = temp.9.y.11
-temp.16.x.17 = q.x.14
-temp.16.y.18 = q.y.15
-p.x.7 = temp.16.x.17
-p.y.8 = temp.16.y.18
+temp.19 = q.x.14
+temp.16.x.17 = temp.19
+temp.20 = q.y.15
+temp.16.y.18 = temp.20
+temp.21 = temp.16.x.17
+p.x.7 = temp.21
+temp.22 = temp.16.y.18
+p.y.8 = temp.22
 return

@@ -1618,7 +1618,35 @@ impl<'input> SymTab<'input> {
         let expansion = ExpandedStruct { struct_id, fields };
         self.struct_expansions
             .insert(parent_symbol, expansion.clone());
+
+        // Also create a StructLayout in parallel
+        let layout = self.expanded_struct_to_layout(&expansion);
+        self.struct_layouts.insert(parent_symbol, layout);
+
         expansion
+    }
+
+    /// Convert an ExpandedStruct to a StructLayout.
+    /// This builds a StructLayout with Local accessors pointing to the same symbols.
+    fn expanded_struct_to_layout(&self, expansion: &ExpandedStruct) -> StructLayout {
+        let fields = expansion
+            .fields
+            .iter()
+            .map(|&symbol_id| {
+                if let Some(nested) = self.struct_expansions.get(&symbol_id) {
+                    // Nested struct - recurse
+                    FieldAccessor::Nested(Box::new(self.expanded_struct_to_layout(nested)))
+                } else {
+                    // Scalar field
+                    FieldAccessor::Local(symbol_id)
+                }
+            })
+            .collect();
+
+        StructLayout {
+            struct_id: expansion.struct_id,
+            fields,
+        }
     }
 
     /// Get the struct expansion for a symbol, if it exists.
@@ -2595,5 +2623,164 @@ mod test {
                 _ => panic!("Expected Property accessor, got {:?}", accessor),
             }
         }
+    }
+
+    #[test]
+    fn struct_layout_for_local_matches_expanded_struct() {
+        use crate::types::{StructDef, StructField};
+
+        let mut symtab = SymTab::new_empty();
+        let mut struct_registry = StructRegistry::default();
+        let span = Span::new(FileId::new(0), 0, 0);
+
+        // Register a simple Point struct
+        let struct_id = struct_registry.register(StructDef {
+            doc_comment: None,
+            name: "Point".to_string(),
+            fields: vec![
+                StructField {
+                    name: "x".to_string(),
+                    ty: Type::Int,
+                    span,
+                },
+                StructField {
+                    name: "y".to_string(),
+                    ty: Type::Int,
+                    span,
+                },
+            ],
+            span,
+        });
+
+        // Create a symbol for the local variable
+        let parent_symbol = symtab.new_temporary();
+
+        // Expand it (this creates both ExpandedStruct and StructLayout)
+        let expansion = symtab.expand_struct_symbol(
+            parent_symbol,
+            "p",
+            struct_id,
+            span,
+            &struct_registry,
+        );
+
+        // Get the StructLayout
+        let layout = symtab
+            .get_struct_layout(parent_symbol)
+            .expect("Should have layout after expansion");
+
+        // Verify they match
+        assert_eq!(layout.struct_id, expansion.struct_id);
+        assert_eq!(layout.fields.len(), expansion.fields.len());
+
+        // Each field should be a Local accessor pointing to the same symbol
+        for (i, accessor) in layout.fields.iter().enumerate() {
+            match accessor {
+                FieldAccessor::Local(sym) => {
+                    assert_eq!(*sym, expansion.fields[i]);
+                }
+                _ => panic!("Expected Local accessor for local struct, got {:?}", accessor),
+            }
+        }
+
+        // Leaf symbols should match
+        let leaf_symbols = layout.leaf_symbols();
+        assert_eq!(leaf_symbols.len(), 2); // x and y
+        assert_eq!(leaf_symbols[0], expansion.fields[0]);
+        assert_eq!(leaf_symbols[1], expansion.fields[1]);
+    }
+
+    #[test]
+    fn struct_layout_for_nested_local_matches_expanded_struct() {
+        use crate::types::{StructDef, StructField};
+
+        let mut symtab = SymTab::new_empty();
+        let mut struct_registry = StructRegistry::default();
+        let span = Span::new(FileId::new(0), 0, 0);
+
+        // Register Point struct
+        let point_id = struct_registry.register(StructDef {
+            doc_comment: None,
+            name: "Point".to_string(),
+            fields: vec![
+                StructField {
+                    name: "x".to_string(),
+                    ty: Type::Int,
+                    span,
+                },
+                StructField {
+                    name: "y".to_string(),
+                    ty: Type::Int,
+                    span,
+                },
+            ],
+            span,
+        });
+
+        // Register Rect struct with nested Points
+        let rect_id = struct_registry.register(StructDef {
+            doc_comment: None,
+            name: "Rect".to_string(),
+            fields: vec![
+                StructField {
+                    name: "origin".to_string(),
+                    ty: Type::Struct(point_id),
+                    span,
+                },
+                StructField {
+                    name: "size".to_string(),
+                    ty: Type::Struct(point_id),
+                    span,
+                },
+            ],
+            span,
+        });
+
+        // Create and expand a Rect
+        let parent_symbol = symtab.new_temporary();
+
+        let expansion = symtab.expand_struct_symbol(
+            parent_symbol,
+            "r",
+            rect_id,
+            span,
+            &struct_registry,
+        );
+
+        // Get the StructLayout
+        let layout = symtab
+            .get_struct_layout(parent_symbol)
+            .expect("Should have layout");
+
+        // Should have 2 top-level fields (origin, size), both nested
+        assert_eq!(layout.fields.len(), 2);
+
+        for (i, accessor) in layout.fields.iter().enumerate() {
+            match accessor {
+                FieldAccessor::Nested(nested) => {
+                    // Each nested should have 2 Local fields (x, y)
+                    assert_eq!(nested.fields.len(), 2);
+
+                    // Get the corresponding nested expansion
+                    let nested_expansion = symtab
+                        .get_struct_expansion(expansion.fields[i])
+                        .expect("Should have nested expansion");
+
+                    for (j, nested_accessor) in nested.fields.iter().enumerate() {
+                        match nested_accessor {
+                            FieldAccessor::Local(sym) => {
+                                assert_eq!(*sym, nested_expansion.fields[j]);
+                            }
+                            _ => panic!("Expected Local accessor in nested struct"),
+                        }
+                    }
+                }
+                _ => panic!("Expected Nested accessor for struct field"),
+            }
+        }
+
+        // Leaf symbols should give 4 symbols (origin.x, origin.y, size.x, size.y)
+        let leaves = layout.leaf_symbols();
+        assert_eq!(leaves.len(), 4);
     }
 }

@@ -14,16 +14,18 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.12 = int 10
-temp.13 = int 20
-temp.1.x.14 = temp.12
-temp.1.y.15 = temp.13
-p.x.16 = temp.1.x.14
-p.y.17 = temp.1.y.15
-temp.9.x.18 = p.x.16
-temp.9.y.19 = p.y.17
-temp.20 = temp.9.x.18
-return temp.20
+temp.14 = int 10
+temp.15 = int 20
+temp.1.x.16 = temp.14
+temp.1.y.17 = temp.15
+p.x.18 = temp.1.x.16
+p.y.19 = temp.1.y.17
+temp.20 = p.x.18
+temp.9.x.21 = temp.20
+temp.22 = p.y.19
+temp.9.y.23 = temp.22
+temp.24 = temp.9.x.21
+return temp.24
 
 
 ----------- dead_store_elimination -------------
@@ -37,15 +39,17 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.12 = int 10
-temp.13 = int 20
-temp.1.x.14 = temp.12
-temp.1.y.15 = temp.13
-p.x.16 = temp.1.x.14
-p.y.17 = temp.1.y.15
-temp.9.x.18 = p.x.16
-temp.20 = temp.9.x.18
-return temp.20
+temp.14 = int 10
+temp.15 = int 20
+temp.1.x.16 = temp.14
+temp.1.y.17 = temp.15
+p.x.18 = temp.1.x.16
+p.y.19 = temp.1.y.17
+temp.20 = p.x.18
+temp.9.x.21 = temp.20
+temp.22 = p.y.19
+temp.24 = temp.9.x.21
+return temp.24
 
 
 ----------- dead_store_elimination -------------
@@ -59,14 +63,16 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.12 = int 10
-temp.13 = int 20
-temp.1.x.14 = temp.12
-temp.1.y.15 = temp.13
-p.x.16 = temp.1.x.14
-temp.9.x.18 = p.x.16
-temp.20 = temp.9.x.18
-return temp.20
+temp.14 = int 10
+temp.15 = int 20
+temp.1.x.16 = temp.14
+temp.1.y.17 = temp.15
+p.x.18 = temp.1.x.16
+p.y.19 = temp.1.y.17
+temp.20 = p.x.18
+temp.9.x.21 = temp.20
+temp.24 = temp.9.x.21
+return temp.24
 
 
 ----------- dead_store_elimination -------------
@@ -80,13 +86,15 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.12 = int 10
-temp.13 = int 20
-temp.1.x.14 = temp.12
-p.x.16 = temp.1.x.14
-temp.9.x.18 = p.x.16
-temp.20 = temp.9.x.18
-return temp.20
+temp.14 = int 10
+temp.15 = int 20
+temp.1.x.16 = temp.14
+temp.1.y.17 = temp.15
+p.x.18 = temp.1.x.16
+temp.20 = p.x.18
+temp.9.x.21 = temp.20
+temp.24 = temp.9.x.21
+return temp.24
 
 
 ----------- dead_store_elimination -------------
@@ -100,9 +108,31 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.12 = int 10
-temp.1.x.14 = temp.12
-p.x.16 = temp.1.x.14
-temp.9.x.18 = p.x.16
-temp.20 = temp.9.x.18
-return temp.20
+temp.14 = int 10
+temp.15 = int 20
+temp.1.x.16 = temp.14
+p.x.18 = temp.1.x.16
+temp.20 = p.x.18
+temp.9.x.21 = temp.20
+temp.24 = temp.9.x.21
+return temp.24
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.14 = int 10
+temp.1.x.16 = temp.14
+p.x.18 = temp.1.x.16
+temp.20 = p.x.18
+temp.9.x.21 = temp.20
+temp.24 = temp.9.x.21
+return temp.24

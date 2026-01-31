@@ -8,57 +8,71 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/str
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
-temp.6.x.60, temp.6.y.61 = make_point(temp.58, temp.59)
-p.x.62 = temp.6.x.60
-p.y.63 = temp.6.y.61
-temp.14.x.64 = p.x.62
-temp.14.y.65 = p.y.63
-temp.13.x.66, temp.13.y.67 = double_point(temp.14.x.64, temp.14.y.65)
-q.x.68 = temp.13.x.66
-q.y.69 = temp.13.y.67
-temp.24.x.70 = q.x.68
-temp.24.y.71 = q.y.69
-temp.72 = temp.24.x.70
-temp.27.x.73 = q.x.68
-temp.27.y.74 = q.y.69
-temp.75 = temp.27.y.74
-temp.76 = temp.72 + temp.75
-storeprop temp.76, 0
+temp.72 = int 3
+temp.73 = int 4
+temp.6.x.74, temp.6.y.75 = make_point(temp.72, temp.73)
+temp.76 = temp.6.x.74
+p.x.77 = temp.76
+temp.78 = temp.6.y.75
+p.y.79 = temp.78
+temp.80 = p.x.77
+temp.16.x.81 = temp.80
+temp.82 = p.y.79
+temp.16.y.83 = temp.82
+temp.15.x.84, temp.15.y.85 = double_point(temp.16.x.81, temp.16.y.83)
+temp.86 = temp.15.x.84
+q.x.87 = temp.86
+temp.88 = temp.15.y.85
+q.y.89 = temp.88
+temp.90 = q.x.87
+temp.30.x.91 = temp.90
+temp.92 = q.y.89
+temp.30.y.93 = temp.92
+temp.94 = temp.30.x.91
+temp.95 = q.x.87
+temp.35.x.96 = temp.95
+temp.97 = q.y.89
+temp.35.y.98 = temp.97
+temp.99 = temp.35.y.98
+temp.100 = temp.94 + temp.99
+storeprop temp.100, 0
 return 
 
 =======================
 fn make_point(x.3, y.4) -> int, int
 
 ---- block 0 ----
-temp.77 = x.3
-temp.78 = y.4
-temp.31.x.79 = temp.77
-temp.31.y.80 = temp.78
-temp.30.x.81 = temp.31.x.79
-temp.30.y.82 = temp.31.y.80
-return temp.30.x.81, temp.30.y.82
+temp.101 = x.3
+temp.102 = y.4
+temp.41.x.103 = temp.101
+temp.41.y.104 = temp.102
+temp.40.x.105 = temp.41.x.103
+temp.40.y.106 = temp.41.y.104
+return temp.40.x.105, temp.40.y.106
 
 =======================
-fn double_point(p.x.38, p.y.39) -> int, int
+fn double_point(p.x.48, p.y.49) -> int, int
 
 ---- block 0 ----
-temp.47.x.83 = p.x.38
-temp.47.y.84 = p.y.39
-temp.85 = temp.47.x.83
-temp.86 = int 2
-temp.87 = temp.85 * temp.86
-temp.53.x.88 = p.x.38
-temp.53.y.89 = p.y.39
-temp.90 = temp.53.y.89
-temp.91 = int 2
-temp.92 = temp.90 * temp.91
-temp.41.x.93 = temp.87
-temp.41.y.94 = temp.92
-temp.40.x.95 = temp.41.x.93
-temp.40.y.96 = temp.41.y.94
-return temp.40.x.95, temp.40.y.96
+temp.107 = p.x.48
+temp.57.x.108 = temp.107
+temp.109 = p.y.49
+temp.57.y.110 = temp.109
+temp.111 = temp.57.x.108
+temp.112 = int 2
+temp.113 = temp.111 * temp.112
+temp.114 = p.x.48
+temp.65.x.115 = temp.114
+temp.116 = p.y.49
+temp.65.y.117 = temp.116
+temp.118 = temp.65.y.117
+temp.119 = int 2
+temp.120 = temp.118 * temp.119
+temp.51.x.121 = temp.113
+temp.51.y.122 = temp.120
+temp.50.x.123 = temp.51.x.121
+temp.50.y.124 = temp.51.y.122
+return temp.50.x.123, temp.50.y.124
 
 
 ----------- copy_propagation -------------
@@ -66,57 +80,71 @@ return temp.40.x.95, temp.40.y.96
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
-temp.6.x.60, temp.6.y.61 = make_point(temp.58, temp.59)
-p.x.62 = temp.6.x.60
-p.y.63 = temp.6.y.61
-temp.14.x.64 = temp.6.x.60
-temp.14.y.65 = temp.6.y.61
-temp.13.x.66, temp.13.y.67 = double_point(temp.6.x.60, temp.6.y.61)
-q.x.68 = temp.13.x.66
-q.y.69 = temp.13.y.67
-temp.24.x.70 = temp.13.x.66
-temp.24.y.71 = temp.13.y.67
-temp.72 = temp.13.x.66
-temp.27.x.73 = temp.13.x.66
-temp.27.y.74 = temp.13.y.67
-temp.75 = temp.13.y.67
-temp.76 = temp.13.x.66 + temp.13.y.67
-storeprop temp.76, 0
+temp.72 = int 3
+temp.73 = int 4
+temp.6.x.74, temp.6.y.75 = make_point(temp.72, temp.73)
+temp.76 = temp.6.x.74
+p.x.77 = temp.6.x.74
+temp.78 = temp.6.y.75
+p.y.79 = temp.6.y.75
+temp.80 = temp.6.x.74
+temp.16.x.81 = temp.6.x.74
+temp.82 = temp.6.y.75
+temp.16.y.83 = temp.6.y.75
+temp.15.x.84, temp.15.y.85 = double_point(temp.6.x.74, temp.6.y.75)
+temp.86 = temp.15.x.84
+q.x.87 = temp.15.x.84
+temp.88 = temp.15.y.85
+q.y.89 = temp.15.y.85
+temp.90 = temp.15.x.84
+temp.30.x.91 = temp.15.x.84
+temp.92 = temp.15.y.85
+temp.30.y.93 = temp.15.y.85
+temp.94 = temp.15.x.84
+temp.95 = temp.15.x.84
+temp.35.x.96 = temp.15.x.84
+temp.97 = temp.15.y.85
+temp.35.y.98 = temp.15.y.85
+temp.99 = temp.15.y.85
+temp.100 = temp.15.x.84 + temp.15.y.85
+storeprop temp.100, 0
 return 
 
 =======================
 fn make_point(x.3, y.4) -> int, int
 
 ---- block 0 ----
-temp.77 = x.3
-temp.78 = y.4
-temp.31.x.79 = x.3
-temp.31.y.80 = y.4
-temp.30.x.81 = x.3
-temp.30.y.82 = y.4
+temp.101 = x.3
+temp.102 = y.4
+temp.41.x.103 = x.3
+temp.41.y.104 = y.4
+temp.40.x.105 = x.3
+temp.40.y.106 = y.4
 return x.3, y.4
 
 =======================
-fn double_point(p.x.38, p.y.39) -> int, int
+fn double_point(p.x.48, p.y.49) -> int, int
 
 ---- block 0 ----
-temp.47.x.83 = p.x.38
-temp.47.y.84 = p.y.39
-temp.85 = p.x.38
-temp.86 = int 2
-temp.87 = p.x.38 * temp.86
-temp.53.x.88 = p.x.38
-temp.53.y.89 = p.y.39
-temp.90 = p.y.39
-temp.91 = int 2
-temp.92 = p.y.39 * temp.91
-temp.41.x.93 = temp.87
-temp.41.y.94 = temp.92
-temp.40.x.95 = temp.87
-temp.40.y.96 = temp.92
-return temp.87, temp.92
+temp.107 = p.x.48
+temp.57.x.108 = p.x.48
+temp.109 = p.y.49
+temp.57.y.110 = p.y.49
+temp.111 = p.x.48
+temp.112 = int 2
+temp.113 = p.x.48 * temp.112
+temp.114 = p.x.48
+temp.65.x.115 = p.x.48
+temp.116 = p.y.49
+temp.65.y.117 = p.y.49
+temp.118 = p.y.49
+temp.119 = int 2
+temp.120 = p.y.49 * temp.119
+temp.51.x.121 = temp.113
+temp.51.y.122 = temp.120
+temp.50.x.123 = temp.113
+temp.50.y.124 = temp.120
+return temp.113, temp.120
 
 
 ----------- dead_store_elimination -------------
@@ -124,12 +152,12 @@ return temp.87, temp.92
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
-temp.6.x.60, temp.6.y.61 = make_point(temp.58, temp.59)
-temp.13.x.66, temp.13.y.67 = double_point(temp.6.x.60, temp.6.y.61)
-temp.76 = temp.13.x.66 + temp.13.y.67
-storeprop temp.76, 0
+temp.72 = int 3
+temp.73 = int 4
+temp.6.x.74, temp.6.y.75 = make_point(temp.72, temp.73)
+temp.15.x.84, temp.15.y.85 = double_point(temp.6.x.74, temp.6.y.75)
+temp.100 = temp.15.x.84 + temp.15.y.85
+storeprop temp.100, 0
 return 
 
 =======================
@@ -139,14 +167,14 @@ fn make_point(x.3, y.4) -> int, int
 return x.3, y.4
 
 =======================
-fn double_point(p.x.38, p.y.39) -> int, int
+fn double_point(p.x.48, p.y.49) -> int, int
 
 ---- block 0 ----
-temp.86 = int 2
-temp.87 = p.x.38 * temp.86
-temp.91 = int 2
-temp.92 = p.y.39 * temp.91
-return temp.87, temp.92
+temp.112 = int 2
+temp.113 = p.x.48 * temp.112
+temp.119 = int 2
+temp.120 = p.y.49 * temp.119
+return temp.113, temp.120
 
 
 ----------- constant_folding -------------
@@ -154,12 +182,12 @@ return temp.87, temp.92
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
-temp.6.x.60, temp.6.y.61 = make_point(temp.58, temp.59)
-temp.13.x.66, temp.13.y.67 = double_point(temp.6.x.60, temp.6.y.61)
-temp.76 = temp.13.x.66 + temp.13.y.67
-storeprop temp.76, 0
+temp.72 = int 3
+temp.73 = int 4
+temp.6.x.74, temp.6.y.75 = make_point(temp.72, temp.73)
+temp.15.x.84, temp.15.y.85 = double_point(temp.6.x.74, temp.6.y.75)
+temp.100 = temp.15.x.84 + temp.15.y.85
+storeprop temp.100, 0
 return 
 
 =======================
@@ -169,16 +197,16 @@ fn make_point(x.3, y.4) -> int, int
 return x.3, y.4
 
 =======================
-fn double_point(p.x.38, p.y.39) -> int, int
+fn double_point(p.x.48, p.y.49) -> int, int
 
 ---- block 0 ----
-temp.86 = int 2
-temp.97 = int 1
-temp.87 = p.x.38 << temp.97
-temp.91 = int 2
-temp.98 = int 1
-temp.92 = p.y.39 << temp.98
-return temp.87, temp.92
+temp.112 = int 2
+temp.125 = int 1
+temp.113 = p.x.48 << temp.125
+temp.119 = int 2
+temp.126 = int 1
+temp.120 = p.y.49 << temp.126
+return temp.113, temp.120
 
 
 ----------- duplicate_loads -------------
@@ -186,12 +214,12 @@ return temp.87, temp.92
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
-temp.6.x.60, temp.6.y.61 = make_point(temp.58, temp.59)
-temp.13.x.66, temp.13.y.67 = double_point(temp.6.x.60, temp.6.y.61)
-temp.76 = temp.13.x.66 + temp.13.y.67
-storeprop temp.76, 0
+temp.72 = int 3
+temp.73 = int 4
+temp.6.x.74, temp.6.y.75 = make_point(temp.72, temp.73)
+temp.15.x.84, temp.15.y.85 = double_point(temp.6.x.74, temp.6.y.75)
+temp.100 = temp.15.x.84 + temp.15.y.85
+storeprop temp.100, 0
 return 
 
 =======================
@@ -201,16 +229,16 @@ fn make_point(x.3, y.4) -> int, int
 return x.3, y.4
 
 =======================
-fn double_point(p.x.38, p.y.39) -> int, int
+fn double_point(p.x.48, p.y.49) -> int, int
 
 ---- block 0 ----
-temp.86 = int 2
-temp.97 = int 1
-temp.87 = p.x.38 << temp.97
-temp.91 = temp.86
-temp.98 = temp.97
-temp.92 = p.y.39 << temp.98
-return temp.87, temp.92
+temp.112 = int 2
+temp.125 = int 1
+temp.113 = p.x.48 << temp.125
+temp.119 = temp.112
+temp.126 = temp.125
+temp.120 = p.y.49 << temp.126
+return temp.113, temp.120
 
 
 ----------- inline_small_functions -------------
@@ -218,42 +246,42 @@ return temp.87, temp.92
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 2
 
 ---- block 2 ----
 jmp 4
 
 ---- block 4 ----
-temp.99 = φ(temp.58 from 2)
-temp.100 = φ(temp.59 from 2)
-temp.6.x.60 = temp.99
-temp.6.y.61 = temp.100
+temp.127 = φ(temp.72 from 2)
+temp.128 = φ(temp.73 from 2)
+temp.6.x.74 = temp.127
+temp.6.y.75 = temp.128
 jmp 1
 
 ---- block 1 ----
 jmp 6
 
 ---- block 6 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = temp.6.x.60 << temp.103
-temp.108 = temp.104
-temp.105 = temp.103
-temp.107 = temp.6.y.61 << temp.105
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = temp.6.x.74 << temp.131
+temp.136 = temp.132
+temp.133 = temp.131
+temp.135 = temp.6.y.75 << temp.133
 jmp 8
 
 ---- block 8 ----
-temp.101 = φ(temp.106 from 6)
-temp.102 = φ(temp.107 from 6)
-temp.13.x.66 = temp.101
-temp.13.y.67 = temp.102
+temp.129 = φ(temp.134 from 6)
+temp.130 = φ(temp.135 from 6)
+temp.15.x.84 = temp.129
+temp.15.y.85 = temp.130
 jmp 5
 
 ---- block 5 ----
-temp.76 = temp.13.x.66 + temp.13.y.67
-storeprop temp.76, 0
+temp.100 = temp.15.x.84 + temp.15.y.85
+storeprop temp.100, 0
 return 
 
 =======================
@@ -263,16 +291,16 @@ fn make_point(x.3, y.4) -> int, int
 return x.3, y.4
 
 =======================
-fn double_point(p.x.38, p.y.39) -> int, int
+fn double_point(p.x.48, p.y.49) -> int, int
 
 ---- block 0 ----
-temp.86 = int 2
-temp.97 = int 1
-temp.87 = p.x.38 << temp.97
-temp.91 = temp.86
-temp.98 = temp.97
-temp.92 = p.y.39 << temp.98
-return temp.87, temp.92
+temp.112 = int 2
+temp.125 = int 1
+temp.113 = p.x.48 << temp.125
+temp.119 = temp.112
+temp.126 = temp.125
+temp.120 = p.y.49 << temp.126
+return temp.113, temp.120
 
 
 ----------- remove_unreferenced_functions -------------
@@ -280,42 +308,42 @@ return temp.87, temp.92
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 2
 
 ---- block 2 ----
 jmp 4
 
 ---- block 4 ----
-temp.99 = φ(temp.58 from 2)
-temp.100 = φ(temp.59 from 2)
-temp.6.x.60 = temp.99
-temp.6.y.61 = temp.100
+temp.127 = φ(temp.72 from 2)
+temp.128 = φ(temp.73 from 2)
+temp.6.x.74 = temp.127
+temp.6.y.75 = temp.128
 jmp 1
 
 ---- block 1 ----
 jmp 6
 
 ---- block 6 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = temp.6.x.60 << temp.103
-temp.108 = temp.104
-temp.105 = temp.103
-temp.107 = temp.6.y.61 << temp.105
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = temp.6.x.74 << temp.131
+temp.136 = temp.132
+temp.133 = temp.131
+temp.135 = temp.6.y.75 << temp.133
 jmp 8
 
 ---- block 8 ----
-temp.101 = φ(temp.106 from 6)
-temp.102 = φ(temp.107 from 6)
-temp.13.x.66 = temp.101
-temp.13.y.67 = temp.102
+temp.129 = φ(temp.134 from 6)
+temp.130 = φ(temp.135 from 6)
+temp.15.x.84 = temp.129
+temp.15.y.85 = temp.130
 jmp 5
 
 ---- block 5 ----
-temp.76 = temp.13.x.66 + temp.13.y.67
-storeprop temp.76, 0
+temp.100 = temp.15.x.84 + temp.15.y.85
+storeprop temp.100, 0
 return 
 
 
@@ -324,38 +352,38 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 2
 
 ---- block 2 ----
 jmp 4
 
 ---- block 4 ----
-temp.6.x.60 = temp.58
-temp.6.y.61 = temp.59
+temp.6.x.74 = temp.72
+temp.6.y.75 = temp.73
 jmp 1
 
 ---- block 1 ----
 jmp 6
 
 ---- block 6 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = temp.6.x.60 << temp.103
-temp.108 = temp.104
-temp.105 = temp.103
-temp.107 = temp.6.y.61 << temp.105
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = temp.6.x.74 << temp.131
+temp.136 = temp.132
+temp.133 = temp.131
+temp.135 = temp.6.y.75 << temp.133
 jmp 8
 
 ---- block 8 ----
-temp.13.x.66 = temp.106
-temp.13.y.67 = temp.107
+temp.15.x.84 = temp.134
+temp.15.y.85 = temp.135
 jmp 5
 
 ---- block 5 ----
-temp.76 = temp.13.x.66 + temp.13.y.67
-storeprop temp.76, 0
+temp.100 = temp.15.x.84 + temp.15.y.85
+storeprop temp.100, 0
 return 
 
 
@@ -364,35 +392,35 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 2
 
 ---- block 2 ----
-temp.6.x.60 = temp.58
-temp.6.y.61 = temp.59
+temp.6.x.74 = temp.72
+temp.6.y.75 = temp.73
 jmp 4
 
 ---- block 4 ----
 jmp 1
 
 ---- block 1 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = temp.6.x.60 << temp.103
-temp.108 = temp.104
-temp.105 = temp.103
-temp.107 = temp.6.y.61 << temp.105
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = temp.6.x.74 << temp.131
+temp.136 = temp.132
+temp.133 = temp.131
+temp.135 = temp.6.y.75 << temp.133
 jmp 6
 
 ---- block 6 ----
-temp.13.x.66 = temp.106
-temp.13.y.67 = temp.107
+temp.15.x.84 = temp.134
+temp.15.y.85 = temp.135
 jmp 8
 
 ---- block 8 ----
-temp.76 = temp.13.x.66 + temp.13.y.67
-storeprop temp.76, 0
+temp.100 = temp.15.x.84 + temp.15.y.85
+storeprop temp.100, 0
 jmp 5
 
 ---- block 5 ----
@@ -404,35 +432,35 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 2
 
 ---- block 2 ----
-temp.6.x.60 = temp.58
-temp.6.y.61 = temp.59
+temp.6.x.74 = temp.72
+temp.6.y.75 = temp.73
 jmp 4
 
 ---- block 4 ----
 jmp 1
 
 ---- block 1 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = temp.58 << temp.103
-temp.108 = temp.104
-temp.105 = temp.103
-temp.107 = temp.59 << temp.103
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = temp.72 << temp.131
+temp.136 = temp.132
+temp.133 = temp.131
+temp.135 = temp.73 << temp.131
 jmp 6
 
 ---- block 6 ----
-temp.13.x.66 = temp.106
-temp.13.y.67 = temp.107
+temp.15.x.84 = temp.134
+temp.15.y.85 = temp.135
 jmp 8
 
 ---- block 8 ----
-temp.76 = temp.106 + temp.107
-storeprop temp.76, 0
+temp.100 = temp.134 + temp.135
+storeprop temp.100, 0
 jmp 5
 
 ---- block 5 ----
@@ -444,8 +472,8 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 2
 
 ---- block 2 ----
@@ -455,18 +483,18 @@ jmp 4
 jmp 1
 
 ---- block 1 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = temp.58 << temp.103
-temp.107 = temp.59 << temp.103
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = temp.72 << temp.131
+temp.135 = temp.73 << temp.131
 jmp 6
 
 ---- block 6 ----
 jmp 8
 
 ---- block 8 ----
-temp.76 = temp.106 + temp.107
-storeprop temp.76, 0
+temp.100 = temp.134 + temp.135
+storeprop temp.100, 0
 jmp 5
 
 ---- block 5 ----
@@ -478,8 +506,8 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 2
 
 ---- block 2 ----
@@ -489,18 +517,18 @@ jmp 4
 jmp 1
 
 ---- block 1 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = int 6
-temp.107 = int 8
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = int 6
+temp.135 = int 8
 jmp 6
 
 ---- block 6 ----
 jmp 8
 
 ---- block 8 ----
-temp.76 = temp.106 + temp.107
-storeprop temp.76, 0
+temp.100 = temp.134 + temp.135
+storeprop temp.100, 0
 jmp 5
 
 ---- block 5 ----
@@ -512,23 +540,23 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 4
 
 ---- block 4 ----
 jmp 1
 
 ---- block 1 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = int 6
-temp.107 = int 8
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = int 6
+temp.135 = int 8
 jmp 8
 
 ---- block 8 ----
-temp.76 = temp.106 + temp.107
-storeprop temp.76, 0
+temp.100 = temp.134 + temp.135
+storeprop temp.100, 0
 return 
 
 
@@ -537,20 +565,20 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.58 = int 3
-temp.59 = int 4
+temp.72 = int 3
+temp.73 = int 4
 jmp 4
 
 ---- block 4 ----
-temp.104 = int 2
-temp.103 = int 1
-temp.106 = int 6
-temp.107 = int 8
+temp.132 = int 2
+temp.131 = int 1
+temp.134 = int 6
+temp.135 = int 8
 jmp 1
 
 ---- block 1 ----
-temp.76 = temp.106 + temp.107
-storeprop temp.76, 0
+temp.100 = temp.134 + temp.135
+storeprop temp.100, 0
 jmp 8
 
 ---- block 8 ----
@@ -565,13 +593,13 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.106 = int 6
-temp.107 = int 8
+temp.134 = int 6
+temp.135 = int 8
 jmp 1
 
 ---- block 1 ----
-temp.76 = temp.106 + temp.107
-storeprop temp.76, 0
+temp.100 = temp.134 + temp.135
+storeprop temp.100, 0
 jmp 8
 
 ---- block 8 ----
@@ -586,13 +614,13 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.106 = int 6
-temp.107 = int 8
+temp.134 = int 6
+temp.135 = int 8
 jmp 1
 
 ---- block 1 ----
-temp.76 = int 14
-storeprop temp.76, 0
+temp.100 = int 14
+storeprop temp.100, 0
 jmp 8
 
 ---- block 8 ----
@@ -607,13 +635,13 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.106 = int 6
-temp.107 = int 8
+temp.134 = int 6
+temp.135 = int 8
 jmp 1
 
 ---- block 1 ----
-temp.76 = int 14
-storeprop temp.76, 0
+temp.100 = int 14
+storeprop temp.100, 0
 return 
 
 
@@ -622,13 +650,13 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.106 = int 6
-temp.107 = int 8
+temp.134 = int 6
+temp.135 = int 8
 jmp 4
 
 ---- block 4 ----
-temp.76 = int 14
-storeprop temp.76, 0
+temp.100 = int 14
+storeprop temp.100, 0
 jmp 1
 
 ---- block 1 ----
@@ -643,8 +671,8 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.76 = int 14
-storeprop temp.76, 0
+temp.100 = int 14
+storeprop temp.100, 0
 jmp 1
 
 ---- block 1 ----
@@ -659,8 +687,8 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.76 = int 14
-storeprop temp.76, 0
+temp.100 = int 14
+storeprop temp.100, 0
 return 
 
 
@@ -669,8 +697,8 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.76 = int 14
-storeprop temp.76, 0
+temp.100 = int 14
+storeprop temp.100, 0
 jmp 4
 
 ---- block 4 ----
@@ -682,6 +710,6 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.76 = int 14
-storeprop temp.76, 0
+temp.100 = int 14
+storeprop temp.100, 0
 return

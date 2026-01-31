@@ -13,21 +13,27 @@ temp.3.x.4 = temp.6
 temp.3.y.5 = temp.7
 p.x.8 = temp.3.x.4
 p.y.9 = temp.3.y.5
-temp.11.x.12 = p.x.8
-temp.11.y.13 = p.y.9
+temp.14 = p.x.8
+temp.11.x.12 = temp.14
+temp.15 = p.y.9
+temp.11.y.13 = temp.15
 temp.10 = Point@sum(temp.11.x.12, temp.11.y.13)
 total.1 = temp.10
 return 
 
 =======================
-fn Point@sum(self.x.14, self.y.15) -> int
+fn Point@sum(self.x.16, self.y.17) -> int
 
 ---- block 0 ----
-temp.19.x.20 = self.x.14
-temp.19.y.21 = self.y.15
-temp.17 = temp.19.x.20
-temp.22.x.23 = self.x.14
-temp.22.y.24 = self.y.15
-temp.18 = temp.22.y.24
-temp.16 = temp.17 + temp.18
-return temp.16
+temp.24 = self.x.16
+temp.21.x.22 = temp.24
+temp.25 = self.y.17
+temp.21.y.23 = temp.25
+temp.19 = temp.21.x.22
+temp.29 = self.x.16
+temp.26.x.27 = temp.29
+temp.30 = self.y.17
+temp.26.y.28 = temp.30
+temp.20 = temp.26.y.28
+temp.18 = temp.19 + temp.20
+return temp.18

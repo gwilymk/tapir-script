@@ -8,26 +8,30 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/struct_f
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.20 = int 42
-temp.21 = int 0
-temp.3.x.22 = temp.20
-temp.3.y.23 = temp.21
-p.x.24 = temp.3.x.22
-p.y.25 = temp.3.y.23
-temp.11.x.26 = p.x.24
-temp.11.y.27 = p.y.25
-temp.28 = get_x(temp.11.x.26, temp.11.y.27)
-storeprop temp.28, 0
+temp.24 = int 42
+temp.25 = int 0
+temp.3.x.26 = temp.24
+temp.3.y.27 = temp.25
+p.x.28 = temp.3.x.26
+p.y.29 = temp.3.y.27
+temp.30 = p.x.28
+temp.11.x.31 = temp.30
+temp.32 = p.y.29
+temp.11.y.33 = temp.32
+temp.34 = get_x(temp.11.x.31, temp.11.y.33)
+storeprop temp.34, 0
 return 
 
 =======================
-fn get_x(p.x.14, p.y.15) -> int
+fn get_x(p.x.16, p.y.17) -> int
 
 ---- block 0 ----
-temp.17.x.29 = p.x.14
-temp.17.y.30 = p.y.15
-temp.31 = temp.17.x.29
-return temp.31
+temp.35 = p.x.16
+temp.19.x.36 = temp.35
+temp.37 = p.y.17
+temp.19.y.38 = temp.37
+temp.39 = temp.19.x.36
+return temp.39
 
 
 ----------- inline_small_functions -------------
@@ -35,36 +39,42 @@ return temp.31
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.20 = int 42
-temp.21 = int 0
-temp.3.x.22 = temp.20
-temp.3.y.23 = temp.21
-p.x.24 = temp.3.x.22
-p.y.25 = temp.3.y.23
-temp.11.x.26 = p.x.24
-temp.11.y.27 = p.y.25
+temp.24 = int 42
+temp.25 = int 0
+temp.3.x.26 = temp.24
+temp.3.y.27 = temp.25
+p.x.28 = temp.3.x.26
+p.y.29 = temp.3.y.27
+temp.30 = p.x.28
+temp.11.x.31 = temp.30
+temp.32 = p.y.29
+temp.11.y.33 = temp.32
 jmp 2
 
 ---- block 2 ----
-temp.17.x.33 = temp.11.x.26
-temp.17.y.35 = temp.11.y.27
-temp.34 = temp.17.x.33
+temp.41 = temp.11.x.31
+temp.19.x.43 = temp.41
+temp.42 = temp.11.y.33
+temp.19.y.45 = temp.42
+temp.44 = temp.19.x.43
 jmp 4
 
 ---- block 4 ----
-temp.32 = φ(temp.34 from 2)
-temp.28 = temp.32
+temp.40 = φ(temp.44 from 2)
+temp.34 = temp.40
 jmp 1
 
 ---- block 1 ----
-storeprop temp.28, 0
+storeprop temp.34, 0
 return 
 
 =======================
-fn get_x(p.x.14, p.y.15) -> int
+fn get_x(p.x.16, p.y.17) -> int
 
 ---- block 0 ----
-temp.17.x.29 = p.x.14
-temp.17.y.30 = p.y.15
-temp.31 = temp.17.x.29
-return temp.31
+temp.35 = p.x.16
+temp.19.x.36 = temp.35
+temp.37 = p.y.17
+temp.19.y.38 = temp.37
+temp.39 = temp.19.x.36
+return temp.39

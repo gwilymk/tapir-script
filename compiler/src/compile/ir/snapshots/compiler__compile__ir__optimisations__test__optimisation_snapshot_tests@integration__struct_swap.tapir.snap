@@ -8,38 +8,54 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/str
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.38 = int 1
-temp.39 = int 2
-temp.4.x.40 = temp.38
-temp.4.y.41 = temp.39
-a.x.42 = temp.4.x.40
-a.y.43 = temp.4.y.41
-temp.44 = int 3
-temp.45 = int 4
-temp.11.x.46 = temp.44
-temp.11.y.47 = temp.45
-b.x.48 = temp.11.x.46
-b.y.49 = temp.11.y.47
-temp.18.x.50 = a.x.42
-temp.18.y.51 = a.y.43
-temp.x.52 = temp.18.x.50
-temp.y.53 = temp.18.y.51
-temp.23.x.54 = b.x.48
-temp.23.y.55 = b.y.49
-a.x.56 = temp.23.x.54
-a.y.57 = temp.23.y.55
-temp.26.x.58 = temp.x.52
-temp.26.y.59 = temp.y.53
-b.x.60 = temp.26.x.58
-b.y.61 = temp.26.y.59
-temp.32.x.62 = a.x.56
-temp.32.y.63 = a.y.57
-temp.64 = temp.32.x.62
-temp.35.x.65 = b.x.60
-temp.35.y.66 = b.y.61
-temp.67 = temp.35.y.66
-temp.68 = temp.64 + temp.67
-storeprop temp.68, 0
+temp.54 = int 1
+temp.55 = int 2
+temp.4.x.56 = temp.54
+temp.4.y.57 = temp.55
+a.x.58 = temp.4.x.56
+a.y.59 = temp.4.y.57
+temp.60 = int 3
+temp.61 = int 4
+temp.11.x.62 = temp.60
+temp.11.y.63 = temp.61
+b.x.64 = temp.11.x.62
+b.y.65 = temp.11.y.63
+temp.66 = a.x.58
+temp.18.x.67 = temp.66
+temp.68 = a.y.59
+temp.18.y.69 = temp.68
+temp.70 = temp.18.x.67
+temp.x.71 = temp.70
+temp.72 = temp.18.y.69
+temp.y.73 = temp.72
+temp.74 = b.x.64
+temp.27.x.75 = temp.74
+temp.76 = b.y.65
+temp.27.y.77 = temp.76
+temp.78 = temp.27.x.75
+a.x.79 = temp.78
+temp.80 = temp.27.y.77
+a.y.81 = temp.80
+temp.82 = temp.x.71
+temp.34.x.83 = temp.82
+temp.84 = temp.y.73
+temp.34.y.85 = temp.84
+temp.86 = temp.34.x.83
+b.x.87 = temp.86
+temp.88 = temp.34.y.85
+b.y.89 = temp.88
+temp.90 = a.x.79
+temp.44.x.91 = temp.90
+temp.92 = a.y.81
+temp.44.y.93 = temp.92
+temp.94 = temp.44.x.91
+temp.95 = b.x.87
+temp.49.x.96 = temp.95
+temp.97 = b.y.89
+temp.49.y.98 = temp.97
+temp.99 = temp.49.y.98
+temp.100 = temp.94 + temp.99
+storeprop temp.100, 0
 return 
 
 
@@ -48,38 +64,54 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.38 = int 1
-temp.39 = int 2
-temp.4.x.40 = temp.38
-temp.4.y.41 = temp.39
-a.x.42 = temp.38
-a.y.43 = temp.39
-temp.44 = int 3
-temp.45 = int 4
-temp.11.x.46 = temp.44
-temp.11.y.47 = temp.45
-b.x.48 = temp.44
-b.y.49 = temp.45
-temp.18.x.50 = temp.38
-temp.18.y.51 = temp.39
-temp.x.52 = temp.38
-temp.y.53 = temp.39
-temp.23.x.54 = temp.44
-temp.23.y.55 = temp.45
-a.x.56 = temp.44
-a.y.57 = temp.45
-temp.26.x.58 = temp.38
-temp.26.y.59 = temp.39
-b.x.60 = temp.38
-b.y.61 = temp.39
-temp.32.x.62 = temp.44
-temp.32.y.63 = temp.45
-temp.64 = temp.44
-temp.35.x.65 = temp.38
-temp.35.y.66 = temp.39
-temp.67 = temp.39
-temp.68 = temp.44 + temp.39
-storeprop temp.68, 0
+temp.54 = int 1
+temp.55 = int 2
+temp.4.x.56 = temp.54
+temp.4.y.57 = temp.55
+a.x.58 = temp.54
+a.y.59 = temp.55
+temp.60 = int 3
+temp.61 = int 4
+temp.11.x.62 = temp.60
+temp.11.y.63 = temp.61
+b.x.64 = temp.60
+b.y.65 = temp.61
+temp.66 = temp.54
+temp.18.x.67 = temp.54
+temp.68 = temp.55
+temp.18.y.69 = temp.55
+temp.70 = temp.54
+temp.x.71 = temp.54
+temp.72 = temp.55
+temp.y.73 = temp.55
+temp.74 = temp.60
+temp.27.x.75 = temp.60
+temp.76 = temp.61
+temp.27.y.77 = temp.61
+temp.78 = temp.60
+a.x.79 = temp.60
+temp.80 = temp.61
+a.y.81 = temp.61
+temp.82 = temp.54
+temp.34.x.83 = temp.54
+temp.84 = temp.55
+temp.34.y.85 = temp.55
+temp.86 = temp.54
+b.x.87 = temp.54
+temp.88 = temp.55
+b.y.89 = temp.55
+temp.90 = temp.60
+temp.44.x.91 = temp.60
+temp.92 = temp.61
+temp.44.y.93 = temp.61
+temp.94 = temp.60
+temp.95 = temp.54
+temp.49.x.96 = temp.54
+temp.97 = temp.55
+temp.49.y.98 = temp.55
+temp.99 = temp.55
+temp.100 = temp.60 + temp.55
+storeprop temp.100, 0
 return 
 
 
@@ -88,12 +120,12 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.38 = int 1
-temp.39 = int 2
-temp.44 = int 3
-temp.45 = int 4
-temp.68 = temp.44 + temp.39
-storeprop temp.68, 0
+temp.54 = int 1
+temp.55 = int 2
+temp.60 = int 3
+temp.61 = int 4
+temp.100 = temp.60 + temp.55
+storeprop temp.100, 0
 return 
 
 
@@ -102,12 +134,12 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.38 = int 1
-temp.39 = int 2
-temp.44 = int 3
-temp.45 = int 4
-temp.68 = int 5
-storeprop temp.68, 0
+temp.54 = int 1
+temp.55 = int 2
+temp.60 = int 3
+temp.61 = int 4
+temp.100 = int 5
+storeprop temp.100, 0
 return 
 
 
@@ -116,6 +148,6 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.68 = int 5
-storeprop temp.68, 0
+temp.100 = int 5
+storeprop temp.100, 0
 return
