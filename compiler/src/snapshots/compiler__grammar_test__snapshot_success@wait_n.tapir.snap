@@ -1,0 +1,179 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/wait_n.tapir
+---
+Script(
+  struct_declarations: [],
+  property_declarations: [
+    PropertyDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "x",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Int),
+          name: "int",
+          span: "[span]",
+        )),
+      ),
+      span: "[span]",
+    ),
+  ],
+  globals: [],
+  functions: [
+    Function(
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Wait(
+            frames: None,
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Wait(
+            frames: Some(Expression(
+              span: "[span]",
+              kind: Integer(10),
+              meta: {},
+            )),
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "n",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(5),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Wait(
+            frames: Some(Expression(
+              span: "[span]",
+              kind: Variable("n"),
+              meta: {},
+            )),
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Wait(
+            frames: Some(Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Variable("n"),
+                  meta: {},
+                ),
+                operator: Add,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Integer(5),
+                  meta: {},
+                ),
+              ),
+              meta: {},
+            )),
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Wait(
+            frames: Some(Expression(
+              span: "[span]",
+              kind: Integer(0),
+              meta: {},
+            )),
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Wait(
+            frames: Some(Expression(
+              span: "[span]",
+              kind: Call(
+                name: "get_delay",
+                arguments: [],
+              ),
+              meta: {},
+            )),
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      kind: Regular,
+      name: "get_delay",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(30),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

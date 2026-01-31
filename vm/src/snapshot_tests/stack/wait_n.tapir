@@ -1,0 +1,29 @@
+property int_prop: int;
+
+# Test wait 0 is no-op
+int_prop = frame();
+wait 0;
+int_prop = frame();  # Should still be same frame
+
+wait;  # Go to next frame
+
+# Test wait 1 same as wait
+var f1 = frame();
+wait 1;
+var f2 = frame();
+int_prop = f2 - f1;  # Should be 1
+
+wait;
+
+# Test wait N
+var start = frame();
+wait 5;
+var end = frame();
+int_prop = end - start;  # Should be 5
+
+wait;
+
+# Test negative wait is no-op
+start = frame();
+wait 0 - 10;  # -10
+int_prop = frame() - start;  # Should be 0

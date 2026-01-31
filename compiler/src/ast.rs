@@ -424,7 +424,10 @@ pub enum StatementKind<'input> {
         targets: Vec<Expression<'input>>,
         values: Vec<Expression<'input>>,
     },
-    Wait,
+    Wait {
+        /// Number of frames to wait. None means 1 frame (original behavior).
+        frames: Option<Expression<'input>>,
+    },
     Block {
         block: Vec<Statement<'input>>,
     },

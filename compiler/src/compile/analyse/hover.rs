@@ -324,7 +324,7 @@ fn extract_from_statements(
                     );
                 }
             }
-            StatementKind::Wait
+            StatementKind::Wait { .. }
             | StatementKind::Break
             | StatementKind::Continue
             | StatementKind::Nop

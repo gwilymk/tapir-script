@@ -638,8 +638,12 @@ impl<'input> SymTabVisitor<'input> {
                     self.visit_block(true_block, diagnostics);
                     self.visit_block(false_block, diagnostics);
                 }
+                StatementKind::Wait { frames } => {
+                    if let Some(frames_expr) = frames {
+                        self.visit_expr(frames_expr, diagnostics);
+                    }
+                }
                 StatementKind::Error
-                | StatementKind::Wait
                 | StatementKind::Nop
                 | StatementKind::Continue
                 | StatementKind::Break => {}

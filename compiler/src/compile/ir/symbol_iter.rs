@@ -23,6 +23,8 @@ impl<'a> SymbolIter<'a> {
             | TapIr::CallBuiltin { args, .. }
             | TapIr::Trigger { args, .. }
             | TapIr::Spawn { args, .. } => Self::Many(args.iter()),
+            TapIr::Wait { frames: Some(f) } => Self::One(Some(*f)),
+            TapIr::Wait { frames: None } => Self::None,
             _ => Self::None,
         }
     }
@@ -86,6 +88,8 @@ impl<'a> SymbolIterMut<'a> {
             | TapIr::CallBuiltin { args, .. }
             | TapIr::Trigger { args, .. }
             | TapIr::Spawn { args, .. } => Self::Many(args.iter_mut()),
+            TapIr::Wait { frames: Some(f) } => Self::One(Some(f)),
+            TapIr::Wait { frames: None } => Self::None,
             _ => Self::None,
         }
     }

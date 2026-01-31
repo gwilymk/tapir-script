@@ -1,0 +1,21 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/wait_n.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+wait
+temp.2 = int 10
+wait temp.2
+temp.3 = int 5
+n.1 = temp.3
+temp.4 = n.1
+wait temp.4
+temp.6 = n.1
+temp.7 = int 5
+temp.5 = temp.6 + temp.7
+wait temp.5
+return

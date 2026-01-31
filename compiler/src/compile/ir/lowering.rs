@@ -363,8 +363,13 @@ impl<'a> BlockVisitor<'a> {
                     }
                 }
             }
-            ast::StatementKind::Wait => {
-                self.current_block.push(TapIr::Wait);
+            ast::StatementKind::Wait { frames } => {
+                let frames_symbol = frames.as_ref().map(|expr| {
+                    let symbol = symtab.new_temporary();
+                    self.blocks_for_expression(expr, symbol, symtab);
+                    symbol
+                });
+                self.current_block.push(TapIr::Wait { frames: frames_symbol });
             }
             ast::StatementKind::Block { block } => {
                 for statement in block {

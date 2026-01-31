@@ -28,7 +28,7 @@ fn visit_block_in_loop(
             StatementKind::Error
             | StatementKind::VariableDeclaration { .. }
             | StatementKind::Assignment { .. }
-            | StatementKind::Wait
+            | StatementKind::Wait { .. }
             | StatementKind::Nop
             | StatementKind::Trigger { .. }
             | StatementKind::Expression { .. } => {}

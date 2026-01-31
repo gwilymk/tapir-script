@@ -1,0 +1,98 @@
+---
+source: vm/src/lib.rs
+expression: stack_at_waits
+input_file: vm/src/snapshot_tests/stack/wait_n.tapir
+---
+[
+  ([
+    [
+      -1,
+      0,
+    ],
+  ], PropObj(
+    int_prop: 0,
+  )),
+  ([
+    [
+      -1,
+      1,
+      0,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 0,
+  )),
+  ([
+    [
+      -1,
+      1,
+      2,
+      1,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      5,
+      2,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      5,
+      2,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      5,
+      2,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      5,
+      2,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      5,
+      2,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 1,
+  )),
+  ([
+    [
+      -1,
+      5,
+      8,
+      3,
+    ],
+  ], PropObj(
+    int_prop: 5,
+  )),
+  ([], PropObj(
+    int_prop: 0,
+  )),
+]

@@ -289,7 +289,8 @@ Statement: Statement<'input> =
 StatementKind: StatementKind<'input> = {
     var <idents: CommaSeparated<TypedIdentifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::VariableDeclaration { <> },
     <targets: CommaSeparated<Expression>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
-    wait ";" => StatementKind::Wait,
+    wait ";" => StatementKind::Wait { frames: None },
+    wait <frames: Expression> ";" => StatementKind::Wait { frames: Some(frames) },
     break ";" => StatementKind::Break,
     continue ";" => StatementKind::Continue,
 

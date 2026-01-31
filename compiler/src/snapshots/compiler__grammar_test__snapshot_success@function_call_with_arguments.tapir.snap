@@ -80,7 +80,9 @@ Script(
       statements: [
         Statement(
           span: "[span]",
-          kind: Wait,
+          kind: Wait(
+            frames: None,
+          ),
           meta: {},
         ),
       ],

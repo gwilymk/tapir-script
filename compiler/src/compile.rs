@@ -325,7 +325,10 @@ impl Compiler {
                     } => {
                         self.bytecode.binop(v(target), v(lhs), *op, v(rhs));
                     }
-                    TapIr::Wait => self.bytecode.wait(),
+                    TapIr::Wait { frames } => match frames {
+                        None => self.bytecode.wait(),
+                        Some(f) => self.bytecode.wait_n(v(f)),
+                    },
                     TapIr::Call { target, f, args } => {
                         put_args(&mut self.bytecode, args, false);
                         self.bytecode.call(first_argument);
@@ -535,6 +538,10 @@ impl Bytecode {
 
     fn wait(&mut self) {
         self.data.push(Type1::wait().encode());
+    }
+
+    fn wait_n(&mut self, frames_reg: u8) {
+        self.data.push(Type1::wait_n(frames_reg).encode());
     }
 
     fn constant(&mut self, target: u8, value: u32) {

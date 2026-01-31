@@ -29,7 +29,8 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
             symtab.debug_name_for_symbol(*lhs),
             symtab.debug_name_for_symbol(*rhs)
         ),
-        TapIr::Wait => write!(output, "wait"),
+        TapIr::Wait { frames: None } => write!(output, "wait"),
+        TapIr::Wait { frames: Some(f) } => write!(output, "wait {}", symtab.debug_name_for_symbol(*f)),
         TapIr::Call { target, f, args } => {
             let mut targets = target
                 .iter()

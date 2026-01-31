@@ -191,7 +191,7 @@ fn extract_references_from_statements(
                     );
                 }
             }
-            StatementKind::Wait
+            StatementKind::Wait { .. }
             | StatementKind::Break
             | StatementKind::Continue
             | StatementKind::Nop

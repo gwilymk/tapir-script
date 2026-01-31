@@ -46,7 +46,8 @@ pub enum TapIr {
         op: BinaryOperator,
         rhs: SymbolId,
     },
-    Wait,
+    /// Wait for frames. None means 1 frame.
+    Wait { frames: Option<SymbolId> },
     Call {
         target: Box<[SymbolId]>,
         f: FunctionId,
@@ -118,7 +119,7 @@ impl TapIr {
             | TapIr::GetGlobal { .. } => false,
             // Pure builtins (id >= 0) have no side effects
             TapIr::CallBuiltin { f, .. } => !f.is_pure(),
-            TapIr::Wait
+            TapIr::Wait { .. }
             | TapIr::Call { .. }
             | TapIr::CallExternal { .. }
             | TapIr::Spawn { .. }
@@ -222,7 +223,10 @@ impl TapIrBlock {
                 TapIr::BinOp {
                     target, lhs, rhs, ..
                 } => symbols.extend([*target, *lhs, *rhs]),
-                TapIr::Wait => {}
+                TapIr::Wait { frames: Some(f) } => {
+                    symbols.insert(*f);
+                }
+                TapIr::Wait { frames: None } => {}
                 TapIr::Call { target, args, .. } | TapIr::CallExternal { target, args, .. } => {
                     symbols.extend(target);
                     symbols.extend(args);
@@ -572,8 +576,20 @@ mod test {
 
     #[test]
     fn test_targets_iter_wait() {
-        let instr = TapIr::Wait;
+        let instr = TapIr::Wait { frames: None };
         assert_eq!(instr.targets().next(), None);
+    }
+
+    #[test]
+    fn test_sources_iter_wait_with_frames() {
+        let instr = TapIr::Wait { frames: Some(SymbolId(10)) };
+        assert_eq!(instr.sources().collect::<Vec<_>>(), vec![SymbolId(10)]);
+    }
+
+    #[test]
+    fn test_sources_iter_wait_without_frames() {
+        let instr = TapIr::Wait { frames: None };
+        assert_eq!(instr.sources().collect::<Vec<_>>(), Vec::<SymbolId>::new());
     }
 
     #[test]

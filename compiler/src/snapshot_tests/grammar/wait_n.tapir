@@ -1,0 +1,23 @@
+property x: int;
+
+# wait 1 frame (original syntax)
+wait;
+
+# wait 10 frames
+wait 10;
+
+# wait variable frames
+var n = 5;
+wait n;
+
+# wait expression frames
+wait n + 5;
+
+# wait 0 (no-op)
+wait 0;
+
+# wait with function call
+fn get_delay() -> int {
+    return 30;
+}
+wait get_delay();

@@ -188,6 +188,10 @@ pub enum DiagnosticMessage {
         operator: String,
         actual_count: usize,
     },
+    TypeMismatch {
+        expected: Type,
+        got: Type,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -467,6 +471,9 @@ impl DiagnosticMessage {
                 format!(
                     "operator `{operator}` function must return exactly one value, but returns {actual_count}"
                 )
+            }
+            DiagnosticMessage::TypeMismatch { expected, got } => {
+                format!("expected `{expected}`, got `{got}`")
             }
 
             // Parse errors
@@ -768,6 +775,12 @@ pub enum ErrorKind {
         actual_count: usize,
     },
 
+    /// Expected a specific type but got something else (e.g., wait frames must be int)
+    TypeMismatch {
+        expected: Type,
+        got: Type,
+    },
+
     // Parse errors
     UnrecognizedEof {
         expected: Box<[String]>,
@@ -841,6 +854,7 @@ impl ErrorKind {
             Self::OperatorRequiresTwoArguments { .. } => "E0049",
             Self::NoOperatorOverload { .. } => "E0050",
             Self::OperatorMustReturnOneValue { .. } => "E0051",
+            Self::TypeMismatch { .. } => "E0054",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -1044,6 +1058,10 @@ impl ErrorKind {
             } => DiagnosticMessage::OperatorMustReturnOneValue {
                 operator: operator.clone(),
                 actual_count: *actual_count,
+            },
+            Self::TypeMismatch { expected, got } => DiagnosticMessage::TypeMismatch {
+                expected: *expected,
+                got: *got,
             },
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {

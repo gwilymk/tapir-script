@@ -125,7 +125,7 @@ fn extract_from_statements(
                     extract_from_expression(expr, signatures, call_sites);
                 }
             }
-            StatementKind::Wait
+            StatementKind::Wait { .. }
             | StatementKind::Break
             | StatementKind::Continue
             | StatementKind::Nop

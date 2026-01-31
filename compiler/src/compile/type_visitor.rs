@@ -814,8 +814,20 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
     ) -> BlockAnalysisResult {
         for statement in ast.iter_mut() {
             match &mut statement.kind {
-                ast::StatementKind::Wait
-                | ast::StatementKind::Break
+                ast::StatementKind::Wait { frames } => {
+                    if let Some(frames_expr) = frames {
+                        let frames_ty = self.type_for_expression(frames_expr, symtab, diagnostics);
+                        if frames_ty != Type::Int && frames_ty != Type::Error {
+                            ErrorKind::TypeMismatch {
+                                expected: Type::Int,
+                                got: frames_ty,
+                            }
+                            .at(frames_expr.span, DiagnosticMessage::HasType { ty: frames_ty })
+                            .emit(diagnostics);
+                        }
+                    }
+                }
+                ast::StatementKind::Break
                 | ast::StatementKind::Continue
                 | ast::StatementKind::Nop
                 | ast::StatementKind::Error => {}

@@ -146,6 +146,12 @@ impl Type1 {
         Self::new0(Opcode::Wait)
     }
 
+    /// Wait N frames (read count from register).
+    /// Format: target = frames register, a = 1 (has_frames flag), b = unused
+    pub const fn wait_n(frames_reg: u8) -> Self {
+        Self::new2(Opcode::Wait, frames_reg, 1)
+    }
+
     pub const fn mov(target: u8, source: u8) -> Self {
         Self::new2(Opcode::Mov, target, source)
     }

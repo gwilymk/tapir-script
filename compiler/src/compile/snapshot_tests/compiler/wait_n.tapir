@@ -1,0 +1,14 @@
+property x: int;
+
+# wait 1 frame (original syntax)
+wait;
+
+# wait 10 frames
+wait 10;
+
+# wait variable frames
+var n = 5;
+wait n;
+
+# wait expression frames
+wait n + 5;

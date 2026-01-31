@@ -1,0 +1,5 @@
+property x: int;
+
+# wait with fix (should fail)
+var f: fix = 1.5;
+wait f;

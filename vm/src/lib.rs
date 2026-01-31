@@ -836,4 +836,177 @@ mod test {
         // Point(2, 3).scale(3) = Point(6, 9), sum = 15
         assert_eq!(prop_object.int_prop, 15);
     }
+
+    #[test]
+    fn wait_zero_is_noop() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+            enable_prelude: true,
+        };
+
+        // wait 0 should not advance the frame
+        let source = "property prop: int;\nvar f1 = frame();\nwait 0;\nprop = frame() - f1;";
+        let compile_result =
+            compiler::compile("wait_zero.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // Frame difference should be 0 because wait 0 is a no-op
+        assert_eq!(prop_object.int_prop, 0);
+    }
+
+    #[test]
+    fn wait_one_same_as_wait() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+            enable_prelude: true,
+        };
+
+        // wait 1 should behave the same as wait
+        let source = "property prop: int;\nvar f1 = frame();\nwait 1;\nprop = frame() - f1;";
+        let compile_result =
+            compiler::compile("wait_one.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        // Run until completion
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // Frame difference should be 1
+        assert_eq!(prop_object.int_prop, 1);
+    }
+
+    #[test]
+    fn wait_n_waits_multiple_frames() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+            enable_prelude: true,
+        };
+
+        // wait 5 should wait 5 frames
+        let source = "property prop: int;\nvar start = frame();\nwait 5;\nprop = frame() - start;";
+        let compile_result =
+            compiler::compile("wait_n.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        // Run until completion
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // Frame difference should be 5
+        assert_eq!(prop_object.int_prop, 5);
+    }
+
+    #[test]
+    fn wait_negative_is_noop() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+            enable_prelude: true,
+        };
+
+        // wait with negative value should be no-op
+        let source =
+            "property prop: int;\nvar start = frame();\nwait 0 - 10;\nprop = frame() - start;";
+        let compile_result =
+            compiler::compile("wait_negative.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // Frame difference should be 0 because negative wait is no-op
+        assert_eq!(prop_object.int_prop, 0);
+    }
+
+    #[test]
+    fn wait_with_variable() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+            enable_prelude: true,
+        };
+
+        // wait with variable
+        let source =
+            "property prop: int;\nvar n = 3;\nvar start = frame();\nwait n;\nprop = frame() - start;";
+        let compile_result =
+            compiler::compile("wait_var.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // Frame difference should be 3
+        assert_eq!(prop_object.int_prop, 3);
+    }
+
+    #[test]
+    fn wait_with_expression() {
+        let compile_settings = CompileSettings {
+            available_fields: Some(vec!["prop".to_string()]),
+            enable_optimisations: false,
+            enable_prelude: true,
+        };
+
+        // wait with expression
+        let source =
+            "property prop: int;\nvar n = 2;\nvar start = frame();\nwait n + 3;\nprop = frame() - start;";
+        let compile_result =
+            compiler::compile("wait_expr.tapir", source, compile_settings).unwrap();
+
+        let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+        let mut prop_object = PropObj { int_prop: 999 };
+
+        while !vm.states.is_empty() {
+            let mut object_safe_props = ObjectSafePropertiesImpl {
+                properties: &mut prop_object,
+                events: vec![],
+            };
+            vm.run_until_wait(&mut object_safe_props);
+        }
+
+        // Frame difference should be 5 (2 + 3)
+        assert_eq!(prop_object.int_prop, 5);
+    }
 }

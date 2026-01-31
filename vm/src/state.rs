@@ -14,6 +14,8 @@ pub(crate) struct State {
     pub task_id: u32,
     /// Whether this state has been cancelled
     pub cancelled: bool,
+    /// Remaining frames to wait (0 = not waiting)
+    wait_remaining: i32,
 }
 
 pub(crate) enum RunResult {
@@ -35,6 +37,7 @@ impl State {
             stack_offset: 0,
             task_id: 0,
             cancelled: false,
+            wait_remaining: 0,
         }
     }
 
@@ -45,6 +48,7 @@ impl State {
             stack_offset: 0,
             task_id,
             cancelled: false,
+            wait_remaining: 0,
         }
     }
 
@@ -61,6 +65,12 @@ impl State {
         globals: &mut [i32],
         next_task_id: &mut u32,
     ) -> RunResult {
+        // Check if still waiting from a previous WaitN
+        if self.wait_remaining > 0 {
+            self.wait_remaining -= 1;
+            return RunResult::Waiting;
+        }
+
         loop {
             let Some(&instr) = bytecode.get(self.pc) else {
                 return RunResult::Finished;
@@ -202,7 +212,26 @@ impl State {
                     self.pc = new_pc as usize + 1; // skip the jump instruction
                 }
                 O::Wait => {
-                    return RunResult::Waiting;
+                    type1!(frames_reg, has_frames);
+
+                    if has_frames == 0 {
+                        // Simple wait 1 frame (original behavior)
+                        return RunResult::Waiting;
+                    }
+
+                    // Wait N frames
+                    let frames = self.get_reg(frames_reg);
+
+                    if frames <= 0 {
+                        // wait 0 or negative = no-op, continue execution
+                    } else if frames == 1 {
+                        // wait 1 = same as regular wait
+                        return RunResult::Waiting;
+                    } else {
+                        // wait N where N > 1: wait this frame, then N-1 more frames
+                        self.wait_remaining = frames - 1;
+                        return RunResult::Waiting;
+                    }
                 }
 
                 O::LoadConstant => {

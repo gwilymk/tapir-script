@@ -1,0 +1,12 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/wait_wrong_type_fail.tapir
+---
+[E0054] Error: expected `int`, got `fix`
+   ╭─[ wait_wrong_type_fail.tapir:5:6 ]
+   │
+ 5 │ wait f;
+   │      ┬  
+   │      ╰── This has type fix
+───╯
