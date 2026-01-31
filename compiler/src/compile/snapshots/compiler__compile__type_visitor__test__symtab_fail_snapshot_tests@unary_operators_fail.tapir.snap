@@ -1,0 +1,61 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/unary_operators_fail.tapir
+---
+[E0058] Error: Operator `-` cannot be applied to type `bool`
+   ╭─[ unary_operators_fail.tapir:2:16 ]
+   │
+ 2 │ var neg_bool = -true;
+   │                ──┬──  
+   │                  ╰──── Operator `-` cannot be applied to type `bool`
+───╯
+[E0058] Error: Operator `!` cannot be applied to type `int`
+   ╭─[ unary_operators_fail.tapir:5:15 ]
+   │
+ 5 │ var not_int = !42;
+   │               ─┬─  
+   │                ╰─── Operator `!` cannot be applied to type `int`
+───╯
+[E0058] Error: Operator `!` cannot be applied to type `fix`
+   ╭─[ unary_operators_fail.tapir:8:15 ]
+   │
+ 8 │ var not_fix = !1.5;
+   │               ──┬─  
+   │                 ╰─── Operator `!` cannot be applied to type `fix`
+───╯
+[E0058] Error: Operator `~` cannot be applied to type `bool`
+    ╭─[ unary_operators_fail.tapir:11:17 ]
+    │
+ 11 │ var bnot_bool = ~true;
+    │                 ──┬──  
+    │                   ╰──── Operator `~` cannot be applied to type `bool`
+────╯
+[E0058] Error: Operator `~` cannot be applied to type `fix`
+    ╭─[ unary_operators_fail.tapir:14:16 ]
+    │
+ 14 │ var bnot_fix = ~1.5;
+    │                ──┬─  
+    │                  ╰─── Operator `~` cannot be applied to type `fix`
+────╯
+[E0058] Error: Operator `-` cannot be applied to type `bool`
+    ╭─[ unary_operators_fail.tapir:19:13 ]
+    │
+ 19 │     var y = -x;
+    │             ─┬  
+    │              ╰── Operator `-` cannot be applied to type `bool`
+────╯
+[E0058] Error: Operator `!` cannot be applied to type `int`
+    ╭─[ unary_operators_fail.tapir:25:13 ]
+    │
+ 25 │     var y = !x;
+    │             ─┬  
+    │              ╰── Operator `!` cannot be applied to type `int`
+────╯
+[E0058] Error: Operator `~` cannot be applied to type `fix`
+    ╭─[ unary_operators_fail.tapir:31:13 ]
+    │
+ 31 │     var y = ~x;
+    │             ─┬  
+    │              ╰── Operator `~` cannot be applied to type `fix`
+────╯

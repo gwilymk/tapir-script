@@ -1,0 +1,1366 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/unary_operators.tapir
+---
+Script(
+  struct_declarations: [],
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "neg1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Integer(5),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "neg2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Integer(42),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "neg3",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Neg,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "neg4",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Neg,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Integer(10),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "fix1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Fix,
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "fix2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Fix,
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "not1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Not,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "not2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Not,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Bool(false),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "not3",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Not,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Not,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Bool(true),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "bnot1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: BitNot,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Integer(0),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "bnot2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: BitNot,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Integer(255),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "bnot3",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: BitNot,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: BitNot,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Integer(42),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "combo1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Neg,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(3),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "combo2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(10),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Neg,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "combo3",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Neg,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Mul,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Neg,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "combo4",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Not,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Bool(true),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: Or,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Bool(false),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "combo5",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Bool(true),
+                    meta: {},
+                  ),
+                  operator: And,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Not,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Bool(false),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "combo6",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: BitNot,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: Integer(255),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  operator: BitAnd,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(15),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "nested1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Neg,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: UnaryOperation(
+                          operator: Neg,
+                          operand: Expression(
+                            span: "[span]",
+                            kind: Integer(5),
+                            meta: {},
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "nested2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Not,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: Not,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: UnaryOperation(
+                          operator: Not,
+                          operand: Expression(
+                            span: "[span]",
+                            kind: Bool(true),
+                            meta: {},
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "nested3",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: BitNot,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: UnaryOperation(
+                      operator: BitNot,
+                      operand: Expression(
+                        span: "[span]",
+                        kind: UnaryOperation(
+                          operator: BitNot,
+                          operand: Expression(
+                            span: "[span]",
+                            kind: Integer(0),
+                            meta: {},
+                          ),
+                        ),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "paren1",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(5),
+                        meta: {},
+                      ),
+                      operator: Add,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "paren2",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Not,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Bool(true),
+                        meta: {},
+                      ),
+                      operator: And,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Bool(false),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "paren3",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: BitNot,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(255),
+                        meta: {},
+                      ),
+                      operator: BitOr,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(15),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "test_unary_on_vars",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "x",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(5),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "y",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Bool(true),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "z",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(255),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "a",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Variable("x"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "b",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Not,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Variable("y"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "c",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: BitNot,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Variable("z"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "negate",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Neg,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Variable("a"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "invert",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Return(
+            values: [
+              Expression(
+                span: "[span]",
+                kind: UnaryOperation(
+                  operator: Not,
+                  operand: Expression(
+                    span: "[span]",
+                    kind: Variable("a"),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "a",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Bool),
+            name: "bool",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [
+          TypeWithLocation(
+            t: Some(Bool),
+            name: "bool",
+            span: "[span]",
+          ),
+        ],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "unary_in_condition",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: UnaryOperation(
+                operator: Not,
+                operand: Expression(
+                  span: "[span]",
+                  kind: Variable("x"),
+                  meta: {},
+                ),
+              ),
+              meta: {},
+            ),
+            true_block: [
+              Statement(
+                span: "[span]",
+                kind: Wait(
+                  frames: None,
+                ),
+                meta: {},
+              ),
+            ],
+            false_block: [],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Bool),
+            name: "bool",
+            span: "[span]",
+          )),
+        ),
+      ],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "unary_in_loop",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "i",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(10),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Loop(
+            block: [
+              Statement(
+                span: "[span]",
+                kind: If(
+                  condition: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Variable("i"),
+                        meta: {},
+                      ),
+                      operator: EqEq,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(0),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  true_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: Break,
+                      meta: {},
+                    ),
+                  ],
+                  false_block: [],
+                ),
+                meta: {},
+              ),
+              Statement(
+                span: "[span]",
+                kind: Assignment(
+                  targets: [
+                    Expression(
+                      span: "[span]",
+                      kind: Variable("i"),
+                      meta: {},
+                    ),
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: BinaryOperation(
+                        lhs: Expression(
+                          span: "[span]",
+                          kind: Variable("i"),
+                          meta: {},
+                        ),
+                        operator: Add,
+                        rhs: Expression(
+                          span: "[span]",
+                          kind: UnaryOperation(
+                            operator: Neg,
+                            operand: Expression(
+                              span: "[span]",
+                              kind: Integer(1),
+                              meta: {},
+                            ),
+                          ),
+                          meta: {},
+                        ),
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

@@ -1,0 +1,32 @@
+# Error: Cannot negate a bool
+var neg_bool = -true;
+
+# Error: Cannot apply logical NOT to int
+var not_int = !42;
+
+# Error: Cannot apply logical NOT to fix
+var not_fix = !1.5;
+
+# Error: Cannot apply bitwise NOT to bool
+var bnot_bool = ~true;
+
+# Error: Cannot apply bitwise NOT to fix
+var bnot_fix = ~1.5;
+
+# Error: Cannot negate bool variable
+fn test_neg_bool_var() {
+    var x: bool = true;
+    var y = -x;
+}
+
+# Error: Cannot NOT int variable
+fn test_not_int_var() {
+    var x: int = 42;
+    var y = !x;
+}
+
+# Error: Cannot bitwise NOT fix variable
+fn test_bnot_fix_var() {
+    var x: fix = 1.5;
+    var y = ~x;
+}

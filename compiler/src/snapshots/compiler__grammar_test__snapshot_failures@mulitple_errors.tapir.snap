@@ -24,7 +24,7 @@ input_file: compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir
    │         ┬  
    │         ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens spawn, "self", identifier, integer, fix, true, false, "("
+   │ Note: Expected one of tokens spawn, "self", identifier, integer, fix, true, false, "(", "!", "~", "-"
 ───╯
 [E0026] Error: Unexpected token OperatorRealMod
    ╭─[ mulitple_errors.tapir:5:5 ]
@@ -33,7 +33,7 @@ input_file: compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir
    │     ─┬  
    │      ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens spawn, "self", identifier, integer, fix, true, false, "(", ";"
+   │ Note: Expected one of tokens spawn, "self", identifier, integer, fix, true, false, "(", ";", "!", "~", "-"
 ───╯
 [E0026] Error: Unexpected token RParen
    ╭─[ mulitple_errors.tapir:7:18 ]
@@ -42,7 +42,7 @@ input_file: compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir
    │                  ┬  
    │                  ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens spawn, "self", identifier, integer, fix, true, false, "("
+   │ Note: Expected one of tokens spawn, "self", identifier, integer, fix, true, false, "(", "!", "~", "-"
 ───╯
 [E0026] Error: Unexpected token Semicolon
    ╭─[ mulitple_errors.tapir:7:25 ]
@@ -51,5 +51,5 @@ input_file: compiler/src/snapshot_tests/grammar/errors/mulitple_errors.tapir
    │                         ┬  
    │                         ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens spawn, "self", identifier, integer, fix, true, false, "("
+   │ Note: Expected one of tokens spawn, "self", identifier, integer, fix, true, false, "(", "!", "~", "-"
 ───╯

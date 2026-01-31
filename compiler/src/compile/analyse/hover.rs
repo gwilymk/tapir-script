@@ -603,6 +603,16 @@ fn extract_from_expression(
                 hover_info,
             );
         }
+        ExpressionKind::UnaryOperation { operand, .. } => {
+            extract_from_expression(
+                operand,
+                symtab,
+                type_table,
+                struct_registry,
+                function_signatures,
+                hover_info,
+            );
+        }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)

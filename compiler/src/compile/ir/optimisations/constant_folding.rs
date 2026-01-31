@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use agb_fixnum::Num;
 
 use crate::{
-    ast::BinaryOperator,
+    ast::{BinaryOperator, UnaryOperator},
     compile::{
         ir::{
             Constant, SymbolSpans, TapIr, TapIrFunction, TapIrFunctionBlockIter,
@@ -136,6 +136,39 @@ pub fn constant_folding(
                     None => {
                         // Unknown builtin - shouldn't happen
                     }
+                }
+                continue;
+            }
+
+            // Handle UnaryOp folding
+            if let TapIr::UnaryOp {
+                target,
+                operand,
+                op,
+            } = instr
+            {
+                if let Some(operand_val) = constants.get(operand).copied() {
+                    let result = match (op, operand_val) {
+                        (UnaryOperator::Neg, Constant::Int(v)) => {
+                            if let Some(neg) = v.checked_neg() {
+                                Constant::Int(neg)
+                            } else {
+                                // Overflow (e.g., -i32::MIN)
+                                if let Some(span) = symbol_spans.get(*target) {
+                                    WarningKind::IntegerOverflow
+                                        .at(span, DiagnosticMessage::OperationOccursHere)
+                                        .emit(diagnostics);
+                                }
+                                continue;
+                            }
+                        }
+                        (UnaryOperator::Neg, Constant::Fix(v)) => Constant::Fix(-v),
+                        (UnaryOperator::Not, Constant::Bool(v)) => Constant::Bool(!v),
+                        (UnaryOperator::BitNot, Constant::Int(v)) => Constant::Int(!v),
+                        _ => continue,
+                    };
+                    *instr = TapIr::Constant(*target, result);
+                    did_something = OptimisationResult::DidSomething;
                 }
                 continue;
             }

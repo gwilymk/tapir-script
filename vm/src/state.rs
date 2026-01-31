@@ -134,6 +134,19 @@ impl State {
                 O::BitAnd => binop!(a, b, a & b),
                 O::BitOr => binop!(a, b, a | b),
 
+                O::Neg => {
+                    type1!(target, operand);
+                    self.set_reg(target, -self.get_reg(operand));
+                }
+                O::Not => {
+                    type1!(target, operand);
+                    self.set_reg(target, (self.get_reg(operand) == 0) as i32);
+                }
+                O::BitNot => {
+                    type1!(target, operand);
+                    self.set_reg(target, !self.get_reg(operand));
+                }
+
                 O::GetProp => {
                     type1!(target, prop_index);
                     self.set_reg(target, properties.get_prop(prop_index));

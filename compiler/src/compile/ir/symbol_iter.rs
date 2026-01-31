@@ -16,7 +16,8 @@ impl<'a> SymbolIter<'a> {
         match instr {
             TapIr::Move { source, .. }
             | TapIr::StoreProp { value: source, .. }
-            | TapIr::SetGlobal { value: source, .. } => Self::One(Some(*source)),
+            | TapIr::SetGlobal { value: source, .. }
+            | TapIr::UnaryOp { operand: source, .. } => Self::One(Some(*source)),
             TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
             TapIr::Call { args, .. }
             | TapIr::CallExternal { args, .. }
@@ -36,6 +37,7 @@ impl<'a> SymbolIter<'a> {
             | TapIr::GetProp { target, .. }
             | TapIr::GetGlobal { target, .. }
             | TapIr::BinOp { target, .. }
+            | TapIr::UnaryOp { target, .. }
             | TapIr::CallBuiltin { target, .. }
             | TapIr::Spawn { target, .. } => Self::One(Some(*target)),
             TapIr::Call { target, .. } | TapIr::CallExternal { target, .. } => {
@@ -81,7 +83,8 @@ impl<'a> SymbolIterMut<'a> {
         match instr {
             TapIr::Move { source, .. }
             | TapIr::StoreProp { value: source, .. }
-            | TapIr::SetGlobal { value: source, .. } => Self::One(Some(source)),
+            | TapIr::SetGlobal { value: source, .. }
+            | TapIr::UnaryOp { operand: source, .. } => Self::One(Some(source)),
             TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
             TapIr::Call { args, .. }
             | TapIr::CallExternal { args, .. }
@@ -101,6 +104,7 @@ impl<'a> SymbolIterMut<'a> {
             | TapIr::GetProp { target, .. }
             | TapIr::GetGlobal { target, .. }
             | TapIr::BinOp { target, .. }
+            | TapIr::UnaryOp { target, .. }
             | TapIr::CallBuiltin { target, .. }
             | TapIr::Spawn { target, .. } => Self::One(Some(target)),
             TapIr::Call { target, .. } | TapIr::CallExternal { target, .. } => {

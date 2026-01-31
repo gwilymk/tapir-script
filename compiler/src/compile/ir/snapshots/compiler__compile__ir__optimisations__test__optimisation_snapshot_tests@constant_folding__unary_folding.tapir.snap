@@ -1,0 +1,598 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/unary_folding.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.79 = int 5
+temp.80 = -temp.79
+neg1.81 = temp.80
+temp.82 = int 10
+temp.83 = -temp.82
+temp.84 = -temp.83
+neg2.85 = temp.84
+temp.86 = int 15
+temp.87 = -temp.86
+temp.88 = -temp.87
+neg3.89 = temp.88
+temp.90 = bool true
+temp.91 = !temp.90
+not1.92 = temp.91
+temp.93 = bool false
+temp.94 = !temp.93
+not2.95 = temp.94
+temp.96 = bool true
+temp.97 = !temp.96
+temp.98 = !temp.97
+not3.99 = temp.98
+temp.100 = bool false
+temp.101 = !temp.100
+temp.102 = !temp.101
+temp.103 = !temp.102
+not4.104 = temp.103
+temp.105 = int 0
+temp.106 = ~temp.105
+bnot1.107 = temp.106
+temp.108 = int 255
+temp.109 = ~temp.108
+bnot2.110 = temp.109
+temp.111 = int 42
+temp.112 = ~temp.111
+temp.113 = ~temp.112
+bnot3.114 = temp.113
+temp.115 = fix 1.5
+temp.116 = -temp.115
+fix_neg1.117 = temp.116
+temp.118 = fix 2.25
+temp.119 = -temp.118
+temp.120 = -temp.119
+fix_neg2.121 = temp.120
+temp.122 = int 5
+temp.123 = -temp.122
+temp.124 = int 10
+temp.125 = temp.123 + temp.124
+combo1.126 = temp.125
+temp.127 = int 255
+temp.128 = ~temp.127
+temp.129 = int 15
+temp.130 = temp.128 & temp.129
+combo2.131 = temp.130
+temp.132 = neg1.81
+temp.133 = temp.132
+storeprop temp.133, 0
+wait
+temp.134 = neg2.85
+temp.135 = temp.134
+storeprop temp.135, 0
+wait
+temp.136 = neg3.89
+temp.137 = temp.136
+storeprop temp.137, 0
+wait
+temp.138 = not1.92
+temp.139 = temp.138
+storeprop temp.139, 1
+wait
+temp.140 = not2.95
+temp.141 = temp.140
+storeprop temp.141, 1
+wait
+temp.142 = not3.99
+temp.143 = temp.142
+storeprop temp.143, 1
+wait
+temp.144 = not4.104
+temp.145 = temp.144
+storeprop temp.145, 1
+wait
+temp.146 = bnot1.107
+temp.147 = temp.146
+storeprop temp.147, 0
+wait
+temp.148 = bnot2.110
+temp.149 = temp.148
+storeprop temp.149, 0
+wait
+temp.150 = bnot3.114
+temp.151 = temp.150
+storeprop temp.151, 0
+wait
+temp.152 = combo1.126
+temp.153 = temp.152
+storeprop temp.153, 0
+wait
+temp.154 = combo2.131
+temp.155 = temp.154
+storeprop temp.155, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.79 = int 5
+temp.80 = -temp.79
+neg1.81 = temp.80
+temp.82 = int 10
+temp.83 = -temp.82
+temp.84 = -temp.83
+neg2.85 = temp.84
+temp.86 = int 15
+temp.87 = -temp.86
+temp.88 = -temp.87
+neg3.89 = temp.88
+temp.90 = bool true
+temp.91 = !temp.90
+not1.92 = temp.91
+temp.93 = bool false
+temp.94 = !temp.93
+not2.95 = temp.94
+temp.96 = bool true
+temp.97 = !temp.96
+temp.98 = !temp.97
+not3.99 = temp.98
+temp.100 = bool false
+temp.101 = !temp.100
+temp.102 = !temp.101
+temp.103 = !temp.102
+not4.104 = temp.103
+temp.105 = int 0
+temp.106 = ~temp.105
+bnot1.107 = temp.106
+temp.108 = int 255
+temp.109 = ~temp.108
+bnot2.110 = temp.109
+temp.111 = int 42
+temp.112 = ~temp.111
+temp.113 = ~temp.112
+bnot3.114 = temp.113
+temp.115 = fix 1.5
+temp.116 = -temp.115
+fix_neg1.117 = temp.116
+temp.118 = fix 2.25
+temp.119 = -temp.118
+temp.120 = -temp.119
+fix_neg2.121 = temp.120
+temp.122 = int 5
+temp.123 = -temp.122
+temp.124 = int 10
+temp.125 = temp.123 + temp.124
+combo1.126 = temp.125
+temp.127 = int 255
+temp.128 = ~temp.127
+temp.129 = int 15
+temp.130 = temp.128 & temp.129
+combo2.131 = temp.130
+temp.132 = temp.80
+temp.133 = temp.80
+storeprop temp.80, 0
+wait
+temp.134 = temp.84
+temp.135 = temp.84
+storeprop temp.84, 0
+wait
+temp.136 = temp.88
+temp.137 = temp.88
+storeprop temp.88, 0
+wait
+temp.138 = temp.91
+temp.139 = temp.91
+storeprop temp.91, 1
+wait
+temp.140 = temp.94
+temp.141 = temp.94
+storeprop temp.94, 1
+wait
+temp.142 = temp.98
+temp.143 = temp.98
+storeprop temp.98, 1
+wait
+temp.144 = temp.103
+temp.145 = temp.103
+storeprop temp.103, 1
+wait
+temp.146 = temp.106
+temp.147 = temp.106
+storeprop temp.106, 0
+wait
+temp.148 = temp.109
+temp.149 = temp.109
+storeprop temp.109, 0
+wait
+temp.150 = temp.113
+temp.151 = temp.113
+storeprop temp.113, 0
+wait
+temp.152 = temp.125
+temp.153 = temp.125
+storeprop temp.125, 0
+wait
+temp.154 = temp.130
+temp.155 = temp.130
+storeprop temp.130, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.79 = int 5
+temp.80 = -temp.79
+temp.82 = int 10
+temp.83 = -temp.82
+temp.84 = -temp.83
+temp.86 = int 15
+temp.87 = -temp.86
+temp.88 = -temp.87
+temp.90 = bool true
+temp.91 = !temp.90
+temp.93 = bool false
+temp.94 = !temp.93
+temp.96 = bool true
+temp.97 = !temp.96
+temp.98 = !temp.97
+temp.100 = bool false
+temp.101 = !temp.100
+temp.102 = !temp.101
+temp.103 = !temp.102
+temp.105 = int 0
+temp.106 = ~temp.105
+temp.108 = int 255
+temp.109 = ~temp.108
+temp.111 = int 42
+temp.112 = ~temp.111
+temp.113 = ~temp.112
+temp.115 = fix 1.5
+temp.116 = -temp.115
+temp.118 = fix 2.25
+temp.119 = -temp.118
+temp.120 = -temp.119
+temp.122 = int 5
+temp.123 = -temp.122
+temp.124 = int 10
+temp.125 = temp.123 + temp.124
+temp.127 = int 255
+temp.128 = ~temp.127
+temp.129 = int 15
+temp.130 = temp.128 & temp.129
+storeprop temp.80, 0
+wait
+storeprop temp.84, 0
+wait
+storeprop temp.88, 0
+wait
+storeprop temp.91, 1
+wait
+storeprop temp.94, 1
+wait
+storeprop temp.98, 1
+wait
+storeprop temp.103, 1
+wait
+storeprop temp.106, 0
+wait
+storeprop temp.109, 0
+wait
+storeprop temp.113, 0
+wait
+storeprop temp.125, 0
+wait
+storeprop temp.130, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.79 = int 5
+temp.80 = int -5
+temp.82 = int 10
+temp.83 = int -10
+temp.84 = -temp.83
+temp.86 = int 15
+temp.87 = int -15
+temp.88 = -temp.87
+temp.90 = bool true
+temp.91 = bool false
+temp.93 = bool false
+temp.94 = bool true
+temp.96 = bool true
+temp.97 = bool false
+temp.98 = !temp.97
+temp.100 = bool false
+temp.101 = bool true
+temp.102 = !temp.101
+temp.103 = !temp.102
+temp.105 = int 0
+temp.106 = int -1
+temp.108 = int 255
+temp.109 = int -256
+temp.111 = int 42
+temp.112 = int -43
+temp.113 = ~temp.112
+temp.115 = fix 1.5
+temp.116 = fix -1.5
+temp.118 = fix 2.25
+temp.119 = fix -2.25
+temp.120 = -temp.119
+temp.122 = int 5
+temp.123 = int -5
+temp.124 = int 10
+temp.125 = temp.123 + temp.124
+temp.127 = int 255
+temp.128 = int -256
+temp.129 = int 15
+temp.130 = temp.128 & temp.129
+storeprop temp.80, 0
+wait
+storeprop temp.84, 0
+wait
+storeprop temp.88, 0
+wait
+storeprop temp.91, 1
+wait
+storeprop temp.94, 1
+wait
+storeprop temp.98, 1
+wait
+storeprop temp.103, 1
+wait
+storeprop temp.106, 0
+wait
+storeprop temp.109, 0
+wait
+storeprop temp.113, 0
+wait
+storeprop temp.125, 0
+wait
+storeprop temp.130, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.80 = int -5
+temp.83 = int -10
+temp.84 = -temp.83
+temp.87 = int -15
+temp.88 = -temp.87
+temp.91 = bool false
+temp.94 = bool true
+temp.97 = bool false
+temp.98 = !temp.97
+temp.101 = bool true
+temp.102 = !temp.101
+temp.103 = !temp.102
+temp.106 = int -1
+temp.109 = int -256
+temp.112 = int -43
+temp.113 = ~temp.112
+temp.119 = fix -2.25
+temp.123 = int -5
+temp.124 = int 10
+temp.125 = temp.123 + temp.124
+temp.128 = int -256
+temp.129 = int 15
+temp.130 = temp.128 & temp.129
+storeprop temp.80, 0
+wait
+storeprop temp.84, 0
+wait
+storeprop temp.88, 0
+wait
+storeprop temp.91, 1
+wait
+storeprop temp.94, 1
+wait
+storeprop temp.98, 1
+wait
+storeprop temp.103, 1
+wait
+storeprop temp.106, 0
+wait
+storeprop temp.109, 0
+wait
+storeprop temp.113, 0
+wait
+storeprop temp.125, 0
+wait
+storeprop temp.130, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.80 = int -5
+temp.83 = int -10
+temp.84 = int 10
+temp.87 = int -15
+temp.88 = int 15
+temp.91 = bool false
+temp.94 = bool true
+temp.97 = bool false
+temp.98 = bool true
+temp.101 = bool true
+temp.102 = bool false
+temp.103 = !temp.102
+temp.106 = int -1
+temp.109 = int -256
+temp.112 = int -43
+temp.113 = int 42
+temp.119 = fix -2.25
+temp.123 = int -5
+temp.124 = int 10
+temp.125 = int 5
+temp.128 = int -256
+temp.129 = int 15
+temp.130 = int 0
+storeprop temp.80, 0
+wait
+storeprop temp.84, 0
+wait
+storeprop temp.88, 0
+wait
+storeprop temp.91, 1
+wait
+storeprop temp.94, 1
+wait
+storeprop temp.98, 1
+wait
+storeprop temp.103, 1
+wait
+storeprop temp.106, 0
+wait
+storeprop temp.109, 0
+wait
+storeprop temp.113, 0
+wait
+storeprop temp.125, 0
+wait
+storeprop temp.130, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.80 = int -5
+temp.84 = int 10
+temp.88 = int 15
+temp.91 = bool false
+temp.94 = bool true
+temp.98 = bool true
+temp.102 = bool false
+temp.103 = !temp.102
+temp.106 = int -1
+temp.109 = int -256
+temp.113 = int 42
+temp.125 = int 5
+temp.130 = int 0
+storeprop temp.80, 0
+wait
+storeprop temp.84, 0
+wait
+storeprop temp.88, 0
+wait
+storeprop temp.91, 1
+wait
+storeprop temp.94, 1
+wait
+storeprop temp.98, 1
+wait
+storeprop temp.103, 1
+wait
+storeprop temp.106, 0
+wait
+storeprop temp.109, 0
+wait
+storeprop temp.113, 0
+wait
+storeprop temp.125, 0
+wait
+storeprop temp.130, 0
+return 
+
+
+----------- constant_folding -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.80 = int -5
+temp.84 = int 10
+temp.88 = int 15
+temp.91 = bool false
+temp.94 = bool true
+temp.98 = bool true
+temp.102 = bool false
+temp.103 = bool true
+temp.106 = int -1
+temp.109 = int -256
+temp.113 = int 42
+temp.125 = int 5
+temp.130 = int 0
+storeprop temp.80, 0
+wait
+storeprop temp.84, 0
+wait
+storeprop temp.88, 0
+wait
+storeprop temp.91, 1
+wait
+storeprop temp.94, 1
+wait
+storeprop temp.98, 1
+wait
+storeprop temp.103, 1
+wait
+storeprop temp.106, 0
+wait
+storeprop temp.109, 0
+wait
+storeprop temp.113, 0
+wait
+storeprop temp.125, 0
+wait
+storeprop temp.130, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.80 = int -5
+temp.84 = int 10
+temp.88 = int 15
+temp.91 = bool false
+temp.94 = bool true
+temp.98 = bool true
+temp.103 = bool true
+temp.106 = int -1
+temp.109 = int -256
+temp.113 = int 42
+temp.125 = int 5
+temp.130 = int 0
+storeprop temp.80, 0
+wait
+storeprop temp.84, 0
+wait
+storeprop temp.88, 0
+wait
+storeprop temp.91, 1
+wait
+storeprop temp.94, 1
+wait
+storeprop temp.98, 1
+wait
+storeprop temp.103, 1
+wait
+storeprop temp.106, 0
+wait
+storeprop temp.109, 0
+wait
+storeprop temp.113, 0
+wait
+storeprop temp.125, 0
+wait
+storeprop temp.130, 0
+return

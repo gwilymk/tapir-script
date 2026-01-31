@@ -33,6 +33,11 @@ pub enum Opcode {
     BitAnd,
     BitOr,
 
+    // Unary ops
+    Neg,
+    Not,
+    BitNot,
+
     GetProp,
     SetProp,
     GetGlobal,
@@ -163,6 +168,15 @@ impl Type1 {
         );
 
         Self::new3(opcode, target, lhs, rhs)
+    }
+
+    pub const fn unaryop(opcode: Opcode, target: u8, operand: u8) -> Self {
+        assert!(
+            opcode as u8 >= Opcode::Neg as u8 && opcode as u8 <= Opcode::BitNot as u8,
+            "Invalid opcode for unary operator",
+        );
+
+        Self::new2(opcode, target, operand)
     }
 
     pub const fn jump_if(target: u8) -> Self {

@@ -1,0 +1,75 @@
+# Unary negation
+var neg1 = -5;
+var neg2 = -42;
+var neg3 = --5;
+var neg4 = -(-10);
+
+# Unary negation on fix
+var fix1 = -1.5;
+var fix2 = -0.25;
+
+# Logical NOT
+var not1 = !true;
+var not2 = !false;
+var not3 = !!true;
+
+# Bitwise NOT
+var bnot1 = ~0;
+var bnot2 = ~255;
+var bnot3 = ~~42;
+
+# Combined with binary operators
+var combo1 = -5 + 3;
+var combo2 = 10 + -5;
+var combo3 = -5 * -3;
+var combo4 = !true || false;
+var combo5 = true && !false;
+var combo6 = ~255 & 15;
+
+# Nested unary operators
+var nested1 = -(-(-5));
+var nested2 = !!!true;
+var nested3 = ~~~0;
+
+# Unary on parenthesized expressions
+var paren1 = -(5 + 3);
+var paren2 = !(true && false);
+var paren3 = ~(255 | 15);
+
+# Unary on variables
+fn test_unary_on_vars() {
+    var x = 5;
+    var y = true;
+    var z = 255;
+
+    var a = -x;
+    var b = !y;
+    var c = ~z;
+}
+
+# Unary in function calls
+fn negate(a: int) -> int {
+    return -a;
+}
+
+fn invert(a: bool) -> bool {
+    return !a;
+}
+
+# Unary in conditions
+fn unary_in_condition(x: bool) {
+    if !x {
+        wait;
+    }
+}
+
+# Unary in loops
+fn unary_in_loop() {
+    var i = 10;
+    loop {
+        if i == 0 {
+            break;
+        }
+        i = i + -1;
+    }
+}

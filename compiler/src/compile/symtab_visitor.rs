@@ -715,6 +715,9 @@ impl<'input> SymTabVisitor<'input> {
                 self.visit_expr(lhs, diagnostics);
                 self.visit_expr(rhs, diagnostics);
             }
+            ExpressionKind::UnaryOperation { operand, .. } => {
+                self.visit_expr(operand, diagnostics);
+            }
             ExpressionKind::Call { arguments, name } => {
                 if let Some(function) = self.function_names.get(*name) {
                     expr.meta.set(*function);

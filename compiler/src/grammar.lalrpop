@@ -77,6 +77,8 @@ extern {
         ">>" => Token::OperatorShr,
         "&" => Token::OperatorBitAnd,
         "|" => Token::OperatorBitOr,
+        "!" => Token::OperatorNot,
+        "~" => Token::OperatorBitNot,
         "." => Token::Dot,
     }
 }
@@ -135,6 +137,10 @@ BuiltinFunctionDecl: BuiltinFunction<'input> = {
 BuiltinId: BuiltinFunctionId = {
     <value: integer> => match value.parse::<i16>() {
         Ok(id) => BuiltinFunctionId(id),
+        Err(_) => BuiltinFunctionId(0), // Error handling could be improved
+    },
+    "-" <value: integer> => match value.parse::<i16>() {
+        Ok(id) => BuiltinFunctionId(-id),
         Err(_) => BuiltinFunctionId(0), // Error handling could be improved
     },
 }
@@ -354,7 +360,7 @@ ElseBlock = "else" <Block>;
 
 Expression: Expression<'input> = {
     #[precedence(level="1")]
-    <PostfixExpr>,
+    <UnaryExpr>,
 
     #[precedence(level="2")]
     #[assoc(side="left")]
@@ -427,6 +433,28 @@ ComparisonOp: BinaryOperator = {
     ">=" => BinaryOperator::GtEq,
     "<" => BinaryOperator::Lt,
     "<=" => BinaryOperator::LtEq,
+}
+
+UnaryExpr: Expression<'input> = {
+    <PostfixExpr>,
+    // Unary negation
+    <start:@L> "-" <operand:UnaryExpr> <end:@R> =>
+        ExpressionKind::UnaryOperation {
+            operator: UnaryOperator::Neg,
+            operand: Box::new(operand),
+        }.with_span(file_id, start, end),
+    // Logical NOT
+    <start:@L> "!" <operand:UnaryExpr> <end:@R> =>
+        ExpressionKind::UnaryOperation {
+            operator: UnaryOperator::Not,
+            operand: Box::new(operand),
+        }.with_span(file_id, start, end),
+    // Bitwise NOT
+    <start:@L> "~" <operand:UnaryExpr> <end:@R> =>
+        ExpressionKind::UnaryOperation {
+            operator: UnaryOperator::BitNot,
+            operand: Box::new(operand),
+        }.with_span(file_id, start, end),
 }
 
 PostfixExpr: Expression<'input> = {

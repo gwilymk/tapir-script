@@ -146,9 +146,9 @@ pub enum Token<'input> {
 
     #[regex("[_a-zA-Z][_0-9a-zA-Z]*", |lex| lex.slice())]
     Identifier(&'input str),
-    #[regex("-?[0-9]+", |lex| lex.slice())]
+    #[regex("[0-9]+", |lex| lex.slice())]
     Integer(&'input str),
-    #[regex("-?[0-9]+\\.[0-9]*", |lex| lex.slice())]
+    #[regex("[0-9]+\\.[0-9]*", |lex| lex.slice())]
     Fix(&'input str),
 
     #[token("{")]
@@ -210,4 +210,8 @@ pub enum Token<'input> {
     OperatorBitAnd,
     #[token("|")]
     OperatorBitOr,
+    #[token("!")]
+    OperatorNot,
+    #[token("~")]
+    OperatorBitNot,
 }

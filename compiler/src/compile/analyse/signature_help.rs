@@ -182,6 +182,9 @@ fn extract_from_expression(
         ExpressionKind::Spawn { call } => {
             extract_from_expression(call, signatures, call_sites);
         }
+        ExpressionKind::UnaryOperation { operand, .. } => {
+            extract_from_expression(operand, signatures, call_sites);
+        }
         ExpressionKind::Variable(_)
         | ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)

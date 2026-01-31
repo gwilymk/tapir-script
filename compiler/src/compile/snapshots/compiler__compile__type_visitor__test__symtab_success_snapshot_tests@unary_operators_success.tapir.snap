@@ -1,0 +1,31 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/unary_operators_success.tapir
+---
+[
+  ("int1", Int),
+  ("int2", Int),
+  ("int3", Int),
+  ("fix1", Fix),
+  ("fix2", Fix),
+  ("bool1", Bool),
+  ("bool2", Bool),
+  ("bool3", Bool),
+  ("bits1", Int),
+  ("bits2", Int),
+  ("bits3", Int),
+  ("x", Int),
+  ("y", Fix),
+  ("z", Bool),
+  ("w", Int),
+  ("neg_x", Int),
+  ("neg_y", Fix),
+  ("not_z", Bool),
+  ("bnot_w", Int),
+  ("a", Int),
+  ("b", Bool),
+  ("c", Int),
+  ("x", Bool),
+  ("y", Bool),
+]

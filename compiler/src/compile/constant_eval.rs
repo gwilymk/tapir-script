@@ -7,7 +7,7 @@
 use agb_fixnum::Num;
 
 use crate::{
-    ast::{BinaryOperator, Expression, ExpressionKind},
+    ast::{BinaryOperator, Expression, ExpressionKind, UnaryOperator},
     tokens::Span,
 };
 
@@ -53,6 +53,12 @@ pub fn eval_constant_expr(expr: &Expression<'_>) -> Result<ConstantValue, Consta
             let l = eval_constant_expr(lhs)?;
             let r = eval_constant_expr(rhs)?;
             eval_binary_op(*operator, l, r, expr.span)
+        }
+
+        // Unary operations
+        ExpressionKind::UnaryOperation { operator, operand } => {
+            let val = eval_constant_expr(operand)?;
+            eval_unary_op(*operator, val, expr.span)
         }
 
         // Everything else is not a constant expression
@@ -305,6 +311,46 @@ fn eval_fix_int_op(
             span,
             expected: "matching types",
             found: "fix and int",
+        }),
+    }
+}
+
+/// Evaluate a unary operation on a constant value.
+fn eval_unary_op(
+    op: UnaryOperator,
+    val: ConstantValue,
+    span: Span,
+) -> Result<ConstantValue, ConstantEvalError> {
+    use ConstantValue as C;
+
+    match (op, val) {
+        (UnaryOperator::Neg, C::Int(v)) => v
+            .checked_neg()
+            .map(C::Int)
+            .ok_or(ConstantEvalError::IntegerOverflow { span }),
+        (UnaryOperator::Neg, C::Fix(v)) => Ok(C::Fix(-v)),
+        (UnaryOperator::Not, C::Bool(v)) => Ok(C::Bool(!v)),
+        (UnaryOperator::BitNot, C::Int(v)) => Ok(C::Int(!v)),
+        // Type mismatches
+        (UnaryOperator::Neg, C::Bool(_)) => Err(ConstantEvalError::TypeMismatch {
+            span,
+            expected: "int or fix",
+            found: "bool",
+        }),
+        (UnaryOperator::Not, C::Int(_) | C::Fix(_)) => Err(ConstantEvalError::TypeMismatch {
+            span,
+            expected: "bool",
+            found: "int or fix",
+        }),
+        (UnaryOperator::BitNot, C::Bool(_)) => Err(ConstantEvalError::TypeMismatch {
+            span,
+            expected: "int",
+            found: "bool",
+        }),
+        (UnaryOperator::BitNot, C::Fix(_)) => Err(ConstantEvalError::TypeMismatch {
+            span,
+            expected: "int",
+            found: "fix",
         }),
     }
 }

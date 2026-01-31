@@ -29,7 +29,7 @@ use symbol_iter::{SymbolIter, SymbolIterMut};
 
 use crate::{
     FunctionArgument, Type,
-    ast::{self, BinaryOperator, BuiltinFunctionId, ExternalFunctionId, FunctionId, SymbolId},
+    ast::{self, BinaryOperator, BuiltinFunctionId, ExternalFunctionId, FunctionId, SymbolId, UnaryOperator},
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
 };
 
@@ -45,6 +45,11 @@ pub enum TapIr {
         lhs: SymbolId,
         op: BinaryOperator,
         rhs: SymbolId,
+    },
+    UnaryOp {
+        target: SymbolId,
+        operand: SymbolId,
+        op: UnaryOperator,
     },
     /// Wait for frames. None means 1 frame.
     Wait {
@@ -117,6 +122,7 @@ impl TapIr {
             TapIr::Constant(..)
             | TapIr::Move { .. }
             | TapIr::BinOp { .. }
+            | TapIr::UnaryOp { .. }
             | TapIr::GetProp { .. }
             | TapIr::GetGlobal { .. } => false,
             // Pure builtins (id >= 0) have no side effects
@@ -225,6 +231,9 @@ impl TapIrBlock {
                 TapIr::BinOp {
                     target, lhs, rhs, ..
                 } => symbols.extend([*target, *lhs, *rhs]),
+                TapIr::UnaryOp {
+                    target, operand, ..
+                } => symbols.extend([*target, *operand]),
                 TapIr::Wait { frames: Some(f) } => {
                     symbols.insert(*f);
                 }

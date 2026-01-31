@@ -1,0 +1,59 @@
+# copy_propagation, dead_store_elimination, constant_folding
+
+property int_prop: int;
+property bool_prop: bool;
+
+# Negation folding
+var neg1 = -5;
+var neg2 = -(-10);
+var neg3 = --15;
+
+# Logical NOT folding
+var not1 = !true;
+var not2 = !false;
+var not3 = !!true;
+var not4 = !!!false;
+
+# Bitwise NOT folding
+var bnot1 = ~0;
+var bnot2 = ~255;
+var bnot3 = ~~42;
+
+# Fix negation folding
+var fix_neg1 = -1.5;
+var fix_neg2 = -(-2.25);
+
+# Combined with other constant folding
+var combo1 = -5 + 10;
+var combo2 = ~255 & 15;
+
+# Output negation results: -5, 10, 15
+int_prop = neg1;
+wait;
+int_prop = neg2;
+wait;
+int_prop = neg3;
+wait;
+
+# Output logical NOT results: false, true, true, true
+bool_prop = not1;
+wait;
+bool_prop = not2;
+wait;
+bool_prop = not3;
+wait;
+bool_prop = not4;
+wait;
+
+# Output bitwise NOT results: -1, -256, 42
+int_prop = bnot1;
+wait;
+int_prop = bnot2;
+wait;
+int_prop = bnot3;
+wait;
+
+# Output combined results: 5, 0
+int_prop = combo1;
+wait;
+int_prop = combo2;

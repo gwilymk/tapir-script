@@ -1,0 +1,44 @@
+# Unary negation on int
+var int1 = -5;
+var int2 = -42;
+var int3 = --10;
+
+# Unary negation on fix
+var fix1 = -1.5;
+var fix2 = -0.25;
+
+# Logical NOT on bool
+var bool1 = !true;
+var bool2 = !false;
+var bool3 = !!true;
+
+# Bitwise NOT on int
+var bits1 = ~0;
+var bits2 = ~255;
+var bits3 = ~~42;
+
+# Unary operators with variables
+fn test_with_variables() {
+    var x: int = 5;
+    var y: fix = 1.5;
+    var z: bool = true;
+    var w: int = 255;
+
+    var neg_x = -x;
+    var neg_y = -y;
+    var not_z = !z;
+    var bnot_w = ~w;
+}
+
+# Unary in expressions
+fn test_in_expressions() {
+    var a = -5 + 3;
+    var b = !true || false;
+    var c = ~255 & 15;
+}
+
+# Unary with comparison
+fn test_with_comparison() {
+    var x = -5 < 0;
+    var y = !false == true;
+}

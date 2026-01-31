@@ -1172,6 +1172,31 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     unreachable!()
                 }
             }
+            ast::ExpressionKind::UnaryOperation { operator, operand } => {
+                let operand_type = self.type_for_expression(operand, symtab, diagnostics);
+
+                if operand_type == Type::Error {
+                    return Type::Error;
+                }
+
+                if !operator.can_handle_type(operand_type) {
+                    ErrorKind::InvalidTypeForUnaryOperator {
+                        operator: *operator,
+                        operand_type,
+                    }
+                    .at(
+                        expression.span,
+                        DiagnosticMessage::UnaryOperatorCannotHandleType {
+                            operator: *operator,
+                            operand_type,
+                        },
+                    )
+                    .emit(diagnostics);
+                    return Type::Error;
+                }
+
+                operator.resulting_type(operand_type)
+            }
             ast::ExpressionKind::Error => Type::Error,
             ast::ExpressionKind::Nop => Type::Error,
             ast::ExpressionKind::Call { name, arguments } => {

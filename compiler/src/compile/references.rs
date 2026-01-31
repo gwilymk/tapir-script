@@ -319,6 +319,15 @@ fn extract_references_from_expression(
                 references,
             );
         }
+        ExpressionKind::UnaryOperation { operand, .. } => {
+            extract_references_from_expression(
+                operand,
+                symtab,
+                struct_registry,
+                function_spans,
+                references,
+            );
+        }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)
         | ExpressionKind::Bool(_)

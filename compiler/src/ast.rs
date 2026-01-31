@@ -546,6 +546,9 @@ impl<'input> Expression<'input> {
                     .chain(lhs.all_inner())
                     .chain(rhs.all_inner()),
             ),
+            ExpressionKind::UnaryOperation { operand, .. } => {
+                Box::new(iter::once(self).chain(operand.all_inner()))
+            }
             ExpressionKind::FieldAccess { base, .. } => {
                 Box::new(iter::once(self).chain(base.all_inner()))
             }
@@ -573,6 +576,10 @@ pub enum ExpressionKind<'input> {
         lhs: Box<Expression<'input>>,
         operator: BinaryOperator,
         rhs: Box<Expression<'input>>,
+    },
+    UnaryOperation {
+        operator: UnaryOperator,
+        operand: Box<Expression<'input>>,
     },
     Error,
     #[default]
@@ -610,6 +617,50 @@ impl<'input> ExpressionKind<'input> {
 
             meta: Metadata::new(),
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Eq)]
+pub enum UnaryOperator {
+    /// Arithmetic negation: -x
+    Neg,
+    /// Logical NOT: !x
+    Not,
+    /// Bitwise NOT: ~x
+    BitNot,
+}
+
+impl UnaryOperator {
+    /// Returns whether this operator can be applied to the given type.
+    pub fn can_handle_type(self, operand_type: Type) -> bool {
+        match self {
+            UnaryOperator::Neg => matches!(operand_type, Type::Int | Type::Fix),
+            UnaryOperator::Not => matches!(operand_type, Type::Bool),
+            UnaryOperator::BitNot => matches!(operand_type, Type::Int),
+        }
+    }
+
+    /// Returns the result type of applying this operator to the given type.
+    pub fn resulting_type(self, operand_type: Type) -> Type {
+        match self {
+            UnaryOperator::Neg => operand_type, // int -> int, fix -> fix
+            UnaryOperator::Not => Type::Bool,
+            UnaryOperator::BitNot => Type::Int,
+        }
+    }
+}
+
+impl Display for UnaryOperator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                UnaryOperator::Neg => "-",
+                UnaryOperator::Not => "!",
+                UnaryOperator::BitNot => "~",
+            }
+        )
     }
 }
 

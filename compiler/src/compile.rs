@@ -6,7 +6,7 @@ use type_visitor::{TypeTable, TypeVisitor};
 
 use crate::{
     EventHandler, ExternFunction, Trigger,
-    ast::{BinaryOperator, FunctionId, Script, SymbolId},
+    ast::{BinaryOperator, FunctionId, Script, SymbolId, UnaryOperator},
     compile::ir::{
         BlockId, SymbolSpans, TapIr, TapIrFunction, create_ir, make_ssa,
         regalloc::{self, RegisterAllocations},
@@ -326,6 +326,13 @@ impl Compiler {
                     } => {
                         self.bytecode.binop(v(target), v(lhs), *op, v(rhs));
                     }
+                    TapIr::UnaryOp {
+                        target,
+                        operand,
+                        op,
+                    } => {
+                        self.bytecode.unaryop(v(target), v(operand), *op);
+                    }
                     TapIr::Wait { frames } => match frames {
                         None => self.bytecode.wait(),
                         Some(f) => self.bytecode.wait_n(v(f)),
@@ -624,6 +631,17 @@ impl Bytecode {
 
         self.data
             .push(Type1::binop(opcode, target, lhs, rhs).encode());
+    }
+
+    fn unaryop(&mut self, target: u8, operand: u8, unaryop: UnaryOperator) {
+        let opcode = match unaryop {
+            UnaryOperator::Neg => Opcode::Neg,
+            UnaryOperator::Not => Opcode::Not,
+            UnaryOperator::BitNot => Opcode::BitNot,
+        };
+
+        self.data
+            .push(Type1::unaryop(opcode, target, operand).encode());
     }
 }
 

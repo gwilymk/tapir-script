@@ -1,0 +1,47 @@
+# Test IR generation for unary operators
+
+property result: int;
+property bool_result: bool;
+
+# Simple unary operations
+fn test_negation() {
+    var x = 5;
+    var y = -x;
+    result = y;
+}
+
+fn test_logical_not() {
+    var x = true;
+    var y = !x;
+    bool_result = y;
+}
+
+fn test_bitwise_not() {
+    var x = 255;
+    var y = ~x;
+    result = y;
+}
+
+# Unary in binary expressions
+fn test_unary_in_binary() {
+    var a = 10;
+    var b = 3;
+    result = -a + b;
+}
+
+# Chained unary
+fn test_chained_unary() {
+    var x = 5;
+    var y = --x;
+    result = y;
+}
+
+# Unary in condition
+fn test_unary_condition() {
+    var x = false;
+    if !x {
+        result = 1;
+    } else {
+        result = 0;
+    }
+}

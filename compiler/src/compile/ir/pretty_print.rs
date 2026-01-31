@@ -150,6 +150,16 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 symtab.debug_name_for_symbol(*value),
             )
         }
+        TapIr::UnaryOp {
+            target,
+            operand,
+            op,
+        } => write!(
+            output,
+            "{} = {op}{}",
+            symtab.debug_name_for_symbol(*target),
+            symtab.debug_name_for_symbol(*operand)
+        ),
     }
 }
 

@@ -201,6 +201,10 @@ pub enum DiagnosticMessage {
         expected: Type,
         got: Type,
     },
+    InvalidTypeForUnaryOperator {
+        operator: crate::ast::UnaryOperator,
+        operand_type: Type,
+    },
 
     // Parse errors
     UnrecognizedEof,
@@ -251,6 +255,10 @@ pub enum DiagnosticMessage {
     UnknownTypeLabel,
     MismatchingTypesOnBinaryOperator,
     BinaryOperatorCannotHandleType,
+    UnaryOperatorCannotHandleType {
+        operator: crate::ast::UnaryOperator,
+        operand_type: Type,
+    },
     GotArguments {
         count: usize,
     },
@@ -493,6 +501,9 @@ impl DiagnosticMessage {
             DiagnosticMessage::TypeMismatch { expected, got } => {
                 format!("expected `{expected}`, got `{got}`")
             }
+            DiagnosticMessage::InvalidTypeForUnaryOperator { operator, operand_type } => {
+                format!("Operator `{operator}` cannot be applied to type `{operand_type}`")
+            }
 
             // Parse errors
             DiagnosticMessage::UnrecognizedEof => "Unexpected end of file".into(),
@@ -525,6 +536,9 @@ impl DiagnosticMessage {
             DiagnosticMessage::UnknownTypeLabel => "Unknown type for variable".into(),
             DiagnosticMessage::MismatchingTypesOnBinaryOperator => "Mismatching types on binary operator".into(),
             DiagnosticMessage::BinaryOperatorCannotHandleType => "Binary operator cannot handle this type".into(),
+            DiagnosticMessage::UnaryOperatorCannotHandleType { operator, operand_type } => {
+                format!("Operator `{operator}` cannot be applied to type `{operand_type}`")
+            }
             DiagnosticMessage::GotArguments { count } => format!("Got {count} arguments"),
             DiagnosticMessage::ExpectedArguments { count } => format!("Expected {count} arguments"),
             DiagnosticMessage::FunctionMustReturnOneHere => "Function must return 1 value here".into(),
@@ -808,6 +822,12 @@ pub enum ErrorKind {
         got: Type,
     },
 
+    /// Invalid type for unary operator
+    InvalidTypeForUnaryOperator {
+        operator: crate::ast::UnaryOperator,
+        operand_type: Type,
+    },
+
     // Parse errors
     UnrecognizedEof {
         expected: Box<[String]>,
@@ -885,6 +905,7 @@ impl ErrorKind {
             Self::NoOperatorOverload { .. } => "E0050",
             Self::OperatorMustReturnOneValue { .. } => "E0051",
             Self::TypeMismatch { .. } => "E0054",
+            Self::InvalidTypeForUnaryOperator { .. } => "E0058",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -1097,6 +1118,13 @@ impl ErrorKind {
             Self::TypeMismatch { expected, got } => DiagnosticMessage::TypeMismatch {
                 expected: *expected,
                 got: *got,
+            },
+            Self::InvalidTypeForUnaryOperator {
+                operator,
+                operand_type,
+            } => DiagnosticMessage::UnaryOperatorCannotHandleType {
+                operator: *operator,
+                operand_type: *operand_type,
             },
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {

@@ -685,6 +685,16 @@ impl<'a> BlockVisitor<'a> {
                     }
                 }
             }
+            ast::ExpressionKind::UnaryOperation { operator, operand } => {
+                let operand_target = symtab.new_temporary();
+                self.blocks_for_expression(operand, operand_target, symtab);
+
+                self.current_block.push(TapIr::UnaryOp {
+                    target: target_symbol,
+                    operand: operand_target,
+                    op: *operator,
+                });
+            }
             ast::ExpressionKind::Error => {
                 unreachable!("Shouldn't be creating IR if there is an error");
             }

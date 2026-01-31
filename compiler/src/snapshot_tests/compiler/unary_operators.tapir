@@ -1,0 +1,19 @@
+property x: int;
+property y: bool;
+
+# Test all three unary operators compile to bytecode correctly
+x = -42;
+y = !true;
+x = ~255;
+
+# Unary with variables
+var a = 10;
+x = -a;
+
+var b = false;
+y = !b;
+
+var c = 255;
+x = ~c;
+
+wait;

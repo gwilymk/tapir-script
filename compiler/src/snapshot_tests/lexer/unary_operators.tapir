@@ -1,0 +1,7 @@
+var neg = -5;
+var not_op = !true;
+var bitnot = ~255;
+var double_neg = --10;
+var double_not = !!false;
+var double_bitnot = ~~42;
+var combo = -5 + !true & ~0;
