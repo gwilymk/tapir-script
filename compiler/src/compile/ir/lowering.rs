@@ -447,39 +447,6 @@ impl<'a> BlockVisitor<'a> {
                 let target = symtab.new_temporary();
                 self.blocks_for_expression(expression, target, symtab);
             }
-            ast::StatementKind::Spawn { arguments, .. } => {
-                let args = arguments
-                    .iter()
-                    .map(|a| {
-                        let symbol = symtab.new_temporary();
-                        self.blocks_for_expression(a, symbol, symtab);
-                        symbol
-                    })
-                    .collect();
-
-                let f: InternalOrExternalFunctionId = *statement
-                    .meta
-                    .get()
-                    .expect("Should have function IDs by now");
-
-                match f {
-                    InternalOrExternalFunctionId::Internal(function_id) => {
-                        self.current_block.push(TapIr::Spawn {
-                            f: function_id,
-                            args,
-                        });
-                    }
-                    InternalOrExternalFunctionId::External(_) => {
-                        panic!("Shouldn't be able to spawn an external function")
-                    }
-                    InternalOrExternalFunctionId::Builtin(_) => {
-                        panic!("Shouldn't be able to spawn a builtin function")
-                    }
-                    InternalOrExternalFunctionId::StructConstructor(_) => {
-                        panic!("Shouldn't be able to spawn a struct constructor")
-                    }
-                }
-            }
             ast::StatementKind::Trigger { arguments, .. } => {
                 let args = arguments
                     .iter()
@@ -859,6 +826,51 @@ impl<'a> BlockVisitor<'a> {
                         target: target_symbol,
                         source: field_symbol,
                     });
+                }
+            }
+            ast::ExpressionKind::Spawn { call } => {
+                // The call expression should be a Call - extract function info from it
+                let ast::ExpressionKind::Call {
+                    arguments,
+                    ..
+                } = &call.kind
+                else {
+                    panic!("Spawn should contain a Call expression");
+                };
+
+                // Evaluate arguments
+                let args = arguments
+                    .iter()
+                    .map(|a| {
+                        let symbol = symtab.new_temporary();
+                        self.blocks_for_expression(a, symbol, symtab);
+                        symbol
+                    })
+                    .collect();
+
+                // Get the function ID from the call expression's metadata
+                let f: InternalOrExternalFunctionId = *call
+                    .meta
+                    .get()
+                    .expect("Should have function IDs by now");
+
+                match f {
+                    InternalOrExternalFunctionId::Internal(function_id) => {
+                        self.current_block.push(TapIr::Spawn {
+                            target: target_symbol,
+                            f: function_id,
+                            args,
+                        });
+                    }
+                    InternalOrExternalFunctionId::External(_) => {
+                        panic!("Shouldn't be able to spawn an external function")
+                    }
+                    InternalOrExternalFunctionId::Builtin(_) => {
+                        panic!("Shouldn't be able to spawn a builtin function")
+                    }
+                    InternalOrExternalFunctionId::StructConstructor(_) => {
+                        panic!("Shouldn't be able to spawn a struct constructor")
+                    }
                 }
             }
         }

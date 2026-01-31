@@ -30,6 +30,7 @@ loop {
 | `int`  | 32-bit signed integer                    |
 | `fix`  | 24.8 fixed-point number (via agb_fixnum) |
 | `bool` | Boolean (`true` or `false`)              |
+| `task` | Handle to a spawned concurrent function  |
 
 ### Struct Types
 
@@ -106,13 +107,19 @@ Variables are block-scoped. Type is inferred from the initializer.
 
 ## Global Variables
 
-Global variables are declared at the top level with constant initializers:
+Global variables are declared at the top level. They can have constant initializers or be declared with just a type (zero-initialized):
 
 ```tapir
 global counter = 0;
 global max_health = 100;
 global speed = 1.5;
 global is_active = true;
+
+# Type-only declarations (zero-initialized)
+global timer: task;      # initialized to empty task (0)
+global score: int;       # initialized to 0
+global enabled: bool;    # initialized to false
+global offset: fix;      # initialized to 0.0
 ```
 
 Globals differ from local variables:
@@ -372,15 +379,16 @@ var current = frame();      # returns current frame number (starts at 0)
 
 ### Builtin Reference
 
-| Function/Method      | Args       | Returns | Description                    |
-| -------------------- | ---------- | ------- | ------------------------------ |
-| `sin(x)`             | `fix`      | `fix`   | Sine                           |
-| `cos(x)`             | `fix`      | `fix`   | Cosine                         |
-| `sqrt(x)`            | `fix`      | `fix`   | Square root (x must be >= 0)   |
-| `x.floor()`          | `fix`      | `int`   | Round toward negative infinity |
-| `x.ceil()`           | `fix`      | `int`   | Round toward positive infinity |
-| `x.round()`          | `fix`      | `int`   | Round to nearest integer       |
-| `frame()`            | none       | `int`   | Current frame number           |
+| Function/Method      | Args       | Returns | Description                         |
+| -------------------- | ---------- | ------- | ----------------------------------- |
+| `sin(x)`             | `fix`      | `fix`   | Sine                                |
+| `cos(x)`             | `fix`      | `fix`   | Cosine                              |
+| `sqrt(x)`            | `fix`      | `fix`   | Square root (x must be >= 0)        |
+| `x.floor()`          | `fix`      | `int`   | Round toward negative infinity      |
+| `x.ceil()`           | `fix`      | `int`   | Round toward positive infinity      |
+| `x.round()`          | `fix`      | `int`   | Round to nearest integer            |
+| `frame()`            | none       | `int`   | Current frame number                |
+| `t.cancel()`         | `task`     | none    | Cancel spawned function (if active) |
 
 ## External Functions
 
@@ -446,7 +454,9 @@ Each `wait` returns control to the game loop. Call `script.run()` each frame to 
 
 ### Spawn
 
-Starts a function as a concurrent animation thread. Multiple spawned functions run in parallel, all advancing on each `run()` call:
+Starts a function as a concurrent animation thread. Multiple spawned functions run in parallel, all advancing on each `run()` call.
+
+`spawn` returns a `task` handle that can be used to cancel the spawned function:
 
 ```tapir
 fn fade_in() {
@@ -472,7 +482,38 @@ fn slide_in() {
 # Both animations run simultaneously
 spawn fade_in();
 spawn slide_in();
+
+# Capture task handle to cancel later
+global background_task: task;
+background_task = spawn some_animation();
+
+# Cancel from event handler
+event fn on_pickup() {
+    (background_task).cancel();  # stop the animation
+}
 ```
+
+### Task Cancel
+
+The `task` type has a `cancel()` method that stops a spawned function:
+
+```tapir
+global timer: task;
+
+timer = spawn countdown();
+
+event fn on_reset() {
+    (timer).cancel();  # stop countdown if running
+    timer = spawn countdown();  # restart
+}
+```
+
+`cancel()` behavior:
+- Stops the spawned function if it's still running
+- No-op if the task has already finished
+- No-op if called on an empty task (value 0)
+
+Note: Due to grammar constraints, method calls on variables require parentheses: `(task_var).cancel()` rather than `task_var.cancel()`.
 
 ### Trigger
 
@@ -513,7 +554,7 @@ counter2
 
 ```
 break continue else event extern false fn global if int fix bool
-loop property return spawn struct then trigger true var wait
+loop property return spawn struct task then trigger true var wait
 ```
 
 ## Rust Integration

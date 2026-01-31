@@ -68,6 +68,7 @@ pub enum Type {
     Fix,
     Bool,
     Struct(StructId),
+    Task,
 
     #[default]
     Error,
@@ -82,6 +83,7 @@ impl Type {
             "int" => Some(Type::Int),
             "fix" => Some(Type::Fix),
             "bool" => Some(Type::Bool),
+            "task" => Some(Type::Task),
             _ => None,
         }
     }
@@ -108,6 +110,7 @@ impl Type {
             Type::Int => "int",
             Type::Fix => "fix",
             Type::Bool => "bool",
+            Type::Task => "task",
             Type::Struct(id) => &registry.get(id).name,
             Type::Error => "error",
         }
@@ -121,6 +124,7 @@ impl Display for Type {
             Type::Int => write!(f, "int"),
             Type::Fix => write!(f, "fix"),
             Type::Bool => write!(f, "bool"),
+            Type::Task => write!(f, "task"),
             Type::Struct(_) => write!(f, "struct"),
             Type::Error => write!(f, "error"),
         }

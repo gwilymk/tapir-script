@@ -296,6 +296,7 @@ fn generate_event_handlers(
                         Type::Int => quote!(i32),
                         Type::Fix => quote!(::tapir_script::Fix),
                         Type::Bool => quote!(bool),
+                        Type::Task => quote!(i32), // Task ID is an i32
                         Type::Struct(_id) => todo!("Cannot use structs yet"),
                         Type::Error => panic!("Should not have errors here"),
                     };

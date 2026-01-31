@@ -364,6 +364,11 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 continue;
             };
 
+            // Uninitialized globals have no expression to compare against
+            let Some(ref value) = global.value else {
+                continue;
+            };
+
             let Some(global_info) = symtab.get_global_by_name(global.name.name()) else {
                 // Global wasn't registered (e.g., due to conflict with property)
                 continue;
@@ -387,7 +392,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     DiagnosticMessage::ExpectedType { ty: annotated },
                 )
                 .label(
-                    global.value.span,
+                    value.span,
                     DiagnosticMessage::HasType { ty: inferred_type },
                 )
                 .emit(diagnostics);
@@ -940,16 +945,6 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         self.type_for_expression(expression, symtab, diagnostics);
                     }
                 }
-                ast::StatementKind::Spawn { name, arguments } => {
-                    self.type_for_call(
-                        statement.span,
-                        name,
-                        statement.meta.get().copied(),
-                        arguments,
-                        symtab,
-                        diagnostics,
-                    );
-                }
                 ast::StatementKind::Loop { block } => {
                     match self.visit_block(block, symtab, expected_return_type, diagnostics) {
                         BlockAnalysisResult::AllBranchesReturn => {
@@ -1360,6 +1355,22 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 } else {
                     Type::Error // void or multi-return method used as expression
                 }
+            }
+            ast::ExpressionKind::Spawn { call } => {
+                // Type check the inner call - spawn doesn't care about the call's return value
+                // Extract the call details and type-check arguments without requiring a return value
+                if let ast::ExpressionKind::Call { name, arguments } = &mut call.kind {
+                    self.type_for_call(
+                        call.span,
+                        name,
+                        call.meta.get().copied(),
+                        arguments,
+                        symtab,
+                        diagnostics,
+                    );
+                }
+                // Spawn itself returns Type::Task
+                Type::Task
             }
         }
     }

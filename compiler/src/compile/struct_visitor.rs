@@ -426,6 +426,7 @@ mod tests {
             Type::Int => "int",
             Type::Fix => "fix",
             Type::Bool => "bool",
+            Type::Task => "task",
             Type::Struct(_) => "struct",
             Type::Error => "error",
         }

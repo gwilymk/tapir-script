@@ -48,7 +48,7 @@ fn disassemble_non_constant(instr: u32, target: &mut dyn Write) -> fmt::Result {
         bytecode::Opcode::Call => t1!("call", 1),
         bytecode::Opcode::ExternCall => t1!("extern call", 2),
         bytecode::Opcode::CallBuiltin => t1!("call builtin", 3),
-        bytecode::Opcode::Spawn => t1!("spawn", 2),
+        bytecode::Opcode::Spawn => t1!("spawn", 3),
         bytecode::Opcode::Trigger => t1!("trigger", 2),
         bytecode::Opcode::JumpIf => t1!("jumpif", 1),
         bytecode::Opcode::Ret => t1!("ret", 0),

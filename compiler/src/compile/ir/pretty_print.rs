@@ -88,7 +88,7 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
                 symtab.name_for_function(InternalOrExternalFunctionId::Builtin(*f))
             )
         }
-        TapIr::Spawn { f, args } => {
+        TapIr::Spawn { target, f, args } => {
             let args = args
                 .iter()
                 .map(|t| symtab.debug_name_for_symbol(*t))
@@ -97,7 +97,8 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
 
             write!(
                 output,
-                "spawn {}({args})",
+                "{} = spawn {}({args})",
+                symtab.debug_name_for_symbol(*target),
                 symtab.name_for_function(InternalOrExternalFunctionId::Internal(*f))
             )
         }

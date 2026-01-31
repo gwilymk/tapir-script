@@ -115,8 +115,8 @@ pub fn constant_folding(
                         // Determine result type based on the declared return type
                         let constant = match builtin_info.return_type {
                             Type::Fix => Constant::Fix(Fix::from_raw(result)),
-                            // Struct would never happen (builtins can't return structs)
-                            Type::Int | Type::Bool | Type::Error | Type::Struct(_) => {
+                            // Struct/Task would never happen (builtins can't return structs)
+                            Type::Int | Type::Bool | Type::Error | Type::Struct(_) | Type::Task => {
                                 Constant::Int(result)
                             }
                         };

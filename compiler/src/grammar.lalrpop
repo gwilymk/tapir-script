@@ -38,6 +38,7 @@ extern {
         builtin => Token::KeywordBuiltin,
         "struct" => Token::KeywordStruct,
         "self" => Token::KeywordSelf,
+        t_task => Token::KeywordTask,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -96,8 +97,13 @@ TopLevelStatement: TopLevelStatement<'input> = {
 }
 
 GlobalDecl: GlobalDeclaration<'input> = {
+    // Initialized global: global name = expr; or global name: type = expr;
     <start:@L> global <name:TypedIdentifier> "=" <value:Expression> ";" <end:@R> =>
-        GlobalDeclaration { name, value, span: Span::new(file_id, start, end) },
+        GlobalDeclaration { name, value: Some(value), span: Span::new(file_id, start, end) },
+
+    // Uninitialized global: global name: type; (type is required for uninitialized globals)
+    <start:@L> global <name:TypedIdentifierRequired> ";" <end:@R> =>
+        GlobalDeclaration { name, value: None, span: Span::new(file_id, start, end) },
 }
 
 PropertyDecl: PropertyDeclaration<'input> = {
@@ -272,6 +278,7 @@ TypeWithoutLocation: (Option<Type>, &'input str) = {
     t_integer => (Some(Type::Int), "int"),
     t_bool => (Some(Type::Bool), "bool"),
     t_fix => (Some(Type::Fix), "fix"),
+    t_task => (Some(Type::Task), "task"),
     // User-defined types (structs) are parsed as identifiers with t=None,
     // then resolved to Some(Type::Struct(id)) by struct_visitor during compilation.
     <ident: identifier> => (None, ident),
@@ -330,7 +337,14 @@ StatementKind: StatementKind<'input> = {
     },
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
 
-    spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Spawn { <> },
+    // Spawn expression statement
+    <start: @L> spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" =>
+        StatementKind::Expression {
+            expression: Box::new(ExpressionKind::Spawn {
+                call: Box::new(ExpressionKind::Call { name, arguments }.with_span(file_id, start, end))
+            }.with_span(file_id, start, end))
+        },
+
     trigger <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Trigger { <> },
     trigger <name: identifier> ";" => StatementKind::Trigger { name, arguments: vec![] },
 
@@ -345,13 +359,14 @@ StatementKind: StatementKind<'input> = {
 Identifier: Ident<'input> =
     <start: @L> <ident: identifier> <end: @R> => Ident { ident, span: Span::new(file_id, start, end) };
 
-// TypeIdentifier accepts identifiers AND builtin type keywords (int, fix, bool)
+// TypeIdentifier accepts identifiers AND builtin type keywords (int, fix, bool, task)
 // Used for method receiver types where both struct names and builtin types are valid
 TypeIdentifier: Ident<'input> = {
     <start: @L> <ident: identifier> <end: @R> => Ident { ident, span: Span::new(file_id, start, end) },
     <start: @L> t_integer <end: @R> => Ident { ident: "int", span: Span::new(file_id, start, end) },
     <start: @L> t_fix <end: @R> => Ident { ident: "fix", span: Span::new(file_id, start, end) },
     <start: @L> t_bool <end: @R> => Ident { ident: "bool", span: Span::new(file_id, start, end) },
+    <start: @L> t_task <end: @R> => Ident { ident: "task", span: Span::new(file_id, start, end) },
 };
 
 /// An assignment target: either a simple variable `x` or a field path `p.x.y`
@@ -484,6 +499,15 @@ Term: Expression<'input> = {
         ExpressionKind::Call {
             name: ident,
             arguments,
+        }.with_span(file_id, start, end),
+
+    // Spawn expression: wraps a function call
+    <start: @L> spawn <ident: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> =>
+        ExpressionKind::Spawn {
+            call: Box::new(ExpressionKind::Call {
+                name: ident,
+                arguments,
+            }.with_span(file_id, start, end))
         }.with_span(file_id, start, end),
 }
 

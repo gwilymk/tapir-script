@@ -1,0 +1,166 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_uninitialized_success.tapir
+---
+Script(
+  struct_declarations: [],
+  property_declarations: [],
+  globals: [
+    GlobalDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "counter",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Int),
+          name: "int",
+          span: "[span]",
+        )),
+      ),
+      value: None,
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "result",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Fix),
+          name: "fix",
+          span: "[span]",
+        )),
+      ),
+      value: None,
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "flag",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Bool),
+          name: "bool",
+          span: "[span]",
+        )),
+      ),
+      value: None,
+      span: "[span]",
+    ),
+  ],
+  functions: [
+    Function(
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
+      },
+    ),
+    Function(
+      kind: Regular,
+      name: "main",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "counter",
+                ),
+              ],
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(5),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4611686018427387904)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "result",
+                ),
+              ],
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Fix,
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4611686018427387905)]",
+          },
+        ),
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            targets: [
+              [
+                Ident(
+                  span: "[span]",
+                  ident: "flag",
+                ),
+              ],
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Bool(true),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4611686018427387906)]",
+          },
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(1)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
+      },
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

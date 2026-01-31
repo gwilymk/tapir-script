@@ -156,20 +156,6 @@ fn extract_references_from_statements(
                     references,
                 );
             }
-            StatementKind::Spawn { name, arguments } => {
-                if let Some(&def_span) = function_spans.get(name) {
-                    references.insert(stmt.span, def_span);
-                }
-                for expr in arguments {
-                    extract_references_from_expression(
-                        expr,
-                        symtab,
-                        struct_registry,
-                        function_spans,
-                        references,
-                    );
-                }
-            }
             StatementKind::Trigger { arguments, .. } => {
                 for expr in arguments {
                     extract_references_from_expression(
@@ -300,6 +286,15 @@ fn extract_references_from_expression(
                     references,
                 );
             }
+        }
+        ExpressionKind::Spawn { call } => {
+            extract_references_from_expression(
+                call,
+                symtab,
+                struct_registry,
+                function_spans,
+                references,
+            );
         }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)

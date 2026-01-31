@@ -1,0 +1,5 @@
+global counter;
+
+fn main() {
+    counter = 5;
+}

@@ -1,0 +1,15 @@
+property int_prop: int;
+
+global t: task;
+
+fn worker() {
+    int_prop = 100;
+    wait;
+    int_prop = 200;  # Should never run if cancelled
+}
+
+t = spawn worker();
+wait;
+(t).cancel();
+wait;
+int_prop = 999;

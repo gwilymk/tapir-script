@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/vm/src/lib.rs
+source: vm/src/lib.rs
 expression: stack_at_waits
-input_file: crates/tapir-script/vm/src/snapshot_tests/stack/globals.tapir
+input_file: vm/src/snapshot_tests/stack/globals.tapir
 ---
 [
   ([
@@ -11,6 +11,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/globals.tapir
       0,
       5,
       0,
+      1,
     ],
     [
       -1,
@@ -30,6 +31,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/globals.tapir
       0,
       1,
       5,
+      1,
       1,
     ],
     [
@@ -51,6 +53,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/globals.tapir
       2,
       5,
       2,
+      1,
     ],
     [
       -1,
@@ -71,6 +74,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/globals.tapir
       3,
       5,
       3,
+      1,
     ],
     [
       -1,
@@ -91,6 +95,7 @@ input_file: crates/tapir-script/vm/src/snapshot_tests/stack/globals.tapir
       4,
       5,
       4,
+      1,
     ],
   ], PropObj(
     int_prop: 4,

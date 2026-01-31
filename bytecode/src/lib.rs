@@ -178,8 +178,10 @@ impl Type1 {
         Self::new3(Opcode::CallBuiltin, target, builtin_id as u8, first_arg)
     }
 
-    pub const fn spawn(first_arg: u8, num_args: u8) -> Self {
-        Self::new2(Opcode::Spawn, first_arg, num_args)
+    /// Spawn a new task. Returns the task ID in the target register.
+    /// Format: target = register to store task ID, first_arg = first argument register, num_args = number of arguments
+    pub const fn spawn(target: u8, first_arg: u8, num_args: u8) -> Self {
+        Self::new3(Opcode::Spawn, target, first_arg, num_args)
     }
 
     pub const fn trigger(id: u8, first_arg: u8) -> Self {

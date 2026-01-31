@@ -12,3 +12,6 @@ builtin(5) fn fix.round(self) -> int;
 
 # Runtime functions
 builtin(-1) fn frame() -> int;
+
+# Task methods
+builtin(-2) fn task.cancel(self);

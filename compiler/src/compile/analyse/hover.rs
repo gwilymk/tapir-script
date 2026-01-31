@@ -286,21 +286,6 @@ fn extract_from_statements(
                     hover_info,
                 );
             }
-            StatementKind::Spawn { name, arguments } => {
-                if let Some(sig) = function_signatures.get(name) {
-                    hover_info.insert(stmt.span, sig.clone());
-                }
-                for expr in arguments {
-                    extract_from_expression(
-                        expr,
-                        symtab,
-                        type_table,
-                        struct_registry,
-                        function_signatures,
-                        hover_info,
-                    );
-                }
-            }
             StatementKind::Trigger { arguments, .. } => {
                 for expr in arguments {
                     extract_from_expression(
@@ -505,6 +490,16 @@ fn extract_from_expression(
                     hover_info,
                 );
             }
+        }
+        ExpressionKind::Spawn { call } => {
+            extract_from_expression(
+                call,
+                symtab,
+                type_table,
+                struct_registry,
+                function_signatures,
+                hover_info,
+            );
         }
         ExpressionKind::Integer(_)
         | ExpressionKind::Fix(_)

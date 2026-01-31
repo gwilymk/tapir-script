@@ -113,7 +113,8 @@ pub struct StructDeclaration<'input> {
 #[derive(Clone, Debug, Serialize)]
 pub struct GlobalDeclaration<'input> {
     pub name: TypedIdent<'input>,
-    pub value: Expression<'input>,
+    /// The initializer expression. None for uninitialized globals.
+    pub value: Option<Expression<'input>>,
     pub span: Span,
 }
 
@@ -446,10 +447,6 @@ pub enum StatementKind<'input> {
     Expression {
         expression: Box<Expression<'input>>,
     },
-    Spawn {
-        name: &'input str,
-        arguments: Vec<Expression<'input>>,
-    },
     Trigger {
         name: &'input str,
         arguments: Vec<Expression<'input>>,
@@ -506,6 +503,9 @@ impl<'input> Expression<'input> {
                     .chain(receiver.all_inner())
                     .chain(arguments.iter().flat_map(|argument| argument.all_inner())),
             ),
+            ExpressionKind::Spawn { call } => {
+                Box::new(iter::once(self).chain(call.all_inner()))
+            }
         }
     }
 }
@@ -541,6 +541,11 @@ pub enum ExpressionKind<'input> {
         receiver: Box<Expression<'input>>,
         method: Ident<'input>,
         arguments: Vec<Expression<'input>>,
+    },
+
+    /// Spawn a function call as a concurrent task
+    Spawn {
+        call: Box<Expression<'input>>,
     },
 }
 

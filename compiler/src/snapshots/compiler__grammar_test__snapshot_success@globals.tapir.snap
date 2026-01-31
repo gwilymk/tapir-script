@@ -15,11 +15,11 @@ Script(
         ),
         ty: None,
       ),
-      value: Expression(
+      value: Some(Expression(
         span: "[span]",
         kind: Integer(0),
         meta: {},
-      ),
+      )),
       span: "[span]",
     ),
     GlobalDeclaration(
@@ -30,11 +30,11 @@ Script(
         ),
         ty: None,
       ),
-      value: Expression(
+      value: Some(Expression(
         span: "[span]",
         kind: Integer(100),
         meta: {},
-      ),
+      )),
       span: "[span]",
     ),
     GlobalDeclaration(
@@ -45,11 +45,11 @@ Script(
         ),
         ty: None,
       ),
-      value: Expression(
+      value: Some(Expression(
         span: "[span]",
         kind: Bool(true),
         meta: {},
-      ),
+      )),
       span: "[span]",
     ),
     GlobalDeclaration(
@@ -60,11 +60,11 @@ Script(
         ),
         ty: None,
       ),
-      value: Expression(
+      value: Some(Expression(
         span: "[span]",
         kind: Fix,
         meta: {},
-      ),
+      )),
       span: "[span]",
     ),
   ],

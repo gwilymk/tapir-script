@@ -1,19 +1,19 @@
 ---
-source: crates/tapir-script/compiler/src/compile.rs
+source: compiler/src/compile.rs
 expression: decompiled
-input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/spawn2.tapir
+input_file: compiler/src/snapshot_tests/compiler/spawn2.tapir
 ---
 00000000: loadk 1, 1
 00000002: loadk 2, 2
-00000004: mov 4, 1
-00000005: mov 5, 2
-00000006: spawn 3, 2
+00000004: mov 6, 1
+00000005: mov 7, 2
+00000006: spawn 4, 5, 2
 00000007: jmp 25
 00000008: loadk 1, 0
 00000010: loadk 2, 7
-00000012: mov 4, 1
-00000013: mov 5, 2
-00000014: spawn 3, 2
+00000012: mov 6, 1
+00000013: mov 7, 2
+00000014: spawn 3, 5, 2
 00000015: jmp 25
 00000016: wait
 00000017: wait

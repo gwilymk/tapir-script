@@ -1,0 +1,7 @@
+global my_task: task;
+
+fn worker() {
+    wait;
+}
+
+my_task = spawn worker();

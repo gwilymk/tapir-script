@@ -121,6 +121,9 @@ pub enum DiagnosticMessage {
     GlobalInitializerNotConstant {
         name: String,
     },
+    GlobalRequiresTypeOrInitializer {
+        name: String,
+    },
     DuplicatePropertyDeclaration {
         name: String,
     },
@@ -381,6 +384,9 @@ impl DiagnosticMessage {
             }
             DiagnosticMessage::GlobalInitializerNotConstant { name } => {
                 format!("Global variable '{name}' must be initialized with a constant value")
+            }
+            DiagnosticMessage::GlobalRequiresTypeOrInitializer { name } => {
+                format!("Global variable '{name}' requires either a type annotation or an initializer")
             }
             DiagnosticMessage::DuplicatePropertyDeclaration { name } => {
                 format!("Property '{name}' is already declared")
@@ -662,6 +668,10 @@ pub enum ErrorKind {
     GlobalInitializerNotConstant {
         name: String,
     },
+    /// Global variable has neither type annotation nor initializer
+    GlobalRequiresTypeOrInitializer {
+        name: String,
+    },
     DuplicatePropertyDeclaration {
         name: String,
     },
@@ -802,6 +812,7 @@ impl ErrorKind {
             Self::CountMismatch { .. } => "E0021",
             Self::CannotShadowBuiltin { .. } => "E0022",
             Self::GlobalInitializerNotConstant { .. } => "E0023",
+            Self::GlobalRequiresTypeOrInitializer { .. } => "E0052",
             Self::DuplicatePropertyDeclaration { .. } => "E0033",
             Self::PropertyConflictsWithGlobal { .. } => "E0034",
             Self::PropertyNotInStruct { .. } => "E0035",
@@ -935,6 +946,9 @@ impl ErrorKind {
             }
             Self::GlobalInitializerNotConstant { name } => {
                 DiagnosticMessage::GlobalInitializerNotConstant { name: name.clone() }
+            }
+            Self::GlobalRequiresTypeOrInitializer { name } => {
+                DiagnosticMessage::GlobalRequiresTypeOrInitializer { name: name.clone() }
             }
             Self::DuplicatePropertyDeclaration { name } => {
                 DiagnosticMessage::DuplicatePropertyDeclaration { name: name.clone() }

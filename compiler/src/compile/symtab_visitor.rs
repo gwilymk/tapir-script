@@ -269,6 +269,58 @@ fn evaluate_constant_initializer(
     }
 }
 
+/// Evaluate a global declaration, handling both initialized and uninitialized globals.
+/// Returns (type, initial_value). For uninitialized globals, initial_value is 0.
+fn evaluate_global_declaration(
+    global: &GlobalDeclaration<'_>,
+    diagnostics: &mut Diagnostics,
+) -> (Type, i32) {
+    let name = global.name.name();
+
+    match (&global.value, &global.name.ty) {
+        // Initialized global with explicit type: global x: int = 5;
+        (Some(expr), Some(ty)) => {
+            let (inferred_ty, value) = evaluate_constant_initializer(expr, diagnostics, name);
+            let annotated_ty = ty.resolved();
+
+            // Check that annotated type matches inferred type
+            if annotated_ty != inferred_ty
+                && annotated_ty != Type::Error
+                && inferred_ty != Type::Error
+            {
+                ErrorKind::TypeAnnotationMismatch {
+                    annotated: annotated_ty,
+                    actual: inferred_ty,
+                }
+                .at(global.span)
+                .label(ty.span, DiagnosticMessage::ExpectedType { ty: annotated_ty })
+                .label(expr.span, DiagnosticMessage::HasType { ty: inferred_ty })
+                .emit(diagnostics);
+                return (Type::Error, 0);
+            }
+
+            (annotated_ty, value)
+        }
+        // Initialized global without type annotation: global x = 5;
+        (Some(expr), None) => evaluate_constant_initializer(expr, diagnostics, name),
+        // Uninitialized global with type: global x: int;
+        (None, Some(ty)) => {
+            let resolved_ty = ty.resolved();
+            // Zero-initialize
+            (resolved_ty, 0)
+        }
+        // Uninitialized global without type - error (should be caught by grammar, but be defensive)
+        (None, None) => {
+            ErrorKind::GlobalRequiresTypeOrInitializer {
+                name: name.to_string(),
+            }
+            .at(global.span)
+            .emit(diagnostics);
+            (Type::Error, 0)
+        }
+    }
+}
+
 pub struct SymTabVisitor<'input> {
     symtab: SymTab<'input>,
 
@@ -472,9 +524,8 @@ impl<'input> SymTabVisitor<'input> {
                 continue;
             }
 
-            // Validate initializer is a constant and infer type
-            let (ty, initial_value) =
-                evaluate_constant_initializer(&global.value, diagnostics, name);
+            // Validate initializer (if present) and determine type
+            let (ty, initial_value) = evaluate_global_declaration(global, diagnostics);
 
             let global_id = GlobalId(index);
             visitor.symtab.add_global(
@@ -604,22 +655,6 @@ impl<'input> SymTabVisitor<'input> {
                 StatementKind::Expression { expression } => {
                     self.visit_expr(expression, diagnostics);
                 }
-                StatementKind::Spawn { arguments, name } => {
-                    if let Some(function) = self.function_names.get(*name) {
-                        statement.meta.set(*function);
-                    } else {
-                        ErrorKind::UnknownFunction {
-                            name: name.to_string(),
-                        }
-                        .at(statement.span)
-                        .label(statement.span, DiagnosticMessage::UnknownFunctionLabel)
-                        .emit(diagnostics);
-                    }
-
-                    for argument in arguments {
-                        self.visit_expr(argument, diagnostics);
-                    }
-                }
                 StatementKind::Trigger { arguments, .. } => {
                     for argument in arguments {
                         self.visit_expr(argument, diagnostics);
@@ -682,6 +717,10 @@ impl<'input> SymTabVisitor<'input> {
                 for argument in arguments {
                     self.visit_expr(argument, diagnostics);
                 }
+            }
+            ExpressionKind::Spawn { call } => {
+                // Visit the inner call expression
+                self.visit_expr(call, diagnostics);
             }
             ExpressionKind::Integer(_)
             | ExpressionKind::Fix(_)

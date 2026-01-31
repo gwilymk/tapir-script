@@ -12,6 +12,8 @@ struct Vm<'a> {
     states: Vec<State>,
     frame: i32,
     globals: Vec<i32>,
+    /// Next task ID to assign (starts at 1, 0 is the empty sentinel)
+    next_task_id: u32,
 }
 
 impl<'a> Vm<'a> {
@@ -21,17 +23,25 @@ impl<'a> Vm<'a> {
             states: vec![State::new(0, vec![-1])],
             frame: 0,
             globals: initial_globals.to_vec(),
+            next_task_id: 1, // Start at 1, 0 is reserved as empty sentinel
         }
     }
 
     fn run_until_wait(&mut self, properties: &mut dyn ObjectSafeProperties) {
         let mut state_index = 0;
         while state_index < self.states.len() {
+            // Check if this state has been cancelled
+            if self.states[state_index].cancelled {
+                self.states.swap_remove(state_index);
+                continue;
+            }
+
             match self.states[state_index].run_until_wait(
                 self.bytecode,
                 properties,
                 self.frame,
                 &mut self.globals,
+                &mut self.next_task_id,
             ) {
                 state::RunResult::Waiting => {
                     state_index += 1;
@@ -39,15 +49,37 @@ impl<'a> Vm<'a> {
                 state::RunResult::Finished => {
                     self.states.swap_remove(state_index);
                 }
-                state::RunResult::Spawn(state) => {
+                state::RunResult::Spawn { state } => {
                     self.states.push(*state);
                     // intentionally not increasing state_index to ensure that the spawning
                     // state continues to run.
+                }
+                state::RunResult::Cancel(task_id) => {
+                    // Find the state with matching task_id and mark it as cancelled
+                    self.cancel_task(task_id);
+                    // Continue running same state (don't increment)
+                    // If we cancelled self, we'll catch it on next iteration
                 }
             }
         }
 
         self.frame += 1;
+    }
+
+    /// Cancel a task by its task ID. Returns true if a task was found and cancelled.
+    /// No-op if task_id is 0 (empty sentinel) or if no matching task is found.
+    pub fn cancel_task(&mut self, task_id: i32) -> bool {
+        if task_id <= 0 {
+            return false; // 0 and negative IDs are invalid
+        }
+        let task_id = task_id as u32;
+        for state in &mut self.states {
+            if state.task_id == task_id {
+                state.cancelled = true;
+                return true;
+            }
+        }
+        false // Task not found (already finished)
     }
 }
 

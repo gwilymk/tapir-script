@@ -10,12 +10,19 @@ pub(crate) struct State {
     pc: usize,
     stack: Vec<i32>,
     stack_offset: usize,
+    /// Task ID for this thread (0 for main thread or threads without handles)
+    pub task_id: u32,
+    /// Whether this state has been cancelled
+    pub cancelled: bool,
 }
 
 pub(crate) enum RunResult {
     Waiting,
     Finished,
-    Spawn(Box<State>),
+    /// Spawn a new state (task ID already stored in spawner's target register)
+    Spawn { state: Box<State> },
+    /// Cancel a task by its task ID
+    Cancel(i32),
 }
 
 impl State {
@@ -24,6 +31,18 @@ impl State {
             pc,
             stack,
             stack_offset: 0,
+            task_id: 0,
+            cancelled: false,
+        }
+    }
+
+    pub(crate) fn new_with_task_id(pc: usize, stack: Vec<i32>, task_id: u32) -> Self {
+        Self {
+            pc,
+            stack,
+            stack_offset: 0,
+            task_id,
+            cancelled: false,
         }
     }
 
@@ -38,6 +57,7 @@ impl State {
         properties: &mut dyn ObjectSafeProperties,
         frame: i32,
         globals: &mut [i32],
+        next_task_id: &mut u32,
     ) -> RunResult {
         loop {
             let Some(&instr) = bytecode.get(self.pc) else {
@@ -126,7 +146,7 @@ impl State {
                     );
                 }
                 O::Spawn => {
-                    type1!(first_arg, num_args);
+                    type1!(target, first_arg, num_args);
                     let mut new_stack = Vec::with_capacity(num_args as usize + 1);
                     new_stack.push(-1);
 
@@ -139,7 +159,16 @@ impl State {
                     let new_thread_pc = self.pc;
                     self.pc += 1; // skip over the jump instruction
 
-                    return RunResult::Spawn(Box::new(Self::new(new_thread_pc, new_stack)));
+                    // Assign task ID
+                    let task_id = *next_task_id;
+                    *next_task_id += 1;
+
+                    // Store task ID in the target register
+                    self.set_reg(target, task_id as i32);
+
+                    return RunResult::Spawn {
+                        state: Box::new(Self::new_with_task_id(new_thread_pc, new_stack, task_id)),
+                    };
                 }
                 O::Trigger => {
                     type1!(id, first_arg);
@@ -184,6 +213,12 @@ impl State {
                 O::CallBuiltin => {
                     type1!(target, builtin_id, first_arg);
                     let builtin_id = builtin_id as i8 as i16;
+
+                    // Special case: builtin ID -2 is task.cancel()
+                    if builtin_id == -2 {
+                        let task_id = self.get_reg(first_arg);
+                        return RunResult::Cancel(task_id);
+                    }
 
                     let args_start = self.stack_offset + usize::from(first_arg);
                     let args = self.stack.get(args_start..).unwrap_or(&[]);

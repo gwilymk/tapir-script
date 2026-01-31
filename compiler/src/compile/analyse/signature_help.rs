@@ -115,24 +115,6 @@ fn extract_from_statements(
             StatementKind::Expression { expression } => {
                 extract_from_expression(expression, signatures, call_sites);
             }
-            StatementKind::Spawn { name, arguments } => {
-                if signatures.contains_key(*name) {
-                    let argument_start_offsets: Vec<usize> =
-                        arguments.iter().map(|arg| arg.span.start()).collect();
-                    let argument_end_offsets: Vec<usize> =
-                        arguments.iter().map(|arg| arg.span.end()).collect();
-
-                    call_sites.push(CallSiteInfo {
-                        function_name: name.to_string(),
-                        arguments_span: stmt.span,
-                        argument_start_offsets,
-                        argument_end_offsets,
-                    });
-                }
-                for expr in arguments {
-                    extract_from_expression(expr, signatures, call_sites);
-                }
-            }
             StatementKind::Trigger { arguments, .. } => {
                 for expr in arguments {
                     extract_from_expression(expr, signatures, call_sites);
@@ -192,6 +174,9 @@ fn extract_from_expression(
             for arg in arguments {
                 extract_from_expression(arg, signatures, call_sites);
             }
+        }
+        ExpressionKind::Spawn { call } => {
+            extract_from_expression(call, signatures, call_sites);
         }
         ExpressionKind::Variable(_)
         | ExpressionKind::Integer(_)

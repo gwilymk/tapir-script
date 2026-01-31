@@ -63,6 +63,7 @@ pub enum TapIr {
         args: Box<[SymbolId]>,
     },
     Spawn {
+        target: SymbolId,
         f: FunctionId,
         args: Box<[SymbolId]>,
     },
@@ -230,7 +231,11 @@ impl TapIrBlock {
                     symbols.insert(*target);
                     symbols.extend(args);
                 }
-                TapIr::Trigger { args, .. } | TapIr::Spawn { args, .. } => {
+                TapIr::Trigger { args, .. } => {
+                    symbols.extend(args);
+                }
+                TapIr::Spawn { target, args, .. } => {
+                    symbols.insert(*target);
                     symbols.extend(args);
                 }
                 TapIr::GetGlobal {

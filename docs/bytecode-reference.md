@@ -109,12 +109,13 @@ Built-in variables are runtime-provided values accessed by index:
 
 ### Function Calls (Type 1)
 
-| Opcode       | Description                                                                   |
-| ------------ | ----------------------------------------------------------------------------- |
-| `Call`       | Internal function call, `target` = first arg register                         |
-| `ExternCall` | External (Rust) function call, `target` = extern ID, `a` = first arg register |
-| `Spawn`      | Start concurrent thread, `target` = first arg register, `a` = num args        |
-| `Trigger`    | Fire event to Rust, `target` = trigger ID, `a` = first arg register           |
+| Opcode        | Description                                                                      |
+| ------------- | -------------------------------------------------------------------------------- |
+| `Call`        | Internal function call, `target` = first arg register                            |
+| `ExternCall`  | External (Rust) function call, `target` = extern ID, `a` = first arg register    |
+| `Spawn`       | Start concurrent thread, stores task ID in `target`, `a` = first arg, `b` = args |
+| `Trigger`     | Fire event to Rust, `target` = trigger ID, `a` = first arg register              |
+| `CallBuiltin` | Call builtin function, `target` = result, `a` = builtin ID, `b` = first arg      |
 
 ## Calling Convention
 
@@ -147,11 +148,21 @@ If `r0 == -1` (0xFFFFFFFF), the thread terminates.
 
 ### Spawn
 
-Similar to `Call`, but:
+Creates a new execution thread and returns a task ID:
 
-- Creates a new execution thread
-- Copies arguments to the new thread's stack
-- Both threads continue executing (original skips the `Jump`, new thread follows it)
+- `target` = register to store the task ID (non-zero integer)
+- `a` = first argument register
+- `b` = number of arguments
+- Next word (32-bit) = function PC
+
+Execution:
+1. Read function PC from the next bytecode word
+2. Assign a unique task ID (starts at 1, increments monotonically)
+3. Store task ID in `r[target]`
+4. Copy arguments to new thread's stack
+5. New thread starts at function PC, original continues at PC+1
+
+Task IDs can be used with `task.cancel()` (builtin -2) to stop the spawned function.
 
 ### External Calls (`ExternCall`)
 

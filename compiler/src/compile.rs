@@ -337,9 +337,9 @@ impl Compiler {
                             self.bytecode.mov(v(target), i as u8 + first_argument);
                         }
                     }
-                    TapIr::Spawn { f, args } => {
+                    TapIr::Spawn { target, f, args } => {
                         put_args(&mut self.bytecode, args, false);
-                        self.bytecode.spawn(first_argument, args.len() as u8);
+                        self.bytecode.spawn(v(target), first_argument, args.len() as u8);
                         self.jumps.push((*f, self.bytecode.new_jump()));
                     }
                     TapIr::Trigger { f, args } => {
@@ -549,8 +549,8 @@ impl Bytecode {
             .push(Type1::call_builtin(target, builtin_id, first_arg).encode());
     }
 
-    fn spawn(&mut self, first_arg: u8, num_args: u8) {
-        self.data.push(Type1::spawn(first_arg, num_args).encode());
+    fn spawn(&mut self, target: u8, first_arg: u8, num_args: u8) {
+        self.data.push(Type1::spawn(target, first_arg, num_args).encode());
     }
 
     fn trigger(&mut self, id: u8, first_arg: u8) {

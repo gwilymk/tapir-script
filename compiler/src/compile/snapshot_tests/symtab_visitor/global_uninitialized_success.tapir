@@ -1,0 +1,9 @@
+global counter: int;
+global result: fix;
+global flag: bool;
+
+fn main() {
+    counter = 5;
+    result = 1.5;
+    flag = true;
+}

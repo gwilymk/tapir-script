@@ -8,7 +8,7 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/spawned.
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.8 = bar()
+temp.9 = bar()
 return 
 
 =======================
@@ -16,19 +16,19 @@ fn foo(x.1) ->
 
 ---- block 0 ----
 wait
-temp.9 = x.1
-temp.10 = temp.9
-storeprop temp.10, 0
+temp.10 = x.1
+temp.11 = temp.10
+storeprop temp.11, 0
 return 
 
 =======================
 fn bar() -> 
 
 ---- block 0 ----
-temp.11 = int 5
-spawn foo(temp.11)
-temp.12 = int 8
-temp.13 = foo(temp.12)
+temp.12 = int 5
+temp.13 = spawn foo(temp.12)
+temp.14 = int 8
+temp.15 = foo(temp.14)
 return 
 
 
@@ -37,7 +37,7 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.8 = bar()
+temp.9 = bar()
 return 
 
 =======================
@@ -45,30 +45,30 @@ fn foo(x.1) ->
 
 ---- block 0 ----
 wait
-temp.9 = x.1
-temp.10 = temp.9
-storeprop temp.10, 0
+temp.10 = x.1
+temp.11 = temp.10
+storeprop temp.11, 0
 return 
 
 =======================
 fn bar() -> 
 
 ---- block 0 ----
-temp.11 = int 5
-spawn foo(temp.11)
-temp.12 = int 8
+temp.12 = int 5
+temp.13 = spawn foo(temp.12)
+temp.14 = int 8
 jmp 2
 
 ---- block 2 ----
 wait
-temp.15 = temp.12
-temp.16 = temp.15
-storeprop temp.16, 0
+temp.17 = temp.14
+temp.18 = temp.17
+storeprop temp.18, 0
 jmp 4
 
 ---- block 4 ----
-temp.14 = φ()
-temp.13 = temp.14
+temp.16 = φ()
+temp.15 = temp.16
 jmp 1
 
 ---- block 1 ----
@@ -83,29 +83,29 @@ fn @toplevel() ->
 jmp 2
 
 ---- block 2 ----
-temp.18 = int 5
-spawn foo(temp.18)
-temp.19 = int 8
+temp.20 = int 5
+temp.21 = spawn foo(temp.20)
+temp.22 = int 8
 jmp 3
 
 ---- block 3 ----
 wait
-temp.20 = temp.19
-temp.21 = temp.20
-storeprop temp.21, 0
+temp.23 = temp.22
+temp.24 = temp.23
+storeprop temp.24, 0
 jmp 4
 
 ---- block 4 ----
-temp.22 = φ()
-temp.23 = temp.22
+temp.25 = φ()
+temp.26 = temp.25
 jmp 5
 
 ---- block 5 ----
 jmp 7
 
 ---- block 7 ----
-temp.17 = φ()
-temp.8 = temp.17
+temp.19 = φ()
+temp.9 = temp.19
 jmp 1
 
 ---- block 1 ----
@@ -116,30 +116,30 @@ fn foo(x.1) ->
 
 ---- block 0 ----
 wait
-temp.9 = x.1
-temp.10 = temp.9
-storeprop temp.10, 0
+temp.10 = x.1
+temp.11 = temp.10
+storeprop temp.11, 0
 return 
 
 =======================
 fn bar() -> 
 
 ---- block 0 ----
-temp.11 = int 5
-spawn foo(temp.11)
-temp.12 = int 8
+temp.12 = int 5
+temp.13 = spawn foo(temp.12)
+temp.14 = int 8
 jmp 2
 
 ---- block 2 ----
 wait
-temp.15 = temp.12
-temp.16 = temp.15
-storeprop temp.16, 0
+temp.17 = temp.14
+temp.18 = temp.17
+storeprop temp.18, 0
 jmp 4
 
 ---- block 4 ----
-temp.14 = φ()
-temp.13 = temp.14
+temp.16 = φ()
+temp.15 = temp.16
 jmp 1
 
 ---- block 1 ----
@@ -154,29 +154,29 @@ fn @toplevel() ->
 jmp 2
 
 ---- block 2 ----
-temp.18 = int 5
-spawn foo(temp.18)
-temp.19 = int 8
+temp.20 = int 5
+temp.21 = spawn foo(temp.20)
+temp.22 = int 8
 jmp 3
 
 ---- block 3 ----
 wait
-temp.20 = temp.19
-temp.21 = temp.20
-storeprop temp.21, 0
+temp.23 = temp.22
+temp.24 = temp.23
+storeprop temp.24, 0
 jmp 4
 
 ---- block 4 ----
-temp.22 = φ()
-temp.23 = temp.22
+temp.25 = φ()
+temp.26 = temp.25
 jmp 5
 
 ---- block 5 ----
 jmp 7
 
 ---- block 7 ----
-temp.17 = φ()
-temp.8 = temp.17
+temp.19 = φ()
+temp.9 = temp.19
 jmp 1
 
 ---- block 1 ----
@@ -187,7 +187,7 @@ fn foo(x.1) ->
 
 ---- block 0 ----
 wait
-temp.9 = x.1
-temp.10 = temp.9
-storeprop temp.10, 0
+temp.10 = x.1
+temp.11 = temp.10
+storeprop temp.11, 0
 return
