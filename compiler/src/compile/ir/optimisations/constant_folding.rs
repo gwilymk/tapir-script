@@ -129,8 +129,7 @@ pub fn constant_folding(
                             WarningKind::BuiltinWillFail {
                                 name: builtin_info.name.clone(),
                             }
-                            .at(span)
-                            .label(span, DiagnosticMessage::OperationOccursHere)
+                            .at(span, DiagnosticMessage::OperationOccursHere)
                             .emit(diagnostics);
                         }
                     }
@@ -178,8 +177,7 @@ pub fn constant_folding(
                 if let Some(op_span) = target_span {
                     let mut builder = err
                         .warning_kind()
-                        .at(op_span)
-                        .label(op_span, DiagnosticMessage::OperationOccursHere);
+                        .at(op_span, DiagnosticMessage::OperationOccursHere);
                     if let Some(secondary_span) = secondary_span {
                         builder = builder.label(secondary_span, err.secondary_label());
                     }

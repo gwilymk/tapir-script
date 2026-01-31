@@ -172,9 +172,8 @@ fn extract_properties_from_ast(
             ErrorKind::DuplicatePropertyDeclaration {
                 name: name.to_string(),
             }
-            .at(name_span)
+            .at(name_span, DiagnosticMessage::PropertyAlreadyDeclared)
             .label(*first_span, DiagnosticMessage::OriginallyDeclaredHere)
-            .label(name_span, DiagnosticMessage::PropertyAlreadyDeclared)
             .emit(diagnostics);
             continue;
         }
@@ -185,12 +184,11 @@ fn extract_properties_from_ast(
             ErrorKind::PropertyConflictsWithGlobal {
                 name: name.to_string(),
             }
-            .at(name_span)
+            .at(name_span, DiagnosticMessage::ConflictsWithGlobal)
             .label(
                 global.name.span(),
                 DiagnosticMessage::OriginallyDeclaredHere,
             )
-            .label(name_span, DiagnosticMessage::ConflictsWithGlobal)
             .emit(diagnostics);
             // Continue anyway to report more errors
         }
@@ -202,8 +200,7 @@ fn extract_properties_from_ast(
             ErrorKind::PropertyNotInStruct {
                 name: name.to_string(),
             }
-            .at(name_span)
-            .label(name_span, DiagnosticMessage::PropertyNotInStructLabel)
+            .at(name_span, DiagnosticMessage::PropertyNotInStructLabel)
             .emit(diagnostics);
             // Continue anyway to report more errors
         }
@@ -260,8 +257,7 @@ fn evaluate_constant_initializer(
             ErrorKind::GlobalInitializerNotConstant {
                 name: global_name.to_string(),
             }
-            .at(expr.span)
-            .label(expr.span, DiagnosticMessage::NotAConstant)
+            .at(expr.span, DiagnosticMessage::NotAConstant)
             .note(DiagnosticMessage::GlobalInitializersMustBeConstant)
             .emit(diagnostics);
             (Type::Error, 0)
@@ -292,8 +288,10 @@ fn evaluate_global_declaration(
                     annotated: annotated_ty,
                     actual: inferred_ty,
                 }
-                .at(global.span)
-                .label(ty.span, DiagnosticMessage::ExpectedType { ty: annotated_ty })
+                .at(
+                    ty.span,
+                    DiagnosticMessage::ExpectedType { ty: annotated_ty },
+                )
                 .label(expr.span, DiagnosticMessage::HasType { ty: inferred_ty })
                 .emit(diagnostics);
                 return (Type::Error, 0);
@@ -314,7 +312,7 @@ fn evaluate_global_declaration(
             ErrorKind::GlobalRequiresTypeOrInitializer {
                 name: name.to_string(),
             }
-            .at(global.span)
+            .at(global.span, DiagnosticMessage::ThisStatement)
             .emit(diagnostics);
             (Type::Error, 0)
         }
@@ -341,9 +339,8 @@ fn register_function(
 ) -> bool {
     if let Some(other_span) = function_declarations.get(&name) {
         ErrorKind::FunctionAlreadyDeclared { name }
-            .at(span)
+            .at(span, DiagnosticMessage::AlsoDeclaredHere)
             .label(*other_span, DiagnosticMessage::OriginallyDeclaredHere)
-            .label(span, DiagnosticMessage::AlsoDeclaredHere)
             .emit(diagnostics);
         return false;
     }
@@ -404,7 +401,7 @@ impl<'input> SymTabVisitor<'input> {
                 ErrorKind::BuiltinOutsidePrelude {
                     name: function.name.to_string(),
                 }
-                .at(function.span)
+                .at(function.span, DiagnosticMessage::FunctionDefinedHere)
                 .emit(diagnostics);
                 continue;
             }
@@ -450,8 +447,7 @@ impl<'input> SymTabVisitor<'input> {
                 ErrorKind::MethodCannotBeEventHandler {
                     method_name: function.name.to_string(),
                 }
-                .at(event_span)
-                .label(
+                .at(
                     event_span,
                     DiagnosticMessage::MethodCannotBeEventHandlerLabel,
                 )
@@ -465,7 +461,7 @@ impl<'input> SymTabVisitor<'input> {
                 && function.is_operator()
             {
                 ErrorKind::OperatorCannotBeEventHandler
-                    .at(event_span)
+                    .at(event_span, DiagnosticMessage::ThisEventHandler)
                     .emit(diagnostics);
                 continue;
             }
@@ -475,7 +471,7 @@ impl<'input> SymTabVisitor<'input> {
                 ErrorKind::OperatorRequiresTwoArguments {
                     actual: function.arguments.len(),
                 }
-                .at(function.span)
+                .at(function.span, DiagnosticMessage::FunctionDefinedHere)
                 .emit(diagnostics);
                 continue;
             }
@@ -617,8 +613,7 @@ impl<'input> SymTabVisitor<'input> {
                                 ErrorKind::UnknownVariable {
                                     name: name.to_string(),
                                 }
-                                .at(span)
-                                .label(span, DiagnosticMessage::UnknownVariableLabel)
+                                .at(span, DiagnosticMessage::UnknownVariableLabel)
                                 .emit(diagnostics);
 
                                 // create a dummy symbol to ensure that the meta stays correct
@@ -682,8 +677,7 @@ impl<'input> SymTabVisitor<'input> {
                     ErrorKind::UnknownVariable {
                         name: ident.to_string(),
                     }
-                    .at(expr.span)
-                    .label(expr.span, DiagnosticMessage::UnknownVariableLabel)
+                    .at(expr.span, DiagnosticMessage::UnknownVariableLabel)
                     .emit(diagnostics);
                 }
             }
@@ -698,8 +692,7 @@ impl<'input> SymTabVisitor<'input> {
                     ErrorKind::UnknownFunction {
                         name: name.to_string(),
                     }
-                    .at(expr.span)
-                    .label(expr.span, DiagnosticMessage::UnknownFunctionLabel)
+                    .at(expr.span, DiagnosticMessage::UnknownFunctionLabel)
                     .emit(diagnostics);
                 }
 

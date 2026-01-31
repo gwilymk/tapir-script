@@ -711,7 +711,14 @@ impl<'a> BlockVisitor<'a> {
                 let args = args.into_boxed_slice();
 
                 let return_info: Option<&CallReturnInfo> = expr.meta.get();
-                self.emit_call(function_id, target_symbol, args, return_info, expr.span, symtab);
+                self.emit_call(
+                    function_id,
+                    target_symbol,
+                    args,
+                    return_info,
+                    expr.span,
+                    symtab,
+                );
             }
             ast::ExpressionKind::MethodCall {
                 receiver,
@@ -742,7 +749,14 @@ impl<'a> BlockVisitor<'a> {
                 let args = args.into_boxed_slice();
 
                 let return_info: Option<&CallReturnInfo> = expr.meta.get();
-                self.emit_call(function_id, target_symbol, args, return_info, expr.span, symtab);
+                self.emit_call(
+                    function_id,
+                    target_symbol,
+                    args,
+                    return_info,
+                    expr.span,
+                    symtab,
+                );
             }
             ast::ExpressionKind::FieldAccess { base, field } => {
                 // Get the field info from type checking
@@ -830,11 +844,7 @@ impl<'a> BlockVisitor<'a> {
             }
             ast::ExpressionKind::Spawn { call } => {
                 // The call expression should be a Call - extract function info from it
-                let ast::ExpressionKind::Call {
-                    arguments,
-                    ..
-                } = &call.kind
-                else {
+                let ast::ExpressionKind::Call { arguments, .. } = &call.kind else {
                     panic!("Spawn should contain a Call expression");
                 };
 
@@ -849,10 +859,8 @@ impl<'a> BlockVisitor<'a> {
                     .collect();
 
                 // Get the function ID from the call expression's metadata
-                let f: InternalOrExternalFunctionId = *call
-                    .meta
-                    .get()
-                    .expect("Should have function IDs by now");
+                let f: InternalOrExternalFunctionId =
+                    *call.meta.get().expect("Should have function IDs by now");
 
                 match f {
                     InternalOrExternalFunctionId::Internal(function_id) => {

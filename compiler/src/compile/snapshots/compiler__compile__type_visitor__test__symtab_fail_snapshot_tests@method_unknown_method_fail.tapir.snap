@@ -7,6 +7,8 @@ input_file: compiler/src/compile/snapshot_tests/type_visitor/method_unknown_meth
    ╭─[ method_unknown_method_fail.tapir:3:16 ]
    │
  3 │ var result = x.unknown_method();
-   │              ┬  
-   │              ╰── This has type int
+   │              ┬ ───────┬──────  
+   │              ╰───────────────── This has type int
+   │                       │        
+   │                       ╰──────── Unknown function
 ───╯

@@ -74,7 +74,8 @@ fn extract_references_from_statements(
                 // For assignments, LHS idents refer to existing definitions
                 let field_info: Option<&FieldAssignmentInfo> = stmt.meta.get();
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
-                    for (i, (target, symbol_id)) in targets.iter().zip(symbol_ids.iter()).enumerate()
+                    for (i, (target, symbol_id)) in
+                        targets.iter().zip(symbol_ids.iter()).enumerate()
                     {
                         // Extract path from target expression
                         if let Some(path) = target.as_lvalue_path() {

@@ -31,8 +31,10 @@ pub fn register_structs<'input>(
             ErrorKind::StructShadowsBuiltinType {
                 name: name.to_string(),
             }
-            .at(decl.name.span)
-            .label(decl.name.span, DiagnosticMessage::BuiltinTypeCannotBeStructName)
+            .at(
+                decl.name.span,
+                DiagnosticMessage::BuiltinTypeCannotBeStructName,
+            )
             .emit(diagnostics);
             continue;
         }
@@ -42,8 +44,7 @@ pub fn register_structs<'input>(
             ErrorKind::DuplicateStructName {
                 name: name.to_string(),
             }
-            .at(decl.name.span)
-            .label(
+            .at(
                 decl.name.span,
                 crate::reporting::DiagnosticMessage::AlsoDeclaredHere,
             )
@@ -105,8 +106,7 @@ pub fn resolve_struct_fields<'input>(
                     struct_name: name.to_string(),
                     field_name: field_name.to_string(),
                 }
-                .at(field_span)
-                .label(
+                .at(
                     field_span,
                     crate::reporting::DiagnosticMessage::AlsoDeclaredHere,
                 )
@@ -177,7 +177,10 @@ pub fn resolve_all_types<'input>(
                         left: op_def.left_type.ident.to_string(),
                         right: op_def.right_type.ident.to_string(),
                     }
-                    .at(function.span)
+                    .at(
+                        function.span,
+                        crate::reporting::DiagnosticMessage::FunctionDefinedHere,
+                    )
                     .label(
                         op_def.left_type.span,
                         crate::reporting::DiagnosticMessage::HasType { ty: left_type },
@@ -204,7 +207,9 @@ pub fn resolve_all_types<'input>(
                 }
             }
             // For methods, resolve receiver type and fill in self's type
-            crate::ast::FunctionKind::Method { receiver_type: receiver } => {
+            crate::ast::FunctionKind::Method {
+                receiver_type: receiver,
+            } => {
                 let receiver_type =
                     resolve_receiver_type(receiver.ident, struct_names, receiver.span, diagnostics);
 
@@ -369,7 +374,7 @@ fn resolve_receiver_type(
     ErrorKind::UnknownMethodType {
         name: name.to_string(),
     }
-    .at(span)
+    .at(span, crate::reporting::DiagnosticMessage::UnknownTypeLabel2)
     .emit(diagnostics);
     Type::Error
 }
@@ -391,8 +396,7 @@ fn resolve_type_name(
         ErrorKind::UnknownTypeToken {
             token: type_with_loc.name.to_string(),
         }
-        .at(type_with_loc.span)
-        .label(
+        .at(
             type_with_loc.span,
             crate::reporting::DiagnosticMessage::UnknownTypeLabel2,
         )
@@ -526,8 +530,10 @@ mod tests {
 
     #[test]
     fn struct_shadows_builtin_error() {
-        let script =
-            make_script_with_structs(vec![make_struct_decl_builtin(Type::Int, vec![("x", Type::Int)])]);
+        let script = make_script_with_structs(vec![make_struct_decl_builtin(
+            Type::Int,
+            vec![("x", Type::Int)],
+        )]);
         let mut registry = StructRegistry::default();
         let mut diagnostics = Diagnostics::new(FileId::new(0), "test.tapir", "");
 

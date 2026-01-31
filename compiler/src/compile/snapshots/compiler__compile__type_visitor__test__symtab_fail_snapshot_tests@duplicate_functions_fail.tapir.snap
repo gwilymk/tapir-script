@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+source: compiler/src/compile/type_visitor.rs
 expression: err_str
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/duplicate_functions_fail.tapir
+input_file: compiler/src/compile/snapshot_tests/type_visitor/duplicate_functions_fail.tapir
 ---
 [E0011] Error: Function with name 'my_function' already exists
    ╭─[ duplicate_functions_fail.tapir:5:4 ]
@@ -18,13 +18,17 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor
    ╭─[ duplicate_functions_fail.tapir:1:4 ]
    │
  1 │ fn my_function(x: int) -> int {
-   │                           ─┬─  
+   │    ─────┬─────            ─┬─  
+   │         ╰────────────────────── Function defined here
+   │                            │   
    │                            ╰─── Function returns results
 ───╯
 [E0015] Error: Function my_function should return results, but not all branches return.
    ╭─[ duplicate_functions_fail.tapir:5:4 ]
    │
  5 │ fn my_function(x: int) -> fix {
-   │                           ─┬─  
+   │    ─────┬─────            ─┬─  
+   │         ╰────────────────────── Function defined here
+   │                            │   
    │                            ╰─── Function returns results
 ───╯

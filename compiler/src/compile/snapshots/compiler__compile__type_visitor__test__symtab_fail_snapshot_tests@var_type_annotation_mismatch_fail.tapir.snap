@@ -4,7 +4,7 @@ expression: err_str
 input_file: compiler/src/compile/snapshot_tests/type_visitor/var_type_annotation_mismatch_fail.tapir
 ---
 [E0036] Error: type annotation `fix` doesn't match expression type `int`
-   ╭─[ var_type_annotation_mismatch_fail.tapir:2:5 ]
+   ╭─[ var_type_annotation_mismatch_fail.tapir:2:8 ]
    │
  2 │ var x: fix = 5;
    │        ─┬─   ┬  

@@ -98,8 +98,7 @@ pub fn check_recursive_structs(registry: &StructRegistry, diagnostics: &mut Diag
                 let mut error = ErrorKind::RecursiveStruct {
                     name: def.name.clone(),
                 }
-                .at(def.span)
-                .label(
+                .at(
                     def.span,
                     crate::reporting::DiagnosticMessage::StructDefinedHere,
                 );

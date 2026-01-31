@@ -115,7 +115,6 @@ impl Type {
             Type::Error => "error",
         }
     }
-
 }
 
 impl Display for Type {

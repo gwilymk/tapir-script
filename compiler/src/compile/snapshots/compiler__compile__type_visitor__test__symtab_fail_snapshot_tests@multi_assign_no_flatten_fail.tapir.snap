@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+source: compiler/src/compile/type_visitor.rs
 expression: err_str
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/multi_assign_no_flatten_fail.tapir
+input_file: compiler/src/compile/snapshot_tests/type_visitor/multi_assign_no_flatten_fail.tapir
 ---
 [E0014] Error: Function call must return exactly 1 value here, but got 2
    ╭─[ multi_assign_no_flatten_fail.tapir:6:15 ]
@@ -14,8 +14,10 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor
    ╭─[ multi_assign_no_flatten_fail.tapir:6:1 ]
    │
  6 │ var a, b, c = returns_two(), 3;
-   │           ┬  
-   │           ╰── No value for this variable
+   │ ──────────┬────┬───────────────  
+   │           ╰────────────────────── No value for this variable
+   │                │                 
+   │                ╰───────────────── This statement
    │ 
    │ Help: When assigning to multiple variables, both sides of the '=' must have the same number of arguments
 ───╯

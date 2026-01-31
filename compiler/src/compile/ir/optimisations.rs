@@ -139,7 +139,9 @@ pub fn optimise(
         }
     }
 
-    panic!("Optimizer exceeded {MAX_ITERATIONS} iterations - likely infinite loop in optimization pass");
+    panic!(
+        "Optimizer exceeded {MAX_ITERATIONS} iterations - likely infinite loop in optimization pass"
+    );
 }
 
 trait Optimisation: Sync {

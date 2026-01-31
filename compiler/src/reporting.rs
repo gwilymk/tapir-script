@@ -1078,11 +1078,12 @@ impl ErrorKind {
         }
     }
 
-    /// Start building a diagnostic at the given span.
-    pub(crate) fn at(self, span: Span) -> DiagnosticBuilder {
+    /// Start building a diagnostic at the given span with a primary label.
+    pub(crate) fn at(self, span: Span, label: DiagnosticMessage) -> DiagnosticBuilder {
         DiagnosticBuilder {
             kind: self,
             primary_span: span,
+            primary_label: label,
             labels: vec![],
             notes: vec![],
             help: None,
@@ -1095,6 +1096,7 @@ impl ErrorKind {
 pub(crate) struct DiagnosticBuilder {
     kind: ErrorKind,
     primary_span: Span,
+    primary_label: DiagnosticMessage,
     labels: Vec<(Span, DiagnosticMessage)>,
     notes: Vec<DiagnosticMessage>,
     help: Option<DiagnosticMessage>,
@@ -1121,11 +1123,15 @@ impl DiagnosticBuilder {
     }
 
     pub(crate) fn build(self) -> Diagnostic {
+        // Primary label comes first, then secondary labels
+        let mut labels = vec![(self.primary_span, self.primary_label)];
+        labels.extend(self.labels);
+
         Diagnostic {
             severity: Severity::Error,
             kind: DiagnosticKind::Error(self.kind),
             primary_span: self.primary_span,
-            labels: self.labels,
+            labels,
             notes: self.notes,
             help: self.help,
         }
@@ -1168,11 +1174,12 @@ impl WarningKind {
         }
     }
 
-    /// Start building a warning at the given span.
-    pub fn at(self, span: Span) -> WarningBuilder {
+    /// Start building a warning at the given span with a primary label.
+    pub fn at(self, span: Span, label: DiagnosticMessage) -> WarningBuilder {
         WarningBuilder {
             kind: self,
             primary_span: span,
+            primary_label: label,
             labels: vec![],
             notes: vec![],
         }
@@ -1184,6 +1191,7 @@ impl WarningKind {
 pub struct WarningBuilder {
     kind: WarningKind,
     primary_span: Span,
+    primary_label: DiagnosticMessage,
     labels: Vec<(Span, DiagnosticMessage)>,
     notes: Vec<DiagnosticMessage>,
 }
@@ -1209,11 +1217,15 @@ impl WarningBuilder {
     }
 
     pub fn build(self) -> Diagnostic {
+        // Primary label comes first, then secondary labels
+        let mut labels = vec![(self.primary_span, self.primary_label)];
+        labels.extend(self.labels);
+
         Diagnostic {
             severity: Severity::Warning,
             kind: DiagnosticKind::Warning(self.kind),
             primary_span: self.primary_span,
-            labels: self.labels,
+            labels,
             notes: self.notes,
             help: None,
         }
@@ -1266,9 +1278,7 @@ impl Diagnostic {
         const BINARY_OPS: &[&str] = &[
             "\"+\"", "\"-\"", "\"*\"", "\"/\"", "\"%\"", "\"//\"", "\"%%\"",
         ];
-        const COMPARISON_OPS: &[&str] = &[
-            "\"==\"", "\"!=\"", "\">\"", "\">=\"", "\"<\"", "\"<=\"",
-        ];
+        const COMPARISON_OPS: &[&str] = &["\"==\"", "\"!=\"", "\">\"", "\">=\"", "\"<\"", "\"<=\""];
         const LOGICAL_OPS: &[&str] = &["\"||\"", "\"&&\""];
         const BITWISE_OPS: &[&str] = &["\"<<\"", "\">>\"", "\"&\"", "\"|\""];
 
@@ -1325,8 +1335,7 @@ impl Diagnostic {
             lalrpop_util::ParseError::InvalidToken { location } => {
                 let span = Span::new(file_id, location, location);
                 ErrorKind::InvalidToken
-                    .at(span)
-                    .label(span, DiagnosticMessage::InvalidTokenLabel)
+                    .at(span, DiagnosticMessage::InvalidTokenLabel)
                     .build()
             }
             lalrpop_util::ParseError::UnrecognizedEof { location, expected } => {
@@ -1334,8 +1343,7 @@ impl Diagnostic {
                 ErrorKind::UnrecognizedEof {
                     expected: expected.clone().into_boxed_slice(),
                 }
-                .at(span)
-                .label(span, DiagnosticMessage::EndOfFileNotExpectedHere)
+                .at(span, DiagnosticMessage::EndOfFileNotExpectedHere)
                 .note(DiagnosticMessage::ExpectedOneOfTokens {
                     tokens: Self::simplify_expected_tokens(&expected),
                 })
@@ -1346,8 +1354,7 @@ impl Diagnostic {
                 ErrorKind::UnrecognizedToken {
                     token: format!("{:?}", token.1),
                 }
-                .at(span)
-                .label(span, DiagnosticMessage::UnexpectedToken)
+                .at(span, DiagnosticMessage::UnexpectedToken)
                 .note(DiagnosticMessage::ExpectedOneOfTokens {
                     tokens: Self::simplify_expected_tokens(&expected),
                 })
@@ -1358,8 +1365,7 @@ impl Diagnostic {
                 ErrorKind::ExtraToken {
                     token: format!("{:?}", token.1),
                 }
-                .at(span)
-                .label(span, DiagnosticMessage::ExtraTokenLabel)
+                .at(span, DiagnosticMessage::ExtraTokenLabel)
                 .build()
             }
             lalrpop_util::ParseError::User { error } => {
@@ -1367,16 +1373,13 @@ impl Diagnostic {
                 let span = error.span;
                 match error.kind {
                     LexicalErrorKind::InvalidNumber(e) => ErrorKind::InvalidNumber { error: e }
-                        .at(span)
-                        .label(span, DiagnosticMessage::InvalidInteger)
+                        .at(span, DiagnosticMessage::InvalidInteger)
                         .build(),
                     LexicalErrorKind::InvalidFix => ErrorKind::InvalidFix
-                        .at(span)
-                        .label(span, DiagnosticMessage::InvalidFixnumLabel)
+                        .at(span, DiagnosticMessage::InvalidFixnumLabel)
                         .build(),
                     LexicalErrorKind::InvalidToken => ErrorKind::InvalidToken
-                        .at(span)
-                        .label(span, DiagnosticMessage::InvalidTokenLabel)
+                        .at(span, DiagnosticMessage::InvalidTokenLabel)
                         .build(),
                 }
             }

@@ -1,14 +1,16 @@
 ---
-source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+source: compiler/src/compile/type_visitor.rs
 expression: err_str
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/multi_assign_count_mismatch2_fail.tapir
+input_file: compiler/src/compile/snapshot_tests/type_visitor/multi_assign_count_mismatch2_fail.tapir
 ---
 [E0021] Error: Expected 3 expressions, but got 2 of them
    ╭─[ multi_assign_count_mismatch2_fail.tapir:2:1 ]
    │
  2 │ var a, b, c = 1, 2;
-   │           ┬  
-   │           ╰── No value for this variable
+   │ ─────────┬┬────────  
+   │          ╰─────────── This statement
+   │           │          
+   │           ╰────────── No value for this variable
    │ 
    │ Help: When assigning to multiple variables, both sides of the '=' must have the same number of arguments
 ───╯

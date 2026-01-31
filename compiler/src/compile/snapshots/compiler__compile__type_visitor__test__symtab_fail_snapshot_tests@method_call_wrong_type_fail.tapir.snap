@@ -7,6 +7,8 @@ input_file: compiler/src/compile/snapshot_tests/type_visitor/method_call_wrong_t
    ╭─[ method_call_wrong_type_fail.tapir:8:16 ]
    │
  8 │ var result = x.add(10);
-   │              ┬  
-   │              ╰── This has type fix
+   │              ┬ ─┬─  
+   │              ╰────── This has type fix
+   │                 │   
+   │                 ╰─── Unknown function
 ───╯

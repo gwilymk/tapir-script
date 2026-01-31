@@ -20,7 +20,9 @@ pub(crate) enum RunResult {
     Waiting,
     Finished,
     /// Spawn a new state (task ID already stored in spawner's target register)
-    Spawn { state: Box<State> },
+    Spawn {
+        state: Box<State>,
+    },
     /// Cancel a task by its task ID
     Cancel(i32),
 }

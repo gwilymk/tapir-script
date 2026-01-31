@@ -542,9 +542,7 @@ impl<'input> Expression<'input> {
                     .chain(receiver.all_inner())
                     .chain(arguments.iter().flat_map(|argument| argument.all_inner())),
             ),
-            ExpressionKind::Spawn { call } => {
-                Box::new(iter::once(self).chain(call.all_inner()))
-            }
+            ExpressionKind::Spawn { call } => Box::new(iter::once(self).chain(call.all_inner())),
         }
     }
 }

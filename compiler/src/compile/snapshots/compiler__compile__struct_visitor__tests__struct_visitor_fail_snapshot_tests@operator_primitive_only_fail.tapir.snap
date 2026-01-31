@@ -7,8 +7,10 @@ input_file: compiler/src/compile/snapshot_tests/struct_visitor/operator_primitiv
    ╭─[ operator_primitive_only_fail.tapir:2:8 ]
    │
  2 │ fn int + int(a, b) -> int {
-   │    ─┬─   ─┬─  
+   │    ─┬─ ┬ ─┬─  
    │     ╰───────── This has type int
+   │        │  │   
+   │        ╰────── Function defined here
    │           │   
    │           ╰─── This has type int
 ───╯

@@ -38,16 +38,14 @@ fn visit_block_in_loop(
             StatementKind::Continue => {
                 if !is_in_loop {
                     ErrorKind::BreakOrContinueOutsideOfLoop
-                        .at(statement.span)
-                        .label(statement.span, DiagnosticMessage::ThisStatement)
+                        .at(statement.span, DiagnosticMessage::ThisStatement)
                         .emit(diagnostics);
                 }
             }
             StatementKind::Break => {
                 if !is_in_loop {
                     ErrorKind::BreakOrContinueOutsideOfLoop
-                        .at(statement.span)
-                        .label(statement.span, DiagnosticMessage::ThisStatement)
+                        .at(statement.span, DiagnosticMessage::ThisStatement)
                         .emit(diagnostics);
                 }
 

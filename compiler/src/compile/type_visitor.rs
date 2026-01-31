@@ -245,8 +245,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     expected: table_type,
                     actual: ty,
                 }
-                .at(value_span)
-                .label(value_span, DiagnosticMessage::AssigningType { ty })
+                .at(value_span, DiagnosticMessage::AssigningType { ty })
                 .label(
                     property.span,
                     DiagnosticMessage::DefinedAs { ty: table_type },
@@ -257,8 +256,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     expected: table_type,
                     actual: ty,
                 }
-                .at(value_span)
-                .label(value_span, DiagnosticMessage::AssigningType { ty });
+                .at(value_span, DiagnosticMessage::AssigningType { ty });
 
                 let builder = if let Some(expected_span) = expected_span {
                     builder.label(
@@ -301,8 +299,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 ErrorKind::UnknownType {
                     name: symtab.name_for_symbol(symbol_id).into_owned(),
                 }
-                .at(span)
-                .label(span, DiagnosticMessage::UnknownTypeLabel)
+                .at(span, DiagnosticMessage::UnknownTypeLabel)
                 .emit(diagnostics);
 
                 Type::Error
@@ -316,7 +313,6 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         &self,
         annotation: Option<&ast::TypeWithLocation>,
         inferred_type: Type,
-        ident_span: Span,
         value_span: Span,
         diagnostics: &mut Diagnostics,
     ) -> Type {
@@ -333,8 +329,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     annotated,
                     actual: inferred_type,
                 }
-                .at(ident_span)
-                .label(
+                .at(
                     annotation.span,
                     DiagnosticMessage::ExpectedType { ty: annotated },
                 )
@@ -386,15 +381,11 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     annotated,
                     actual: inferred_type,
                 }
-                .at(global.span)
-                .label(
+                .at(
                     annotation.span,
                     DiagnosticMessage::ExpectedType { ty: annotated },
                 )
-                .label(
-                    value.span,
-                    DiagnosticMessage::HasType { ty: inferred_type },
-                )
+                .label(value.span, DiagnosticMessage::HasType { ty: inferred_type })
                 .emit(diagnostics);
             }
         }
@@ -440,7 +431,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     Some(path)
                 } else {
                     ErrorKind::InvalidAssignmentTarget
-                        .at(target.span)
+                        .at(target.span, DiagnosticMessage::ThisStatement)
                         .emit(diagnostics);
                     None
                 }
@@ -493,7 +484,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 ident_count: targets.len(),
                 expr_count: value_types.len(),
             }
-            .at(statement_span)
+            .at(statement_span, DiagnosticMessage::ThisStatement)
             .help(DiagnosticMessage::WhenAssigningMultipleVars);
 
             for span in extra_spans {
@@ -557,8 +548,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                             expected: target_type,
                             actual: value_type,
                         }
-                        .at(target_span)
-                        .label(target_span, DiagnosticMessage::HasType { ty: target_type })
+                        .at(target_span, DiagnosticMessage::HasType { ty: target_type })
                         .label(value_span, DiagnosticMessage::HasType { ty: value_type })
                         .emit(diagnostics);
                     }
@@ -606,8 +596,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             _ => {
                 if let Some(first) = path.first() {
                     ErrorKind::FieldAccessOnNonStruct { ty: current_type }
-                        .at(first.span)
-                        .label(
+                        .at(
                             first.span,
                             DiagnosticMessage::FieldAccessOnNonStruct { ty: current_type },
                         )
@@ -636,8 +625,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                             struct_name: struct_def.name.clone(),
                             field_name: field_ident.ident.to_string(),
                         }
-                        .at(field_ident.span)
-                        .label(
+                        .at(
                             field_ident.span,
                             DiagnosticMessage::UnknownField {
                                 struct_name: struct_def.name.clone(),
@@ -651,8 +639,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 Type::Error => return None,
                 _ => {
                     ErrorKind::FieldAccessOnNonStruct { ty: current_type }
-                        .at(field_ident.span)
-                        .label(
+                        .at(
                             field_ident.span,
                             DiagnosticMessage::FieldAccessOnNonStruct { ty: current_type },
                         )
@@ -713,7 +700,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 ident_count: targets.ident_spans.len(),
                 expr_count: value_types_and_spans.len(),
             }
-            .at(statement_span)
+            .at(statement_span, DiagnosticMessage::ThisStatement)
             .help(DiagnosticMessage::WhenAssigningMultipleVars);
 
             for span in extra_spans {
@@ -731,13 +718,8 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             .zip(targets.annotations.iter())
         {
             // Check type annotation if present
-            let final_type = self.check_type_annotation(
-                *annotation,
-                inferred_type,
-                ident_span,
-                value_span,
-                diagnostics,
-            );
+            let final_type =
+                self.check_type_annotation(*annotation, inferred_type, value_span, diagnostics);
 
             self.resolve_type_with_spans(
                 symbol,
@@ -780,7 +762,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             ErrorKind::EventFunctionsShouldNotHaveAReturnType {
                 function_name: function.name.to_string(),
             }
-            .at(function.span)
+            .at(function.span, DiagnosticMessage::FunctionDefinedHere)
             .label(
                 function.return_types.span,
                 DiagnosticMessage::ExpectedNoReturnType,
@@ -814,7 +796,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             ErrorKind::FunctionDoesNotHaveReturn {
                 name: function.name.to_string(),
             }
-            .at(function.span)
+            .at(function.span, DiagnosticMessage::FunctionDefinedHere)
             .label(
                 function.return_types.span,
                 DiagnosticMessage::FunctionReturnsResults,
@@ -879,8 +861,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         ErrorKind::InvalidTypeForIfCondition {
                             got: condition_type,
                         }
-                        .at(condition.span)
-                        .label(
+                        .at(
                             condition.span,
                             DiagnosticMessage::HasType { ty: condition_type },
                         )
@@ -913,8 +894,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                             expected: expected_return_type.types.len(),
                             actual: actual_return_types.len(),
                         }
-                        .at(statement.span)
-                        .label(
+                        .at(
                             statement.span,
                             DiagnosticMessage::HasReturnValues {
                                 count: actual_return_types.len(),
@@ -944,8 +924,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                                 expected: expected_ty,
                                 actual: *actual,
                             }
-                            .at(statement.span)
-                            .label(values[i].span, DiagnosticMessage::HasType { ty: *actual })
+                            .at(values[i].span, DiagnosticMessage::HasType { ty: *actual })
                             .label(
                                 expected.span,
                                 DiagnosticMessage::HasType { ty: expected_ty },
@@ -1016,17 +995,16 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                                 first_definition_args: trigger_info.ty.clone(),
                                 second_definition_args: trigger_arguments.clone(),
                             }
-                            .at(statement.span)
+                            .at(
+                                statement.span,
+                                DiagnosticMessage::CalledWithTypes {
+                                    types: trigger_arguments.clone(),
+                                },
+                            )
                             .label(
                                 trigger_info.span,
                                 DiagnosticMessage::CalledWithTypes {
                                     types: trigger_info.ty.clone(),
-                                },
-                            )
-                            .label(
-                                statement.span,
-                                DiagnosticMessage::CalledWithTypes {
-                                    types: trigger_arguments.clone(),
                                 },
                             )
                             .help(DiagnosticMessage::TriggerCallsMustHaveSameArgTypes)
@@ -1075,8 +1053,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     ErrorKind::UnknownType {
                         name: symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),
                     }
-                    .at(span)
-                    .label(span, DiagnosticMessage::UnknownTypeLabel)
+                    .at(span, DiagnosticMessage::UnknownTypeLabel)
                     .emit(diagnostics);
                 }
             }
@@ -1141,8 +1118,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         operator: op.to_string(),
                         right_type: right_type_name.to_string(),
                     }
-                    .at(expression.span)
-                    .label(lhs_span, DiagnosticMessage::HasType { ty: lhs_type })
+                    .at(lhs_span, DiagnosticMessage::HasType { ty: lhs_type })
                     .label(rhs_span, DiagnosticMessage::HasType { ty: rhs_type })
                     .help(DiagnosticMessage::DefineOperatorFunction {
                         left: left_type_name.to_string(),
@@ -1155,8 +1131,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
 
                 if lhs_type != rhs_type && op != BinaryOperator::Then {
                     ErrorKind::BinaryOperatorTypeError { lhs_type, rhs_type }
-                        .at(expression.span)
-                        .label(
+                        .at(
                             expression.span,
                             DiagnosticMessage::MismatchingTypesOnBinaryOperator,
                         )
@@ -1166,13 +1141,11 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 }
 
                 // Re-borrow to update operator
-                if let ast::ExpressionKind::BinaryOperation { operator, .. } =
-                    &mut expression.kind
+                if let ast::ExpressionKind::BinaryOperation { operator, .. } = &mut expression.kind
                 {
                     if !operator.can_handle_type(lhs_type) {
                         ErrorKind::InvalidTypeForBinaryOperator { type_: lhs_type }
-                            .at(lhs_span)
-                            .label(lhs_span, DiagnosticMessage::BinaryOperatorCannotHandleType)
+                            .at(lhs_span, DiagnosticMessage::BinaryOperatorCannotHandleType)
                             .emit(diagnostics);
 
                         return Type::Error;
@@ -1203,8 +1176,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     ErrorKind::FunctionMustReturnOneValueInThisLocation {
                         actual: types.len(),
                     }
-                    .at(expression.span)
-                    .label(
+                    .at(
                         expression.span,
                         DiagnosticMessage::FunctionMustReturnOneHere,
                     )
@@ -1237,8 +1209,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                                 struct_name: struct_def.name.clone(),
                                 field_name: field.ident.to_string(),
                             }
-                            .at(field.span)
-                            .label(
+                            .at(
                                 field.span,
                                 DiagnosticMessage::UnknownField {
                                     struct_name: struct_def.name.clone(),
@@ -1252,8 +1223,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     Type::Error => Type::Error,
                     _ => {
                         ErrorKind::FieldAccessOnNonStruct { ty: base_type }
-                            .at(expression.span)
-                            .label(base.span, DiagnosticMessage::HasType { ty: base_type })
+                            .at(base.span, DiagnosticMessage::HasType { ty: base_type })
                             .emit(diagnostics);
                         Type::Error
                     }
@@ -1282,7 +1252,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         type_name: type_name.to_string(),
                         method_name: method.ident.to_string(),
                     }
-                    .at(method.span)
+                    .at(method.span, DiagnosticMessage::UnknownFunctionLabel)
                     .label(
                         receiver.span,
                         DiagnosticMessage::HasType { ty: receiver_type },
@@ -1313,8 +1283,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         expected: expected_args,
                         actual: argument_types.len(),
                     }
-                    .at(expression.span)
-                    .label(
+                    .at(
                         expression.span,
                         DiagnosticMessage::GotArguments {
                             count: argument_types.len(),
@@ -1341,7 +1310,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                                 expected: self_param.ty,
                                 actual: receiver_type,
                             }
-                            .at(receiver.span)
+                            .at(
+                                receiver.span,
+                                DiagnosticMessage::PassingType { ty: receiver_type },
+                            )
                             .emit(diagnostics);
                         }
                     }
@@ -1360,12 +1332,11 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                                 expected: arg_info.ty,
                                 actual: *actual,
                             }
-                            .at(*actual_span)
+                            .at(*actual_span, DiagnosticMessage::PassingType { ty: *actual })
                             .label(
                                 arg_info.span,
                                 DiagnosticMessage::ExpectedType { ty: arg_info.ty },
                             )
-                            .label(*actual_span, DiagnosticMessage::PassingType { ty: *actual })
                             .emit(diagnostics);
                         }
                     }
@@ -1449,8 +1420,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             ErrorKind::CannotCallEventHandler {
                 function_name: name.to_string(),
             }
-            .at(span)
-            .label(span, DiagnosticMessage::ThisCallHere)
+            .at(span, DiagnosticMessage::ThisCallHere)
             .label(function_info.span, DiagnosticMessage::ThisEventHandler)
             .note(DiagnosticMessage::CannotCallEventHandlerNote {
                 function_name: name.to_string(),
@@ -1464,8 +1434,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 expected: function_info.args.len(),
                 actual: argument_types.len(),
             }
-            .at(span)
-            .label(
+            .at(
                 span,
                 DiagnosticMessage::GotArguments {
                     count: argument_types.len(),
@@ -1488,12 +1457,11 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         expected: arg_info.ty,
                         actual: *actual,
                     }
-                    .at(*actual_span)
+                    .at(*actual_span, DiagnosticMessage::PassingType { ty: *actual })
                     .label(
                         arg_info.span,
                         DiagnosticMessage::ExpectedType { ty: arg_info.ty },
                     )
-                    .label(*actual_span, DiagnosticMessage::PassingType { ty: *actual })
                     .emit(diagnostics);
                 }
             }
@@ -1533,7 +1501,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 operator: operator.to_string(),
                 actual_count: return_types.len(),
             }
-            .at(expression.span)
+            .at(expression.span, DiagnosticMessage::ThisStatement)
             .emit(diagnostics);
             return Some(Type::Error);
         }

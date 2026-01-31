@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/type_visitor.rs
+source: compiler/src/compile/type_visitor.rs
 expression: err_str
-input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor/incorrect_return_type_fail.tapir
+input_file: compiler/src/compile/snapshot_tests/type_visitor/incorrect_return_type_fail.tapir
 ---
 [E0028] Error: 'boool' is not a valid type, must be one of fix, bool or int
    ╭─[ incorrect_return_type_fail.tapir:6:20 ]
@@ -11,7 +11,7 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor
    │                      ╰──── Unknown type
 ───╯
 [E0010] Error: Function is declared to return type int but got fix
-   ╭─[ incorrect_return_type_fail.tapir:2:5 ]
+   ╭─[ incorrect_return_type_fail.tapir:2:12 ]
    │
  1 │ fn foo() -> (int, bool) {
    │              ─┬─  
@@ -21,7 +21,7 @@ input_file: crates/tapir-script/compiler/src/compile/snapshot_tests/type_visitor
    │             ╰─── This has type fix
 ───╯
 [E0010] Error: Function is declared to return type bool but got int
-   ╭─[ incorrect_return_type_fail.tapir:2:5 ]
+   ╭─[ incorrect_return_type_fail.tapir:2:17 ]
    │
  1 │ fn foo() -> (int, bool) {
    │                   ──┬─  

@@ -192,8 +192,7 @@ ExternFunctionDefinition: ExternFunctionDefinition<'input> = {
     "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <block_start: @L> Block <block_end: @R> => {
         let span = Span::new(file_id, block_start, block_end);
         ErrorKind::ExternFunctionWithBlock { name: name.to_string() }
-            .at(span)
-            .label(span, DiagnosticMessage::ExternFunctionCannotHaveBody)
+            .at(span, DiagnosticMessage::ExternFunctionCannotHaveBody)
             .emit(diagnostics);
         ExternFunctionDefinition { name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() }
     }
@@ -462,8 +461,7 @@ Num: Expression<'input> = {
         Err(e) => {
             let span = Span::new(file_id, start, end);
             ErrorKind::InvalidNumber { error: e }
-                .at(span)
-                .label(span, DiagnosticMessage::InvalidInteger)
+                .at(span, DiagnosticMessage::InvalidInteger)
                 .emit(diagnostics);
             ExpressionKind::Error.with_span(file_id, start, end)
         }
@@ -473,8 +471,7 @@ Num: Expression<'input> = {
         Err(_e) => {
             let span = Span::new(file_id, start, end);
             ErrorKind::InvalidFix
-                .at(span)
-                .label(span, DiagnosticMessage::InvalidFixnumLabel)
+                .at(span, DiagnosticMessage::InvalidFixnumLabel)
                 .emit(diagnostics);
             ExpressionKind::Error.with_span(file_id, start, end)
         }
