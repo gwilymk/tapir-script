@@ -42,6 +42,7 @@ extern {
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
+        hex_integer => Token::HexInteger(<&'input str>),
         fix => Token::Fix(<&'input str>),
         doc_comment => Token::DocComment(<&'input str>),
 
@@ -493,6 +494,16 @@ Term: Expression<'input> = {
 
 Num: Expression<'input> = {
     <start: @L> <value: integer> <end: @R> => match value.parse::<i32>() {
+        Ok(value) => ExpressionKind::Integer(value).with_span(file_id, start, end),
+        Err(e) => {
+            let span = Span::new(file_id, start, end);
+            ErrorKind::InvalidNumber { error: e }
+                .at(span, DiagnosticMessage::InvalidInteger)
+                .emit(diagnostics);
+            ExpressionKind::Error.with_span(file_id, start, end)
+        }
+    },
+    <start: @L> <value: hex_integer> <end: @R> => match i32::from_str_radix(&value[2..], 16) {
         Ok(value) => ExpressionKind::Integer(value).with_span(file_id, start, end),
         Err(e) => {
             let span = Span::new(file_id, start, end);

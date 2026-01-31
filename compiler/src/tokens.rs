@@ -148,6 +148,8 @@ pub enum Token<'input> {
     Identifier(&'input str),
     #[regex("[0-9]+", |lex| lex.slice())]
     Integer(&'input str),
+    #[regex("0x[0-9a-fA-F]+", |lex| lex.slice())]
+    HexInteger(&'input str),
     #[regex("[0-9]+\\.[0-9]*", |lex| lex.slice())]
     Fix(&'input str),
 

@@ -37,7 +37,7 @@ input_file: compiler/src/snapshot_tests/grammar/errors/struct_syntax_errors.tapi
    │     ───┬──  
    │        ╰──── Unexpected token
    │ 
-   │ Note: Expected one of tokens wait, var, "if", return, spawn, loop, break, continue, trigger, "self", identifier, integer, fix, true, false, "{", "}", "(", "=", "!", "~", "-"
+   │ Note: Expected one of tokens wait, var, "if", return, spawn, loop, break, continue, trigger, "self", identifier, integer, hex_integer, fix, true, false, "{", "}", "(", "=", "!", "~", "-"
 ───╯
 [E0026] Error: Unexpected token RBrace
     ╭─[ struct_syntax_errors.tapir:10:1 ]
@@ -46,5 +46,5 @@ input_file: compiler/src/snapshot_tests/grammar/errors/struct_syntax_errors.tapi
     │ ┬  
     │ ╰── Unexpected token
     │ 
-    │ Note: Expected one of tokens wait, var, "if", "extern", "fn", return, spawn, loop, break, continue, event, trigger, global, property, builtin, "struct", "self", identifier, integer, fix, doc_comment, true, false, "{", "(", "=", "!", "~", "-"
+    │ Note: Expected one of tokens wait, var, "if", "extern", "fn", return, spawn, loop, break, continue, event, trigger, global, property, builtin, "struct", "self", identifier, integer, hex_integer, fix, doc_comment, true, false, "{", "(", "=", "!", "~", "-"
 ────╯
