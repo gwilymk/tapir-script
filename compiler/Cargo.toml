@@ -16,7 +16,12 @@ builtins = { path = "../builtins" }
 petgraph = "0.6.5"
 
 [dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
 insta = { version = "1.40", features = ["ron", "glob", "redactions"] }
+
+[[bench]]
+name = "compile"
+harness = false
 
 [build-dependencies]
 lalrpop = "0.22.2"
