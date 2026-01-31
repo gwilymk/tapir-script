@@ -29,7 +29,10 @@ use symbol_iter::{SymbolIter, SymbolIterMut};
 
 use crate::{
     FunctionArgument, Type,
-    ast::{self, BinaryOperator, BuiltinFunctionId, ExternalFunctionId, FunctionId, SymbolId, UnaryOperator},
+    ast::{
+        self, BinaryOperator, BuiltinFunctionId, ExternalFunctionId, FunctionId, SymbolId,
+        UnaryOperator,
+    },
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
 };
 

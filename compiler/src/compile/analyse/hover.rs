@@ -569,10 +569,10 @@ fn extract_from_expression(
             arguments,
         } => {
             // Add hover info for the method name
-            if let Some(info) = expr.meta.get::<MethodCallInfo>() {
-                if let Some(sig) = function_signatures.get(&info.function_id) {
-                    hover_info.insert(method.span, sig.clone());
-                }
+            if let Some(info) = expr.meta.get::<MethodCallInfo>()
+                && let Some(sig) = function_signatures.get(&info.function_id)
+            {
+                hover_info.insert(method.span, sig.clone());
             }
             extract_from_expression(
                 receiver,

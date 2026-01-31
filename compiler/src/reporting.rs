@@ -1024,7 +1024,7 @@ impl ErrorKind {
             Self::DivisionByZeroInConstant => DiagnosticMessage::DivisionByZeroInConstant,
             Self::OverflowInConstant => DiagnosticMessage::IntegerOverflowInConstant,
             Self::TypeMismatchInConstant { expected, found } => {
-                DiagnosticMessage::TypeMismatchInConstantLabel { expected: *expected, found: *found }
+                DiagnosticMessage::TypeMismatchInConstantLabel { expected, found }
             }
             Self::GlobalRequiresTypeOrInitializer { name } => {
                 DiagnosticMessage::GlobalRequiresTypeOrInitializer { name: name.clone() }

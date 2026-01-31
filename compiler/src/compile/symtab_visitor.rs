@@ -263,7 +263,11 @@ fn evaluate_constant_initializer(
 }
 
 /// Emit a diagnostic for a constant evaluation error.
-fn emit_constant_eval_error(err: ConstantEvalError, diagnostics: &mut Diagnostics, global_name: &str) {
+fn emit_constant_eval_error(
+    err: ConstantEvalError,
+    diagnostics: &mut Diagnostics,
+    global_name: &str,
+) {
     match err {
         ConstantEvalError::NotConstant { span } => {
             ErrorKind::GlobalInitializerNotConstant {
@@ -283,9 +287,16 @@ fn emit_constant_eval_error(err: ConstantEvalError, diagnostics: &mut Diagnostic
                 .at(span, DiagnosticMessage::IntegerOverflowInConstant)
                 .emit(diagnostics);
         }
-        ConstantEvalError::TypeMismatch { span, expected, found } => {
+        ConstantEvalError::TypeMismatch {
+            span,
+            expected,
+            found,
+        } => {
             ErrorKind::TypeMismatchInConstant { expected, found }
-                .at(span, DiagnosticMessage::TypeMismatchInConstantLabel { expected, found })
+                .at(
+                    span,
+                    DiagnosticMessage::TypeMismatchInConstantLabel { expected, found },
+                )
                 .emit(diagnostics);
         }
     }

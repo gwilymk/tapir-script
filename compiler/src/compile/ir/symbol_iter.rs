@@ -17,7 +17,9 @@ impl<'a> SymbolIter<'a> {
             TapIr::Move { source, .. }
             | TapIr::StoreProp { value: source, .. }
             | TapIr::SetGlobal { value: source, .. }
-            | TapIr::UnaryOp { operand: source, .. } => Self::One(Some(*source)),
+            | TapIr::UnaryOp {
+                operand: source, ..
+            } => Self::One(Some(*source)),
             TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
             TapIr::Call { args, .. }
             | TapIr::CallExternal { args, .. }
@@ -84,7 +86,9 @@ impl<'a> SymbolIterMut<'a> {
             TapIr::Move { source, .. }
             | TapIr::StoreProp { value: source, .. }
             | TapIr::SetGlobal { value: source, .. }
-            | TapIr::UnaryOp { operand: source, .. } => Self::One(Some(source)),
+            | TapIr::UnaryOp {
+                operand: source, ..
+            } => Self::One(Some(source)),
             TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
             TapIr::Call { args, .. }
             | TapIr::CallExternal { args, .. }

@@ -19,7 +19,6 @@ pub enum ConstantValue {
     Bool(bool),
 }
 
-
 /// Errors that can occur during constant expression evaluation.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ConstantEvalError {
@@ -245,11 +244,13 @@ fn eval_fix_op(
         B::LtEq => Ok(C::Bool(n1 <= n2)),
         B::Then => Ok(C::Fix(n2)),
         // These operators are not valid for two fix values
-        B::Mul | B::Div | B::Mod | B::RealDiv | B::RealMod => Err(ConstantEvalError::TypeMismatch {
-            span,
-            expected: "int",
-            found: "fix",
-        }),
+        B::Mul | B::Div | B::Mod | B::RealDiv | B::RealMod => {
+            Err(ConstantEvalError::TypeMismatch {
+                span,
+                expected: "int",
+                found: "fix",
+            })
+        }
         B::Shl | B::Shr | B::BitAnd | B::BitOr => Err(ConstantEvalError::TypeMismatch {
             span,
             expected: "int",
@@ -450,7 +451,10 @@ mod tests {
     fn test_division_by_zero() {
         let expr = binop_expr(int_expr(1), BinaryOperator::Div, int_expr(0));
         let result = eval_constant_expr(&expr);
-        assert!(matches!(result, Err(ConstantEvalError::DivisionByZero { .. })));
+        assert!(matches!(
+            result,
+            Err(ConstantEvalError::DivisionByZero { .. })
+        ));
     }
 
     #[test]
