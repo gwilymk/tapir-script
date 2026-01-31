@@ -1,0 +1,165 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/hex_integers.tapir
+---
+Script(
+  struct_declarations: [],
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "zero",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(0),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "small",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(255),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "mixed_case",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(11259375),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "max_positive",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: Integer(2147483647),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: VariableDeclaration(
+            idents: [
+              TypedIdent(
+                ident: Ident(
+                  span: "[span]",
+                  ident: "in_expression",
+                ),
+                ty: None,
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Integer(16),
+                    meta: {},
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(32),
+                        meta: {},
+                      ),
+                      operator: Mul,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

@@ -1,0 +1,19 @@
+---
+source: compiler/src/grammar_test.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/snapshot_tests/grammar/errors/hex_overflow.tapir
+---
+[E0030] Error: Number larger than maximum positive number which is 2147483647
+   ╭─[ hex_overflow.tapir:1:9 ]
+   │
+ 1 │ var x = 0xFFFFFFFF;
+   │         ─────┬────  
+   │              ╰────── Invalid integer
+───╯
+[E0030] Error: Number larger than maximum positive number which is 2147483647
+   ╭─[ hex_overflow.tapir:2:9 ]
+   │
+ 2 │ var y = 0x100000000;
+   │         ─────┬─────  
+   │              ╰─────── Invalid integer
+───╯

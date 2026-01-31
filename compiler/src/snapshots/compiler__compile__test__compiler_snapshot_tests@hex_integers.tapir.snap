@@ -1,0 +1,20 @@
+---
+source: compiler/src/compile.rs
+expression: decompiled
+input_file: compiler/src/snapshot_tests/compiler/hex_integers.tapir
+---
+00000000: loadk 2, 255
+00000002: mov 1, 2
+00000003: setprop 1, 0
+00000004: loadk 1, 256
+00000006: loadk 3, 512
+00000008: add 2, 1, 3
+00000009: mov 1, 2
+00000010: setprop 1, 0
+00000011: loadk 1, 43981
+00000013: loadk 3, 255
+00000015: bitand 2, 1, 3
+00000016: mov 1, 2
+00000017: setprop 1, 0
+00000018: ret
+00000019: ret

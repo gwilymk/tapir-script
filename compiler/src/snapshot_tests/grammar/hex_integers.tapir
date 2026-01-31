@@ -1,0 +1,5 @@
+var zero = 0x0;
+var small = 0xff;
+var mixed_case = 0xAbCdEf;
+var max_positive = 0x7FFFFFFF;
+var in_expression = 0x10 + 0x20 * 0x3;

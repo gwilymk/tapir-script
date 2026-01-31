@@ -1,0 +1,2 @@
+var x = 0xFFFFFFFF;
+var y = 0x100000000;

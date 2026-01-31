@@ -1,0 +1,39 @@
+---
+source: compiler/src/lexer.rs
+expression: output
+input_file: compiler/src/snapshot_tests/lexer/hex_integers.tapir
+---
+[
+  Ok(KeywordVar),
+  Ok(Identifier("a")),
+  Ok(Assign),
+  Ok(HexInteger("0x0")),
+  Ok(Semicolon),
+  Ok(KeywordVar),
+  Ok(Identifier("b")),
+  Ok(Assign),
+  Ok(HexInteger("0xff")),
+  Ok(Semicolon),
+  Ok(KeywordVar),
+  Ok(Identifier("c")),
+  Ok(Assign),
+  Ok(HexInteger("0xFF")),
+  Ok(Semicolon),
+  Ok(KeywordVar),
+  Ok(Identifier("d")),
+  Ok(Assign),
+  Ok(HexInteger("0xaBcDeF")),
+  Ok(Semicolon),
+  Ok(KeywordVar),
+  Ok(Identifier("e")),
+  Ok(Assign),
+  Ok(HexInteger("0x7FFFFFFF")),
+  Ok(Semicolon),
+  Ok(KeywordVar),
+  Ok(Identifier("f")),
+  Ok(Assign),
+  Ok(HexInteger("0x100")),
+  Ok(OperatorAdd),
+  Ok(HexInteger("0x200")),
+  Ok(Semicolon),
+]
