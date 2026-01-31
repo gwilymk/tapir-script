@@ -21,8 +21,7 @@ use self::symtab_visitor::SymTab;
 
 pub mod analyse;
 pub(crate) mod constant_eval;
-#[cfg(test)]
-mod disassemble;
+pub mod disassemble;
 mod ir;
 mod loop_visitor;
 mod references;

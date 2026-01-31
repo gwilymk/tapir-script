@@ -20,6 +20,7 @@ pub use compile::analyse::{
     AnalysisResult, CallSiteInfo, FunctionArgumentInfo, FunctionInfo, HoverInfo, InlayHintInfo,
     ParameterInfo, SignatureInfo, SymbolInfo, analyse,
 };
+pub use compile::disassemble;
 pub use compile::symtab_visitor::GlobalInfo;
 pub use compile::{CompileSettings, Property};
 pub use reporting::format::DiagnosticCache;
