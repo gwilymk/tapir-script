@@ -6,6 +6,7 @@ import {
 } from "vscode-languageclient/node";
 
 let client: LanguageClient | undefined;
+let outputChannel: vscode.OutputChannel | undefined;
 
 function getServerOptions(): ServerOptions {
   const config = vscode.workspace.getConfiguration("tapir");
@@ -28,6 +29,7 @@ function getClientOptions(): LanguageClientOptions {
     synchronize: {
       fileEvents: vscode.workspace.createFileSystemWatcher("**/*.tapir"),
     },
+    outputChannel,
   };
 }
 
@@ -44,7 +46,7 @@ async function startClient(): Promise<void> {
 
 async function restartServer(): Promise<void> {
   if (client) {
-    await client.stop();
+    await client.dispose();
     client = undefined;
   }
   await startClient();
@@ -54,6 +56,9 @@ async function restartServer(): Promise<void> {
 export async function activate(
   context: vscode.ExtensionContext,
 ): Promise<void> {
+  outputChannel = vscode.window.createOutputChannel("Tapir Language Server");
+  context.subscriptions.push(outputChannel);
+
   context.subscriptions.push(
     vscode.commands.registerCommand("tapir.restartServer", restartServer),
   );
@@ -63,7 +68,7 @@ export async function activate(
 
 export async function deactivate(): Promise<void> {
   if (!client) {
-    return undefined;
+    return;
   }
-  return await client.stop();
+  await client.dispose();
 }
