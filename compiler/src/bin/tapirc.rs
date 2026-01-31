@@ -32,6 +32,7 @@ fn main() -> ExitCode {
     let settings = CompileSettings {
         available_fields: None,
         enable_optimisations: true,
+        enable_prelude: true,
     };
 
     match compiler::compile(&display_name, &input, settings) {

@@ -1627,6 +1627,7 @@ mod test {
             let settings = CompileSettings {
                 available_fields: None,
                 enable_optimisations: false,
+                enable_prelude: false,
             };
             let mut symtab_visitor =
                 SymTabVisitor::new(&settings, &mut script, &struct_registry, &mut diagnostics);
@@ -1704,6 +1705,7 @@ mod test {
             let settings = CompileSettings {
                 available_fields: None,
                 enable_optimisations: false,
+                enable_prelude: false,
             };
             let mut symtab_visitor =
                 SymTabVisitor::new(&settings, &mut script, &struct_registry, &mut diagnostics);

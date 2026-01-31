@@ -344,6 +344,7 @@ mod test {
             let compile_settings = CompileSettings {
                 available_fields: None,
                 enable_optimisations: true,
+                enable_prelude: false,
             };
 
             // Register structs before symbol resolution
@@ -502,6 +503,7 @@ loop {
         let settings = CompileSettings {
             available_fields: None,
             enable_optimisations: true,
+            enable_prelude: false,
         };
 
         // This should complete, not hang

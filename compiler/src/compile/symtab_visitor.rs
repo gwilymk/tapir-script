@@ -1171,6 +1171,7 @@ mod test {
                 &CompileSettings {
                     available_fields: None,
                     enable_optimisations: false,
+                    enable_prelude: false,
                 },
                 &mut script,
                 &struct_registry,
@@ -1218,6 +1219,7 @@ mod test {
                 &CompileSettings {
                     available_fields: None,
                     enable_optimisations: false,
+                    enable_prelude: false,
                 },
                 &mut script,
                 &struct_registry,
@@ -1255,6 +1257,7 @@ mod test {
             &CompileSettings {
                 available_fields: Some(vec!["health".to_string(), "position".to_string()]),
                 enable_optimisations: false,
+                enable_prelude: false,
             },
             &mut script,
             &struct_registry,

@@ -111,6 +111,7 @@ pub struct CompileSettings {
     /// (useful for LSP/tooling where the Rust struct info isn't available).
     pub available_fields: Option<Vec<String>>,
     pub enable_optimisations: bool,
+    pub enable_prelude: bool,
 }
 
 /// Result of a successful compilation, containing bytecode and any warnings.
@@ -126,7 +127,12 @@ pub fn compile(
 ) -> Result<CompileOutput, Diagnostics> {
     let mut diagnostics = Diagnostics::new(USER_FILE_ID, &filename, input);
 
-    let mut ast = match prelude::parse_with_prelude(&filename, input, &mut diagnostics) {
+    let mut ast = match prelude::parse_with_prelude(
+        &filename,
+        input,
+        &mut diagnostics,
+        settings.enable_prelude,
+    ) {
         Some(ast) => ast,
         None => return Err(diagnostics),
     };
@@ -639,6 +645,7 @@ mod test {
             let compiler_settings = CompileSettings {
                 available_fields: None,
                 enable_optimisations,
+                enable_prelude: false,
             };
 
             let output = compile(path, &input, &compiler_settings).unwrap();
@@ -656,6 +663,7 @@ mod test {
         let settings = CompileSettings {
             available_fields: None,
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let result = compile("test.tapir", source, &settings);

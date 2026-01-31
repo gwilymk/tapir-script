@@ -160,6 +160,7 @@ mod test {
             let compiler_settings = CompileSettings {
                 available_fields: Some(vec!["int_prop".to_string()]),
                 enable_optimisations: true,
+                enable_prelude: true,
             };
 
             let compile_result =
@@ -214,6 +215,7 @@ mod test {
                         let compile_settings = CompileSettings {
                             available_fields: Some(vec!["prop".to_string()]),
                             enable_optimisations: false,
+                            enable_prelude: true,
                         };
 
                         let source = std::format!("property prop: {};\nprop = {};", type_str, $code);
@@ -330,6 +332,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["int_prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let bytecode = compiler::compile(
@@ -358,6 +361,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["int_prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let bytecode = compiler::compile(
@@ -407,6 +411,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["int_prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let bytecode = compiler::compile(
@@ -437,6 +442,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["int_prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let bytecode = compiler::compile(
@@ -470,6 +476,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = "property prop: fix;\nprop = sin(0.0);";
@@ -496,6 +503,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = "property prop: fix;\nprop = cos(0.0);";
@@ -522,6 +530,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = "property prop: fix;\nprop = sqrt(4.0);";
@@ -548,6 +557,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = "property prop: int;\nwait; wait; prop = frame();";
@@ -575,6 +585,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = "property prop: int;\nvar x: fix = 3.7;\nprop = x.floor();";
@@ -601,6 +612,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = "property prop: int;\nvar x: fix = 3.2;\nprop = x.ceil();";
@@ -627,6 +639,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = "property prop: int;\nvar x: fix = 3.6;\nprop = x.round();";
@@ -653,6 +666,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = r#"
@@ -686,6 +700,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = r#"
@@ -719,6 +734,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = r#"
@@ -755,6 +771,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = r#"
@@ -789,6 +806,7 @@ mod test {
         let compile_settings = CompileSettings {
             available_fields: Some(vec!["prop".to_string()]),
             enable_optimisations: false,
+            enable_prelude: true,
         };
 
         let source = r#"

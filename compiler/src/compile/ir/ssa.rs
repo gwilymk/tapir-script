@@ -292,6 +292,7 @@ mod test {
             let compile_settings = CompileSettings {
                 available_fields: None,
                 enable_optimisations: true,
+                enable_prelude: false,
             };
 
             let struct_registry = StructRegistry::default();

@@ -507,6 +507,7 @@ mod test {
             let compile_settings = CompileSettings {
                 available_fields: None,
                 enable_optimisations: true,
+                enable_prelude: false,
             };
 
             // Struct registration and type resolution

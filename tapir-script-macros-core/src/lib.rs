@@ -33,6 +33,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         CompileSettings {
             available_fields,
             enable_optimisations: true,
+            enable_prelude: true,
         },
     ) {
         Ok(mut content) => {

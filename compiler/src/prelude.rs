@@ -16,6 +16,7 @@ pub fn parse_with_prelude<'input>(
     _user_filename: impl AsRef<Path>,
     user_input: &'input str,
     diagnostics: &mut Diagnostics,
+    enable_prelude: bool,
 ) -> Option<Script<'input>> {
     // Add prelude source to diagnostics cache for error reporting
     diagnostics.add_file(PRELUDE_FILE_ID, PRELUDE_FILENAME, PRELUDE_SOURCE);
@@ -42,8 +43,10 @@ pub fn parse_with_prelude<'input>(
         }
     };
 
-    // Merge prelude into user AST
-    user_ast.merge_from(prelude_ast);
+    if enable_prelude {
+        // Merge prelude into user AST
+        user_ast.merge_from(prelude_ast);
+    }
 
     Some(user_ast)
 }

@@ -24,6 +24,7 @@ pub fn analyse_and_publish(
     let settings = CompileSettings {
         available_fields: None,
         enable_optimisations: false,
+        enable_prelude: true,
     };
 
     let start = Instant::now();

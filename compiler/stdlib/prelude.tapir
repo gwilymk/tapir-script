@@ -15,3 +15,178 @@ builtin(-1) fn frame() -> int;
 
 # Task methods
 builtin(-2) fn task.cancel(self);
+
+fn int.abs(self) -> int {
+    if self < 0 {
+        return 0 - self;
+    }
+
+    return self;
+}
+
+fn int.min(self, other: int) -> int {
+    if self < other {
+        return self;
+    }
+
+    return other;
+}
+
+fn int.max(self, other: int) -> int {
+    if self < other {
+        return other;
+    }
+
+    return self;
+}
+
+fn fix.abs(self) -> fix {
+    if self < 0.0 {
+        return 0.0 - self;
+    }
+
+    return self;
+}
+
+fn fix.min(self, other: fix) -> fix {
+    if self < other {
+        return self;
+    }
+
+    return other;
+}
+
+fn fix.max(self, other: fix) -> fix {
+    if self < other {
+        return other;
+    }
+
+    return self;
+}
+
+struct int2 {
+    x: int,
+    y: int,
+}
+
+struct fix2 {
+    x: fix,
+    y: fix,
+}
+
+fn int2 + int2(lhs, rhs) -> int2 {
+    return int2(lhs.x + rhs.x, lhs.y + rhs.y);
+}
+
+fn int2 - int2(lhs, rhs) -> int2 {
+    return int2(lhs.x - rhs.x, lhs.y - rhs.y);
+}
+
+fn int2 * int(lhs, rhs) -> int2 {
+    return int2(lhs.x * rhs, lhs.y * rhs);
+}
+
+fn int * int2(lhs, rhs) -> int2 {
+    return int2(lhs * rhs.x, lhs * rhs.y);
+}
+
+fn int2 / int(lhs, rhs) -> int2 {
+    return int2(lhs.x / rhs, lhs.y / rhs);
+}
+
+fn int2.dot(self, other: int2) -> int {
+    return self.x * other.x + self.y * other.y;
+}
+
+fn int2.abs(self) -> int2 {
+    return int2(self.x.abs(), self.y.abs());
+}
+
+fn int2.magnitude_squared(self) -> int {
+    return self.x * self.x + self.y * self.y;
+}
+
+fn int2.hadamard(self, other: int2) -> int2 {
+    return int2(self.x * other.x, self.y * other.y);
+}
+
+fn int2.cross(self, other: int2) -> int {
+    return self.x * other.y - self.y * other.x;
+}
+
+fn int2.swap(self) -> int2 {
+    return int2(self.y, self.x);
+}
+
+fn fix2 + fix2(lhs, rhs) -> fix2 {
+    return fix2(lhs.x + rhs.x, lhs.y + rhs.y);
+}
+
+fn fix2 - fix2(lhs, rhs) -> fix2 {
+    return fix2(lhs.x - rhs.x, lhs.y - rhs.y);
+}
+
+fn fix2 * fix(lhs, rhs) -> fix2 {
+    return fix2(lhs.x * rhs, lhs.y * rhs);
+}
+
+fn fix * fix2(lhs, rhs) -> fix2 {
+    return fix2(lhs * rhs.x, lhs * rhs.y);
+}
+
+fn fix2 / fix(lhs, rhs) -> fix2 {
+    return fix2(lhs.x / rhs, lhs.y / rhs);
+}
+
+fn fix2.dot(self, other: fix2) -> fix {
+    return self.x * other.x + self.y * other.y;
+}
+
+fn fix2.abs(self) -> fix2 {
+    return fix2(self.x.abs(), self.y.abs());
+}
+
+fn fix2.magnitude_squared(self) -> fix {
+    return self.x * self.x + self.y * self.y;
+}
+
+fn fix2.magnitude(self) -> fix {
+    return sqrt(self.magnitude_squared());
+}
+
+fn fix2.hadamard(self, other: fix2) -> fix2 {
+    return fix2(self.x * other.x, self.y * other.y);
+}
+
+fn fix2.cross(self, other: fix2) -> fix {
+    return self.x * other.y - self.y * other.x;
+}
+
+fn fix2.swap(self) -> fix2 {
+    return fix2(self.y, self.x);
+}
+
+fn fix2.round(self) -> int2 {
+    return int2(self.x.round(), self.y.round());
+}
+
+fn fix2.floor(self) -> int2 {
+    return int2(self.x.floor(), self.y.floor());
+}
+
+fn fix2.ceil(self) -> int2 {
+    return int2(self.x.ceil(), self.y.ceil());
+}
+
+fn fix2.fast_magnitude(self) -> fix {
+    var abs = self.abs();
+    return 0.960433870103 * abs.x.max(abs.y) + 0.397824734759 * abs.x.min(abs.y);
+}
+
+fn fix2.normalise(self) -> fix2 {
+    return self / self.magnitude();
+}
+
+fn fix2.fast_normalise(self) -> fix2 {
+    return self / self.fast_magnitude();
+}

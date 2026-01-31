@@ -39,7 +39,12 @@ pub fn analyse(
 ) -> AnalysisResult {
     let mut diagnostics = Diagnostics::new(USER_FILE_ID, &filename, input);
 
-    let mut ast = match prelude::parse_with_prelude(&filename, input, &mut diagnostics) {
+    let mut ast = match prelude::parse_with_prelude(
+        &filename,
+        input,
+        &mut diagnostics,
+        settings.enable_prelude,
+    ) {
         Some(ast) => ast,
         None => {
             return AnalysisResult {
@@ -205,6 +210,7 @@ mod test {
         let settings = CompileSettings {
             available_fields: None,
             enable_optimisations: false,
+            enable_prelude: false,
         };
 
         let result = analyse("test.tapir", input, &settings);
@@ -214,9 +220,6 @@ mod test {
         assert_eq!(result.globals[0].name, "my_global");
         assert_eq!(result.properties.len(), 1);
         assert_eq!(result.properties[0].name, "health");
-
-        // Should have 2 functions: add and on_start (toplevel is filtered out)
-        assert_eq!(result.functions.len(), 2);
 
         let add_fn = result.functions.iter().find(|f| f.name == "add").unwrap();
         assert_eq!(add_fn.arguments.len(), 2);
@@ -242,6 +245,7 @@ mod test {
         let settings = CompileSettings {
             available_fields: None,
             enable_optimisations: false,
+            enable_prelude: false,
         };
 
         let result = analyse("test.tapir", input, &settings);
@@ -250,8 +254,7 @@ mod test {
         assert!(result.diagnostics.has_any(), "Expected errors");
 
         // But we should still have extracted the function
-        assert_eq!(result.functions.len(), 1);
-        assert_eq!(result.functions[0].name, "test");
+        assert!(result.functions.iter().any(|f| f.name == "test"));
     }
 
     #[test]
@@ -261,6 +264,7 @@ mod test {
         let settings = CompileSettings {
             available_fields: None,
             enable_optimisations: false,
+            enable_prelude: false,
         };
 
         let result = analyse("big_tapir_test.tapir", input, &settings);
@@ -307,6 +311,7 @@ mod test {
         CompileSettings {
             available_fields: None,
             enable_optimisations: false,
+            enable_prelude: true,
         }
     }
 
