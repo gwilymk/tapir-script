@@ -1,0 +1,43 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_global_elimination/mixed.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.10 = int 10
+temp.11 = temp.10
+setglobal 0, temp.11
+getglobal temp.12, 1
+x.13 = temp.12
+temp.14 = int 30
+temp.15 = temp.14
+setglobal 2, temp.15
+getglobal temp.16, 3
+y.17 = temp.16
+temp.18 = int 20
+temp.19 = temp.18
+setglobal 1, temp.19
+return 
+
+
+----------- eliminate_dead_globals -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.10 = int 10
+temp.11 = temp.10
+getglobal temp.12, 0
+x.13 = temp.12
+temp.14 = int 30
+temp.15 = temp.14
+getglobal temp.16, 1
+y.17 = temp.16
+temp.18 = int 20
+temp.19 = temp.18
+setglobal 0, temp.19
+return

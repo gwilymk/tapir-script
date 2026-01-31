@@ -1,0 +1,119 @@
+extern fn assert(value: bool);
+
+# Test 1: Read-only globals should be correctly inlined
+global CONSTANT = 42;
+global SPEED: fix = 2.5;
+global DEBUG = true;
+
+assert(CONSTANT == 42);
+assert(SPEED == 2.5);
+assert(DEBUG == true);
+
+# Test 2: Writable globals should still work after optimizations
+global counter = 0;
+
+fn increment() {
+    counter = counter + 1;
+}
+
+fn get_counter() -> int {
+    return counter;
+}
+
+assert(counter == 0);
+increment();
+assert(counter == 1);
+increment();
+increment();
+assert(counter == 3);
+assert(get_counter() == 3);
+
+# Test 3: Mix of read-only and writable globals
+global MAX_VALUE = 100;
+global current = 0;
+
+fn is_at_max() -> bool {
+    return current >= MAX_VALUE;
+}
+
+fn add_to_current(amount: int) {
+    current = current + amount;
+}
+
+assert(is_at_max() == false);
+add_to_current(50);
+assert(current == 50);
+assert(is_at_max() == false);
+add_to_current(50);
+assert(current == 100);
+assert(is_at_max() == true);
+
+# Test 4: Global used in expression with constant
+global MULTIPLIER = 10;
+global value = 5;
+
+assert(value * MULTIPLIER == 50);
+value = 7;
+assert(value * MULTIPLIER == 70);
+
+# Test 5: Multiple globals being read and written
+global a = 1;
+global b = 2;
+global c = 3;
+
+fn sum_globals() -> int {
+    return a + b + c;
+}
+
+assert(sum_globals() == 6);
+a = 10;
+assert(sum_globals() == 15);
+b = 20;
+c = 30;
+assert(sum_globals() == 60);
+
+# Test 6: Read-only global fix math
+global PI_APPROX: fix = 3.14;
+global RADIUS: fix = 2.0;
+
+fn circumference() -> fix {
+    return PI_APPROX * RADIUS * 2.0;
+}
+
+# 3.14 * 2.0 * 2.0 = 12.56
+var circ = circumference();
+# Allow some fixed-point rounding
+assert(circ > 12.0 && circ < 13.0);
+
+# Test 7: Global used in conditional
+global THRESHOLD = 50;
+global score = 0;
+
+fn is_passing() -> bool {
+    return score >= THRESHOLD;
+}
+
+assert(is_passing() == false);
+score = 49;
+assert(is_passing() == false);
+score = 50;
+assert(is_passing() == true);
+score = 100;
+assert(is_passing() == true);
+
+# Test 8: Boolean global in control flow
+global FEATURE_ENABLED = true;
+global feature_counter = 0;
+
+fn maybe_count() {
+    if FEATURE_ENABLED {
+        feature_counter = feature_counter + 1;
+    }
+}
+
+assert(feature_counter == 0);
+maybe_count();
+assert(feature_counter == 1);
+maybe_count();
+maybe_count();
+assert(feature_counter == 3);

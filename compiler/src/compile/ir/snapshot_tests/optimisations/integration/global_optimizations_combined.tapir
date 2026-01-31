@@ -1,0 +1,12 @@
+# propagate_readonly_globals, eliminate_dead_globals, dead_store_elimination, copy_propagation
+
+global CONST = 42;
+global unused = 0;
+global writable = 0;
+
+property result: int;
+
+result = CONST;
+unused = 5;
+writable = writable + 1;
+result = writable;

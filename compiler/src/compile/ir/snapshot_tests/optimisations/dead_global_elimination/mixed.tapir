@@ -1,0 +1,12 @@
+# eliminate_dead_globals
+
+global dead_a = 1;
+global alive_b = 2;
+global dead_c = 3;
+global alive_d = 4;
+
+dead_a = 10;
+var x = alive_b;
+dead_c = 30;
+var y = alive_d;
+alive_b = 20;

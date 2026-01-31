@@ -1,0 +1,4 @@
+# propagate_readonly_globals
+
+global CONST = 42;
+var x = CONST;

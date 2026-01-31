@@ -1174,6 +1174,63 @@ impl<'input> SymTab<'input> {
         self.global_names.insert(Cow::Borrowed(name), info.id);
         self.globals.push(info);
     }
+
+    /// Test-only helper to add a global with an owned name.
+    #[cfg(test)]
+    pub fn add_global_owned(&mut self, name: String, info: GlobalInfo) {
+        self.global_names.insert(Cow::Owned(name), info.id);
+        self.globals.push(info);
+    }
+
+    /// Test-only helper to create an empty SymTab.
+    #[cfg(test)]
+    pub fn new_empty() -> Self {
+        Self {
+            properties: vec![],
+            symbol_names: vec![],
+            function_names: HashMap::new(),
+            functions_by_name: HashMap::new(),
+            globals: vec![],
+            global_names: HashMap::new(),
+            builtin_functions: HashMap::new(),
+            struct_expansions: HashMap::new(),
+            struct_property_bases: HashMap::new(),
+        }
+    }
+
+    /// Remove globals that don't pass the predicate and renumber remaining ones.
+    /// Returns a map from old index to new index.
+    pub fn retain_globals<F>(&mut self, mut keep: F) -> HashMap<usize, usize>
+    where
+        F: FnMut(&GlobalInfo) -> bool,
+    {
+        let mut old_to_new = HashMap::new();
+        let mut new_index = 0;
+
+        self.globals.retain(|g| {
+            if keep(g) {
+                old_to_new.insert(g.id.0, new_index);
+                new_index += 1;
+                true
+            } else {
+                false
+            }
+        });
+
+        // Update GlobalInfo.id for remaining globals
+        for (i, g) in self.globals.iter_mut().enumerate() {
+            g.id = GlobalId(i);
+        }
+
+        // Update global_names map
+        self.global_names
+            .retain(|_, id| old_to_new.contains_key(&id.0));
+        for id in self.global_names.values_mut() {
+            *id = GlobalId(old_to_new[&id.0]);
+        }
+
+        old_to_new
+    }
 }
 
 #[cfg(test)]
@@ -1309,5 +1366,110 @@ mod test {
         );
 
         assert_snapshot!(diagnostics.pretty_string(false));
+    }
+
+    #[test]
+    fn retain_globals_removes_unmatched() {
+        let mut symtab = SymTab::new_empty();
+
+        // Add 3 globals: A (0), B (1), C (2)
+        for (i, name) in ["A", "B", "C"].iter().enumerate() {
+            symtab.add_global_owned(
+                name.to_string(),
+                GlobalInfo {
+                    id: GlobalId(i),
+                    name: name.to_string(),
+                    ty: crate::types::Type::Int,
+                    initial_value: (i as i32) * 10,
+                    span: Span::new(FileId::new(0), 0, 0),
+                },
+            );
+        }
+
+        // Keep only globals at indices 0 and 2 (A and C)
+        let old_to_new = symtab.retain_globals(|g| g.id.0 == 0 || g.id.0 == 2);
+
+        // Should have 2 globals remaining
+        assert_eq!(symtab.globals().len(), 2);
+
+        // Check mapping: 0 -> 0, 2 -> 1
+        assert_eq!(old_to_new.get(&0), Some(&0));
+        assert_eq!(old_to_new.get(&2), Some(&1));
+        assert_eq!(old_to_new.get(&1), None);
+
+        // Check that global IDs are updated
+        assert_eq!(symtab.globals()[0].id.0, 0);
+        assert_eq!(symtab.globals()[0].name, "A");
+        assert_eq!(symtab.globals()[1].id.0, 1);
+        assert_eq!(symtab.globals()[1].name, "C");
+
+        // Check that name lookup still works
+        assert!(symtab.get_global_by_name("A").is_some());
+        assert!(symtab.get_global_by_name("B").is_none());
+        assert!(symtab.get_global_by_name("C").is_some());
+        assert_eq!(symtab.get_global_by_name("A").unwrap().id.0, 0);
+        assert_eq!(symtab.get_global_by_name("C").unwrap().id.0, 1);
+    }
+
+    #[test]
+    fn retain_globals_keeps_all() {
+        let mut symtab = SymTab::new_empty();
+
+        for (i, name) in ["A", "B"].iter().enumerate() {
+            symtab.add_global_owned(
+                name.to_string(),
+                GlobalInfo {
+                    id: GlobalId(i),
+                    name: name.to_string(),
+                    ty: crate::types::Type::Int,
+                    initial_value: 0,
+                    span: Span::new(FileId::new(0), 0, 0),
+                },
+            );
+        }
+
+        // Keep all
+        let old_to_new = symtab.retain_globals(|_| true);
+
+        assert_eq!(symtab.globals().len(), 2);
+        assert_eq!(old_to_new.len(), 2);
+        assert_eq!(old_to_new.get(&0), Some(&0));
+        assert_eq!(old_to_new.get(&1), Some(&1));
+    }
+
+    #[test]
+    fn retain_globals_removes_all() {
+        let mut symtab = SymTab::new_empty();
+
+        for (i, name) in ["A", "B"].iter().enumerate() {
+            symtab.add_global_owned(
+                name.to_string(),
+                GlobalInfo {
+                    id: GlobalId(i),
+                    name: name.to_string(),
+                    ty: crate::types::Type::Int,
+                    initial_value: 0,
+                    span: Span::new(FileId::new(0), 0, 0),
+                },
+            );
+        }
+
+        // Remove all
+        let old_to_new = symtab.retain_globals(|_| false);
+
+        assert_eq!(symtab.globals().len(), 0);
+        assert_eq!(old_to_new.len(), 0);
+        assert!(symtab.get_global_by_name("A").is_none());
+        assert!(symtab.get_global_by_name("B").is_none());
+    }
+
+    #[test]
+    fn retain_globals_empty_symtab() {
+        let mut symtab = SymTab::new_empty();
+
+        let old_to_new = symtab.retain_globals(|_| true);
+
+        assert_eq!(symtab.globals().len(), 0);
+        assert_eq!(old_to_new.len(), 0);
     }
 }

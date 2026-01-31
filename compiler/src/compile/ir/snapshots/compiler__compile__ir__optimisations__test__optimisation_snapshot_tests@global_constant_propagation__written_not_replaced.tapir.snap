@@ -1,0 +1,18 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/global_constant_propagation/written_not_replaced.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getglobal temp.6, 0
+temp.7 = int 1
+temp.8 = temp.6 + temp.7
+temp.9 = temp.8
+setglobal 0, temp.9
+getglobal temp.10, 0
+x.11 = temp.10
+return

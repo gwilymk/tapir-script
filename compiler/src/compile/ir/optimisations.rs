@@ -19,15 +19,17 @@ mod block_shuffle;
 mod constant_conditional;
 mod constant_folding;
 mod copy_propagation;
+mod dead_global_elimination;
 mod dead_store_elimination;
 mod duplicate_loads;
 mod empty_block;
 mod empty_phi;
+mod global_constant_propagation;
 mod inline;
 mod unreferenced_blocks_in_phi;
 mod unreferenced_function;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum OptimisationResult {
     DidSomething,
     DidNothing,
@@ -251,6 +253,16 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
         "remove_unreferenced_functions",
         &(unreferenced_function::remove_unreferenced_functions
             as fn(&mut Vec<TapIrFunction>) -> OptimisationResult),
+    ),
+    (
+        "propagate_readonly_globals",
+        &(global_constant_propagation::propagate_readonly_globals
+            as fn(&mut [TapIrFunction], &mut SymTab) -> OptimisationResult),
+    ),
+    (
+        "eliminate_dead_globals",
+        &(dead_global_elimination::eliminate_dead_globals
+            as fn(&mut [TapIrFunction], &mut SymTab) -> OptimisationResult),
     ),
     (
         "empty_phi",

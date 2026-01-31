@@ -1,0 +1,23 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/global_constant_propagation/bool_global.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getglobal temp.2, 0
+enabled.3 = temp.2
+return 
+
+
+----------- propagate_readonly_globals -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.2 = bool true
+enabled.3 = temp.2
+return

@@ -164,8 +164,6 @@ pub fn compile(
         })
         .collect();
 
-    let mut compiler = Compiler::new(&type_table, extern_functions, &symtab);
-
     // Create IR with symbol spans
     let (ir_functions, spans_vec): (Vec<_>, Vec<_>) = ast
         .functions
@@ -201,6 +199,9 @@ pub fn compile(
     if diagnostics.has_errors() {
         return Err(diagnostics);
     }
+
+    // Create compiler AFTER optimizations so globals array reflects optimized state
+    let mut compiler = Compiler::new(&type_table, extern_functions, &symtab);
 
     for mut function in ir_functions {
         let registers = regalloc::allocate_registers(&mut function);

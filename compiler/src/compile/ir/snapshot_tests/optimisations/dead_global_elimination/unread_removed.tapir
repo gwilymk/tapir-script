@@ -1,0 +1,4 @@
+# eliminate_dead_globals
+
+global unused = 0;
+unused = 5;

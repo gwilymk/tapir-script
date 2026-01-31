@@ -1,0 +1,13 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_global_elimination/read_kept.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getglobal temp.2, 0
+x.3 = temp.2
+return

@@ -1,0 +1,122 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/global_optimizations_combined.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getglobal temp.11, 0
+temp.12 = temp.11
+storeprop temp.12, 0
+temp.13 = int 5
+temp.14 = temp.13
+setglobal 1, temp.14
+getglobal temp.15, 2
+temp.16 = int 1
+temp.17 = temp.15 + temp.16
+temp.18 = temp.17
+setglobal 2, temp.18
+getglobal temp.19, 2
+temp.20 = temp.19
+storeprop temp.20, 0
+return 
+
+
+----------- propagate_readonly_globals -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.11 = int 42
+temp.12 = temp.11
+storeprop temp.12, 0
+temp.13 = int 5
+temp.14 = temp.13
+setglobal 1, temp.14
+getglobal temp.15, 2
+temp.16 = int 1
+temp.17 = temp.15 + temp.16
+temp.18 = temp.17
+setglobal 2, temp.18
+getglobal temp.19, 2
+temp.20 = temp.19
+storeprop temp.20, 0
+return 
+
+
+----------- eliminate_dead_globals -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.11 = int 42
+temp.12 = temp.11
+storeprop temp.12, 0
+temp.13 = int 5
+temp.14 = temp.13
+getglobal temp.15, 0
+temp.16 = int 1
+temp.17 = temp.15 + temp.16
+temp.18 = temp.17
+setglobal 0, temp.18
+getglobal temp.19, 0
+temp.20 = temp.19
+storeprop temp.20, 0
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.11 = int 42
+temp.12 = temp.11
+storeprop temp.11, 0
+temp.13 = int 5
+temp.14 = temp.13
+getglobal temp.15, 0
+temp.16 = int 1
+temp.17 = temp.15 + temp.16
+temp.18 = temp.17
+setglobal 0, temp.17
+getglobal temp.19, 0
+temp.20 = temp.19
+storeprop temp.19, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.11 = int 42
+storeprop temp.11, 0
+temp.13 = int 5
+getglobal temp.15, 0
+temp.16 = int 1
+temp.17 = temp.15 + temp.16
+setglobal 0, temp.17
+getglobal temp.19, 0
+storeprop temp.19, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.11 = int 42
+storeprop temp.11, 0
+getglobal temp.15, 0
+temp.16 = int 1
+temp.17 = temp.15 + temp.16
+setglobal 0, temp.17
+getglobal temp.19, 0
+storeprop temp.19, 0
+return

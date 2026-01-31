@@ -1,0 +1,25 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/global_constant_propagation/fix_global.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getglobal temp.3, 0
+temp.4 = temp.3
+storeprop temp.4, 0
+return 
+
+
+----------- propagate_readonly_globals -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.3 = fix 2.5
+temp.4 = temp.3
+storeprop temp.4, 0
+return

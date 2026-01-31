@@ -1,0 +1,4 @@
+# propagate_readonly_globals
+
+global DEBUG = true;
+var enabled = DEBUG;

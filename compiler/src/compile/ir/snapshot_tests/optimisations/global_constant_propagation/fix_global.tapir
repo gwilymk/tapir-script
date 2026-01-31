@@ -1,0 +1,5 @@
+# propagate_readonly_globals
+
+global SPEED: fix = 2.5;
+property velocity: fix;
+velocity = SPEED;

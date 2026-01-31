@@ -1,0 +1,4 @@
+# eliminate_dead_globals
+
+global used = 10;
+var x = used;
