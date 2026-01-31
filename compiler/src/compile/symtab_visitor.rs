@@ -1052,6 +1052,14 @@ impl<'input> SymTab<'input> {
             return Cow::Owned(format!("struct_property.{}", struct_id.0));
         }
 
+        // Check if this is a global symbol
+        if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
+            if global_id.0 < self.globals.len() {
+                return Cow::Owned(format!("global.{}", self.globals[global_id.0].name));
+            }
+            return Cow::Owned(format!("global.{}", global_id.0));
+        }
+
         if symbol_id.0 as usize >= self.symbol_names.len() {
             return Cow::Owned(format!("unknown.{}", symbol_id.0));
         }

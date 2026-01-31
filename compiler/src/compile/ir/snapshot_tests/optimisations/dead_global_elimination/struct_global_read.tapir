@@ -1,0 +1,12 @@
+# eliminate_dead_globals, dead_store_elimination
+# Test that struct-typed globals are NOT eliminated when their fields are read
+# Bug: The optimizer was removing field assignments because field access created
+# different symbols than field assignment
+
+struct Point { x: int, y: int }
+
+extern fn test(x: int);
+
+global g: Point;
+g = Point(10, 20);
+test(g.x);  # g.x read should prevent elimination

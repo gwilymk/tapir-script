@@ -1,0 +1,56 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_global_elimination/struct_global_read.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.6 = int 10
+temp.7 = int 20
+global.g.x.8 = temp.6
+global.g.y.9 = temp.7
+temp.10 = global.g.x.8
+temp.11 = extern test(temp.10)
+return 
+
+
+----------- eliminate_dead_globals -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.6 = int 10
+temp.7 = int 20
+global.g.x.8 = temp.6
+global.g.y.9 = temp.7
+temp.10 = global.g.x.8
+temp.11 = extern test(temp.10)
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.6 = int 10
+temp.7 = int 20
+global.g.x.8 = temp.6
+temp.10 = global.g.x.8
+temp.11 = extern test(temp.10)
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.6 = int 10
+global.g.x.8 = temp.6
+temp.10 = global.g.x.8
+temp.11 = extern test(temp.10)
+return

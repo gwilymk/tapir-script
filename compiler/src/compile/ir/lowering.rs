@@ -812,7 +812,51 @@ impl<'a> BlockVisitor<'a> {
                     return;
                 }
 
-                // Regular field access (not a struct property base)
+                // Check if the base is a struct-typed global variable (e.g., "g" in "global g: int2;")
+                // We handle this specially to ensure the same field symbols are used for both
+                // reads and writes, preventing dead store elimination from removing assignments.
+                if let ast::ExpressionKind::Variable(_) = &base.kind
+                    && let Some(base_symbol) = base.meta.get::<SymbolId>()
+                    && GlobalId::from_symbol_id(*base_symbol).is_some()
+                {
+                    // Get or create the global's struct expansion
+                    let base_name = symtab.name_for_symbol(*base_symbol).to_string();
+                    let base_expansion = symtab.expand_struct_symbol(
+                        *base_symbol,
+                        &base_name,
+                        info.base_struct_id,
+                        expr.span,
+                        self.struct_registry,
+                    );
+
+                    // Get the field's symbol from the global's expansion
+                    let field_symbol = base_expansion.fields[info.field_index];
+
+                    // Check if this field is struct-typed (has its own expansion)
+                    if let Some(field_expansion) = symtab.get_struct_expansion(field_symbol).cloned()
+                    {
+                        // Field is struct-typed: create expansion for target and copy
+                        let target_name = symtab.name_for_symbol(target_symbol).to_string();
+                        let target_expansion = symtab.expand_struct_symbol(
+                            target_symbol,
+                            &target_name,
+                            field_expansion.struct_id,
+                            expr.span,
+                            self.struct_registry,
+                        );
+
+                        self.copy_struct_fields(&field_expansion, &target_expansion, symtab);
+                    } else {
+                        // Scalar field: simple move
+                        self.current_block.push(TapIr::Move {
+                            target: target_symbol,
+                            source: field_symbol,
+                        });
+                    }
+                    return;
+                }
+
+                // Regular field access (not a struct property base or global struct)
                 // Evaluate the base into a temp (handles any expression uniformly)
                 let base_temp = symtab.new_temporary();
                 self.blocks_for_expression(base, base_temp, symtab);
