@@ -1,0 +1,12 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_overflow_fail.tapir
+---
+[E0056] Error: integer overflow in constant expression
+   ╭─[ global_overflow_fail.tapir:1:14 ]
+   │
+ 1 │ global bad = 2147483647 + 1;
+   │              ───────┬──────  
+   │                     ╰──────── integer overflow in constant expression
+───╯

@@ -1,0 +1,10 @@
+global a = 1 + 2;
+global b = 10 - 3;
+global c = 4 * 5;
+global d = 10 / 3;
+global e = 10 % 3;
+global f = true && false;
+global g = 5 > 3;
+global h = (1 + 2) * 3;
+
+property x: int;

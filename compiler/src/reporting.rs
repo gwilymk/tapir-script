@@ -121,6 +121,15 @@ pub enum DiagnosticMessage {
     GlobalInitializerNotConstant {
         name: String,
     },
+    /// Division by zero in constant expression
+    DivisionByZeroInConstant,
+    /// Integer overflow in constant expression
+    IntegerOverflowInConstant,
+    /// Type mismatch in constant expression
+    TypeMismatchInConstantLabel {
+        expected: &'static str,
+        found: &'static str,
+    },
     GlobalRequiresTypeOrInitializer {
         name: String,
     },
@@ -391,6 +400,15 @@ impl DiagnosticMessage {
             DiagnosticMessage::GlobalInitializerNotConstant { name } => {
                 format!("Global variable '{name}' must be initialized with a constant value")
             }
+            DiagnosticMessage::DivisionByZeroInConstant => {
+                "division by zero in constant expression".into()
+            }
+            DiagnosticMessage::IntegerOverflowInConstant => {
+                "integer overflow in constant expression".into()
+            }
+            DiagnosticMessage::TypeMismatchInConstantLabel { expected, found } => {
+                format!("expected {expected}, found {found}")
+            }
             DiagnosticMessage::GlobalRequiresTypeOrInitializer { name } => {
                 format!("Global variable '{name}' requires either a type annotation or an initializer")
             }
@@ -585,7 +603,7 @@ impl DiagnosticMessage {
                 "When assigning to multiple variables, both sides of the '=' must have the same number of arguments".into()
             }
             DiagnosticMessage::GlobalInitializersMustBeConstant => {
-                "Global initializers must be integer, fix, or bool literals".into()
+                "Global initializers must be constant expressions".into()
             }
 
             // Help messages
@@ -680,6 +698,15 @@ pub enum ErrorKind {
     },
     GlobalInitializerNotConstant {
         name: String,
+    },
+    /// Division by zero in constant expression
+    DivisionByZeroInConstant,
+    /// Integer overflow in constant expression
+    OverflowInConstant,
+    /// Type mismatch in constant expression
+    TypeMismatchInConstant {
+        expected: &'static str,
+        found: &'static str,
     },
     /// Global variable has neither type annotation nor initializer
     GlobalRequiresTypeOrInitializer {
@@ -833,6 +860,9 @@ impl ErrorKind {
             Self::CountMismatch { .. } => "E0021",
             Self::CannotShadowBuiltin { .. } => "E0022",
             Self::GlobalInitializerNotConstant { .. } => "E0023",
+            Self::DivisionByZeroInConstant => "E0055",
+            Self::OverflowInConstant => "E0056",
+            Self::TypeMismatchInConstant { .. } => "E0057",
             Self::GlobalRequiresTypeOrInitializer { .. } => "E0052",
             Self::InvalidAssignmentTarget => "E0053",
             Self::DuplicatePropertyDeclaration { .. } => "E0033",
@@ -969,6 +999,11 @@ impl ErrorKind {
             }
             Self::GlobalInitializerNotConstant { name } => {
                 DiagnosticMessage::GlobalInitializerNotConstant { name: name.clone() }
+            }
+            Self::DivisionByZeroInConstant => DiagnosticMessage::DivisionByZeroInConstant,
+            Self::OverflowInConstant => DiagnosticMessage::IntegerOverflowInConstant,
+            Self::TypeMismatchInConstant { expected, found } => {
+                DiagnosticMessage::TypeMismatchInConstantLabel { expected: *expected, found: *found }
             }
             Self::GlobalRequiresTypeOrInitializer { name } => {
                 DiagnosticMessage::GlobalRequiresTypeOrInitializer { name: name.clone() }

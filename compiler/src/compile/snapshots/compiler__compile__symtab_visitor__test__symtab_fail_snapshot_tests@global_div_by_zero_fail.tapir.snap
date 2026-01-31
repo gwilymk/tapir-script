@@ -1,0 +1,12 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_div_by_zero_fail.tapir
+---
+[E0055] Error: division by zero in constant expression
+   ╭─[ global_div_by_zero_fail.tapir:1:14 ]
+   │
+ 1 │ global bad = 1 / 0;
+   │              ──┬──  
+   │                ╰──── division by zero in constant expression
+───╯

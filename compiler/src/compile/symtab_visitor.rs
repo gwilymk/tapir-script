@@ -32,7 +32,10 @@ pub struct ExpandedStruct {
 #[derive(Clone, Debug)]
 pub struct FunctionArgumentSymbols(pub Vec<SymbolId>);
 
-use super::{CompileSettings, Property, StructPropertyInfo};
+use super::{
+    CompileSettings, Property, StructPropertyInfo,
+    constant_eval::{ConstantEvalError, ConstantValue, eval_constant_expr},
+};
 
 /// Identifies a global variable by its index in the globals array.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -248,19 +251,42 @@ fn evaluate_constant_initializer(
     diagnostics: &mut Diagnostics,
     global_name: &str,
 ) -> (Type, i32) {
-    match &expr.kind {
-        ExpressionKind::Integer(i) => (Type::Int, *i),
-        ExpressionKind::Fix(num) => (Type::Fix, num.to_raw()),
-        ExpressionKind::Bool(b) => (Type::Bool, *b as i32),
-        _ => {
-            // Not a constant literal
+    match eval_constant_expr(expr) {
+        Ok(ConstantValue::Int(i)) => (Type::Int, i),
+        Ok(ConstantValue::Fix(f)) => (Type::Fix, f.to_raw()),
+        Ok(ConstantValue::Bool(b)) => (Type::Bool, b as i32),
+        Err(err) => {
+            emit_constant_eval_error(err, diagnostics, global_name);
+            (Type::Error, 0)
+        }
+    }
+}
+
+/// Emit a diagnostic for a constant evaluation error.
+fn emit_constant_eval_error(err: ConstantEvalError, diagnostics: &mut Diagnostics, global_name: &str) {
+    match err {
+        ConstantEvalError::NotConstant { span } => {
             ErrorKind::GlobalInitializerNotConstant {
                 name: global_name.to_string(),
             }
-            .at(expr.span, DiagnosticMessage::NotAConstant)
+            .at(span, DiagnosticMessage::NotAConstant)
             .note(DiagnosticMessage::GlobalInitializersMustBeConstant)
             .emit(diagnostics);
-            (Type::Error, 0)
+        }
+        ConstantEvalError::DivisionByZero { span } => {
+            ErrorKind::DivisionByZeroInConstant
+                .at(span, DiagnosticMessage::DivisionByZeroInConstant)
+                .emit(diagnostics);
+        }
+        ConstantEvalError::IntegerOverflow { span } => {
+            ErrorKind::OverflowInConstant
+                .at(span, DiagnosticMessage::IntegerOverflowInConstant)
+                .emit(diagnostics);
+        }
+        ConstantEvalError::TypeMismatch { span, expected, found } => {
+            ErrorKind::TypeMismatchInConstant { expected, found }
+                .at(span, DiagnosticMessage::TypeMismatchInConstantLabel { expected, found })
+                .emit(diagnostics);
         }
     }
 }

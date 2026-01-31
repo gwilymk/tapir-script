@@ -1,3 +1,7 @@
-global counter = 1 + 2;
+global counter = some_function();
 
-var x = counter;
+property x: int;
+
+fn some_function() -> int {
+    return 42;
+}

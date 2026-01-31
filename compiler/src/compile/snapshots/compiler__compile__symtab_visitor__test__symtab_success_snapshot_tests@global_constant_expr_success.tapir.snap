@@ -1,0 +1,286 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_constant_expr_success.tapir
+---
+Script(
+  struct_declarations: [],
+  property_declarations: [
+    PropertyDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "x",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Int),
+          name: "int",
+          span: "[span]",
+        )),
+      ),
+      span: "[span]",
+    ),
+  ],
+  globals: [
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "a",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Integer(1),
+            meta: {},
+          ),
+          operator: Add,
+          rhs: Expression(
+            span: "[span]",
+            kind: Integer(2),
+            meta: {},
+          ),
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "b",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Integer(10),
+            meta: {},
+          ),
+          operator: Sub,
+          rhs: Expression(
+            span: "[span]",
+            kind: Integer(3),
+            meta: {},
+          ),
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "c",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Integer(4),
+            meta: {},
+          ),
+          operator: Mul,
+          rhs: Expression(
+            span: "[span]",
+            kind: Integer(5),
+            meta: {},
+          ),
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "d",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Integer(10),
+            meta: {},
+          ),
+          operator: Div,
+          rhs: Expression(
+            span: "[span]",
+            kind: Integer(3),
+            meta: {},
+          ),
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "e",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Integer(10),
+            meta: {},
+          ),
+          operator: Mod,
+          rhs: Expression(
+            span: "[span]",
+            kind: Integer(3),
+            meta: {},
+          ),
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "f",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Bool(true),
+            meta: {},
+          ),
+          operator: And,
+          rhs: Expression(
+            span: "[span]",
+            kind: Bool(false),
+            meta: {},
+          ),
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "g",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: Integer(5),
+            meta: {},
+          ),
+          operator: Gt,
+          rhs: Expression(
+            span: "[span]",
+            kind: Integer(3),
+            meta: {},
+          ),
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+    GlobalDeclaration(
+      doc_comment: None,
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "h",
+        ),
+        ty: None,
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: BinaryOperation(
+          lhs: Expression(
+            span: "[span]",
+            kind: BinaryOperation(
+              lhs: Expression(
+                span: "[span]",
+                kind: Integer(1),
+                meta: {},
+              ),
+              operator: Add,
+              rhs: Expression(
+                span: "[span]",
+                kind: Integer(2),
+                meta: {},
+              ),
+            ),
+            meta: {},
+          ),
+          operator: Mul,
+          rhs: Expression(
+            span: "[span]",
+            kind: Integer(3),
+            meta: {},
+          ),
+        ),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+  ],
+  functions: [
+    Function(
+      doc_comment: None,
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
+      },
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

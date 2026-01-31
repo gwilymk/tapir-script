@@ -1,0 +1,12 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_type_mismatch_fail.tapir
+---
+[E0057] Error: expected matching types, found int and bool
+   ╭─[ global_type_mismatch_fail.tapir:1:14 ]
+   │
+ 1 │ global bad = 1 + true;
+   │              ────┬───  
+   │                  ╰───── expected matching types, found int and bool
+───╯

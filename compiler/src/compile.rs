@@ -20,6 +20,7 @@ use crate::{
 use self::symtab_visitor::SymTab;
 
 pub mod analyse;
+pub(crate) mod constant_eval;
 #[cfg(test)]
 mod disassemble;
 mod ir;
