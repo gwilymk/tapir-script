@@ -74,12 +74,13 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "counter",
-                ),
-              ],
+              Expression(
+                span: "[span]",
+                kind: Variable("counter"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                },
+              ),
             ],
             values: [
               Expression(
@@ -136,12 +137,13 @@ Script(
                 span: "[span]",
                 kind: Assignment(
                   targets: [
-                    [
-                      Ident(
-                        span: "[span]",
-                        ident: "counter",
-                      ),
-                    ],
+                    Expression(
+                      span: "[span]",
+                      kind: Variable("counter"),
+                      meta: {
+                        "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                      },
+                    ),
                   ],
                   values: [
                     Expression(

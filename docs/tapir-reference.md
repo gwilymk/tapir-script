@@ -489,7 +489,7 @@ background_task = spawn some_animation();
 
 # Cancel from event handler
 event fn on_pickup() {
-    (background_task).cancel();  # stop the animation
+    background_task.cancel();  # stop the animation
 }
 ```
 
@@ -503,7 +503,7 @@ global timer: task;
 timer = spawn countdown();
 
 event fn on_reset() {
-    (timer).cancel();  # stop countdown if running
+    timer.cancel();  # stop countdown if running
     timer = spawn countdown();  # restart
 }
 ```
@@ -512,8 +512,6 @@ event fn on_reset() {
 - Stops the spawned function if it's still running
 - No-op if the task has already finished
 - No-op if called on an empty task (value 0)
-
-Note: Due to grammar constraints, method calls on variables require parentheses: `(task_var).cancel()` rather than `task_var.cancel()`.
 
 ### Trigger
 

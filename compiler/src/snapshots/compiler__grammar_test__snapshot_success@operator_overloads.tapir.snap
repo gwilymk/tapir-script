@@ -6,9 +6,10 @@ input_file: compiler/src/snapshot_tests/grammar/operator_overloads.tapir
 Script(
   struct_declarations: [
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Point",
         span: "[span]",
-        ident: "Point",
       ),
       fields: [
         TypedIdent(
@@ -37,9 +38,10 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Vec2",
         span: "[span]",
-        ident: "Vec2",
       ),
       fields: [
         TypedIdent(

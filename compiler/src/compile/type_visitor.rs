@@ -426,17 +426,32 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
     fn check_assignment(
         &mut self,
         symbol_ids: &[SymbolId],
-        paths: &[Vec<ast::Ident<'input>>],
+        targets: &[Expression<'input>],
         values: &mut [Expression<'input>],
         statement_span: Span,
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Option<FieldAssignmentInfo> {
+        // Extract paths from target expressions, validating they are l-values
+        let paths: Vec<Option<Vec<(&'input str, Span)>>> = targets
+            .iter()
+            .map(|target| {
+                if let Some(path) = target.as_lvalue_path() {
+                    Some(path)
+                } else {
+                    ErrorKind::InvalidAssignmentTarget
+                        .at(target.span)
+                        .emit(diagnostics);
+                    None
+                }
+            })
+            .collect();
+
         // Type check values. Special handling for multi-return function calls:
         // if there's a single value but multiple targets, check if it's a function call
         // with multiple return types.
         let value_types: Vec<(Type, Span)> = if values.len() == 1
-            && paths.len() > 1
+            && targets.len() > 1
             && let Some(fn_ret_types) =
                 self.return_types_for_maybe_call(&mut values[0], symtab, diagnostics)
         {
@@ -454,19 +469,19 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         };
 
         // Check count
-        if paths.len() != value_types.len() {
+        if targets.len() != value_types.len() {
             let (extra_spans, label_message): (Vec<Span>, DiagnosticMessage) =
-                if paths.len() > value_types.len() {
+                if targets.len() > value_types.len() {
                     (
-                        paths[value_types.len()..]
+                        targets[value_types.len()..]
                             .iter()
-                            .filter_map(|p| p.last().map(|i| i.span))
+                            .map(|t| t.span)
                             .collect(),
                         DiagnosticMessage::NoValueForVariable,
                     )
                 } else {
                     (
-                        values[paths.len()..]
+                        values[targets.len()..]
                             .iter()
                             .map(|v| v.span)
                             .collect::<Vec<_>>(),
@@ -475,7 +490,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 };
 
             let mut builder = ErrorKind::CountMismatch {
-                ident_count: paths.len(),
+                ident_count: targets.len(),
                 expr_count: value_types.len(),
             }
             .at(statement_span)
@@ -490,20 +505,26 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
 
         // Track field assignment info (struct_id and indices for field paths)
         let mut field_info_list: Vec<Option<(StructId, Vec<usize>)>> =
-            Vec::with_capacity(paths.len());
+            Vec::with_capacity(targets.len());
         let mut has_field_assignments = false;
 
         // Check each assignment
-        for (idx, (path, &symbol_id)) in paths.iter().zip(symbol_ids.iter()).enumerate() {
+        for (idx, (path_opt, &symbol_id)) in paths.iter().zip(symbol_ids.iter()).enumerate() {
             if idx >= value_types.len() {
                 field_info_list.push(None);
                 continue;
             }
             let (value_type, value_span) = value_types[idx];
 
+            // Skip if path extraction failed (error already emitted)
+            let Some(path) = path_opt else {
+                field_info_list.push(None);
+                continue;
+            };
+
             if path.len() == 1 {
                 // Simple variable assignment
-                let ident_span = path[0].span;
+                let ident_span = path[0].1;
                 self.resolve_type_with_spans(
                     symbol_id,
                     value_type,
@@ -515,9 +536,17 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 field_info_list.push(None);
             } else {
                 // Field assignment - resolve path to get target type and field indices
-                let target_span = path.last().map(|i| i.span).unwrap_or(statement_span);
+                // Convert path slice to Ident slice for resolve_field_path_with_indices
+                let field_idents: Vec<ast::Ident<'input>> = path[1..]
+                    .iter()
+                    .map(|(name, span)| ast::Ident {
+                        ident: name,
+                        span: *span,
+                    })
+                    .collect();
+                let target_span = path.last().map(|(_, span)| *span).unwrap_or(statement_span);
                 if let Some((target_type, root_struct_id, field_indices)) =
-                    self.resolve_field_path_with_indices(symbol_id, &path[1..], diagnostics)
+                    self.resolve_field_path_with_indices(symbol_id, &field_idents, diagnostics)
                 {
                     // Check that value type matches target field type
                     if value_type != Type::Error

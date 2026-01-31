@@ -74,32 +74,44 @@ fn extract_references_from_statements(
                 // For assignments, LHS idents refer to existing definitions
                 let field_info: Option<&FieldAssignmentInfo> = stmt.meta.get();
                 if let Some(symbol_ids) = stmt.meta.get::<Vec<SymbolId>>() {
-                    for (i, (path, symbol_id)) in targets.iter().zip(symbol_ids.iter()).enumerate()
+                    for (i, (target, symbol_id)) in targets.iter().zip(symbol_ids.iter()).enumerate()
                     {
-                        // Add reference for the root variable (first ident in path)
-                        if let Some(first) = path.first() {
-                            add_symbol_reference(first.span, *symbol_id, symtab, references);
-                        }
+                        // Extract path from target expression
+                        if let Some(path) = target.as_lvalue_path() {
+                            // Add reference for the root variable (first ident in path)
+                            let (_, root_span) = path[0];
+                            add_symbol_reference(root_span, *symbol_id, symtab, references);
 
-                        // Add references for field paths (e.g., pos.x = 10)
-                        if path.len() > 1
-                            && let Some(FieldAssignmentInfo(info_list)) = field_info
-                            && let Some(Some((struct_id, field_indices))) = info_list.get(i)
-                        {
-                            let mut current_struct_id = *struct_id;
-                            for (j, field_ident) in path.iter().skip(1).enumerate() {
-                                if let Some(&field_index) = field_indices.get(j) {
-                                    let struct_def = struct_registry.get(current_struct_id);
-                                    let field_def = &struct_def.fields[field_index];
-                                    references.insert(field_ident.span, field_def.span);
-                                    // Update current_struct_id for nested fields
-                                    if let Some(next_struct_id) = field_def.ty.as_struct() {
-                                        current_struct_id = next_struct_id;
+                            // Add references for field paths (e.g., pos.x = 10)
+                            if path.len() > 1
+                                && let Some(FieldAssignmentInfo(info_list)) = field_info
+                                && let Some(Some((struct_id, field_indices))) = info_list.get(i)
+                            {
+                                let mut current_struct_id = *struct_id;
+                                for (j, (_, field_span)) in path.iter().skip(1).enumerate() {
+                                    if let Some(&field_index) = field_indices.get(j) {
+                                        let struct_def = struct_registry.get(current_struct_id);
+                                        let field_def = &struct_def.fields[field_index];
+                                        references.insert(*field_span, field_def.span);
+                                        // Update current_struct_id for nested fields
+                                        if let Some(next_struct_id) = field_def.ty.as_struct() {
+                                            current_struct_id = next_struct_id;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                }
+                // Also extract references from target expressions (for any nested sub-expressions)
+                for target in targets {
+                    extract_references_from_expression(
+                        target,
+                        symtab,
+                        struct_registry,
+                        function_spans,
+                        references,
+                    );
                 }
                 for expr in values {
                     extract_references_from_expression(

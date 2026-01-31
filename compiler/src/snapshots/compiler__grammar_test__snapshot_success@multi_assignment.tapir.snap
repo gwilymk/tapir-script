@@ -168,18 +168,16 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "a",
-                ),
-              ],
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "b",
-                ),
-              ],
+              Expression(
+                span: "[span]",
+                kind: Variable("a"),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Variable("b"),
+                meta: {},
+              ),
             ],
             values: [
               Expression(
@@ -200,18 +198,16 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "p",
-                ),
-              ],
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "q",
-                ),
-              ],
+              Expression(
+                span: "[span]",
+                kind: Variable("p"),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Variable("q"),
+                meta: {},
+              ),
             ],
             values: [
               Expression(
@@ -230,18 +226,16 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "a",
-                ),
-              ],
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "b",
-                ),
-              ],
+              Expression(
+                span: "[span]",
+                kind: Variable("a"),
+                meta: {},
+              ),
+              Expression(
+                span: "[span]",
+                kind: Variable("b"),
+                meta: {},
+              ),
             ],
             values: [
               Expression(

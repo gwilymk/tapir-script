@@ -124,6 +124,7 @@ pub enum DiagnosticMessage {
     GlobalRequiresTypeOrInitializer {
         name: String,
     },
+    InvalidAssignmentTarget,
     DuplicatePropertyDeclaration {
         name: String,
     },
@@ -259,6 +260,7 @@ pub enum DiagnosticMessage {
     NoValueForVariable,
     NoVariableToReceiveValue,
     CannotShadowBuiltinLabel,
+    BuiltinTypeCannotBeStructName,
     NotAConstant,
     OriginallyDeclaredHere,
     AlsoDeclaredHere,
@@ -388,6 +390,9 @@ impl DiagnosticMessage {
             DiagnosticMessage::GlobalRequiresTypeOrInitializer { name } => {
                 format!("Global variable '{name}' requires either a type annotation or an initializer")
             }
+            DiagnosticMessage::InvalidAssignmentTarget => {
+                "Invalid assignment target: expected a variable or field access".into()
+            }
             DiagnosticMessage::DuplicatePropertyDeclaration { name } => {
                 format!("Property '{name}' is already declared")
             }
@@ -514,6 +519,7 @@ impl DiagnosticMessage {
             DiagnosticMessage::NoValueForVariable => "No value for this variable".into(),
             DiagnosticMessage::NoVariableToReceiveValue => "No variable to receive this value".into(),
             DiagnosticMessage::CannotShadowBuiltinLabel => "Cannot shadow built-in variable".into(),
+            DiagnosticMessage::BuiltinTypeCannotBeStructName => "Builtin type cannot be used as struct name".into(),
             DiagnosticMessage::NotAConstant => "Not a constant".into(),
             DiagnosticMessage::OriginallyDeclaredHere => "Originally declared here".into(),
             DiagnosticMessage::AlsoDeclaredHere => "Also declared here".into(),
@@ -672,6 +678,8 @@ pub enum ErrorKind {
     GlobalRequiresTypeOrInitializer {
         name: String,
     },
+    /// Assignment target is not a valid l-value (must be variable or field access)
+    InvalidAssignmentTarget,
     DuplicatePropertyDeclaration {
         name: String,
     },
@@ -813,6 +821,7 @@ impl ErrorKind {
             Self::CannotShadowBuiltin { .. } => "E0022",
             Self::GlobalInitializerNotConstant { .. } => "E0023",
             Self::GlobalRequiresTypeOrInitializer { .. } => "E0052",
+            Self::InvalidAssignmentTarget => "E0053",
             Self::DuplicatePropertyDeclaration { .. } => "E0033",
             Self::PropertyConflictsWithGlobal { .. } => "E0034",
             Self::PropertyNotInStruct { .. } => "E0035",
@@ -950,6 +959,7 @@ impl ErrorKind {
             Self::GlobalRequiresTypeOrInitializer { name } => {
                 DiagnosticMessage::GlobalRequiresTypeOrInitializer { name: name.clone() }
             }
+            Self::InvalidAssignmentTarget => DiagnosticMessage::InvalidAssignmentTarget,
             Self::DuplicatePropertyDeclaration { name } => {
                 DiagnosticMessage::DuplicatePropertyDeclaration { name: name.clone() }
             }
@@ -1250,6 +1260,62 @@ impl Diagnostic {
         self.kind.message().render()
     }
 
+    /// Simplify a list of expected tokens for error messages.
+    /// Groups binary/comparison operators to avoid overwhelming the user.
+    fn simplify_expected_tokens(expected: &[String]) -> String {
+        const BINARY_OPS: &[&str] = &[
+            "\"+\"", "\"-\"", "\"*\"", "\"/\"", "\"%\"", "\"//\"", "\"%%\"",
+        ];
+        const COMPARISON_OPS: &[&str] = &[
+            "\"==\"", "\"!=\"", "\">\"", "\">=\"", "\"<\"", "\"<=\"",
+        ];
+        const LOGICAL_OPS: &[&str] = &["\"||\"", "\"&&\""];
+        const BITWISE_OPS: &[&str] = &["\"<<\"", "\">>\"", "\"&\"", "\"|\""];
+
+        let mut result = Vec::new();
+        let mut has_binary = false;
+        let mut has_comparison = false;
+        let mut has_logical = false;
+        let mut has_bitwise = false;
+
+        for token in expected {
+            if BINARY_OPS.contains(&token.as_str()) {
+                has_binary = true;
+            } else if COMPARISON_OPS.contains(&token.as_str()) {
+                has_comparison = true;
+            } else if LOGICAL_OPS.contains(&token.as_str()) {
+                has_logical = true;
+            } else if BITWISE_OPS.contains(&token.as_str()) {
+                has_bitwise = true;
+            } else {
+                result.push(token.clone());
+            }
+        }
+
+        // Only group if we have multiple operator types
+        let op_count = [has_binary, has_comparison, has_logical, has_bitwise]
+            .iter()
+            .filter(|&&b| b)
+            .count();
+
+        if op_count >= 2 {
+            result.push("<operator>".to_string());
+        } else {
+            // Include individual operators if only one category
+            for token in expected {
+                if BINARY_OPS.contains(&token.as_str())
+                    || COMPARISON_OPS.contains(&token.as_str())
+                    || LOGICAL_OPS.contains(&token.as_str())
+                    || BITWISE_OPS.contains(&token.as_str())
+                {
+                    result.push(token.clone());
+                }
+            }
+        }
+
+        result.join(", ")
+    }
+
     /// Create a diagnostic from a lalrpop parse error.
     pub(crate) fn from_lalrpop(
         value: lalrpop_util::ParseError<usize, tokens::Token<'_>, LexicalError>,
@@ -1271,7 +1337,7 @@ impl Diagnostic {
                 .at(span)
                 .label(span, DiagnosticMessage::EndOfFileNotExpectedHere)
                 .note(DiagnosticMessage::ExpectedOneOfTokens {
-                    tokens: expected.join(", "),
+                    tokens: Self::simplify_expected_tokens(&expected),
                 })
                 .build()
             }
@@ -1283,7 +1349,7 @@ impl Diagnostic {
                 .at(span)
                 .label(span, DiagnosticMessage::UnexpectedToken)
                 .note(DiagnosticMessage::ExpectedOneOfTokens {
-                    tokens: expected.join(", "),
+                    tokens: Self::simplify_expected_tokens(&expected),
                 })
                 .build()
             }

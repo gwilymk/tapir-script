@@ -604,26 +604,30 @@ impl<'input> SymTabVisitor<'input> {
                     }
 
                     // no need to do counting checks, that's done in type checking
-                    // For each target path, resolve the root variable (first ident)
+                    // For each target, extract the root variable and resolve it
+                    // We don't call visit_expr on targets to avoid duplicate error reporting
                     let mut statement_meta = vec![];
-                    for path in targets {
-                        if let Some(first) = path.first() {
-                            if let Some(symbol_id) =
-                                self.symbol_names.get(first.ident, &self.symtab)
-                            {
+                    for target in targets.iter_mut() {
+                        if let Some((name, span)) = target.as_lvalue_root() {
+                            if let Some(symbol_id) = self.symbol_names.get(name, &self.symtab) {
                                 statement_meta.push(symbol_id);
+                                // Set metadata on the root expression for later phases
+                                target.lvalue_root_mut().unwrap().meta.set(symbol_id);
                             } else {
                                 ErrorKind::UnknownVariable {
-                                    name: first.ident.to_string(),
+                                    name: name.to_string(),
                                 }
-                                .at(first.span)
-                                .label(first.span, DiagnosticMessage::UnknownVariableLabel)
+                                .at(span)
+                                .label(span, DiagnosticMessage::UnknownVariableLabel)
                                 .emit(diagnostics);
 
                                 // create a dummy symbol to ensure that the meta stays correct
-                                statement_meta
-                                    .push(self.symtab.new_symbol(first.ident, first.span));
+                                statement_meta.push(self.symtab.new_symbol(name, span));
                             }
+                        } else {
+                            // Invalid l-value - error will be reported in type checking
+                            // Create a dummy symbol to maintain meta consistency
+                            statement_meta.push(self.symtab.new_symbol("", target.span));
                         }
                     }
 

@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{
     ast::Script,
-    reporting::{Diagnostics, ErrorKind},
+    reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     tokens::Span,
     types::{StructDef, StructField, StructId, StructRegistry, Type},
 };
@@ -24,14 +24,15 @@ pub fn register_structs<'input>(
     let mut struct_names: HashMap<&'input str, (StructId, Span)> = HashMap::new();
 
     for decl in &script.struct_declarations {
-        let name = decl.name.ident;
+        let name = decl.name.name;
 
-        // Check for shadowing builtin types
-        if Type::parse_builtin(name).is_some() {
+        // Check for shadowing builtin types - if decl.name.t is Some, it's a builtin type
+        if decl.name.t.is_some() {
             ErrorKind::StructShadowsBuiltinType {
                 name: name.to_string(),
             }
             .at(decl.name.span)
+            .label(decl.name.span, DiagnosticMessage::BuiltinTypeCannotBeStructName)
             .emit(diagnostics);
             continue;
         }
@@ -83,7 +84,7 @@ pub fn resolve_struct_fields<'input>(
     diagnostics: &mut Diagnostics,
 ) {
     for decl in &script.struct_declarations {
-        let name = decl.name.ident;
+        let name = decl.name.name;
 
         // Skip structs that failed registration (duplicates, shadowing)
         let Some(&struct_id) = struct_names.get(name) else {
@@ -433,9 +434,26 @@ mod tests {
     }
 
     fn make_struct_decl<'a>(name: &'a str, fields: Vec<(&'a str, Type)>) -> StructDeclaration<'a> {
+        make_struct_decl_with_type(None, name, fields)
+    }
+
+    /// Create a struct declaration that shadows a builtin type (e.g., `struct int { ... }`)
+    fn make_struct_decl_builtin<'a>(
+        builtin: Type,
+        fields: Vec<(&'a str, Type)>,
+    ) -> StructDeclaration<'a> {
+        make_struct_decl_with_type(Some(builtin), type_name(builtin), fields)
+    }
+
+    fn make_struct_decl_with_type<'a>(
+        t: Option<Type>,
+        name: &'a str,
+        fields: Vec<(&'a str, Type)>,
+    ) -> StructDeclaration<'a> {
         StructDeclaration {
-            name: Ident {
-                ident: name,
+            name: TypeWithLocation {
+                t,
+                name,
                 span: test_span(),
             },
             fields: fields
@@ -509,7 +527,7 @@ mod tests {
     #[test]
     fn struct_shadows_builtin_error() {
         let script =
-            make_script_with_structs(vec![make_struct_decl("int", vec![("x", Type::Int)])]);
+            make_script_with_structs(vec![make_struct_decl_builtin(Type::Int, vec![("x", Type::Int)])]);
         let mut registry = StructRegistry::default();
         let mut diagnostics = Diagnostics::new(FileId::new(0), "test.tapir", "");
 

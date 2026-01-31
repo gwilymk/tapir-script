@@ -19,7 +19,7 @@ input_file: compiler/src/snapshot_tests/grammar/errors/method_errors.tapir
    │                    ┬  
    │                    ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens "(", "=", ",", "."
+   │ Note: Expected one of tokens then, "(", ";", "=", ",", ".", <operator>
 ───╯
 [E0026] Error: Unexpected token Colon
    ╭─[ method_errors.tapir:7:27 ]

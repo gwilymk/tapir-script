@@ -17,12 +17,11 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "my_property",
-                ),
-              ],
+              Expression(
+                span: "[span]",
+                kind: Variable("my_property"),
+                meta: {},
+              ),
             ],
             values: [
               Expression(
@@ -43,12 +42,11 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "my_property",
-                ),
-              ],
+              Expression(
+                span: "[span]",
+                kind: Variable("my_property"),
+                meta: {},
+              ),
             ],
             values: [
               Expression(

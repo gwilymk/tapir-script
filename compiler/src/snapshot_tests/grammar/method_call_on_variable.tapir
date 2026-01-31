@@ -5,7 +5,7 @@ global t: task;
 fn worker() {
     int_prop = 100;
     wait;
-    int_prop = 200;  # Should never run if cancelled
+    int_prop = 200;
 }
 
 t = spawn worker();

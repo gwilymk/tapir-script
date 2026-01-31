@@ -6,9 +6,10 @@ input_file: compiler/src/compile/snapshot_tests/symtab_visitor/struct_property_s
 Script(
   struct_declarations: [
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Point",
         span: "[span]",
-        ident: "Point",
       ),
       fields: [
         TypedIdent(
@@ -64,16 +65,23 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "pos",
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: Variable("pos"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(2305843009213693952)",
+                    },
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "x",
+                  ),
                 ),
-                Ident(
-                  span: "[span]",
-                  ident: "x",
-                ),
-              ],
+                meta: {},
+              ),
             ],
             values: [
               Expression(
@@ -91,16 +99,23 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "pos",
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: Variable("pos"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(2305843009213693952)",
+                    },
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "y",
+                  ),
                 ),
-                Ident(
-                  span: "[span]",
-                  ident: "y",
-                ),
-              ],
+                meta: {},
+              ),
             ],
             values: [
               Expression(

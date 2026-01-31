@@ -10,5 +10,5 @@ input_file: compiler/src/snapshot_tests/grammar/errors/unexpected_eof.tapir
    │          │ 
    │          ╰─ End of file not expected here
    │ 
-   │ Note: Expected one of tokens then, ";", ",", "+", "-", "*", "/", "%", "//", "%%", "==", "!=", ">", ">=", "<", "<=", "||", "&&", "<<", ">>", "&", "|", "."
+   │ Note: Expected one of tokens then, ";", ",", ".", <operator>
 ───╯

@@ -56,18 +56,20 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "x",
-                ),
-              ],
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "int_prop",
-                ),
-              ],
+              Expression(
+                span: "[span]",
+                kind: Variable("x"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(1)",
+                },
+              ),
+              Expression(
+                span: "[span]",
+                kind: Variable("int_prop"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(0)",
+                },
+              ),
             ],
             values: [
               Expression(

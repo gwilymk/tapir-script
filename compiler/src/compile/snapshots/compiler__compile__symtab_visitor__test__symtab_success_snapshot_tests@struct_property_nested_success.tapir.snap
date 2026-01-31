@@ -6,9 +6,10 @@ input_file: compiler/src/compile/snapshot_tests/symtab_visitor/struct_property_n
 Script(
   struct_declarations: [
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Point",
         span: "[span]",
-        ident: "Point",
       ),
       fields: [
         TypedIdent(
@@ -37,9 +38,10 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Rect",
         span: "[span]",
-        ident: "Rect",
       ),
       fields: [
         TypedIdent(
@@ -95,20 +97,33 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "bounds",
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("bounds"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "origin",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "x",
+                  ),
                 ),
-                Ident(
-                  span: "[span]",
-                  ident: "origin",
-                ),
-                Ident(
-                  span: "[span]",
-                  ident: "x",
-                ),
-              ],
+                meta: {},
+              ),
             ],
             values: [
               Expression(
@@ -126,20 +141,33 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "bounds",
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("bounds"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "origin",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "y",
+                  ),
                 ),
-                Ident(
-                  span: "[span]",
-                  ident: "origin",
-                ),
-                Ident(
-                  span: "[span]",
-                  ident: "y",
-                ),
-              ],
+                meta: {},
+              ),
             ],
             values: [
               Expression(
@@ -157,20 +185,33 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "bounds",
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("bounds"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "size",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "x",
+                  ),
                 ),
-                Ident(
-                  span: "[span]",
-                  ident: "size",
-                ),
-                Ident(
-                  span: "[span]",
-                  ident: "x",
-                ),
-              ],
+                meta: {},
+              ),
             ],
             values: [
               Expression(
@@ -188,20 +229,33 @@ Script(
           span: "[span]",
           kind: Assignment(
             targets: [
-              [
-                Ident(
-                  span: "[span]",
-                  ident: "bounds",
+              Expression(
+                span: "[span]",
+                kind: FieldAccess(
+                  base: Expression(
+                    span: "[span]",
+                    kind: FieldAccess(
+                      base: Expression(
+                        span: "[span]",
+                        kind: Variable("bounds"),
+                        meta: {
+                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                        },
+                      ),
+                      field: Ident(
+                        span: "[span]",
+                        ident: "size",
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  field: Ident(
+                    span: "[span]",
+                    ident: "y",
+                  ),
                 ),
-                Ident(
-                  span: "[span]",
-                  ident: "size",
-                ),
-                Ident(
-                  span: "[span]",
-                  ident: "y",
-                ),
-              ],
+                meta: {},
+              ),
             ],
             values: [
               Expression(

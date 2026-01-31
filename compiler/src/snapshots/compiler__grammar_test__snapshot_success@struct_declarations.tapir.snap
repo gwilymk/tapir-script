@@ -6,9 +6,10 @@ input_file: compiler/src/snapshot_tests/grammar/struct_declarations.tapir
 Script(
   struct_declarations: [
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Point",
         span: "[span]",
-        ident: "Point",
       ),
       fields: [
         TypedIdent(
@@ -37,17 +38,19 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Empty",
         span: "[span]",
-        ident: "Empty",
       ),
       fields: [],
       span: "[span]",
     ),
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Single",
         span: "[span]",
-        ident: "Single",
       ),
       fields: [
         TypedIdent(
@@ -65,9 +68,10 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "Nested",
         span: "[span]",
-        ident: "Nested",
       ),
       fields: [
         TypedIdent(
@@ -96,9 +100,10 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
-      name: Ident(
+      name: TypeWithLocation(
+        t: None,
+        name: "WithTrailingComma",
         span: "[span]",
-        ident: "WithTrailingComma",
       ),
       fields: [
         TypedIdent(

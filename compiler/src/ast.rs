@@ -102,8 +102,8 @@ pub struct PropertyDeclaration<'input> {
 /// A struct type declaration: `struct Point { x: int, y: int }`
 #[derive(Clone, Debug, Serialize)]
 pub struct StructDeclaration<'input> {
-    /// The name of the struct (includes span for precise error messages)
-    pub name: Ident<'input>,
+    /// The name of the struct as a type (allows parsing `struct int {}` to give better errors)
+    pub name: TypeWithLocation<'input>,
     /// The fields of the struct (type is required by grammar)
     pub fields: Vec<TypedIdent<'input>>,
     /// Span of entire declaration
@@ -420,8 +420,8 @@ pub enum StatementKind<'input> {
         values: Vec<Expression<'input>>,
     },
     Assignment {
-        /// Each target is a path: `[x]` for a variable, `[p, x]` for a field
-        targets: Vec<Vec<Ident<'input>>>,
+        /// Each target is an expression that must be a valid l-value (Variable or FieldAccess)
+        targets: Vec<Expression<'input>>,
         values: Vec<Expression<'input>>,
     },
     Wait,
@@ -475,6 +475,45 @@ pub struct Expression<'input> {
 }
 
 impl<'input> Expression<'input> {
+    /// For assignment targets, extract the root variable name and span.
+    /// Returns Some((name, span)) if this is a valid l-value (Variable or FieldAccess chain).
+    /// Returns None if this is not a valid assignment target.
+    pub fn as_lvalue_root(&self) -> Option<(&'input str, Span)> {
+        match &self.kind {
+            ExpressionKind::Variable(name) => Some((name, self.span)),
+            ExpressionKind::FieldAccess { base, .. } => base.as_lvalue_root(),
+            _ => None,
+        }
+    }
+
+    /// Returns a mutable reference to the root expression of an l-value.
+    /// For a simple variable, returns self. For field access like a.b.c, returns the 'a' expression.
+    pub fn lvalue_root_mut(&mut self) -> Option<&mut Self> {
+        // Check the variant first to avoid borrow checker issues
+        if matches!(self.kind, ExpressionKind::Variable(_)) {
+            Some(self)
+        } else if let ExpressionKind::FieldAccess { base, .. } = &mut self.kind {
+            base.lvalue_root_mut()
+        } else {
+            None
+        }
+    }
+
+    /// For assignment targets, extract the field path as a list of (name, span) pairs.
+    /// The first element is the root variable, followed by field names.
+    /// Returns None if this is not a valid l-value.
+    pub fn as_lvalue_path(&self) -> Option<Vec<(&'input str, Span)>> {
+        match &self.kind {
+            ExpressionKind::Variable(name) => Some(vec![(name, self.span)]),
+            ExpressionKind::FieldAccess { base, field } => {
+                let mut path = base.as_lvalue_path()?;
+                path.push((field.ident, field.span));
+                Some(path)
+            }
+            _ => None,
+        }
+    }
+
     pub fn all_inner(&self) -> Box<dyn Iterator<Item = &Expression<'input>> + '_> {
         match &self.kind {
             ExpressionKind::Integer(_)

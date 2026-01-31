@@ -10,5 +10,5 @@ input_file: compiler/src/snapshot_tests/grammar/errors/non_associative_compariso
    │                ─┬  
    │                 ╰── Unexpected token
    │ 
-   │ Note: Expected one of tokens then, ";", ",", "||", "&&", "|"
+   │ Note: Expected one of tokens then, ";", ",", <operator>
 ───╯

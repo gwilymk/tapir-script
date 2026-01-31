@@ -3,7 +3,7 @@ use crate::{
         FileId, LexicalError, Token, Span,
     },
     ast::*,
-    reporting::{Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind},
+    reporting::{DiagnosticMessage, Diagnostics, ErrorKind},
     types::Type,
 };
 
@@ -112,7 +112,7 @@ PropertyDecl: PropertyDeclaration<'input> = {
 }
 
 StructDecl: StructDeclaration<'input> = {
-    <start:@L> "struct" <name:Identifier> "{" <fields:CommaSeparated<TypedIdentifierRequired>> "}" <end:@R> =>
+    <start:@L> "struct" <name:Type> "{" <fields:CommaSeparated<TypedIdentifierRequired>> "}" <end:@R> =>
         StructDeclaration { name, fields, span: Span::new(file_id, start, end) },
 }
 
@@ -289,7 +289,7 @@ Statement: Statement<'input> =
 
 StatementKind: StatementKind<'input> = {
     var <idents: CommaSeparated<TypedIdentifier>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::VariableDeclaration { <> },
-    <targets: CommaSeparated<AssignmentTarget>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
+    <targets: CommaSeparated<Expression>> "=" <values: CommaSeparated<Expression>> ";" => StatementKind::Assignment { <> },
     wait ";" => StatementKind::Wait,
     break ";" => StatementKind::Break,
     continue ";" => StatementKind::Continue,
@@ -299,51 +299,10 @@ StatementKind: StatementKind<'input> = {
     },
     loop <block: Block> => StatementKind::Loop { <> },
 
-    // Expression statement: restricted to call expressions to avoid grammar conflicts
-    // with assignment targets. The AST uses a general Expression variant for future extensibility.
-    <start: @L> <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" =>
-        StatementKind::Expression {
-            expression: Box::new(ExpressionKind::Call { name, arguments }.with_span(file_id, start, end))
-        },
-    // Method call statement on self: self.method(args);
-    // (This is unambiguous since 'self' can't be an assignment target)
-    <start: @L> "self" <self_end: @R> "." <method: Identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" =>
-        StatementKind::Expression {
-            expression: Box::new(ExpressionKind::MethodCall {
-                receiver: Box::new(ExpressionKind::Variable("self").with_span(file_id, start, self_end)),
-                method,
-                arguments
-            }.with_span(file_id, start, end))
-        },
-    // Method call statement on function result: func().method(args);
-    <start: @L> <name: identifier> "(" <call_args: CommaSeparated<Expression>> ")" <call_end: @R> "." <method: Identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" =>
-        StatementKind::Expression {
-            expression: Box::new(ExpressionKind::MethodCall {
-                receiver: Box::new(ExpressionKind::Call { name, arguments: call_args }.with_span(file_id, start, call_end)),
-                method,
-                arguments
-            }.with_span(file_id, start, end))
-        },
-    // Method call statement on parenthesized expression: (expr).method(args);
-    <start: @L> "(" <inner: Expression> ")" <paren_end: @R> "." <method: Identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" => {
-        let receiver = Expression { span: inner.span, kind: inner.kind, meta: inner.meta };
-        StatementKind::Expression {
-            expression: Box::new(ExpressionKind::MethodCall {
-                receiver: Box::new(receiver),
-                method,
-                arguments
-            }.with_span(file_id, start, end))
-        }
-    },
     return <CommaSeparated<Expression>> ";" => StatementKind::Return { values: <> },
 
-    // Spawn expression statement
-    <start: @L> spawn <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> ";" =>
-        StatementKind::Expression {
-            expression: Box::new(ExpressionKind::Spawn {
-                call: Box::new(ExpressionKind::Call { name, arguments }.with_span(file_id, start, end))
-            }.with_span(file_id, start, end))
-        },
+    // General expression statement (covers function calls, method calls, spawn, etc.)
+    <expr: Expression> ";" => StatementKind::Expression { expression: Box::new(expr) },
 
     trigger <name: identifier> "(" <arguments: CommaSeparated<Expression>> ")" ";" => StatementKind::Trigger { <> },
     trigger <name: identifier> ";" => StatementKind::Trigger { name, arguments: vec![] },
@@ -367,16 +326,6 @@ TypeIdentifier: Ident<'input> = {
     <start: @L> t_fix <end: @R> => Ident { ident: "fix", span: Span::new(file_id, start, end) },
     <start: @L> t_bool <end: @R> => Ident { ident: "bool", span: Span::new(file_id, start, end) },
     <start: @L> t_task <end: @R> => Ident { ident: "task", span: Span::new(file_id, start, end) },
-};
-
-/// An assignment target: either a simple variable `x` or a field path `p.x.y`
-AssignmentTarget: Vec<Ident<'input>> = {
-    <ident: Identifier> => vec![ident],
-    <path: AssignmentTarget> "." <field: Identifier> => {
-        let mut path = path;
-        path.push(field);
-        path
-    },
 };
 
 // Optional type annotation (for var, global)
@@ -490,10 +439,6 @@ Term: Expression<'input> = {
     <start: @L> <ident: identifier> <end: @R> => ExpressionKind::Variable(ident).with_span(file_id, start, end),
     <start: @L> "self" <end: @R> => ExpressionKind::Variable("self").with_span(file_id, start, end),
     <start: @L> <b: Bool> <end: @R> => ExpressionKind::Bool(b).with_span(file_id, start, end),
-    <start: @L> <error: !> <end: @R> => {
-        diagnostics.add(Diagnostic::from_lalrpop(error.error, file_id));
-        ExpressionKind::Error.with_span(file_id, start, end)
-    },
 
     <start: @L> <ident: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> =>
         ExpressionKind::Call {
