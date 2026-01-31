@@ -21,6 +21,9 @@ cargo test -p compiler test_name
 # Update snapshots (uses insta)
 cargo insta test -p compiler
 cargo insta review
+
+# Quick compile test (reads from stdin with -)
+echo 'property x: int; x = 42;' | cargo run -p compiler --bin tapirc -- -
 ```
 
 ## Architecture

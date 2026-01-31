@@ -1,4 +1,4 @@
-use std::{env, fs, process::ExitCode};
+use std::{env, fs, io::Read, process::ExitCode};
 
 use compiler::{CompileSettings, Diagnostics};
 
@@ -7,15 +7,25 @@ fn main() -> ExitCode {
 
     if args.len() != 2 {
         eprintln!("Usage: tapirc <file.tapir>");
+        eprintln!("       tapirc -  (read from stdin)");
         return ExitCode::from(2);
     }
 
     let filename = &args[1];
-    let input = match fs::read_to_string(filename) {
-        Ok(content) => content,
-        Err(e) => {
-            eprintln!("Error reading file '{}': {}", filename, e);
+    let (display_name, input) = if filename == "-" {
+        let mut input = String::new();
+        if let Err(e) = std::io::stdin().read_to_string(&mut input) {
+            eprintln!("Error reading from stdin: {}", e);
             return ExitCode::from(2);
+        }
+        ("<stdin>".to_string(), input)
+    } else {
+        match fs::read_to_string(filename) {
+            Ok(content) => (filename.clone(), content),
+            Err(e) => {
+                eprintln!("Error reading file '{}': {}", filename, e);
+                return ExitCode::from(2);
+            }
         }
     };
 
@@ -24,7 +34,7 @@ fn main() -> ExitCode {
         enable_optimisations: true,
     };
 
-    match compiler::compile(filename, &input, settings) {
+    match compiler::compile(&display_name, &input, settings) {
         Ok(result) => {
             // Print any warnings
             if result.warnings.has_any() {
