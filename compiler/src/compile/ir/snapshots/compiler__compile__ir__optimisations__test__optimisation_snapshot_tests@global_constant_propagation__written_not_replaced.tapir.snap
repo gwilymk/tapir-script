@@ -8,11 +8,10 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/global_constant
 fn @toplevel() -> 
 
 ---- block 0 ----
-getglobal temp.6, 0
-temp.7 = int 1
-temp.8 = temp.6 + temp.7
-temp.9 = temp.8
-setglobal 0, temp.9
-getglobal temp.10, 0
-x.11 = temp.10
+getglobal temp.5, 0
+temp.6 = int 1
+temp.7 = temp.5 + temp.6
+setglobal 0, temp.7
+getglobal temp.8, 0
+x.9 = temp.8
 return

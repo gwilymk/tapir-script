@@ -8,14 +8,13 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_foldin
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.8 = fix 0
-temp.9 = fix 1
-temp.10 = temp.8 - temp.9
-temp.11 = builtin sqrt(temp.10)
-r.12 = temp.11
-temp.13 = r.12
-temp.14 = temp.13
-storeprop temp.14, 0
+temp.7 = fix 0
+temp.8 = fix 1
+temp.9 = temp.7 - temp.8
+temp.10 = builtin sqrt(temp.9)
+r.11 = temp.10
+temp.12 = r.11
+storeprop temp.12, 0
 return 
 
 
@@ -24,14 +23,13 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.8 = fix 0
-temp.9 = fix 1
-temp.10 = fix -1
-temp.11 = builtin sqrt(temp.10)
-r.12 = temp.11
-temp.13 = r.12
-temp.14 = temp.13
-storeprop temp.14, 0
+temp.7 = fix 0
+temp.8 = fix 1
+temp.9 = fix -1
+temp.10 = builtin sqrt(temp.9)
+r.11 = temp.10
+temp.12 = r.11
+storeprop temp.12, 0
 return 
 
 

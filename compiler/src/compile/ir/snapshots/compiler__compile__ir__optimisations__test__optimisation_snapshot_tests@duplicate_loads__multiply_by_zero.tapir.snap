@@ -8,87 +8,25 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/duplicate_loads
 fn @toplevel() -> 
 
 ---- block 0 ----
+getprop temp.14, 0
+temp.15 = int 0
+temp.16 = temp.14 * temp.15
+storeprop temp.16, 0
+wait
+temp.17 = int 0
 getprop temp.18, 0
-temp.19 = int 0
-temp.20 = temp.18 * temp.19
-temp.21 = temp.20
-storeprop temp.21, 0
+temp.19 = temp.17 * temp.18
+storeprop temp.19, 0
 wait
-temp.22 = int 0
-getprop temp.23, 0
-temp.24 = temp.22 * temp.23
-temp.25 = temp.24
-storeprop temp.25, 0
+temp.20 = fix 0
+getprop temp.21, 1
+temp.22 = temp.20 f* temp.21
+storeprop temp.22, 1
 wait
-temp.26 = fix 0
-getprop temp.27, 1
-temp.28 = temp.26 f* temp.27
-temp.29 = temp.28
-storeprop temp.29, 1
-wait
-getprop temp.30, 1
-temp.31 = fix 0
-temp.32 = temp.30 f* temp.31
-temp.33 = temp.32
-storeprop temp.33, 1
-return 
-
-
------------ copy_propagation -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-getprop temp.18, 0
-temp.19 = int 0
-temp.20 = temp.18 * temp.19
-temp.21 = temp.20
-storeprop temp.20, 0
-wait
-temp.22 = int 0
-getprop temp.23, 0
-temp.24 = temp.22 * temp.23
-temp.25 = temp.24
-storeprop temp.24, 0
-wait
-temp.26 = fix 0
-getprop temp.27, 1
-temp.28 = temp.26 f* temp.27
-temp.29 = temp.28
-storeprop temp.28, 1
-wait
-getprop temp.30, 1
-temp.31 = fix 0
-temp.32 = temp.30 f* temp.31
-temp.33 = temp.32
-storeprop temp.32, 1
-return 
-
-
------------ dead_store_elimination -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-getprop temp.18, 0
-temp.19 = int 0
-temp.20 = temp.18 * temp.19
-storeprop temp.20, 0
-wait
-temp.22 = int 0
-getprop temp.23, 0
-temp.24 = temp.22 * temp.23
-storeprop temp.24, 0
-wait
-temp.26 = fix 0
-getprop temp.27, 1
-temp.28 = temp.26 f* temp.27
-storeprop temp.28, 1
-wait
-getprop temp.30, 1
-temp.31 = fix 0
-temp.32 = temp.30 f* temp.31
-storeprop temp.32, 1
+getprop temp.23, 1
+temp.24 = fix 0
+temp.25 = temp.23 f* temp.24
+storeprop temp.25, 1
 return 
 
 
@@ -97,25 +35,25 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
+getprop temp.14, 0
+temp.15 = int 0
+temp.16 = int 0
+storeprop temp.16, 0
+wait
+temp.17 = int 0
 getprop temp.18, 0
 temp.19 = int 0
-temp.20 = int 0
-storeprop temp.20, 0
+storeprop temp.19, 0
 wait
-temp.22 = int 0
-getprop temp.23, 0
-temp.24 = int 0
-storeprop temp.24, 0
+temp.20 = fix 0
+getprop temp.21, 1
+temp.22 = fix 0
+storeprop temp.22, 1
 wait
-temp.26 = fix 0
-getprop temp.27, 1
-temp.28 = fix 0
-storeprop temp.28, 1
-wait
-getprop temp.30, 1
-temp.31 = fix 0
-temp.32 = fix 0
-storeprop temp.32, 1
+getprop temp.23, 1
+temp.24 = fix 0
+temp.25 = fix 0
+storeprop temp.25, 1
 return 
 
 
@@ -124,25 +62,25 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
+getprop temp.14, 0
+temp.15 = int 0
+temp.16 = temp.15
+storeprop temp.16, 0
+wait
+temp.17 = temp.15
 getprop temp.18, 0
-temp.19 = int 0
-temp.20 = temp.19
-storeprop temp.20, 0
+temp.19 = temp.15
+storeprop temp.19, 0
 wait
-temp.22 = temp.19
-getprop temp.23, 0
-temp.24 = temp.19
-storeprop temp.24, 0
+temp.20 = fix 0
+getprop temp.21, 1
+temp.22 = temp.20
+storeprop temp.22, 1
 wait
-temp.26 = fix 0
-getprop temp.27, 1
-temp.28 = temp.26
-storeprop temp.28, 1
-wait
-getprop temp.30, 1
-temp.31 = temp.26
-temp.32 = temp.26
-storeprop temp.32, 1
+getprop temp.23, 1
+temp.24 = temp.20
+temp.25 = temp.20
+storeprop temp.25, 1
 return 
 
 
@@ -151,25 +89,25 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
+getprop temp.14, 0
+temp.15 = int 0
+temp.16 = temp.15
+storeprop temp.15, 0
+wait
+temp.17 = temp.15
 getprop temp.18, 0
-temp.19 = int 0
-temp.20 = temp.19
-storeprop temp.19, 0
+temp.19 = temp.15
+storeprop temp.15, 0
 wait
-temp.22 = temp.19
-getprop temp.23, 0
-temp.24 = temp.19
-storeprop temp.19, 0
+temp.20 = fix 0
+getprop temp.21, 1
+temp.22 = temp.20
+storeprop temp.20, 1
 wait
-temp.26 = fix 0
-getprop temp.27, 1
-temp.28 = temp.26
-storeprop temp.26, 1
-wait
-getprop temp.30, 1
-temp.31 = temp.26
-temp.32 = temp.26
-storeprop temp.26, 1
+getprop temp.23, 1
+temp.24 = temp.20
+temp.25 = temp.20
+storeprop temp.20, 1
 return 
 
 
@@ -178,13 +116,13 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.19 = int 0
-storeprop temp.19, 0
+temp.15 = int 0
+storeprop temp.15, 0
 wait
-storeprop temp.19, 0
+storeprop temp.15, 0
 wait
-temp.26 = fix 0
-storeprop temp.26, 1
+temp.20 = fix 0
+storeprop temp.20, 1
 wait
-storeprop temp.26, 1
+storeprop temp.20, 1
 return

@@ -8,23 +8,22 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_foldin
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = fix 0
-temp.18 = builtin sin(temp.17)
-s.19 = temp.18
-temp.20 = fix 0
-temp.21 = builtin cos(temp.20)
-c.22 = temp.21
-temp.23 = fix 4
-temp.24 = builtin sqrt(temp.23)
-r.25 = temp.24
-temp.26 = fix 3.69921875
-val.27 = temp.26
-temp.28 = val.27
-temp.29 = builtin fix@floor(temp.28)
-f.30 = temp.29
-temp.31 = f.30
-temp.32 = temp.31
-storeprop temp.32, 0
+temp.16 = fix 0
+temp.17 = builtin sin(temp.16)
+s.18 = temp.17
+temp.19 = fix 0
+temp.20 = builtin cos(temp.19)
+c.21 = temp.20
+temp.22 = fix 4
+temp.23 = builtin sqrt(temp.22)
+r.24 = temp.23
+temp.25 = fix 3.69921875
+val.26 = temp.25
+temp.27 = val.26
+temp.28 = builtin fix@floor(temp.27)
+f.29 = temp.28
+temp.30 = f.29
+storeprop temp.30, 0
 return 
 
 
@@ -33,21 +32,20 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
+temp.16 = fix 0
 temp.17 = fix 0
-temp.18 = fix 0
-s.19 = temp.18
-temp.20 = fix 0
-temp.21 = fix 1
-c.22 = temp.21
-temp.23 = fix 4
-temp.24 = fix 2
-r.25 = temp.24
-temp.26 = fix 3.69921875
-val.27 = temp.26
-temp.28 = val.27
-temp.29 = builtin fix@floor(temp.28)
-f.30 = temp.29
-temp.31 = f.30
-temp.32 = temp.31
-storeprop temp.32, 0
+s.18 = temp.17
+temp.19 = fix 0
+temp.20 = fix 1
+c.21 = temp.20
+temp.22 = fix 4
+temp.23 = fix 2
+r.24 = temp.23
+temp.25 = fix 3.69921875
+val.26 = temp.25
+temp.27 = val.26
+temp.28 = builtin fix@floor(temp.27)
+f.29 = temp.28
+temp.30 = f.29
+storeprop temp.30, 0
 return

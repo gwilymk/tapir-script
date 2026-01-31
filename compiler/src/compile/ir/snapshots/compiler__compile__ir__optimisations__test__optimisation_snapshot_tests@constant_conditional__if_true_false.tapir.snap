@@ -1,43 +1,39 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/constant_conditional/if_true_false.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_conditional/if_true_false.tapir
 ---
 ----------- before -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 3 ----
-temp.11 = bool true
-conditional_jump temp.11 0 1
+temp.7 = bool true
+conditional_jump temp.7 0 1
 
 ---- block 0 ----
-temp.12 = int 5
-temp.13 = temp.12
-storeprop temp.13, 0
+temp.8 = int 5
+storeprop temp.8, 0
 jmp 2
 
 ---- block 1 ----
-temp.14 = int 9
-temp.15 = temp.14
-storeprop temp.15, 0
+temp.9 = int 9
+storeprop temp.9, 0
 jmp 2
 
 ---- block 2 ----
 wait
-temp.16 = bool false
-conditional_jump temp.16 4 5
+temp.10 = bool false
+conditional_jump temp.10 4 5
 
 ---- block 4 ----
-temp.17 = int 15
-temp.18 = temp.17
-storeprop temp.18, 0
+temp.11 = int 15
+storeprop temp.11, 0
 jmp 6
 
 ---- block 5 ----
-temp.19 = int 19
-temp.20 = temp.19
-storeprop temp.20, 0
+temp.12 = int 19
+storeprop temp.12, 0
 jmp 6
 
 ---- block 6 ----
@@ -49,53 +45,22 @@ return
 fn @toplevel() -> 
 
 ---- block 3 ----
-temp.11 = bool true
+temp.7 = bool true
 jmp 0
 
 ---- block 0 ----
-temp.12 = int 5
-temp.13 = temp.12
-storeprop temp.13, 0
+temp.8 = int 5
+storeprop temp.8, 0
 jmp 2
 
 ---- block 2 ----
 wait
-temp.16 = bool false
+temp.10 = bool false
 jmp 5
 
 ---- block 5 ----
-temp.19 = int 19
-temp.20 = temp.19
-storeprop temp.20, 0
-jmp 6
-
----- block 6 ----
-return 
-
-
------------ copy_propagation -------------
-=======================
-fn @toplevel() -> 
-
----- block 3 ----
-temp.11 = bool true
-jmp 0
-
----- block 0 ----
-temp.12 = int 5
-temp.13 = temp.12
+temp.12 = int 19
 storeprop temp.12, 0
-jmp 2
-
----- block 2 ----
-wait
-temp.16 = bool false
-jmp 5
-
----- block 5 ----
-temp.19 = int 19
-temp.20 = temp.19
-storeprop temp.19, 0
 jmp 6
 
 ---- block 6 ----

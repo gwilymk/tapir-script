@@ -8,27 +8,26 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/struct_f
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.21 = int 42
-temp.22 = int 0
-temp.3.x.23 = temp.21
-temp.3.y.24 = temp.22
-p.x.25 = temp.3.x.23
-p.y.26 = temp.3.y.24
-temp.11.x.27 = p.x.25
-temp.11.y.28 = p.y.26
-temp.29 = get_x(temp.11.x.27, temp.11.y.28)
-temp.30 = temp.29
-storeprop temp.30, 0
+temp.20 = int 42
+temp.21 = int 0
+temp.3.x.22 = temp.20
+temp.3.y.23 = temp.21
+p.x.24 = temp.3.x.22
+p.y.25 = temp.3.y.23
+temp.11.x.26 = p.x.24
+temp.11.y.27 = p.y.25
+temp.28 = get_x(temp.11.x.26, temp.11.y.27)
+storeprop temp.28, 0
 return 
 
 =======================
-fn get_x(p.x.15, p.y.16) -> int
+fn get_x(p.x.14, p.y.15) -> int
 
 ---- block 0 ----
-temp.18.x.31 = p.x.15
-temp.18.y.32 = p.y.16
-temp.33 = temp.18.x.31
-return temp.33
+temp.17.x.29 = p.x.14
+temp.17.y.30 = p.y.15
+temp.31 = temp.17.x.29
+return temp.31
 
 
 ----------- inline_small_functions -------------
@@ -36,37 +35,36 @@ return temp.33
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.21 = int 42
-temp.22 = int 0
-temp.3.x.23 = temp.21
-temp.3.y.24 = temp.22
-p.x.25 = temp.3.x.23
-p.y.26 = temp.3.y.24
-temp.11.x.27 = p.x.25
-temp.11.y.28 = p.y.26
+temp.20 = int 42
+temp.21 = int 0
+temp.3.x.22 = temp.20
+temp.3.y.23 = temp.21
+p.x.24 = temp.3.x.22
+p.y.25 = temp.3.y.23
+temp.11.x.26 = p.x.24
+temp.11.y.27 = p.y.25
 jmp 2
 
 ---- block 2 ----
-temp.18.x.35 = temp.11.x.27
-temp.18.y.37 = temp.11.y.28
-temp.36 = temp.18.x.35
+temp.17.x.33 = temp.11.x.26
+temp.17.y.35 = temp.11.y.27
+temp.34 = temp.17.x.33
 jmp 4
 
 ---- block 4 ----
-temp.34 = φ(temp.36 from 2)
-temp.29 = temp.34
+temp.32 = φ(temp.34 from 2)
+temp.28 = temp.32
 jmp 1
 
 ---- block 1 ----
-temp.30 = temp.29
-storeprop temp.30, 0
+storeprop temp.28, 0
 return 
 
 =======================
-fn get_x(p.x.15, p.y.16) -> int
+fn get_x(p.x.14, p.y.15) -> int
 
 ---- block 0 ----
-temp.18.x.31 = p.x.15
-temp.18.y.32 = p.y.16
-temp.33 = temp.18.x.31
-return temp.33
+temp.17.x.29 = p.x.14
+temp.17.y.30 = p.y.15
+temp.31 = temp.17.x.29
+return temp.31

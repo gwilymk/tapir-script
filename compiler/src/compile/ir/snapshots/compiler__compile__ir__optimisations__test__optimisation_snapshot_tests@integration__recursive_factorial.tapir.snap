@@ -1,56 +1,55 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/integration/recursive_factorial.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/recursive_factorial.tapir
 ---
 ----------- before -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.19 = int 10
-temp.20 = factorial(temp.19)
-temp.21 = temp.20
-storeprop temp.21, 0
+temp.18 = int 10
+temp.19 = factorial(temp.18)
+storeprop temp.19, 0
 return 
 
 =======================
 fn factorial(x.1) -> int
 
 ---- block 3 ----
-temp.22 = x.1
-temp.23 = int 0
-temp.24 = temp.22 == temp.23
-conditional_jump temp.24 0 1
+temp.20 = x.1
+temp.21 = int 0
+temp.22 = temp.20 == temp.21
+conditional_jump temp.22 0 1
 
 ---- block 0 ----
-temp.25 = int 1
-return temp.25
+temp.23 = int 1
+return temp.23
 
 ---- block 1 ----
 jmp 2
 
 ---- block 2 ----
-temp.26 = x.1
-temp.27 = int 1
-temp.28 = temp.26 == temp.27
-conditional_jump temp.28 5 6
+temp.24 = x.1
+temp.25 = int 1
+temp.26 = temp.24 == temp.25
+conditional_jump temp.26 5 6
 
 ---- block 5 ----
-temp.29 = int 1
-return temp.29
+temp.27 = int 1
+return temp.27
 
 ---- block 6 ----
 jmp 7
 
 ---- block 7 ----
-temp.30 = x.1
-temp.31 = x.1
-temp.32 = int 1
-temp.33 = temp.31 - temp.32
-temp.34 = factorial(temp.33)
-temp.35 = temp.30 * temp.34
-return temp.35
+temp.28 = x.1
+temp.29 = x.1
+temp.30 = int 1
+temp.31 = temp.29 - temp.30
+temp.32 = factorial(temp.31)
+temp.33 = temp.28 * temp.32
+return temp.33
 
 
 ----------- simplify_blocks -------------
@@ -58,49 +57,48 @@ return temp.35
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.19 = int 10
-temp.20 = factorial(temp.19)
-temp.21 = temp.20
-storeprop temp.21, 0
+temp.18 = int 10
+temp.19 = factorial(temp.18)
+storeprop temp.19, 0
 return 
 
 =======================
 fn factorial(x.1) -> int
 
 ---- block 3 ----
-temp.22 = x.1
-temp.23 = int 0
-temp.24 = temp.22 == temp.23
-conditional_jump temp.24 0 1
+temp.20 = x.1
+temp.21 = int 0
+temp.22 = temp.20 == temp.21
+conditional_jump temp.22 0 1
 
 ---- block 0 ----
-temp.25 = int 1
-return temp.25
+temp.23 = int 1
+return temp.23
 
 ---- block 1 ----
-temp.26 = x.1
-temp.27 = int 1
-temp.28 = temp.26 == temp.27
+temp.24 = x.1
+temp.25 = int 1
+temp.26 = temp.24 == temp.25
 jmp 2
 
 ---- block 2 ----
-conditional_jump temp.28 5 6
+conditional_jump temp.26 5 6
 
 ---- block 5 ----
-temp.29 = int 1
-return temp.29
+temp.27 = int 1
+return temp.27
 
 ---- block 6 ----
-temp.30 = x.1
-temp.31 = x.1
-temp.32 = int 1
-temp.33 = temp.31 - temp.32
-temp.34 = factorial(temp.33)
-temp.35 = temp.30 * temp.34
+temp.28 = x.1
+temp.29 = x.1
+temp.30 = int 1
+temp.31 = temp.29 - temp.30
+temp.32 = factorial(temp.31)
+temp.33 = temp.28 * temp.32
 jmp 7
 
 ---- block 7 ----
-return temp.35
+return temp.33
 
 
 ----------- copy_propagation -------------
@@ -108,49 +106,48 @@ return temp.35
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.19 = int 10
-temp.20 = factorial(temp.19)
-temp.21 = temp.20
-storeprop temp.20, 0
+temp.18 = int 10
+temp.19 = factorial(temp.18)
+storeprop temp.19, 0
 return 
 
 =======================
 fn factorial(x.1) -> int
 
 ---- block 3 ----
-temp.22 = x.1
-temp.23 = int 0
-temp.24 = x.1 == temp.23
-conditional_jump temp.24 0 1
+temp.20 = x.1
+temp.21 = int 0
+temp.22 = x.1 == temp.21
+conditional_jump temp.22 0 1
 
 ---- block 0 ----
-temp.25 = int 1
-return temp.25
+temp.23 = int 1
+return temp.23
 
 ---- block 1 ----
-temp.26 = x.1
-temp.27 = int 1
-temp.28 = x.1 == temp.27
+temp.24 = x.1
+temp.25 = int 1
+temp.26 = x.1 == temp.25
 jmp 2
 
 ---- block 2 ----
-conditional_jump temp.28 5 6
+conditional_jump temp.26 5 6
 
 ---- block 5 ----
-temp.29 = int 1
-return temp.29
+temp.27 = int 1
+return temp.27
 
 ---- block 6 ----
-temp.30 = x.1
-temp.31 = x.1
-temp.32 = int 1
-temp.33 = x.1 - temp.32
-temp.34 = factorial(temp.33)
-temp.35 = x.1 * temp.34
+temp.28 = x.1
+temp.29 = x.1
+temp.30 = int 1
+temp.31 = x.1 - temp.30
+temp.32 = factorial(temp.31)
+temp.33 = x.1 * temp.32
 jmp 7
 
 ---- block 7 ----
-return temp.35
+return temp.33
 
 
 ----------- dead_store_elimination -------------
@@ -158,44 +155,44 @@ return temp.35
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.19 = int 10
-temp.20 = factorial(temp.19)
-storeprop temp.20, 0
+temp.18 = int 10
+temp.19 = factorial(temp.18)
+storeprop temp.19, 0
 return 
 
 =======================
 fn factorial(x.1) -> int
 
 ---- block 3 ----
-temp.23 = int 0
-temp.24 = x.1 == temp.23
-conditional_jump temp.24 0 1
+temp.21 = int 0
+temp.22 = x.1 == temp.21
+conditional_jump temp.22 0 1
 
 ---- block 0 ----
-temp.25 = int 1
-return temp.25
+temp.23 = int 1
+return temp.23
 
 ---- block 1 ----
-temp.27 = int 1
-temp.28 = x.1 == temp.27
+temp.25 = int 1
+temp.26 = x.1 == temp.25
 jmp 2
 
 ---- block 2 ----
-conditional_jump temp.28 5 6
+conditional_jump temp.26 5 6
 
 ---- block 5 ----
-temp.29 = int 1
-return temp.29
+temp.27 = int 1
+return temp.27
 
 ---- block 6 ----
-temp.32 = int 1
-temp.33 = x.1 - temp.32
-temp.34 = factorial(temp.33)
-temp.35 = x.1 * temp.34
+temp.30 = int 1
+temp.31 = x.1 - temp.30
+temp.32 = factorial(temp.31)
+temp.33 = x.1 * temp.32
 jmp 7
 
 ---- block 7 ----
-return temp.35
+return temp.33
 
 
 ----------- empty_block -------------
@@ -203,35 +200,35 @@ return temp.35
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.19 = int 10
-temp.20 = factorial(temp.19)
-storeprop temp.20, 0
+temp.18 = int 10
+temp.19 = factorial(temp.18)
+storeprop temp.19, 0
 return 
 
 =======================
 fn factorial(x.1) -> int
 
 ---- block 3 ----
-temp.23 = int 0
-temp.24 = x.1 == temp.23
-conditional_jump temp.24 0 1
+temp.21 = int 0
+temp.22 = x.1 == temp.21
+conditional_jump temp.22 0 1
 
 ---- block 0 ----
-temp.25 = int 1
-return temp.25
+temp.23 = int 1
+return temp.23
 
 ---- block 1 ----
-temp.27 = int 1
-temp.28 = x.1 == temp.27
-conditional_jump temp.28 5 6
+temp.25 = int 1
+temp.26 = x.1 == temp.25
+conditional_jump temp.26 5 6
 
 ---- block 5 ----
-temp.29 = int 1
-return temp.29
+temp.27 = int 1
+return temp.27
 
 ---- block 6 ----
-temp.32 = int 1
-temp.33 = x.1 - temp.32
-temp.34 = factorial(temp.33)
-temp.35 = x.1 * temp.34
-return temp.35
+temp.30 = int 1
+temp.31 = x.1 - temp.30
+temp.32 = factorial(temp.31)
+temp.33 = x.1 * temp.32
+return temp.33

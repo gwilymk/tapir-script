@@ -1,35 +1,34 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/unreferenced_function/mutual_references_used.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/unreferenced_function/mutual_references_used.tapir
 ---
 ----------- before -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.14 = int 9
-temp.15 = bar(temp.14)
-temp.16 = temp.15
-storeprop temp.16, 0
+temp.13 = int 9
+temp.14 = bar(temp.13)
+storeprop temp.14, 0
 return 
 
 =======================
 fn bar(x.1) -> int
 
 ---- block 0 ----
-temp.17 = x.1
-temp.18 = int 1
-temp.19 = temp.17 - temp.18
-temp.20 = baz(temp.19)
-return temp.20
+temp.15 = x.1
+temp.16 = int 1
+temp.17 = temp.15 - temp.16
+temp.18 = baz(temp.17)
+return temp.18
 
 =======================
 fn baz(x.2) -> int
 
 ---- block 0 ----
-temp.21 = x.2
-temp.22 = int 1
-temp.23 = temp.21 - temp.22
-temp.24 = bar(temp.23)
-return temp.24
+temp.19 = x.2
+temp.20 = int 1
+temp.21 = temp.19 - temp.20
+temp.22 = bar(temp.21)
+return temp.22

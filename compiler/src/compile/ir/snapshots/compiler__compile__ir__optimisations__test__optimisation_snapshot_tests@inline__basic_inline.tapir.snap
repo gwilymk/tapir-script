@@ -1,27 +1,26 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/inline/basic_inline.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/basic_inline.tapir
 ---
 ----------- before -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.8 = int 8
-temp.9 = small_fn(temp.8)
-temp.10 = temp.9
-storeprop temp.10, 0
+temp.7 = int 8
+temp.8 = small_fn(temp.7)
+storeprop temp.8, 0
 return 
 
 =======================
 fn small_fn(x.1) -> int
 
 ---- block 0 ----
-temp.11 = x.1
-temp.12 = int 5
-temp.13 = temp.11 + temp.12
-return temp.13
+temp.9 = x.1
+temp.10 = int 5
+temp.11 = temp.9 + temp.10
+return temp.11
 
 
 ----------- inline_small_functions -------------
@@ -29,30 +28,29 @@ return temp.13
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.8 = int 8
+temp.7 = int 8
 jmp 2
 
 ---- block 2 ----
-temp.15 = temp.8
-temp.16 = int 5
-temp.17 = temp.15 + temp.16
+temp.13 = temp.7
+temp.14 = int 5
+temp.15 = temp.13 + temp.14
 jmp 4
 
 ---- block 4 ----
-temp.14 = φ(temp.17 from 2)
-temp.9 = temp.14
+temp.12 = φ(temp.15 from 2)
+temp.8 = temp.12
 jmp 1
 
 ---- block 1 ----
-temp.10 = temp.9
-storeprop temp.10, 0
+storeprop temp.8, 0
 return 
 
 =======================
 fn small_fn(x.1) -> int
 
 ---- block 0 ----
-temp.11 = x.1
-temp.12 = int 5
-temp.13 = temp.11 + temp.12
-return temp.13
+temp.9 = x.1
+temp.10 = int 5
+temp.11 = temp.9 + temp.10
+return temp.11

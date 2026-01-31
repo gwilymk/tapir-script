@@ -27,6 +27,188 @@ pub struct ExpandedStruct {
     pub fields: Vec<SymbolId>,
 }
 
+/// Unified representation of a struct's field layout in any storage class.
+///
+/// This replaces the three parallel representations (ExpandedStruct, StructPropertyBase,
+/// GlobalStructExpansion) with a single type that handles all storage classes uniformly.
+#[derive(Clone, Debug)]
+pub struct StructLayout {
+    /// The struct type this layout represents.
+    pub struct_id: StructId,
+    /// One entry per field in declaration order.
+    pub fields: Vec<FieldAccessor>,
+}
+
+/// How a single field is accessed in storage.
+#[derive(Clone, Debug)]
+pub enum FieldAccessor {
+    /// Local register storage - use Move instruction.
+    Local(SymbolId),
+    /// Property storage - use GetProp/StoreProp with this index.
+    Property(usize),
+    /// Global storage - use GetGlobal/SetGlobal with this GlobalId.
+    Global(GlobalId),
+    /// Nested struct - recurse into this layout.
+    Nested(Box<StructLayout>),
+}
+
+impl StructLayout {
+    /// Create a StructLayout for a local variable.
+    /// Creates symbols for each field and builds nested layouts recursively.
+    pub fn for_local(
+        struct_id: StructId,
+        base_name: &str,
+        span: Span,
+        symtab: &mut SymTab,
+        registry: &StructRegistry,
+    ) -> Self {
+        let def = registry.get(struct_id);
+        let mut fields = Vec::with_capacity(def.fields.len());
+
+        for field in &def.fields {
+            let field_name = format!("{}.{}", base_name, field.name);
+
+            match field.ty {
+                Type::Struct(nested_id) => {
+                    // Create nested layout recursively
+                    let nested = Self::for_local(nested_id, &field_name, span, symtab, registry);
+                    fields.push(FieldAccessor::Nested(Box::new(nested)));
+                }
+                _ => {
+                    // Scalar field - create a symbol
+                    let symbol_id = symtab.new_symbol_owned(field_name, span);
+                    fields.push(FieldAccessor::Local(symbol_id));
+                }
+            }
+        }
+
+        Self { struct_id, fields }
+    }
+
+    /// Create a StructLayout for a property.
+    /// Uses property indices for scalar fields and builds nested layouts recursively.
+    pub fn for_property(
+        struct_id: StructId,
+        base_name: &str,
+        base_index: &mut usize,
+        registry: &StructRegistry,
+    ) -> Self {
+        let def = registry.get(struct_id);
+        let mut fields = Vec::with_capacity(def.fields.len());
+
+        for field in &def.fields {
+            let field_name = format!("{}.{}", base_name, field.name);
+
+            match field.ty {
+                Type::Struct(nested_id) => {
+                    // Create nested layout recursively
+                    let nested =
+                        Self::for_property(nested_id, &field_name, base_index, registry);
+                    fields.push(FieldAccessor::Nested(Box::new(nested)));
+                }
+                _ => {
+                    // Scalar field - use property index
+                    fields.push(FieldAccessor::Property(*base_index));
+                    *base_index += 1;
+                }
+            }
+        }
+
+        Self { struct_id, fields }
+    }
+
+    /// Create a StructLayout for a global variable.
+    /// Uses GlobalIds for scalar fields and builds nested layouts recursively.
+    pub fn for_global(
+        struct_id: StructId,
+        base_name: &str,
+        base_index: &mut usize,
+        registry: &StructRegistry,
+    ) -> Self {
+        let def = registry.get(struct_id);
+        let mut fields = Vec::with_capacity(def.fields.len());
+
+        for field in &def.fields {
+            let field_name = format!("{}.{}", base_name, field.name);
+
+            match field.ty {
+                Type::Struct(nested_id) => {
+                    // Create nested layout recursively
+                    let nested = Self::for_global(nested_id, &field_name, base_index, registry);
+                    fields.push(FieldAccessor::Nested(Box::new(nested)));
+                }
+                _ => {
+                    // Scalar field - use global index
+                    fields.push(FieldAccessor::Global(GlobalId(*base_index)));
+                    *base_index += 1;
+                }
+            }
+        }
+
+        Self { struct_id, fields }
+    }
+
+    /// Collect all leaf (scalar) accessors from this layout recursively.
+    pub fn leaf_accessors(&self) -> Vec<&FieldAccessor> {
+        let mut leaves = Vec::new();
+        self.collect_leaves(&mut leaves);
+        leaves
+    }
+
+    fn collect_leaves<'a>(&'a self, out: &mut Vec<&'a FieldAccessor>) {
+        for field in &self.fields {
+            match field {
+                FieldAccessor::Nested(nested) => nested.collect_leaves(out),
+                leaf => out.push(leaf),
+            }
+        }
+    }
+
+    /// Collect all leaf symbol IDs from Local accessors.
+    /// Useful for collecting argument/return symbols.
+    pub fn leaf_symbols(&self) -> Vec<SymbolId> {
+        let mut symbols = Vec::new();
+        self.collect_leaf_symbols(&mut symbols);
+        symbols
+    }
+
+    fn collect_leaf_symbols(&self, out: &mut Vec<SymbolId>) {
+        for field in &self.fields {
+            match field {
+                FieldAccessor::Local(sym) => out.push(*sym),
+                FieldAccessor::Nested(nested) => nested.collect_leaf_symbols(out),
+                // Property and Global accessors don't have symbol IDs
+                FieldAccessor::Property(_) | FieldAccessor::Global(_) => {}
+            }
+        }
+    }
+
+    /// Navigate to a field by following a path of field indices.
+    /// Returns None if the path is invalid or points to a scalar.
+    pub fn navigate(&self, path: &[usize]) -> Option<&FieldAccessor> {
+        if path.is_empty() {
+            return None;
+        }
+
+        let field = self.fields.get(path[0])?;
+
+        if path.len() == 1 {
+            return Some(field);
+        }
+
+        // Need to navigate deeper - must be a nested struct
+        match field {
+            FieldAccessor::Nested(nested) => nested.navigate(&path[1..]),
+            _ => None, // Can't navigate into a scalar
+        }
+    }
+
+    /// Get the field accessor at a specific index (non-recursive).
+    pub fn field(&self, index: usize) -> Option<&FieldAccessor> {
+        self.fields.get(index)
+    }
+}
+
 /// Stores resolved symbol IDs for function arguments.
 /// This replaces the old MaybeResolved approach with an immutable AST pattern.
 #[derive(Clone, Debug)]
@@ -684,6 +866,30 @@ impl<'input> SymTabVisitor<'input> {
             function_names: functions_map,
         };
 
+        // Create StructLayouts for struct property bases in parallel with StructPropertyBase
+        // We iterate through declared properties to find struct-typed ones
+        for decl in &script.property_declarations {
+            let prop_ty = decl.name.ty_required().resolved();
+            if let Type::Struct(struct_id) = prop_ty {
+                let name = decl.name.name();
+                // Find the starting property index for this struct
+                if let Some(first_prop) = properties.iter().find(|p| {
+                    p.struct_info
+                        .as_ref()
+                        .is_some_and(|info| info.rust_field_name == name)
+                }) {
+                    let mut base_index = first_prop.index;
+                    let layout =
+                        StructLayout::for_property(struct_id, name, &mut base_index, struct_registry);
+                    // Use the STRUCT_PROPERTY_BASE_BIT symbol to key this layout
+                    let symbol_id = SymbolId(STRUCT_PROPERTY_BASE_BIT | struct_id.0 as u64);
+                    visitor
+                        .symtab
+                        .register_named_struct_layout(name.to_string(), symbol_id, layout);
+                }
+            }
+        }
+
         // Process global declarations
         let mut global_index = 0usize;
         for global in &script.globals {
@@ -814,6 +1020,16 @@ impl<'input> SymTabVisitor<'input> {
                     struct_id,
                     fields_base_index,
                     field_values.field_names.len(),
+                );
+
+                // Also create a StructLayout for this global in parallel
+                let mut layout_index = fields_base_index;
+                let layout =
+                    StructLayout::for_global(struct_id, name, &mut layout_index, struct_registry);
+                visitor.symtab.register_named_struct_layout(
+                    name.to_string(),
+                    base_global_id.to_symbol_id(),
+                    layout,
                 );
             } else {
                 // Scalar global - process as before
@@ -1168,6 +1384,14 @@ pub struct SymTab<'input> {
     /// Tracks global struct expansions (e.g., "global g: Point" expands to "g.x", "g.y").
     /// Maps the global name to its expansion info.
     global_struct_expansions: HashMap<String, GlobalStructExpansion>,
+
+    /// Unified struct layouts indexed by symbol ID.
+    /// This provides a uniform representation for struct layouts across all storage classes.
+    struct_layouts: HashMap<SymbolId, StructLayout>,
+
+    /// Maps struct layout names to their symbol IDs.
+    /// Used for looking up layouts by name (e.g., property names, global names).
+    named_struct_layouts: HashMap<String, SymbolId>,
 }
 
 impl<'input> SymTab<'input> {
@@ -1212,7 +1436,32 @@ impl<'input> SymTab<'input> {
             struct_expansions: HashMap::new(),
             struct_property_bases,
             global_struct_expansions: HashMap::new(),
+            struct_layouts: HashMap::new(),
+            named_struct_layouts: HashMap::new(),
         }
+    }
+
+    /// Register a struct layout for a symbol.
+    pub fn register_struct_layout(&mut self, symbol_id: SymbolId, layout: StructLayout) {
+        self.struct_layouts.insert(symbol_id, layout);
+    }
+
+    /// Register a struct layout with a name for later lookup.
+    pub fn register_named_struct_layout(&mut self, name: String, symbol_id: SymbolId, layout: StructLayout) {
+        self.struct_layouts.insert(symbol_id, layout);
+        self.named_struct_layouts.insert(name, symbol_id);
+    }
+
+    /// Get the struct layout for a symbol, if it exists.
+    pub fn get_struct_layout(&self, symbol_id: SymbolId) -> Option<&StructLayout> {
+        self.struct_layouts.get(&symbol_id)
+    }
+
+    /// Get a struct layout by name.
+    pub fn get_struct_layout_by_name(&self, name: &str) -> Option<&StructLayout> {
+        self.named_struct_layouts
+            .get(name)
+            .and_then(|sym| self.struct_layouts.get(sym))
     }
 
     /// Register a global struct expansion (called during global processing).
@@ -1548,6 +1797,8 @@ impl<'input> SymTab<'input> {
             struct_expansions: HashMap::new(),
             struct_property_bases: HashMap::new(),
             global_struct_expansions: HashMap::new(),
+            struct_layouts: HashMap::new(),
+            named_struct_layouts: HashMap::new(),
         }
     }
 
@@ -2134,5 +2385,215 @@ mod test {
         // Property symbol is SymbolId(0)
         let prop_symbol = SymbolId(0);
         assert_eq!(symtab.get_storage(prop_symbol), SymbolStorage::Property(0));
+    }
+
+    #[test]
+    fn struct_layout_matches_global_struct_expansion() {
+        let file_id = FileId::new(0);
+        let input = r#"
+            struct Point { x: int, y: int }
+            global pos = Point(10, 20);
+        "#;
+        let lexer = Lexer::new(input, file_id);
+        let parser = grammar::ScriptParser::new();
+
+        let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+
+        let mut struct_registry = StructRegistry::default();
+        let struct_names =
+            struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+        struct_visitor::resolve_struct_fields(
+            &script,
+            &mut struct_registry,
+            &struct_names,
+            &mut diagnostics,
+        );
+        struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
+        let visitor = SymTabVisitor::new(
+            &CompileSettings {
+                available_fields: None,
+                enable_optimisations: false,
+                enable_prelude: false,
+            },
+            &mut script,
+            &struct_registry,
+            &mut diagnostics,
+        );
+
+        // Get the old representation
+        let expansion = visitor
+            .symtab
+            .get_global_struct_expansion("pos")
+            .expect("Should have expansion");
+
+        // Get the new representation
+        let layout = visitor
+            .symtab
+            .get_struct_layout_by_name("pos")
+            .expect("Should have layout");
+
+        // Verify they match
+        assert_eq!(layout.struct_id, expansion.struct_id);
+
+        // The layout's leaf accessors should match the expansion's global IDs
+        let leaf_accessors = layout.leaf_accessors();
+        assert_eq!(leaf_accessors.len(), expansion.num_fields);
+
+        for (i, accessor) in leaf_accessors.iter().enumerate() {
+            match accessor {
+                FieldAccessor::Global(global_id) => {
+                    assert_eq!(global_id.0, expansion.base_global_id.0 + i);
+                }
+                _ => panic!("Expected Global accessor, got {:?}", accessor),
+            }
+        }
+    }
+
+    #[test]
+    fn struct_layout_matches_nested_global_struct() {
+        let file_id = FileId::new(0);
+        let input = r#"
+            struct Point { x: int, y: int }
+            struct Rect { origin: Point, size: Point }
+            global bounds = Rect(Point(1, 2), Point(100, 50));
+        "#;
+        let lexer = Lexer::new(input, file_id);
+        let parser = grammar::ScriptParser::new();
+
+        let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+
+        let mut struct_registry = StructRegistry::default();
+        let struct_names =
+            struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+        struct_visitor::resolve_struct_fields(
+            &script,
+            &mut struct_registry,
+            &struct_names,
+            &mut diagnostics,
+        );
+        struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
+        let visitor = SymTabVisitor::new(
+            &CompileSettings {
+                available_fields: None,
+                enable_optimisations: false,
+                enable_prelude: false,
+            },
+            &mut script,
+            &struct_registry,
+            &mut diagnostics,
+        );
+
+        // Get the layout
+        let layout = visitor
+            .symtab
+            .get_struct_layout_by_name("bounds")
+            .expect("Should have layout");
+
+        // Should have 2 top-level fields (origin, size), both nested
+        assert_eq!(layout.fields.len(), 2);
+
+        // Both should be Nested layouts
+        for field in &layout.fields {
+            match field {
+                FieldAccessor::Nested(nested) => {
+                    // Each nested struct should have 2 fields (x, y)
+                    assert_eq!(nested.fields.len(), 2);
+                    for f in &nested.fields {
+                        match f {
+                            FieldAccessor::Global(_) => {} // Expected
+                            _ => panic!("Expected Global accessor in nested struct"),
+                        }
+                    }
+                }
+                _ => panic!("Expected Nested accessor for struct field"),
+            }
+        }
+
+        // Leaf accessors should give 4 globals
+        let leaves = layout.leaf_accessors();
+        assert_eq!(leaves.len(), 4);
+
+        // Verify global IDs are consecutive starting from base_global_id
+        let expansion = visitor
+            .symtab
+            .get_global_struct_expansion("bounds")
+            .expect("Should have expansion");
+
+        for (i, accessor) in leaves.iter().enumerate() {
+            match accessor {
+                FieldAccessor::Global(global_id) => {
+                    assert_eq!(global_id.0, expansion.base_global_id.0 + i);
+                }
+                _ => panic!("Expected Global accessor"),
+            }
+        }
+    }
+
+    #[test]
+    fn struct_layout_for_property_matches_struct_property_base() {
+        let file_id = FileId::new(0);
+        let input = r#"
+            struct Point { x: int, y: int }
+            property pos: Point;
+        "#;
+        let lexer = Lexer::new(input, file_id);
+        let parser = grammar::ScriptParser::new();
+
+        let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+
+        let mut struct_registry = StructRegistry::default();
+        let struct_names =
+            struct_visitor::register_structs(&script, &mut struct_registry, &mut diagnostics);
+        struct_visitor::resolve_struct_fields(
+            &script,
+            &mut struct_registry,
+            &struct_names,
+            &mut diagnostics,
+        );
+        struct_visitor::resolve_all_types(&mut script, &struct_names, &mut diagnostics);
+
+        let visitor = SymTabVisitor::new(
+            &CompileSettings {
+                available_fields: None,
+                enable_optimisations: false,
+                enable_prelude: false,
+            },
+            &mut script,
+            &struct_registry,
+            &mut diagnostics,
+        );
+
+        // Get the old representation
+        let base = visitor
+            .symtab
+            .get_struct_property_base("pos")
+            .expect("Should have property base");
+
+        // Get the new representation
+        let layout = visitor
+            .symtab
+            .get_struct_layout_by_name("pos")
+            .expect("Should have layout");
+
+        // Verify they match
+        assert_eq!(layout.struct_id, base.struct_id);
+
+        // The layout's leaf accessors should match the base's expanded indices
+        let leaf_accessors = layout.leaf_accessors();
+        assert_eq!(leaf_accessors.len(), base.expanded_indices.len());
+
+        for (i, accessor) in leaf_accessors.iter().enumerate() {
+            match accessor {
+                FieldAccessor::Property(idx) => {
+                    assert_eq!(*idx, base.expanded_indices[i]);
+                }
+                _ => panic!("Expected Property accessor, got {:?}", accessor),
+            }
+        }
     }
 }

@@ -8,46 +8,45 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_foldin
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.24 = int 5
-v.25 = temp.24
-temp.26 = v.25
-temp.27 = multiply_power_of_two(temp.26)
-temp.28 = v.25
-temp.29 = multiply_power_of_two_lhs(temp.28)
-temp.30 = temp.27 + temp.29
-temp.31 = v.25
-temp.32 = divide_power_of_two(temp.31)
-temp.33 = temp.30 + temp.32
-temp.34 = temp.33
-storeprop temp.34, 0
+temp.23 = int 5
+v.24 = temp.23
+temp.25 = v.24
+temp.26 = multiply_power_of_two(temp.25)
+temp.27 = v.24
+temp.28 = multiply_power_of_two_lhs(temp.27)
+temp.29 = temp.26 + temp.28
+temp.30 = v.24
+temp.31 = divide_power_of_two(temp.30)
+temp.32 = temp.29 + temp.31
+storeprop temp.32, 0
 return 
 
 =======================
 fn multiply_power_of_two(x.2) -> int
 
 ---- block 0 ----
-temp.35 = x.2
-temp.36 = int 8
-temp.37 = temp.35 * temp.36
-return temp.37
+temp.33 = x.2
+temp.34 = int 8
+temp.35 = temp.33 * temp.34
+return temp.35
 
 =======================
 fn multiply_power_of_two_lhs(x.3) -> int
 
 ---- block 0 ----
-temp.38 = int 4
-temp.39 = x.3
-temp.40 = temp.38 * temp.39
-return temp.40
+temp.36 = int 4
+temp.37 = x.3
+temp.38 = temp.36 * temp.37
+return temp.38
 
 =======================
 fn divide_power_of_two(x.4) -> int
 
 ---- block 0 ----
-temp.41 = x.4
-temp.42 = int 4
-temp.43 = temp.41 / temp.42
-return temp.43
+temp.39 = x.4
+temp.40 = int 4
+temp.41 = temp.39 / temp.40
+return temp.41
 
 
 ----------- copy_propagation -------------
@@ -55,46 +54,45 @@ return temp.43
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.24 = int 5
-v.25 = temp.24
-temp.26 = temp.24
-temp.27 = multiply_power_of_two(temp.24)
-temp.28 = temp.24
-temp.29 = multiply_power_of_two_lhs(temp.24)
-temp.30 = temp.27 + temp.29
-temp.31 = temp.24
-temp.32 = divide_power_of_two(temp.24)
-temp.33 = temp.30 + temp.32
-temp.34 = temp.33
-storeprop temp.33, 0
+temp.23 = int 5
+v.24 = temp.23
+temp.25 = temp.23
+temp.26 = multiply_power_of_two(temp.23)
+temp.27 = temp.23
+temp.28 = multiply_power_of_two_lhs(temp.23)
+temp.29 = temp.26 + temp.28
+temp.30 = temp.23
+temp.31 = divide_power_of_two(temp.23)
+temp.32 = temp.29 + temp.31
+storeprop temp.32, 0
 return 
 
 =======================
 fn multiply_power_of_two(x.2) -> int
 
 ---- block 0 ----
-temp.35 = x.2
-temp.36 = int 8
-temp.37 = x.2 * temp.36
-return temp.37
+temp.33 = x.2
+temp.34 = int 8
+temp.35 = x.2 * temp.34
+return temp.35
 
 =======================
 fn multiply_power_of_two_lhs(x.3) -> int
 
 ---- block 0 ----
-temp.38 = int 4
-temp.39 = x.3
-temp.40 = temp.38 * x.3
-return temp.40
+temp.36 = int 4
+temp.37 = x.3
+temp.38 = temp.36 * x.3
+return temp.38
 
 =======================
 fn divide_power_of_two(x.4) -> int
 
 ---- block 0 ----
-temp.41 = x.4
-temp.42 = int 4
-temp.43 = x.4 / temp.42
-return temp.43
+temp.39 = x.4
+temp.40 = int 4
+temp.41 = x.4 / temp.40
+return temp.41
 
 
 ----------- dead_store_elimination -------------
@@ -102,38 +100,38 @@ return temp.43
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.24 = int 5
-temp.27 = multiply_power_of_two(temp.24)
-temp.29 = multiply_power_of_two_lhs(temp.24)
-temp.30 = temp.27 + temp.29
-temp.32 = divide_power_of_two(temp.24)
-temp.33 = temp.30 + temp.32
-storeprop temp.33, 0
+temp.23 = int 5
+temp.26 = multiply_power_of_two(temp.23)
+temp.28 = multiply_power_of_two_lhs(temp.23)
+temp.29 = temp.26 + temp.28
+temp.31 = divide_power_of_two(temp.23)
+temp.32 = temp.29 + temp.31
+storeprop temp.32, 0
 return 
 
 =======================
 fn multiply_power_of_two(x.2) -> int
 
 ---- block 0 ----
-temp.36 = int 8
-temp.37 = x.2 * temp.36
-return temp.37
+temp.34 = int 8
+temp.35 = x.2 * temp.34
+return temp.35
 
 =======================
 fn multiply_power_of_two_lhs(x.3) -> int
 
 ---- block 0 ----
-temp.38 = int 4
-temp.40 = temp.38 * x.3
-return temp.40
+temp.36 = int 4
+temp.38 = temp.36 * x.3
+return temp.38
 
 =======================
 fn divide_power_of_two(x.4) -> int
 
 ---- block 0 ----
-temp.42 = int 4
-temp.43 = x.4 / temp.42
-return temp.43
+temp.40 = int 4
+temp.41 = x.4 / temp.40
+return temp.41
 
 
 ----------- constant_folding -------------
@@ -141,41 +139,41 @@ return temp.43
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.24 = int 5
-temp.27 = multiply_power_of_two(temp.24)
-temp.29 = multiply_power_of_two_lhs(temp.24)
-temp.30 = temp.27 + temp.29
-temp.32 = divide_power_of_two(temp.24)
-temp.33 = temp.30 + temp.32
-storeprop temp.33, 0
+temp.23 = int 5
+temp.26 = multiply_power_of_two(temp.23)
+temp.28 = multiply_power_of_two_lhs(temp.23)
+temp.29 = temp.26 + temp.28
+temp.31 = divide_power_of_two(temp.23)
+temp.32 = temp.29 + temp.31
+storeprop temp.32, 0
 return 
 
 =======================
 fn multiply_power_of_two(x.2) -> int
 
 ---- block 0 ----
-temp.36 = int 8
-temp.44 = int 3
-temp.37 = x.2 << temp.44
-return temp.37
+temp.34 = int 8
+temp.42 = int 3
+temp.35 = x.2 << temp.42
+return temp.35
 
 =======================
 fn multiply_power_of_two_lhs(x.3) -> int
 
 ---- block 0 ----
-temp.38 = int 4
-temp.45 = int 2
-temp.40 = x.3 << temp.45
-return temp.40
+temp.36 = int 4
+temp.43 = int 2
+temp.38 = x.3 << temp.43
+return temp.38
 
 =======================
 fn divide_power_of_two(x.4) -> int
 
 ---- block 0 ----
-temp.42 = int 4
-temp.46 = int 2
-temp.43 = x.4 >> temp.46
-return temp.43
+temp.40 = int 4
+temp.44 = int 2
+temp.41 = x.4 >> temp.44
+return temp.41
 
 
 ----------- dead_store_elimination -------------
@@ -183,35 +181,35 @@ return temp.43
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.24 = int 5
-temp.27 = multiply_power_of_two(temp.24)
-temp.29 = multiply_power_of_two_lhs(temp.24)
-temp.30 = temp.27 + temp.29
-temp.32 = divide_power_of_two(temp.24)
-temp.33 = temp.30 + temp.32
-storeprop temp.33, 0
+temp.23 = int 5
+temp.26 = multiply_power_of_two(temp.23)
+temp.28 = multiply_power_of_two_lhs(temp.23)
+temp.29 = temp.26 + temp.28
+temp.31 = divide_power_of_two(temp.23)
+temp.32 = temp.29 + temp.31
+storeprop temp.32, 0
 return 
 
 =======================
 fn multiply_power_of_two(x.2) -> int
 
 ---- block 0 ----
-temp.44 = int 3
-temp.37 = x.2 << temp.44
-return temp.37
+temp.42 = int 3
+temp.35 = x.2 << temp.42
+return temp.35
 
 =======================
 fn multiply_power_of_two_lhs(x.3) -> int
 
 ---- block 0 ----
-temp.45 = int 2
-temp.40 = x.3 << temp.45
-return temp.40
+temp.43 = int 2
+temp.38 = x.3 << temp.43
+return temp.38
 
 =======================
 fn divide_power_of_two(x.4) -> int
 
 ---- block 0 ----
-temp.46 = int 2
-temp.43 = x.4 >> temp.46
-return temp.43
+temp.44 = int 2
+temp.41 = x.4 >> temp.44
+return temp.41

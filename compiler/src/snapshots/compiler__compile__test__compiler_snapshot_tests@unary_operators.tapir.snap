@@ -3,36 +3,30 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/unary_operators.tapir
 ---
-00000000: loadk 1, 42
-00000002: neg 2, 1
-00000003: mov 1, 2
-00000004: setprop 1, 0
-00000005: loadk 1, 1
-00000007: not 2, 1
-00000008: mov 1, 2
-00000009: setprop 1, 1
-00000010: loadk 1, 255
-00000012: bitnot 2, 1
-00000013: mov 1, 2
-00000014: setprop 1, 0
-00000015: loadk 1, 10
-00000017: mov 2, 1
-00000018: mov 1, 2
-00000019: neg 2, 1
+00000000: loadk 2, 42
+00000002: neg 1, 2
+00000003: setprop 1, 0
+00000004: loadk 2, 1
+00000006: not 1, 2
+00000007: setprop 1, 1
+00000008: loadk 2, 255
+00000010: bitnot 1, 2
+00000011: setprop 1, 0
+00000012: loadk 2, 10
+00000014: mov 1, 2
+00000015: mov 2, 1
+00000016: neg 1, 2
+00000017: setprop 1, 0
+00000018: loadk 2, 0
 00000020: mov 1, 2
-00000021: setprop 1, 0
-00000022: loadk 1, 0
-00000024: mov 2, 1
-00000025: mov 1, 2
-00000026: not 2, 1
-00000027: mov 1, 2
-00000028: setprop 1, 1
-00000029: loadk 1, 255
-00000031: mov 2, 1
-00000032: mov 1, 2
-00000033: bitnot 2, 1
-00000034: mov 1, 2
-00000035: setprop 1, 0
-00000036: wait
-00000037: ret
-00000038: ret
+00000021: mov 2, 1
+00000022: not 1, 2
+00000023: setprop 1, 1
+00000024: loadk 2, 255
+00000026: mov 1, 2
+00000027: mov 2, 1
+00000028: bitnot 1, 2
+00000029: setprop 1, 0
+00000030: wait
+00000031: ret
+00000032: ret

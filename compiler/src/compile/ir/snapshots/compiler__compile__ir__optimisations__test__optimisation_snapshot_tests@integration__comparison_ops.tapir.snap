@@ -1,71 +1,68 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/integration/comparison_ops.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/comparison_ops.tapir
 ---
 ----------- before -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 3 ----
-getprop temp.31, 0
-a.32 = temp.31
-temp.33 = int 6
-b.34 = temp.33
-temp.35 = b.34
-temp.36 = a.32
-temp.37 = temp.35 > temp.36
-conditional_jump temp.37 0 1
+getprop temp.28, 0
+a.29 = temp.28
+temp.30 = int 6
+b.31 = temp.30
+temp.32 = b.31
+temp.33 = a.29
+temp.34 = temp.32 > temp.33
+conditional_jump temp.34 0 1
 
 ---- block 0 ----
-temp.38 = int 15
-temp.39 = black_box(temp.38)
-c.40 = temp.39
+temp.35 = int 15
+temp.36 = black_box(temp.35)
+c.37 = temp.36
 wait
-temp.41 = c.40
-temp.42 = temp.41
-storeprop temp.42, 0
+temp.38 = c.37
+storeprop temp.38, 0
 jmp 2
 
 ---- block 1 ----
 jmp 2
 
 ---- block 2 ----
-b.43 = φ(b.34 from 0, b.34 from 1)
-a.53 = φ(a.32 from 0, a.32 from 1)
-temp.44 = b.43
-getprop temp.45, 0
-temp.46 = temp.44 < temp.45
-conditional_jump temp.46 4 5
+b.39 = φ(b.31 from 0, b.31 from 1)
+a.48 = φ(a.29 from 0, a.29 from 1)
+temp.40 = b.39
+getprop temp.41, 0
+temp.42 = temp.40 < temp.41
+conditional_jump temp.42 4 5
 
 ---- block 4 ----
-temp.47 = int 20
-temp.48 = black_box(temp.47)
-c.49 = temp.48
+temp.43 = int 20
+temp.44 = black_box(temp.43)
+c.45 = temp.44
 wait
-temp.50 = c.49
-temp.51 = temp.50
-storeprop temp.51, 0
+temp.46 = c.45
+storeprop temp.46, 0
 jmp 6
 
 ---- block 5 ----
 jmp 6
 
 ---- block 6 ----
-a.52 = φ(a.53 from 4, a.53 from 5)
-temp.54 = a.52
-getprop temp.55, 0
-temp.56 = temp.54 != temp.55
-conditional_jump temp.56 7 8
+a.47 = φ(a.48 from 4, a.48 from 5)
+temp.49 = a.47
+getprop temp.50, 0
+temp.51 = temp.49 != temp.50
+conditional_jump temp.51 7 8
 
 ---- block 7 ----
-temp.57 = int 30
-temp.58 = black_box(temp.57)
-c.59 = temp.58
+temp.52 = int 30
+temp.53 = black_box(temp.52)
+c.54 = temp.53
 wait
-temp.60 = c.59
-temp.61 = temp.60
-storeprop temp.61, 0
+temp.55 = c.54
+storeprop temp.55, 0
 jmp 9
 
 ---- block 8 ----
@@ -78,8 +75,8 @@ return
 fn black_box(x.6) -> int
 
 ---- block 0 ----
-temp.62 = x.6
-return temp.62
+temp.56 = x.6
+return temp.56
 
 
 ----------- empty_phi -------------
@@ -87,61 +84,58 @@ return temp.62
 fn @toplevel() -> 
 
 ---- block 3 ----
-getprop temp.31, 0
-a.32 = temp.31
-temp.33 = int 6
-b.34 = temp.33
-temp.35 = b.34
-temp.36 = a.32
-temp.37 = temp.35 > temp.36
-conditional_jump temp.37 0 1
+getprop temp.28, 0
+a.29 = temp.28
+temp.30 = int 6
+b.31 = temp.30
+temp.32 = b.31
+temp.33 = a.29
+temp.34 = temp.32 > temp.33
+conditional_jump temp.34 0 1
 
 ---- block 0 ----
-temp.38 = int 15
-temp.39 = black_box(temp.38)
-c.40 = temp.39
+temp.35 = int 15
+temp.36 = black_box(temp.35)
+c.37 = temp.36
 wait
-temp.41 = c.40
-temp.42 = temp.41
-storeprop temp.42, 0
+temp.38 = c.37
+storeprop temp.38, 0
 jmp 2
 
 ---- block 1 ----
 jmp 2
 
 ---- block 2 ----
-temp.44 = b.34
-getprop temp.45, 0
-temp.46 = temp.44 < temp.45
-conditional_jump temp.46 4 5
+temp.40 = b.31
+getprop temp.41, 0
+temp.42 = temp.40 < temp.41
+conditional_jump temp.42 4 5
 
 ---- block 4 ----
-temp.47 = int 20
-temp.48 = black_box(temp.47)
-c.49 = temp.48
+temp.43 = int 20
+temp.44 = black_box(temp.43)
+c.45 = temp.44
 wait
-temp.50 = c.49
-temp.51 = temp.50
-storeprop temp.51, 0
+temp.46 = c.45
+storeprop temp.46, 0
 jmp 6
 
 ---- block 5 ----
 jmp 6
 
 ---- block 6 ----
-temp.54 = a.32
-getprop temp.55, 0
-temp.56 = temp.54 != temp.55
-conditional_jump temp.56 7 8
+temp.49 = a.29
+getprop temp.50, 0
+temp.51 = temp.49 != temp.50
+conditional_jump temp.51 7 8
 
 ---- block 7 ----
-temp.57 = int 30
-temp.58 = black_box(temp.57)
-c.59 = temp.58
+temp.52 = int 30
+temp.53 = black_box(temp.52)
+c.54 = temp.53
 wait
-temp.60 = c.59
-temp.61 = temp.60
-storeprop temp.61, 0
+temp.55 = c.54
+storeprop temp.55, 0
 jmp 9
 
 ---- block 8 ----
@@ -154,8 +148,8 @@ return
 fn black_box(x.6) -> int
 
 ---- block 0 ----
-temp.62 = x.6
-return temp.62
+temp.56 = x.6
+return temp.56
 
 
 ----------- copy_propagation -------------
@@ -163,61 +157,58 @@ return temp.62
 fn @toplevel() -> 
 
 ---- block 3 ----
-getprop temp.31, 0
-a.32 = temp.31
-temp.33 = int 6
-b.34 = temp.33
-temp.35 = temp.33
-temp.36 = temp.31
-temp.37 = temp.33 > temp.31
-conditional_jump temp.37 0 1
+getprop temp.28, 0
+a.29 = temp.28
+temp.30 = int 6
+b.31 = temp.30
+temp.32 = temp.30
+temp.33 = temp.28
+temp.34 = temp.30 > temp.28
+conditional_jump temp.34 0 1
 
 ---- block 0 ----
-temp.38 = int 15
-temp.39 = black_box(temp.38)
-c.40 = temp.39
+temp.35 = int 15
+temp.36 = black_box(temp.35)
+c.37 = temp.36
 wait
-temp.41 = temp.39
-temp.42 = temp.39
-storeprop temp.39, 0
+temp.38 = temp.36
+storeprop temp.36, 0
 jmp 2
 
 ---- block 1 ----
 jmp 2
 
 ---- block 2 ----
-temp.44 = temp.33
-getprop temp.45, 0
-temp.46 = temp.33 < temp.45
-conditional_jump temp.46 4 5
+temp.40 = temp.30
+getprop temp.41, 0
+temp.42 = temp.30 < temp.41
+conditional_jump temp.42 4 5
 
 ---- block 4 ----
-temp.47 = int 20
-temp.48 = black_box(temp.47)
-c.49 = temp.48
+temp.43 = int 20
+temp.44 = black_box(temp.43)
+c.45 = temp.44
 wait
-temp.50 = temp.48
-temp.51 = temp.48
-storeprop temp.48, 0
+temp.46 = temp.44
+storeprop temp.44, 0
 jmp 6
 
 ---- block 5 ----
 jmp 6
 
 ---- block 6 ----
-temp.54 = temp.31
-getprop temp.55, 0
-temp.56 = temp.31 != temp.55
-conditional_jump temp.56 7 8
+temp.49 = temp.28
+getprop temp.50, 0
+temp.51 = temp.28 != temp.50
+conditional_jump temp.51 7 8
 
 ---- block 7 ----
-temp.57 = int 30
-temp.58 = black_box(temp.57)
-c.59 = temp.58
+temp.52 = int 30
+temp.53 = black_box(temp.52)
+c.54 = temp.53
 wait
-temp.60 = temp.58
-temp.61 = temp.58
-storeprop temp.58, 0
+temp.55 = temp.53
+storeprop temp.53, 0
 jmp 9
 
 ---- block 8 ----
@@ -230,7 +221,7 @@ return
 fn black_box(x.6) -> int
 
 ---- block 0 ----
-temp.62 = x.6
+temp.56 = x.6
 return x.6
 
 
@@ -239,46 +230,46 @@ return x.6
 fn @toplevel() -> 
 
 ---- block 3 ----
-getprop temp.31, 0
-temp.33 = int 6
-temp.37 = temp.33 > temp.31
-conditional_jump temp.37 0 1
+getprop temp.28, 0
+temp.30 = int 6
+temp.34 = temp.30 > temp.28
+conditional_jump temp.34 0 1
 
 ---- block 0 ----
-temp.38 = int 15
-temp.39 = black_box(temp.38)
+temp.35 = int 15
+temp.36 = black_box(temp.35)
 wait
-storeprop temp.39, 0
+storeprop temp.36, 0
 jmp 2
 
 ---- block 1 ----
 jmp 2
 
 ---- block 2 ----
-getprop temp.45, 0
-temp.46 = temp.33 < temp.45
-conditional_jump temp.46 4 5
+getprop temp.41, 0
+temp.42 = temp.30 < temp.41
+conditional_jump temp.42 4 5
 
 ---- block 4 ----
-temp.47 = int 20
-temp.48 = black_box(temp.47)
+temp.43 = int 20
+temp.44 = black_box(temp.43)
 wait
-storeprop temp.48, 0
+storeprop temp.44, 0
 jmp 6
 
 ---- block 5 ----
 jmp 6
 
 ---- block 6 ----
-getprop temp.55, 0
-temp.56 = temp.31 != temp.55
-conditional_jump temp.56 7 8
+getprop temp.50, 0
+temp.51 = temp.28 != temp.50
+conditional_jump temp.51 7 8
 
 ---- block 7 ----
-temp.57 = int 30
-temp.58 = black_box(temp.57)
+temp.52 = int 30
+temp.53 = black_box(temp.52)
 wait
-storeprop temp.58, 0
+storeprop temp.53, 0
 jmp 9
 
 ---- block 8 ----
@@ -299,40 +290,40 @@ return x.6
 fn @toplevel() -> 
 
 ---- block 3 ----
-getprop temp.31, 0
-temp.33 = int 6
-temp.37 = temp.33 > temp.31
-conditional_jump temp.37 0 2
+getprop temp.28, 0
+temp.30 = int 6
+temp.34 = temp.30 > temp.28
+conditional_jump temp.34 0 2
 
 ---- block 0 ----
-temp.38 = int 15
-temp.39 = black_box(temp.38)
+temp.35 = int 15
+temp.36 = black_box(temp.35)
 wait
-storeprop temp.39, 0
+storeprop temp.36, 0
 jmp 2
 
 ---- block 2 ----
-getprop temp.45, 0
-temp.46 = temp.33 < temp.45
-conditional_jump temp.46 4 6
+getprop temp.41, 0
+temp.42 = temp.30 < temp.41
+conditional_jump temp.42 4 6
 
 ---- block 4 ----
-temp.47 = int 20
-temp.48 = black_box(temp.47)
+temp.43 = int 20
+temp.44 = black_box(temp.43)
 wait
-storeprop temp.48, 0
+storeprop temp.44, 0
 jmp 6
 
 ---- block 6 ----
-getprop temp.55, 0
-temp.56 = temp.31 != temp.55
-conditional_jump temp.56 7 9
+getprop temp.50, 0
+temp.51 = temp.28 != temp.50
+conditional_jump temp.51 7 9
 
 ---- block 7 ----
-temp.57 = int 30
-temp.58 = black_box(temp.57)
+temp.52 = int 30
+temp.53 = black_box(temp.52)
 wait
-storeprop temp.58, 0
+storeprop temp.53, 0
 return 
 
 ---- block 9 ----

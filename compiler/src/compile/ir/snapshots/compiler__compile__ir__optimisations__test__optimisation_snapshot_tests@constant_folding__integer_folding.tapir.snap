@@ -1,30 +1,29 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/integer_folding.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_folding/integer_folding.tapir
 ---
 ----------- before -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 5
-x.18 = temp.17
-temp.19 = int 9
-y.20 = temp.19
-temp.21 = x.18
-temp.22 = int 6
-temp.23 = temp.21 + temp.22
-z.24 = temp.23
-temp.25 = y.20
-temp.26 = int 9
-temp.27 = temp.25 + temp.26
-w.28 = temp.27
-temp.29 = z.24
-temp.30 = w.28
-temp.31 = temp.29 + temp.30
-temp.32 = temp.31
-storeprop temp.32, 0
+temp.16 = int 5
+x.17 = temp.16
+temp.18 = int 9
+y.19 = temp.18
+temp.20 = x.17
+temp.21 = int 6
+temp.22 = temp.20 + temp.21
+z.23 = temp.22
+temp.24 = y.19
+temp.25 = int 9
+temp.26 = temp.24 + temp.25
+w.27 = temp.26
+temp.28 = z.23
+temp.29 = w.27
+temp.30 = temp.28 + temp.29
+storeprop temp.30, 0
 return 
 
 
@@ -33,23 +32,22 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 5
-x.18 = temp.17
-temp.19 = int 9
-y.20 = temp.19
-temp.21 = temp.17
-temp.22 = int 6
-temp.23 = temp.17 + temp.22
-z.24 = temp.23
-temp.25 = temp.19
-temp.26 = int 9
-temp.27 = temp.19 + temp.26
-w.28 = temp.27
-temp.29 = temp.23
-temp.30 = temp.27
-temp.31 = temp.23 + temp.27
-temp.32 = temp.31
-storeprop temp.31, 0
+temp.16 = int 5
+x.17 = temp.16
+temp.18 = int 9
+y.19 = temp.18
+temp.20 = temp.16
+temp.21 = int 6
+temp.22 = temp.16 + temp.21
+z.23 = temp.22
+temp.24 = temp.18
+temp.25 = int 9
+temp.26 = temp.18 + temp.25
+w.27 = temp.26
+temp.28 = temp.22
+temp.29 = temp.26
+temp.30 = temp.22 + temp.26
+storeprop temp.30, 0
 return 
 
 
@@ -58,14 +56,14 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 5
-temp.19 = int 9
-temp.22 = int 6
-temp.23 = temp.17 + temp.22
-temp.26 = int 9
-temp.27 = temp.19 + temp.26
-temp.31 = temp.23 + temp.27
-storeprop temp.31, 0
+temp.16 = int 5
+temp.18 = int 9
+temp.21 = int 6
+temp.22 = temp.16 + temp.21
+temp.25 = int 9
+temp.26 = temp.18 + temp.25
+temp.30 = temp.22 + temp.26
+storeprop temp.30, 0
 return 
 
 
@@ -74,14 +72,14 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.17 = int 5
-temp.19 = int 9
-temp.22 = int 6
-temp.23 = int 11
-temp.26 = int 9
-temp.27 = int 18
-temp.31 = temp.23 + temp.27
-storeprop temp.31, 0
+temp.16 = int 5
+temp.18 = int 9
+temp.21 = int 6
+temp.22 = int 11
+temp.25 = int 9
+temp.26 = int 18
+temp.30 = temp.22 + temp.26
+storeprop temp.30, 0
 return 
 
 
@@ -90,10 +88,10 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.23 = int 11
-temp.27 = int 18
-temp.31 = temp.23 + temp.27
-storeprop temp.31, 0
+temp.22 = int 11
+temp.26 = int 18
+temp.30 = temp.22 + temp.26
+storeprop temp.30, 0
 return 
 
 
@@ -102,10 +100,10 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.23 = int 11
-temp.27 = int 18
-temp.31 = int 29
-storeprop temp.31, 0
+temp.22 = int 11
+temp.26 = int 18
+temp.30 = int 29
+storeprop temp.30, 0
 return 
 
 
@@ -114,6 +112,6 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.31 = int 29
-storeprop temp.31, 0
+temp.30 = int 29
+storeprop temp.30, 0
 return

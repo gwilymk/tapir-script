@@ -4,7 +4,7 @@ use crate::{
         OperatorOverloadInfo, SymbolId,
     },
     compile::{
-        symtab_visitor::{FunctionArgumentSymbols, GlobalId, SymTab},
+        symtab_visitor::{FieldAccessor, FunctionArgumentSymbols, GlobalId, StructLayout, SymTab},
         type_visitor::{CallReturnInfo, FieldAccessInfo, FieldAssignmentInfo},
     },
     types::{StructRegistry, Type},
@@ -351,32 +351,8 @@ impl<'a> BlockVisitor<'a> {
                             self.copy_struct_fields(&temp_expansion, &target_expansion, symtab);
                         }
                     } else {
-                        // Scalar assignment
-                        let is_property = symtab.get_property(target_symbol).is_some();
-                        let global_id = GlobalId::from_symbol_id(target_symbol);
-
-                        let expr_target = if is_property || global_id.is_some() {
-                            symtab.new_temporary()
-                        } else {
-                            target_symbol
-                        };
-
-                        self.current_block.push(TapIr::Move {
-                            target: expr_target,
-                            source: temp,
-                        });
-
-                        if let Some(property) = symtab.get_property(target_symbol) {
-                            self.current_block.push(TapIr::StoreProp {
-                                prop_index: property.index,
-                                value: expr_target,
-                            });
-                        } else if let Some(global_id) = global_id {
-                            self.current_block.push(TapIr::SetGlobal {
-                                global_index: global_id.0,
-                                value: expr_target,
-                            });
-                        }
+                        // Scalar assignment to any storage class
+                        self.emit_store_symbol(target_symbol, temp, symtab);
                     }
                 }
             }
@@ -584,18 +560,7 @@ impl<'a> BlockVisitor<'a> {
             }
             ast::ExpressionKind::Variable(_) => {
                 let source = *expr.meta.get().expect("Should've resolved variable");
-                if let Some(property) = symtab.get_property(source) {
-                    self.current_block.push(TapIr::GetProp {
-                        target: target_symbol,
-                        prop_index: property.index,
-                    });
-                } else if let Some(global_id) = GlobalId::from_symbol_id(source) {
-                    self.current_block.push(TapIr::GetGlobal {
-                        target: target_symbol,
-                        global_index: global_id.0,
-                    });
-                } else if let Some(source_expansion) = symtab.get_struct_expansion(source).cloned()
-                {
+                if let Some(source_expansion) = symtab.get_struct_expansion(source).cloned() {
                     // Struct-typed variable: copy all fields to target's expansion
                     let target_name = symtab.name_for_symbol(target_symbol).to_string();
                     let target_expansion = symtab.expand_struct_symbol(
@@ -608,10 +573,8 @@ impl<'a> BlockVisitor<'a> {
 
                     self.copy_struct_fields(&source_expansion, &target_expansion, symtab);
                 } else {
-                    self.current_block.push(TapIr::Move {
-                        target: target_symbol,
-                        source,
-                    });
+                    // Scalar: load from any storage class (property, global, or local)
+                    self.emit_load_symbol(target_symbol, source, symtab);
                 }
             }
             ast::ExpressionKind::BinaryOperation { lhs, operator, rhs } => {
@@ -1100,6 +1063,136 @@ impl<'a> BlockVisitor<'a> {
                     target: target_field,
                     source: source_field,
                 });
+            }
+        }
+    }
+
+    /// Unified struct copy using StructLayout.
+    /// Copies all fields from source layout to destination layout,
+    /// handling all 9 storage class combinations uniformly.
+    fn copy_struct_layout(&mut self, src: &StructLayout, dst: &StructLayout, symtab: &mut SymTab) {
+        debug_assert_eq!(
+            src.struct_id, dst.struct_id,
+            "Source and destination must have same struct type"
+        );
+        debug_assert_eq!(
+            src.fields.len(),
+            dst.fields.len(),
+            "Source and destination must have same number of fields"
+        );
+
+        for (src_field, dst_field) in src.fields.iter().zip(&dst.fields) {
+            self.copy_field_accessor(src_field, dst_field, symtab);
+        }
+    }
+
+    /// Load a scalar value from a symbol into a target local.
+    /// Dispatches based on the source symbol's storage class.
+    fn emit_load_symbol(&mut self, target: SymbolId, source: SymbolId, symtab: &SymTab) {
+        if let Some(property) = symtab.get_property(source) {
+            self.current_block.push(TapIr::GetProp {
+                target,
+                prop_index: property.index,
+            });
+        } else if let Some(global_id) = GlobalId::from_symbol_id(source) {
+            self.current_block.push(TapIr::GetGlobal {
+                target,
+                global_index: global_id.0,
+            });
+        } else {
+            self.current_block.push(TapIr::Move {
+                target,
+                source,
+            });
+        }
+    }
+
+    /// Store a value into a symbol.
+    /// Dispatches based on the destination symbol's storage class.
+    fn emit_store_symbol(&mut self, dest: SymbolId, value: SymbolId, symtab: &SymTab) {
+        if let Some(property) = symtab.get_property(dest) {
+            self.current_block.push(TapIr::StoreProp {
+                prop_index: property.index,
+                value,
+            });
+        } else if let Some(global_id) = GlobalId::from_symbol_id(dest) {
+            self.current_block.push(TapIr::SetGlobal {
+                global_index: global_id.0,
+                value,
+            });
+        } else {
+            self.current_block.push(TapIr::Move {
+                target: dest,
+                source: value,
+            });
+        }
+    }
+
+    /// Load a scalar value from a FieldAccessor into a local symbol.
+    fn emit_load(&mut self, target: SymbolId, src: &FieldAccessor) {
+        match src {
+            FieldAccessor::Local(sym) => {
+                self.current_block.push(TapIr::Move {
+                    target,
+                    source: *sym,
+                });
+            }
+            FieldAccessor::Property(idx) => {
+                self.current_block.push(TapIr::GetProp {
+                    target,
+                    prop_index: *idx,
+                });
+            }
+            FieldAccessor::Global(id) => {
+                self.current_block.push(TapIr::GetGlobal {
+                    target,
+                    global_index: id.0,
+                });
+            }
+            FieldAccessor::Nested(_) => panic!("Cannot load nested struct as scalar"),
+        }
+    }
+
+    /// Store a local symbol value into a FieldAccessor.
+    fn emit_store(&mut self, dst: &FieldAccessor, value: SymbolId) {
+        match dst {
+            FieldAccessor::Local(sym) => {
+                self.current_block.push(TapIr::Move {
+                    target: *sym,
+                    source: value,
+                });
+            }
+            FieldAccessor::Property(idx) => {
+                self.current_block.push(TapIr::StoreProp {
+                    prop_index: *idx,
+                    value,
+                });
+            }
+            FieldAccessor::Global(id) => {
+                self.current_block.push(TapIr::SetGlobal {
+                    global_index: id.0,
+                    value,
+                });
+            }
+            FieldAccessor::Nested(_) => panic!("Cannot store scalar into nested struct"),
+        }
+    }
+
+    /// Copy a single field accessor from source to destination.
+    fn copy_field_accessor(
+        &mut self,
+        src: &FieldAccessor,
+        dst: &FieldAccessor,
+        symtab: &mut SymTab,
+    ) {
+        match (src, dst) {
+            (FieldAccessor::Nested(src_nested), FieldAccessor::Nested(dst_nested)) => {
+                self.copy_struct_layout(src_nested, dst_nested, symtab);
+            }
+            _ => {
+                let temp = symtab.new_temporary();
+                self.emit_load(temp, src);
+                self.emit_store(dst, temp);
             }
         }
     }

@@ -8,31 +8,30 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/str
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.3.x.28 = temp.26
-temp.3.y.29 = temp.27
-p.x.30 = temp.3.x.28
-p.y.31 = temp.3.y.29
-temp.11.x.32 = p.x.30
-temp.11.y.33 = p.y.31
-temp.34 = add_coordinates(temp.11.x.32, temp.11.y.33)
-temp.35 = temp.34
-storeprop temp.35, 0
+temp.25 = int 5
+temp.26 = int 10
+temp.3.x.27 = temp.25
+temp.3.y.28 = temp.26
+p.x.29 = temp.3.x.27
+p.y.30 = temp.3.y.28
+temp.11.x.31 = p.x.29
+temp.11.y.32 = p.y.30
+temp.33 = add_coordinates(temp.11.x.31, temp.11.y.32)
+storeprop temp.33, 0
 return 
 
 =======================
-fn add_coordinates(p.x.15, p.y.16) -> int
+fn add_coordinates(p.x.14, p.y.15) -> int
 
 ---- block 0 ----
-temp.20.x.36 = p.x.15
-temp.20.y.37 = p.y.16
-temp.38 = temp.20.x.36
-temp.23.x.39 = p.x.15
-temp.23.y.40 = p.y.16
-temp.41 = temp.23.y.40
-temp.42 = temp.38 + temp.41
-return temp.42
+temp.19.x.34 = p.x.14
+temp.19.y.35 = p.y.15
+temp.36 = temp.19.x.34
+temp.22.x.37 = p.x.14
+temp.22.y.38 = p.y.15
+temp.39 = temp.22.y.38
+temp.40 = temp.36 + temp.39
+return temp.40
 
 
 ----------- copy_propagation -------------
@@ -40,31 +39,30 @@ return temp.42
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.3.x.28 = temp.26
-temp.3.y.29 = temp.27
-p.x.30 = temp.26
-p.y.31 = temp.27
-temp.11.x.32 = temp.26
-temp.11.y.33 = temp.27
-temp.34 = add_coordinates(temp.26, temp.27)
-temp.35 = temp.34
-storeprop temp.34, 0
+temp.25 = int 5
+temp.26 = int 10
+temp.3.x.27 = temp.25
+temp.3.y.28 = temp.26
+p.x.29 = temp.25
+p.y.30 = temp.26
+temp.11.x.31 = temp.25
+temp.11.y.32 = temp.26
+temp.33 = add_coordinates(temp.25, temp.26)
+storeprop temp.33, 0
 return 
 
 =======================
-fn add_coordinates(p.x.15, p.y.16) -> int
+fn add_coordinates(p.x.14, p.y.15) -> int
 
 ---- block 0 ----
-temp.20.x.36 = p.x.15
-temp.20.y.37 = p.y.16
-temp.38 = p.x.15
-temp.23.x.39 = p.x.15
-temp.23.y.40 = p.y.16
-temp.41 = p.y.16
-temp.42 = p.x.15 + p.y.16
-return temp.42
+temp.19.x.34 = p.x.14
+temp.19.y.35 = p.y.15
+temp.36 = p.x.14
+temp.22.x.37 = p.x.14
+temp.22.y.38 = p.y.15
+temp.39 = p.y.15
+temp.40 = p.x.14 + p.y.15
+return temp.40
 
 
 ----------- dead_store_elimination -------------
@@ -72,18 +70,18 @@ return temp.42
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.34 = add_coordinates(temp.26, temp.27)
-storeprop temp.34, 0
+temp.25 = int 5
+temp.26 = int 10
+temp.33 = add_coordinates(temp.25, temp.26)
+storeprop temp.33, 0
 return 
 
 =======================
-fn add_coordinates(p.x.15, p.y.16) -> int
+fn add_coordinates(p.x.14, p.y.15) -> int
 
 ---- block 0 ----
-temp.42 = p.x.15 + p.y.16
-return temp.42
+temp.40 = p.x.14 + p.y.15
+return temp.40
 
 
 ----------- inline_small_functions -------------
@@ -91,29 +89,29 @@ return temp.42
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
+temp.25 = int 5
+temp.26 = int 10
 jmp 2
 
 ---- block 2 ----
-temp.44 = temp.26 + temp.27
+temp.42 = temp.25 + temp.26
 jmp 4
 
 ---- block 4 ----
-temp.43 = φ(temp.44 from 2)
-temp.34 = temp.43
+temp.41 = φ(temp.42 from 2)
+temp.33 = temp.41
 jmp 1
 
 ---- block 1 ----
-storeprop temp.34, 0
+storeprop temp.33, 0
 return 
 
 =======================
-fn add_coordinates(p.x.15, p.y.16) -> int
+fn add_coordinates(p.x.14, p.y.15) -> int
 
 ---- block 0 ----
-temp.42 = p.x.15 + p.y.16
-return temp.42
+temp.40 = p.x.14 + p.y.15
+return temp.40
 
 
 ----------- remove_unreferenced_functions -------------
@@ -121,21 +119,21 @@ return temp.42
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
+temp.25 = int 5
+temp.26 = int 10
 jmp 2
 
 ---- block 2 ----
-temp.44 = temp.26 + temp.27
+temp.42 = temp.25 + temp.26
 jmp 4
 
 ---- block 4 ----
-temp.43 = φ(temp.44 from 2)
-temp.34 = temp.43
+temp.41 = φ(temp.42 from 2)
+temp.33 = temp.41
 jmp 1
 
 ---- block 1 ----
-storeprop temp.34, 0
+storeprop temp.33, 0
 return 
 
 
@@ -144,20 +142,20 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
+temp.25 = int 5
+temp.26 = int 10
 jmp 2
 
 ---- block 2 ----
-temp.44 = temp.26 + temp.27
+temp.42 = temp.25 + temp.26
 jmp 4
 
 ---- block 4 ----
-temp.34 = temp.44
+temp.33 = temp.42
 jmp 1
 
 ---- block 1 ----
-storeprop temp.34, 0
+storeprop temp.33, 0
 return 
 
 
@@ -166,17 +164,17 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.44 = temp.26 + temp.27
+temp.25 = int 5
+temp.26 = int 10
+temp.42 = temp.25 + temp.26
 jmp 2
 
 ---- block 2 ----
-temp.34 = temp.44
+temp.33 = temp.42
 jmp 4
 
 ---- block 4 ----
-storeprop temp.34, 0
+storeprop temp.33, 0
 jmp 1
 
 ---- block 1 ----
@@ -188,17 +186,17 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.44 = temp.26 + temp.27
+temp.25 = int 5
+temp.26 = int 10
+temp.42 = temp.25 + temp.26
 jmp 2
 
 ---- block 2 ----
-temp.34 = temp.44
+temp.33 = temp.42
 jmp 4
 
 ---- block 4 ----
-storeprop temp.44, 0
+storeprop temp.42, 0
 jmp 1
 
 ---- block 1 ----
@@ -210,16 +208,16 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.44 = temp.26 + temp.27
+temp.25 = int 5
+temp.26 = int 10
+temp.42 = temp.25 + temp.26
 jmp 2
 
 ---- block 2 ----
 jmp 4
 
 ---- block 4 ----
-storeprop temp.44, 0
+storeprop temp.42, 0
 jmp 1
 
 ---- block 1 ----
@@ -231,16 +229,16 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.44 = int 15
+temp.25 = int 5
+temp.26 = int 10
+temp.42 = int 15
 jmp 2
 
 ---- block 2 ----
 jmp 4
 
 ---- block 4 ----
-storeprop temp.44, 0
+storeprop temp.42, 0
 jmp 1
 
 ---- block 1 ----
@@ -252,13 +250,13 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.44 = int 15
+temp.25 = int 5
+temp.26 = int 10
+temp.42 = int 15
 jmp 4
 
 ---- block 4 ----
-storeprop temp.44, 0
+storeprop temp.42, 0
 return 
 
 
@@ -267,10 +265,10 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.26 = int 5
-temp.27 = int 10
-temp.44 = int 15
-storeprop temp.44, 0
+temp.25 = int 5
+temp.26 = int 10
+temp.42 = int 15
+storeprop temp.42, 0
 jmp 4
 
 ---- block 4 ----
@@ -282,8 +280,8 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.44 = int 15
-storeprop temp.44, 0
+temp.42 = int 15
+storeprop temp.42, 0
 jmp 4
 
 ---- block 4 ----
@@ -295,6 +293,6 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.44 = int 15
-storeprop temp.44, 0
+temp.42 = int 15
+storeprop temp.42, 0
 return

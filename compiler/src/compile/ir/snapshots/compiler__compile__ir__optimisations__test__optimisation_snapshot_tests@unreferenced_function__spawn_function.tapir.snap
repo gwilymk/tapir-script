@@ -8,25 +8,24 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/unreferenced_fu
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.8 = int 5
-temp.9 = spawn spawned(temp.8)
+temp.7 = int 5
+temp.8 = spawn spawned(temp.7)
 return 
 
 =======================
 fn foo(x.1) -> int
 
 ---- block 0 ----
-temp.10 = x.1
-return temp.10
+temp.9 = x.1
+return temp.9
 
 =======================
 fn spawned(x.2) -> 
 
 ---- block 0 ----
 wait
-temp.11 = x.2
-temp.12 = temp.11
-storeprop temp.12, 0
+temp.10 = x.2
+storeprop temp.10, 0
 return 
 
 
@@ -35,8 +34,8 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.8 = int 5
-temp.9 = spawn spawned(temp.8)
+temp.7 = int 5
+temp.8 = spawn spawned(temp.7)
 return 
 
 =======================
@@ -44,7 +43,6 @@ fn spawned(x.2) ->
 
 ---- block 0 ----
 wait
-temp.11 = x.2
-temp.12 = temp.11
-storeprop temp.12, 0
+temp.10 = x.2
+storeprop temp.10, 0
 return

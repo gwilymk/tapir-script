@@ -8,27 +8,27 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/str
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
-sum.45 = temp.44
+temp.43 = int 0
+sum.44 = temp.43
+temp.45 = int 1
 temp.46 = int 1
-temp.47 = int 1
-temp.5.x.48 = temp.46
-temp.5.y.49 = temp.47
-p.x.50 = temp.5.x.48
-p.y.51 = temp.5.y.49
-temp.52 = int 0
-i.53 = temp.52
+temp.5.x.47 = temp.45
+temp.5.y.48 = temp.46
+p.x.49 = temp.5.x.47
+p.y.50 = temp.5.y.48
+temp.51 = int 0
+i.52 = temp.51
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(i.53 from 2, i.88 from 5)
-sum.58 = φ(sum.45 from 2, sum.72 from 5)
-p.x.62 = φ(p.x.50 from 2, p.x.78 from 5)
-p.y.64 = φ(p.y.51 from 2, p.y.84 from 5)
-temp.55 = i.54
-temp.56 = int 5
-temp.57 = temp.55 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(i.52 from 2, i.86 from 5)
+sum.57 = φ(sum.44 from 2, sum.70 from 5)
+p.x.60 = φ(p.x.49 from 2, p.x.76 from 5)
+p.y.62 = φ(p.y.50 from 2, p.y.82 from 5)
+temp.54 = i.53
+temp.55 = int 5
+temp.56 = temp.54 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
 jmp 1
@@ -37,38 +37,37 @@ jmp 1
 jmp 5
 
 ---- block 1 ----
-temp.59 = sum.58
-temp.60 = temp.59
-storeprop temp.60, 0
+temp.58 = sum.57
+storeprop temp.58, 0
 return 
 
 ---- block 5 ----
-temp.61 = sum.58
-temp.21.x.63 = p.x.62
-temp.21.y.65 = p.y.64
-temp.66 = temp.21.x.63
-temp.67 = temp.61 + temp.66
-temp.24.x.68 = p.x.62
-temp.24.y.69 = p.y.64
-temp.70 = temp.24.y.69
-temp.71 = temp.67 + temp.70
-sum.72 = temp.71
-temp.30.x.73 = p.x.62
-temp.30.y.74 = p.y.64
-temp.75 = temp.30.x.73
-temp.76 = int 1
-temp.77 = temp.75 + temp.76
-p.x.78 = temp.77
-temp.36.x.79 = p.x.78
-temp.36.y.80 = p.y.64
-temp.81 = temp.36.y.80
-temp.82 = int 1
-temp.83 = temp.81 + temp.82
-p.y.84 = temp.83
-temp.85 = i.54
-temp.86 = int 1
-temp.87 = temp.85 + temp.86
-i.88 = temp.87
+temp.59 = sum.57
+temp.21.x.61 = p.x.60
+temp.21.y.63 = p.y.62
+temp.64 = temp.21.x.61
+temp.65 = temp.59 + temp.64
+temp.24.x.66 = p.x.60
+temp.24.y.67 = p.y.62
+temp.68 = temp.24.y.67
+temp.69 = temp.65 + temp.68
+sum.70 = temp.69
+temp.30.x.71 = p.x.60
+temp.30.y.72 = p.y.62
+temp.73 = temp.30.x.71
+temp.74 = int 1
+temp.75 = temp.73 + temp.74
+p.x.76 = temp.75
+temp.36.x.77 = p.x.76
+temp.36.y.78 = p.y.62
+temp.79 = temp.36.y.78
+temp.80 = int 1
+temp.81 = temp.79 + temp.80
+p.y.82 = temp.81
+temp.83 = i.53
+temp.84 = int 1
+temp.85 = temp.83 + temp.84
+i.86 = temp.85
 jmp 0
 
 
@@ -77,61 +76,60 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
-sum.45 = temp.44
+temp.43 = int 0
+sum.44 = temp.43
+temp.45 = int 1
 temp.46 = int 1
-temp.47 = int 1
-temp.5.x.48 = temp.46
-temp.5.y.49 = temp.47
-p.x.50 = temp.5.x.48
-p.y.51 = temp.5.y.49
-temp.52 = int 0
-i.53 = temp.52
+temp.5.x.47 = temp.45
+temp.5.y.48 = temp.46
+p.x.49 = temp.5.x.47
+p.y.50 = temp.5.y.48
+temp.51 = int 0
+i.52 = temp.51
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(i.53 from 2, i.88 from 5)
-sum.58 = φ(sum.45 from 2, sum.72 from 5)
-p.x.62 = φ(p.x.50 from 2, p.x.78 from 5)
-p.y.64 = φ(p.y.51 from 2, p.y.84 from 5)
-temp.55 = i.54
-temp.56 = int 5
-temp.57 = temp.55 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(i.52 from 2, i.86 from 5)
+sum.57 = φ(sum.44 from 2, sum.70 from 5)
+p.x.60 = φ(p.x.49 from 2, p.x.76 from 5)
+p.y.62 = φ(p.y.50 from 2, p.y.82 from 5)
+temp.54 = i.53
+temp.55 = int 5
+temp.56 = temp.54 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
-temp.59 = sum.58
-temp.60 = temp.59
-storeprop temp.60, 0
+temp.58 = sum.57
+storeprop temp.58, 0
 jmp 1
 
 ---- block 4 ----
-temp.61 = sum.58
-temp.21.x.63 = p.x.62
-temp.21.y.65 = p.y.64
-temp.66 = temp.21.x.63
-temp.67 = temp.61 + temp.66
-temp.24.x.68 = p.x.62
-temp.24.y.69 = p.y.64
-temp.70 = temp.24.y.69
-temp.71 = temp.67 + temp.70
-sum.72 = temp.71
-temp.30.x.73 = p.x.62
-temp.30.y.74 = p.y.64
-temp.75 = temp.30.x.73
-temp.76 = int 1
-temp.77 = temp.75 + temp.76
-p.x.78 = temp.77
-temp.36.x.79 = p.x.78
-temp.36.y.80 = p.y.64
-temp.81 = temp.36.y.80
-temp.82 = int 1
-temp.83 = temp.81 + temp.82
-p.y.84 = temp.83
-temp.85 = i.54
-temp.86 = int 1
-temp.87 = temp.85 + temp.86
-i.88 = temp.87
+temp.59 = sum.57
+temp.21.x.61 = p.x.60
+temp.21.y.63 = p.y.62
+temp.64 = temp.21.x.61
+temp.65 = temp.59 + temp.64
+temp.24.x.66 = p.x.60
+temp.24.y.67 = p.y.62
+temp.68 = temp.24.y.67
+temp.69 = temp.65 + temp.68
+sum.70 = temp.69
+temp.30.x.71 = p.x.60
+temp.30.y.72 = p.y.62
+temp.73 = temp.30.x.71
+temp.74 = int 1
+temp.75 = temp.73 + temp.74
+p.x.76 = temp.75
+temp.36.x.77 = p.x.76
+temp.36.y.78 = p.y.62
+temp.79 = temp.36.y.78
+temp.80 = int 1
+temp.81 = temp.79 + temp.80
+p.y.82 = temp.81
+temp.83 = i.53
+temp.84 = int 1
+temp.85 = temp.83 + temp.84
+i.86 = temp.85
 jmp 5
 
 ---- block 1 ----
@@ -146,61 +144,60 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
-sum.45 = temp.44
+temp.43 = int 0
+sum.44 = temp.43
+temp.45 = int 1
 temp.46 = int 1
-temp.47 = int 1
-temp.5.x.48 = temp.46
-temp.5.y.49 = temp.47
-p.x.50 = temp.46
-p.y.51 = temp.47
-temp.52 = int 0
-i.53 = temp.52
+temp.5.x.47 = temp.45
+temp.5.y.48 = temp.46
+p.x.49 = temp.45
+p.y.50 = temp.46
+temp.51 = int 0
+i.52 = temp.51
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(temp.52 from 2, i.88 from 5)
-sum.58 = φ(temp.44 from 2, sum.72 from 5)
-p.x.62 = φ(temp.46 from 2, p.x.78 from 5)
-p.y.64 = φ(temp.47 from 2, p.y.84 from 5)
-temp.55 = i.54
-temp.56 = int 5
-temp.57 = i.54 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(temp.51 from 2, i.86 from 5)
+sum.57 = φ(temp.43 from 2, sum.70 from 5)
+p.x.60 = φ(temp.45 from 2, p.x.76 from 5)
+p.y.62 = φ(temp.46 from 2, p.y.82 from 5)
+temp.54 = i.53
+temp.55 = int 5
+temp.56 = i.53 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
-temp.59 = sum.58
-temp.60 = sum.58
-storeprop sum.58, 0
+temp.58 = sum.57
+storeprop sum.57, 0
 jmp 1
 
 ---- block 4 ----
-temp.61 = sum.58
-temp.21.x.63 = p.x.62
-temp.21.y.65 = p.y.64
-temp.66 = p.x.62
-temp.67 = sum.58 + p.x.62
-temp.24.x.68 = p.x.62
-temp.24.y.69 = p.y.64
-temp.70 = p.y.64
-temp.71 = temp.67 + p.y.64
-sum.72 = temp.71
-temp.30.x.73 = p.x.62
-temp.30.y.74 = p.y.64
-temp.75 = p.x.62
-temp.76 = int 1
-temp.77 = p.x.62 + temp.76
-p.x.78 = temp.77
-temp.36.x.79 = temp.77
-temp.36.y.80 = p.y.64
-temp.81 = p.y.64
-temp.82 = int 1
-temp.83 = p.y.64 + temp.82
-p.y.84 = temp.83
-temp.85 = i.54
-temp.86 = int 1
-temp.87 = i.54 + temp.86
-i.88 = temp.87
+temp.59 = sum.57
+temp.21.x.61 = p.x.60
+temp.21.y.63 = p.y.62
+temp.64 = p.x.60
+temp.65 = sum.57 + p.x.60
+temp.24.x.66 = p.x.60
+temp.24.y.67 = p.y.62
+temp.68 = p.y.62
+temp.69 = temp.65 + p.y.62
+sum.70 = temp.69
+temp.30.x.71 = p.x.60
+temp.30.y.72 = p.y.62
+temp.73 = p.x.60
+temp.74 = int 1
+temp.75 = p.x.60 + temp.74
+p.x.76 = temp.75
+temp.36.x.77 = temp.75
+temp.36.y.78 = p.y.62
+temp.79 = p.y.62
+temp.80 = int 1
+temp.81 = p.y.62 + temp.80
+p.y.82 = temp.81
+temp.83 = i.53
+temp.84 = int 1
+temp.85 = i.53 + temp.84
+i.86 = temp.85
 jmp 5
 
 ---- block 1 ----
@@ -215,38 +212,38 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
+temp.43 = int 0
+temp.45 = int 1
 temp.46 = int 1
-temp.47 = int 1
-temp.52 = int 0
+temp.51 = int 0
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(temp.52 from 2, i.88 from 5)
-sum.58 = φ(temp.44 from 2, sum.72 from 5)
-p.x.62 = φ(temp.46 from 2, p.x.78 from 5)
-p.y.64 = φ(temp.47 from 2, p.y.84 from 5)
-temp.56 = int 5
-temp.57 = i.54 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(temp.51 from 2, i.86 from 5)
+sum.57 = φ(temp.43 from 2, sum.70 from 5)
+p.x.60 = φ(temp.45 from 2, p.x.76 from 5)
+p.y.62 = φ(temp.46 from 2, p.y.82 from 5)
+temp.55 = int 5
+temp.56 = i.53 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
-storeprop sum.58, 0
+storeprop sum.57, 0
 jmp 1
 
 ---- block 4 ----
-temp.67 = sum.58 + p.x.62
-temp.71 = temp.67 + p.y.64
-sum.72 = temp.71
-temp.76 = int 1
-temp.77 = p.x.62 + temp.76
-p.x.78 = temp.77
-temp.82 = int 1
-temp.83 = p.y.64 + temp.82
-p.y.84 = temp.83
-temp.86 = int 1
-temp.87 = i.54 + temp.86
-i.88 = temp.87
+temp.65 = sum.57 + p.x.60
+temp.69 = temp.65 + p.y.62
+sum.70 = temp.69
+temp.74 = int 1
+temp.75 = p.x.60 + temp.74
+p.x.76 = temp.75
+temp.80 = int 1
+temp.81 = p.y.62 + temp.80
+p.y.82 = temp.81
+temp.84 = int 1
+temp.85 = i.53 + temp.84
+i.86 = temp.85
 jmp 5
 
 ---- block 1 ----
@@ -261,38 +258,38 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
-temp.46 = int 1
-temp.47 = temp.46
-temp.52 = temp.44
+temp.43 = int 0
+temp.45 = int 1
+temp.46 = temp.45
+temp.51 = temp.43
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(temp.52 from 2, i.88 from 5)
-sum.58 = φ(temp.44 from 2, sum.72 from 5)
-p.x.62 = φ(temp.46 from 2, p.x.78 from 5)
-p.y.64 = φ(temp.47 from 2, p.y.84 from 5)
-temp.56 = int 5
-temp.57 = i.54 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(temp.51 from 2, i.86 from 5)
+sum.57 = φ(temp.43 from 2, sum.70 from 5)
+p.x.60 = φ(temp.45 from 2, p.x.76 from 5)
+p.y.62 = φ(temp.46 from 2, p.y.82 from 5)
+temp.55 = int 5
+temp.56 = i.53 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
-storeprop sum.58, 0
+storeprop sum.57, 0
 jmp 1
 
 ---- block 4 ----
-temp.67 = sum.58 + p.x.62
-temp.71 = temp.67 + p.y.64
-sum.72 = temp.71
-temp.76 = int 1
-temp.77 = p.x.62 + temp.76
-p.x.78 = temp.77
-temp.82 = temp.76
-temp.83 = p.y.64 + temp.82
-p.y.84 = temp.83
-temp.86 = temp.76
-temp.87 = i.54 + temp.86
-i.88 = temp.87
+temp.65 = sum.57 + p.x.60
+temp.69 = temp.65 + p.y.62
+sum.70 = temp.69
+temp.74 = int 1
+temp.75 = p.x.60 + temp.74
+p.x.76 = temp.75
+temp.80 = temp.74
+temp.81 = p.y.62 + temp.80
+p.y.82 = temp.81
+temp.84 = temp.74
+temp.85 = i.53 + temp.84
+i.86 = temp.85
 jmp 5
 
 ---- block 1 ----
@@ -307,38 +304,38 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
-temp.46 = int 1
-temp.47 = temp.46
-temp.52 = temp.44
+temp.43 = int 0
+temp.45 = int 1
+temp.46 = temp.45
+temp.51 = temp.43
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(temp.52 from 2, i.88 from 5, i.88 from 4)
-sum.58 = φ(temp.44 from 2, sum.72 from 5, sum.72 from 4)
-p.x.62 = φ(temp.46 from 2, p.x.78 from 5, p.x.78 from 4)
-p.y.64 = φ(temp.47 from 2, p.y.84 from 5, p.y.84 from 4)
-temp.56 = int 5
-temp.57 = i.54 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(temp.51 from 2, i.86 from 5, i.86 from 4)
+sum.57 = φ(temp.43 from 2, sum.70 from 5, sum.70 from 4)
+p.x.60 = φ(temp.45 from 2, p.x.76 from 5, p.x.76 from 4)
+p.y.62 = φ(temp.46 from 2, p.y.82 from 5, p.y.82 from 4)
+temp.55 = int 5
+temp.56 = i.53 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
-storeprop sum.58, 0
+storeprop sum.57, 0
 return 
 
 ---- block 4 ----
-temp.67 = sum.58 + p.x.62
-temp.71 = temp.67 + p.y.64
-sum.72 = temp.71
-temp.76 = int 1
-temp.77 = p.x.62 + temp.76
-p.x.78 = temp.77
-temp.82 = temp.76
-temp.83 = p.y.64 + temp.82
-p.y.84 = temp.83
-temp.86 = temp.76
-temp.87 = i.54 + temp.86
-i.88 = temp.87
+temp.65 = sum.57 + p.x.60
+temp.69 = temp.65 + p.y.62
+sum.70 = temp.69
+temp.74 = int 1
+temp.75 = p.x.60 + temp.74
+p.x.76 = temp.75
+temp.80 = temp.74
+temp.81 = p.y.62 + temp.80
+p.y.82 = temp.81
+temp.84 = temp.74
+temp.85 = i.53 + temp.84
+i.86 = temp.85
 jmp 0
 
 
@@ -347,38 +344,38 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
-temp.46 = int 1
-temp.47 = temp.46
-temp.52 = temp.44
+temp.43 = int 0
+temp.45 = int 1
+temp.46 = temp.45
+temp.51 = temp.43
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(temp.52 from 2, i.88 from 4)
-sum.58 = φ(temp.44 from 2, sum.72 from 4)
-p.x.62 = φ(temp.46 from 2, p.x.78 from 4)
-p.y.64 = φ(temp.47 from 2, p.y.84 from 4)
-temp.56 = int 5
-temp.57 = i.54 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(temp.51 from 2, i.86 from 4)
+sum.57 = φ(temp.43 from 2, sum.70 from 4)
+p.x.60 = φ(temp.45 from 2, p.x.76 from 4)
+p.y.62 = φ(temp.46 from 2, p.y.82 from 4)
+temp.55 = int 5
+temp.56 = i.53 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
-storeprop sum.58, 0
+storeprop sum.57, 0
 return 
 
 ---- block 4 ----
-temp.67 = sum.58 + p.x.62
-temp.71 = temp.67 + p.y.64
-sum.72 = temp.71
-temp.76 = int 1
-temp.77 = p.x.62 + temp.76
-p.x.78 = temp.77
-temp.82 = temp.76
-temp.83 = p.y.64 + temp.82
-p.y.84 = temp.83
-temp.86 = temp.76
-temp.87 = i.54 + temp.86
-i.88 = temp.87
+temp.65 = sum.57 + p.x.60
+temp.69 = temp.65 + p.y.62
+sum.70 = temp.69
+temp.74 = int 1
+temp.75 = p.x.60 + temp.74
+p.x.76 = temp.75
+temp.80 = temp.74
+temp.81 = p.y.62 + temp.80
+p.y.82 = temp.81
+temp.84 = temp.74
+temp.85 = i.53 + temp.84
+i.86 = temp.85
 jmp 0
 
 
@@ -387,38 +384,38 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
-temp.46 = int 1
-temp.47 = temp.46
-temp.52 = temp.44
+temp.43 = int 0
+temp.45 = int 1
+temp.46 = temp.45
+temp.51 = temp.43
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(temp.44 from 2, i.88 from 4)
-sum.58 = φ(temp.44 from 2, sum.72 from 4)
-p.x.62 = φ(temp.46 from 2, p.x.78 from 4)
-p.y.64 = φ(temp.46 from 2, p.y.84 from 4)
-temp.56 = int 5
-temp.57 = i.54 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(temp.43 from 2, i.86 from 4)
+sum.57 = φ(temp.43 from 2, sum.70 from 4)
+p.x.60 = φ(temp.45 from 2, p.x.76 from 4)
+p.y.62 = φ(temp.45 from 2, p.y.82 from 4)
+temp.55 = int 5
+temp.56 = i.53 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
-storeprop sum.58, 0
+storeprop sum.57, 0
 return 
 
 ---- block 4 ----
-temp.67 = sum.58 + p.x.62
-temp.71 = temp.67 + p.y.64
-sum.72 = temp.71
-temp.76 = int 1
-temp.77 = p.x.62 + temp.76
-p.x.78 = temp.77
-temp.82 = temp.76
-temp.83 = p.y.64 + temp.76
-p.y.84 = temp.83
-temp.86 = temp.76
-temp.87 = i.54 + temp.76
-i.88 = temp.87
+temp.65 = sum.57 + p.x.60
+temp.69 = temp.65 + p.y.62
+sum.70 = temp.69
+temp.74 = int 1
+temp.75 = p.x.60 + temp.74
+p.x.76 = temp.75
+temp.80 = temp.74
+temp.81 = p.y.62 + temp.74
+p.y.82 = temp.81
+temp.84 = temp.74
+temp.85 = i.53 + temp.74
+i.86 = temp.85
 jmp 0
 
 
@@ -427,32 +424,32 @@ jmp 0
 fn @toplevel() -> 
 
 ---- block 2 ----
-temp.44 = int 0
-temp.46 = int 1
+temp.43 = int 0
+temp.45 = int 1
 jmp 0
 
 ---- block 0 ----
-i.54 = φ(temp.44 from 2, i.88 from 4)
-sum.58 = φ(temp.44 from 2, sum.72 from 4)
-p.x.62 = φ(temp.46 from 2, p.x.78 from 4)
-p.y.64 = φ(temp.46 from 2, p.y.84 from 4)
-temp.56 = int 5
-temp.57 = i.54 >= temp.56
-conditional_jump temp.57 3 4
+i.53 = φ(temp.43 from 2, i.86 from 4)
+sum.57 = φ(temp.43 from 2, sum.70 from 4)
+p.x.60 = φ(temp.45 from 2, p.x.76 from 4)
+p.y.62 = φ(temp.45 from 2, p.y.82 from 4)
+temp.55 = int 5
+temp.56 = i.53 >= temp.55
+conditional_jump temp.56 3 4
 
 ---- block 3 ----
-storeprop sum.58, 0
+storeprop sum.57, 0
 return 
 
 ---- block 4 ----
-temp.67 = sum.58 + p.x.62
-temp.71 = temp.67 + p.y.64
-sum.72 = temp.71
-temp.76 = int 1
-temp.77 = p.x.62 + temp.76
-p.x.78 = temp.77
-temp.83 = p.y.64 + temp.76
-p.y.84 = temp.83
-temp.87 = i.54 + temp.76
-i.88 = temp.87
+temp.65 = sum.57 + p.x.60
+temp.69 = temp.65 + p.y.62
+sum.70 = temp.69
+temp.74 = int 1
+temp.75 = p.x.60 + temp.74
+p.x.76 = temp.75
+temp.81 = p.y.62 + temp.74
+p.y.82 = temp.81
+temp.85 = i.53 + temp.74
+i.86 = temp.85
 jmp 0

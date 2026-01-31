@@ -19,89 +19,82 @@ temp.15 = x.2
 temp.14 = -temp.15
 y.3 = temp.14
 temp.16 = y.3
-temp.17 = temp.16
-storeprop temp.17, 0
+storeprop temp.16, 0
 return 
 
 =======================
 fn test_logical_not() -> 
 
 ---- block 0 ----
-temp.18 = bool true
-x.4 = temp.18
-temp.20 = x.4
-temp.19 = !temp.20
-y.5 = temp.19
-temp.21 = y.5
-temp.22 = temp.21
-storeprop temp.22, 1
+temp.17 = bool true
+x.4 = temp.17
+temp.19 = x.4
+temp.18 = !temp.19
+y.5 = temp.18
+temp.20 = y.5
+storeprop temp.20, 1
 return 
 
 =======================
 fn test_bitwise_not() -> 
 
 ---- block 0 ----
-temp.23 = int 255
-x.6 = temp.23
-temp.25 = x.6
-temp.24 = ~temp.25
-y.7 = temp.24
-temp.26 = y.7
-temp.27 = temp.26
-storeprop temp.27, 0
+temp.21 = int 255
+x.6 = temp.21
+temp.23 = x.6
+temp.22 = ~temp.23
+y.7 = temp.22
+temp.24 = y.7
+storeprop temp.24, 0
 return 
 
 =======================
 fn test_unary_in_binary() -> 
 
 ---- block 0 ----
-temp.28 = int 10
-a.8 = temp.28
-temp.29 = int 3
-b.9 = temp.29
-temp.33 = a.8
-temp.31 = -temp.33
-temp.32 = b.9
-temp.30 = temp.31 + temp.32
-temp.34 = temp.30
-storeprop temp.34, 0
+temp.25 = int 10
+a.8 = temp.25
+temp.26 = int 3
+b.9 = temp.26
+temp.30 = a.8
+temp.28 = -temp.30
+temp.29 = b.9
+temp.27 = temp.28 + temp.29
+storeprop temp.27, 0
 return 
 
 =======================
 fn test_chained_unary() -> 
 
 ---- block 0 ----
-temp.35 = int 5
-x.10 = temp.35
-temp.38 = x.10
-temp.37 = -temp.38
-temp.36 = -temp.37
-y.11 = temp.36
-temp.39 = y.11
-temp.40 = temp.39
-storeprop temp.40, 0
+temp.31 = int 5
+x.10 = temp.31
+temp.34 = x.10
+temp.33 = -temp.34
+temp.32 = -temp.33
+y.11 = temp.32
+temp.35 = y.11
+storeprop temp.35, 0
 return 
 
 =======================
 fn test_unary_condition() -> 
 
 ---- block 3 ----
-temp.41 = bool false
-x.12 = temp.41
-temp.43 = x.12
-temp.42 = !temp.43
-conditional_jump temp.42 0 1
+temp.36 = bool false
+x.12 = temp.36
+temp.38 = x.12
+temp.37 = !temp.38
+conditional_jump temp.37 0 1
 
 ---- block 0 ----
-temp.44 = int 1
-temp.45 = temp.44
-storeprop temp.45, 0
+temp.39 = int 1
+storeprop temp.39, 0
 jmp 2
 
 ---- block 1 ----
-temp.46 = int 0
-temp.47 = temp.46
-storeprop temp.47, 0
+temp.40 = int 0
+storeprop temp.40, 0
 jmp 2
 
 ---- block 2 ----

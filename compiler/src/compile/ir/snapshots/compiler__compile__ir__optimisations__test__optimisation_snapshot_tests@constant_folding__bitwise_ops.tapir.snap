@@ -8,31 +8,30 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/constant_foldin
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.25 = int 1
-temp.26 = int 3
-temp.27 = temp.25 << temp.26
-a.28 = temp.27
-temp.29 = int 16
-temp.30 = int 2
-temp.31 = temp.29 >> temp.30
-b.32 = temp.31
-temp.33 = int 5
-temp.34 = int 3
-temp.35 = temp.33 & temp.34
-c.36 = temp.35
-temp.37 = int 5
-temp.38 = int 3
-temp.39 = temp.37 | temp.38
-d.40 = temp.39
-temp.41 = a.28
-temp.42 = b.32
-temp.43 = temp.41 + temp.42
-temp.44 = c.36
-temp.45 = temp.43 + temp.44
-temp.46 = d.40
-temp.47 = temp.45 + temp.46
-temp.48 = temp.47
-storeprop temp.48, 0
+temp.24 = int 1
+temp.25 = int 3
+temp.26 = temp.24 << temp.25
+a.27 = temp.26
+temp.28 = int 16
+temp.29 = int 2
+temp.30 = temp.28 >> temp.29
+b.31 = temp.30
+temp.32 = int 5
+temp.33 = int 3
+temp.34 = temp.32 & temp.33
+c.35 = temp.34
+temp.36 = int 5
+temp.37 = int 3
+temp.38 = temp.36 | temp.37
+d.39 = temp.38
+temp.40 = a.27
+temp.41 = b.31
+temp.42 = temp.40 + temp.41
+temp.43 = c.35
+temp.44 = temp.42 + temp.43
+temp.45 = d.39
+temp.46 = temp.44 + temp.45
+storeprop temp.46, 0
 return 
 
 
@@ -41,31 +40,30 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.25 = int 1
-temp.26 = int 3
-temp.27 = temp.25 << temp.26
-a.28 = temp.27
-temp.29 = int 16
-temp.30 = int 2
-temp.31 = temp.29 >> temp.30
-b.32 = temp.31
-temp.33 = int 5
-temp.34 = int 3
-temp.35 = temp.33 & temp.34
-c.36 = temp.35
-temp.37 = int 5
-temp.38 = int 3
-temp.39 = temp.37 | temp.38
-d.40 = temp.39
-temp.41 = temp.27
-temp.42 = temp.31
-temp.43 = temp.27 + temp.31
-temp.44 = temp.35
-temp.45 = temp.43 + temp.35
-temp.46 = temp.39
-temp.47 = temp.45 + temp.39
-temp.48 = temp.47
-storeprop temp.47, 0
+temp.24 = int 1
+temp.25 = int 3
+temp.26 = temp.24 << temp.25
+a.27 = temp.26
+temp.28 = int 16
+temp.29 = int 2
+temp.30 = temp.28 >> temp.29
+b.31 = temp.30
+temp.32 = int 5
+temp.33 = int 3
+temp.34 = temp.32 & temp.33
+c.35 = temp.34
+temp.36 = int 5
+temp.37 = int 3
+temp.38 = temp.36 | temp.37
+d.39 = temp.38
+temp.40 = temp.26
+temp.41 = temp.30
+temp.42 = temp.26 + temp.30
+temp.43 = temp.34
+temp.44 = temp.42 + temp.34
+temp.45 = temp.38
+temp.46 = temp.44 + temp.38
+storeprop temp.46, 0
 return 
 
 
@@ -74,22 +72,22 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.25 = int 1
-temp.26 = int 3
-temp.27 = temp.25 << temp.26
-temp.29 = int 16
-temp.30 = int 2
-temp.31 = temp.29 >> temp.30
-temp.33 = int 5
-temp.34 = int 3
-temp.35 = temp.33 & temp.34
-temp.37 = int 5
-temp.38 = int 3
-temp.39 = temp.37 | temp.38
-temp.43 = temp.27 + temp.31
-temp.45 = temp.43 + temp.35
-temp.47 = temp.45 + temp.39
-storeprop temp.47, 0
+temp.24 = int 1
+temp.25 = int 3
+temp.26 = temp.24 << temp.25
+temp.28 = int 16
+temp.29 = int 2
+temp.30 = temp.28 >> temp.29
+temp.32 = int 5
+temp.33 = int 3
+temp.34 = temp.32 & temp.33
+temp.36 = int 5
+temp.37 = int 3
+temp.38 = temp.36 | temp.37
+temp.42 = temp.26 + temp.30
+temp.44 = temp.42 + temp.34
+temp.46 = temp.44 + temp.38
+storeprop temp.46, 0
 return 
 
 
@@ -98,22 +96,22 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.25 = int 1
-temp.26 = int 3
-temp.27 = int 8
-temp.29 = int 16
-temp.30 = int 2
-temp.31 = int 4
-temp.33 = int 5
-temp.34 = int 3
-temp.35 = int 1
-temp.37 = int 5
-temp.38 = int 3
-temp.39 = int 7
-temp.43 = temp.27 + temp.31
-temp.45 = temp.43 + temp.35
-temp.47 = temp.45 + temp.39
-storeprop temp.47, 0
+temp.24 = int 1
+temp.25 = int 3
+temp.26 = int 8
+temp.28 = int 16
+temp.29 = int 2
+temp.30 = int 4
+temp.32 = int 5
+temp.33 = int 3
+temp.34 = int 1
+temp.36 = int 5
+temp.37 = int 3
+temp.38 = int 7
+temp.42 = temp.26 + temp.30
+temp.44 = temp.42 + temp.34
+temp.46 = temp.44 + temp.38
+storeprop temp.46, 0
 return 
 
 
@@ -122,14 +120,14 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.27 = int 8
-temp.31 = int 4
-temp.35 = int 1
-temp.39 = int 7
-temp.43 = temp.27 + temp.31
-temp.45 = temp.43 + temp.35
-temp.47 = temp.45 + temp.39
-storeprop temp.47, 0
+temp.26 = int 8
+temp.30 = int 4
+temp.34 = int 1
+temp.38 = int 7
+temp.42 = temp.26 + temp.30
+temp.44 = temp.42 + temp.34
+temp.46 = temp.44 + temp.38
+storeprop temp.46, 0
 return 
 
 
@@ -138,14 +136,14 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.27 = int 8
-temp.31 = int 4
-temp.35 = int 1
-temp.39 = int 7
-temp.43 = int 12
-temp.45 = temp.43 + temp.35
-temp.47 = temp.45 + temp.39
-storeprop temp.47, 0
+temp.26 = int 8
+temp.30 = int 4
+temp.34 = int 1
+temp.38 = int 7
+temp.42 = int 12
+temp.44 = temp.42 + temp.34
+temp.46 = temp.44 + temp.38
+storeprop temp.46, 0
 return 
 
 
@@ -154,12 +152,12 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.35 = int 1
-temp.39 = int 7
-temp.43 = int 12
-temp.45 = temp.43 + temp.35
-temp.47 = temp.45 + temp.39
-storeprop temp.47, 0
+temp.34 = int 1
+temp.38 = int 7
+temp.42 = int 12
+temp.44 = temp.42 + temp.34
+temp.46 = temp.44 + temp.38
+storeprop temp.46, 0
 return 
 
 
@@ -168,12 +166,12 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.35 = int 1
-temp.39 = int 7
-temp.43 = int 12
-temp.45 = int 13
-temp.47 = temp.45 + temp.39
-storeprop temp.47, 0
+temp.34 = int 1
+temp.38 = int 7
+temp.42 = int 12
+temp.44 = int 13
+temp.46 = temp.44 + temp.38
+storeprop temp.46, 0
 return 
 
 
@@ -182,10 +180,10 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.39 = int 7
-temp.45 = int 13
-temp.47 = temp.45 + temp.39
-storeprop temp.47, 0
+temp.38 = int 7
+temp.44 = int 13
+temp.46 = temp.44 + temp.38
+storeprop temp.46, 0
 return 
 
 
@@ -194,10 +192,10 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.39 = int 7
-temp.45 = int 13
-temp.47 = int 20
-storeprop temp.47, 0
+temp.38 = int 7
+temp.44 = int 13
+temp.46 = int 20
+storeprop temp.46, 0
 return 
 
 
@@ -206,6 +204,6 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.47 = int 20
-storeprop temp.47, 0
+temp.46 = int 20
+storeprop temp.46, 0
 return
