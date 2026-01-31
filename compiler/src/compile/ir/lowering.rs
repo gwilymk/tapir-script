@@ -969,12 +969,30 @@ impl<'a> BlockVisitor<'a> {
         }
 
         // Copy temp to target (handles local, global, and property targets uniformly)
-        let temp_expansion = symtab
-            .get_struct_expansion(temp_symbol)
+        let temp_layout = symtab
+            .get_struct_layout(temp_symbol)
             .expect("Just expanded temp")
             .clone();
-        let target_name = symtab.name_for_symbol(target_symbol).to_string();
-        self.copy_struct_to_target(&temp_expansion, target_symbol, &target_name, span, symtab);
+
+        // Get or create target layout
+        let target_layout = if let Some(layout) = symtab.get_struct_layout(target_symbol).cloned() {
+            layout
+        } else {
+            let target_name = symtab.name_for_symbol(target_symbol).to_string();
+            symtab.expand_struct_symbol(
+                target_symbol,
+                &target_name,
+                temp_layout.struct_id,
+                span,
+                self.struct_registry,
+            );
+            symtab
+                .get_struct_layout(target_symbol)
+                .expect("Just expanded")
+                .clone()
+        };
+
+        self.copy_struct_layout(&temp_layout, &target_layout, symtab);
     }
 
     /// Emit a function call, handling struct return expansion and target collection.

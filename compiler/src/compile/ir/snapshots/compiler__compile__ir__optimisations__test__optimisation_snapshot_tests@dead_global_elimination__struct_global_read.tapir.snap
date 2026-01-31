@@ -8,14 +8,16 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_global_eli
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.7 = int 10
-temp.8 = int 20
-temp.0.x.9 = temp.7
-temp.0.y.10 = temp.8
-setglobal 1, temp.0.x.9
-setglobal 2, temp.0.y.10
-getglobal temp.11, 1
-temp.12 = extern test(temp.11)
+temp.9 = int 10
+temp.10 = int 20
+temp.0.x.11 = temp.9
+temp.0.y.12 = temp.10
+temp.13 = temp.0.x.11
+setglobal 1, temp.13
+temp.14 = temp.0.y.12
+setglobal 2, temp.14
+getglobal temp.15, 1
+temp.16 = extern test(temp.15)
 return 
 
 
@@ -24,13 +26,15 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.7 = int 10
-temp.8 = int 20
-temp.0.x.9 = temp.7
-temp.0.y.10 = temp.8
-setglobal 0, temp.0.x.9
-getglobal temp.11, 0
-temp.12 = extern test(temp.11)
+temp.9 = int 10
+temp.10 = int 20
+temp.0.x.11 = temp.9
+temp.0.y.12 = temp.10
+temp.13 = temp.0.x.11
+setglobal 0, temp.13
+temp.14 = temp.0.y.12
+getglobal temp.15, 0
+temp.16 = extern test(temp.15)
 return 
 
 
@@ -39,12 +43,14 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.7 = int 10
-temp.8 = int 20
-temp.0.x.9 = temp.7
-setglobal 0, temp.0.x.9
-getglobal temp.11, 0
-temp.12 = extern test(temp.11)
+temp.9 = int 10
+temp.10 = int 20
+temp.0.x.11 = temp.9
+temp.0.y.12 = temp.10
+temp.13 = temp.0.x.11
+setglobal 0, temp.13
+getglobal temp.15, 0
+temp.16 = extern test(temp.15)
 return 
 
 
@@ -53,9 +59,25 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.7 = int 10
-temp.0.x.9 = temp.7
-setglobal 0, temp.0.x.9
-getglobal temp.11, 0
-temp.12 = extern test(temp.11)
+temp.9 = int 10
+temp.10 = int 20
+temp.0.x.11 = temp.9
+temp.13 = temp.0.x.11
+setglobal 0, temp.13
+getglobal temp.15, 0
+temp.16 = extern test(temp.15)
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.9 = int 10
+temp.0.x.11 = temp.9
+temp.13 = temp.0.x.11
+setglobal 0, temp.13
+getglobal temp.15, 0
+temp.16 = extern test(temp.15)
 return

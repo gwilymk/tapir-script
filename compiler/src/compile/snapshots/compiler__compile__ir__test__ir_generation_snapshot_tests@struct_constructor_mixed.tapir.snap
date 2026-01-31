@@ -18,8 +18,10 @@ temp.8 = int 3
 temp.9 = int 5
 temp.5.x.6 = temp.8
 temp.5.y.7 = temp.9
-p.x.10 = temp.5.x.6
-p.y.11 = temp.5.y.7
+temp.12 = temp.5.x.6
+p.x.10 = temp.12
+temp.13 = temp.5.y.7
+p.y.11 = temp.13
 x.0 = temp.4
 return 
 
@@ -27,12 +29,14 @@ return
 fn test_struct_then_scalar() -> 
 
 ---- block 0 ----
-temp.15 = int 3
-temp.16 = int 5
-temp.12.x.13 = temp.15
-temp.12.y.14 = temp.16
-p.x.17 = temp.12.x.13
-p.y.18 = temp.12.y.14
-temp.19 = int 2
-x.3 = temp.19
+temp.17 = int 3
+temp.18 = int 5
+temp.14.x.15 = temp.17
+temp.14.y.16 = temp.18
+temp.21 = temp.14.x.15
+p.x.19 = temp.21
+temp.22 = temp.14.y.16
+p.y.20 = temp.22
+temp.23 = int 2
+x.3 = temp.23
 return

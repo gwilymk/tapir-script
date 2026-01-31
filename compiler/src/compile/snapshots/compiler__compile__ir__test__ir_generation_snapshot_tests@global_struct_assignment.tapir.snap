@@ -11,8 +11,10 @@ temp.3 = int 10
 temp.4 = int 20
 temp.0.x.1 = temp.3
 temp.0.y.2 = temp.4
-setglobal 1, temp.0.x.1
-setglobal 2, temp.0.y.2
-getglobal temp.6, 1
-temp.5 = extern test(temp.6)
+temp.5 = temp.0.x.1
+setglobal 1, temp.5
+temp.6 = temp.0.y.2
+setglobal 2, temp.6
+getglobal temp.8, 1
+temp.7 = extern test(temp.8)
 return

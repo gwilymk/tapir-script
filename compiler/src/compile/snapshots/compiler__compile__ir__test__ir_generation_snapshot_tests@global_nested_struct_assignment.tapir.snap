@@ -11,28 +11,36 @@ temp.11 = int 1
 temp.12 = int 2
 temp.8.x.9 = temp.11
 temp.8.y.10 = temp.12
-temp.7.x.13 = temp.8.x.9
-temp.7.y.14 = temp.8.y.10
-temp.19 = int 100
-temp.20 = int 50
-temp.16.x.17 = temp.19
-temp.16.y.18 = temp.20
-temp.15.x.21 = temp.16.x.17
-temp.15.y.22 = temp.16.y.18
+temp.15 = temp.8.x.9
+temp.7.x.13 = temp.15
+temp.16 = temp.8.y.10
+temp.7.y.14 = temp.16
+temp.21 = int 100
+temp.22 = int 50
+temp.18.x.19 = temp.21
+temp.18.y.20 = temp.22
+temp.25 = temp.18.x.19
+temp.17.x.23 = temp.25
+temp.26 = temp.18.y.20
+temp.17.y.24 = temp.26
 temp.0.origin.x.2 = temp.7.x.13
 temp.0.origin.y.3 = temp.7.y.14
-temp.0.size.x.5 = temp.15.x.21
-temp.0.size.y.6 = temp.15.y.22
-setglobal 1, temp.0.origin.x.2
-setglobal 2, temp.0.origin.y.3
-setglobal 3, temp.0.size.x.5
-setglobal 4, temp.0.size.y.6
-getglobal temp.25.x.26, 1
-getglobal temp.25.y.27, 2
-temp.24 = temp.25.x.26
-temp.23 = extern test(temp.24)
-getglobal temp.30.x.31, 3
-getglobal temp.30.y.32, 4
-temp.29 = temp.30.y.32
-temp.28 = extern test(temp.29)
+temp.0.size.x.5 = temp.17.x.23
+temp.0.size.y.6 = temp.17.y.24
+temp.27 = temp.0.origin.x.2
+setglobal 1, temp.27
+temp.28 = temp.0.origin.y.3
+setglobal 2, temp.28
+temp.29 = temp.0.size.x.5
+setglobal 3, temp.29
+temp.30 = temp.0.size.y.6
+setglobal 4, temp.30
+getglobal temp.33.x.34, 1
+getglobal temp.33.y.35, 2
+temp.32 = temp.33.x.34
+temp.31 = extern test(temp.32)
+getglobal temp.38.x.39, 3
+getglobal temp.38.y.40, 4
+temp.37 = temp.38.y.40
+temp.36 = extern test(temp.37)
 return

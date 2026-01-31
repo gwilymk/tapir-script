@@ -11,10 +11,12 @@ temp.4 = int 1
 temp.5 = int 2
 temp.1.x.2 = temp.4
 temp.1.y.3 = temp.5
-p.x.6 = temp.1.x.2
-p.y.7 = temp.1.y.3
-temp.8 = int 10
+temp.8 = temp.1.x.2
 p.x.6 = temp.8
-temp.9 = int 20
+temp.9 = temp.1.y.3
 p.y.7 = temp.9
+temp.10 = int 10
+p.x.6 = temp.10
+temp.11 = int 20
+p.y.7 = temp.11
 return

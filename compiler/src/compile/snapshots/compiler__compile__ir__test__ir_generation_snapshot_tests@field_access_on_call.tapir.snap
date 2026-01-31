@@ -17,30 +17,32 @@ temp.7 = int 10
 temp.8 = int 20
 temp.4.x.5 = temp.7
 temp.4.y.6 = temp.8
-temp.3.x.9 = temp.4.x.5
-temp.3.y.10 = temp.4.y.6
+temp.11 = temp.4.x.5
+temp.3.x.9 = temp.11
+temp.12 = temp.4.y.6
+temp.3.y.10 = temp.12
 return temp.3.x.9, temp.3.y.10
 
 =======================
 fn test_field_on_call() -> 
 
 ---- block 0 ----
-temp.12.x.13, temp.12.y.14 = make_point()
-temp.11 = temp.12.x.13
-x.0 = temp.11
-temp.16.x.17, temp.16.y.18 = make_point()
-temp.15 = temp.16.y.18
-y.1 = temp.15
+temp.14.x.15, temp.14.y.16 = make_point()
+temp.13 = temp.14.x.15
+x.0 = temp.13
+temp.18.x.19, temp.18.y.20 = make_point()
+temp.17 = temp.18.y.20
+y.1 = temp.17
 return 
 
 =======================
 fn test_field_on_call_in_expression() -> 
 
 ---- block 0 ----
-temp.22.x.23, temp.22.y.24 = make_point()
-temp.20 = temp.22.x.23
-temp.25.x.26, temp.25.y.27 = make_point()
-temp.21 = temp.25.y.27
-temp.19 = temp.20 + temp.21
-sum.2 = temp.19
+temp.24.x.25, temp.24.y.26 = make_point()
+temp.22 = temp.24.x.25
+temp.27.x.28, temp.27.y.29 = make_point()
+temp.23 = temp.27.y.29
+temp.21 = temp.22 + temp.23
+sum.2 = temp.21
 return

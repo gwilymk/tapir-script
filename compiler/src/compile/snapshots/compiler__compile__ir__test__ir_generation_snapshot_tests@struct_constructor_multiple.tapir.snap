@@ -17,30 +17,38 @@ temp.6 = int 1
 temp.7 = int 2
 temp.3.x.4 = temp.6
 temp.3.y.5 = temp.7
-p1.x.8 = temp.3.x.4
-p1.y.9 = temp.3.y.5
-temp.13 = int 3
-temp.14 = int 4
-temp.10.x.11 = temp.13
-temp.10.y.12 = temp.14
-p2.x.15 = temp.10.x.11
-p2.y.16 = temp.10.y.12
-temp.20 = int 5
-temp.21 = int 6
-temp.17.x.18 = temp.20
-temp.17.y.19 = temp.21
-p3.x.22 = temp.17.x.18
-p3.y.23 = temp.17.y.19
+temp.10 = temp.3.x.4
+p1.x.8 = temp.10
+temp.11 = temp.3.y.5
+p1.y.9 = temp.11
+temp.15 = int 3
+temp.16 = int 4
+temp.12.x.13 = temp.15
+temp.12.y.14 = temp.16
+temp.19 = temp.12.x.13
+p2.x.17 = temp.19
+temp.20 = temp.12.y.14
+p2.y.18 = temp.20
+temp.24 = int 5
+temp.25 = int 6
+temp.21.x.22 = temp.24
+temp.21.y.23 = temp.25
+temp.28 = temp.21.x.22
+p3.x.26 = temp.28
+temp.29 = temp.21.y.23
+p3.y.27 = temp.29
 return 
 
 =======================
 fn test_constructor_discarded() -> 
 
 ---- block 0 ----
-temp.28 = int 1
-temp.29 = int 2
-temp.25.x.26 = temp.28
-temp.25.y.27 = temp.29
-temp.24.x.30 = temp.25.x.26
-temp.24.y.31 = temp.25.y.27
+temp.34 = int 1
+temp.35 = int 2
+temp.31.x.32 = temp.34
+temp.31.y.33 = temp.35
+temp.38 = temp.31.x.32
+temp.30.x.36 = temp.38
+temp.39 = temp.31.y.33
+temp.30.y.37 = temp.39
 return

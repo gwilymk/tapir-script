@@ -14,30 +14,34 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.29 = int 1
-temp.30 = int 2
-temp.2.x.31 = temp.29
-temp.2.y.32 = temp.30
-p.x.33 = temp.2.x.31
-p.y.34 = temp.2.y.32
-temp.35 = int 3
-temp.36 = int 4
-temp.9.x.37 = temp.35
-temp.9.y.38 = temp.36
-q.x.39 = temp.9.x.37
-q.y.40 = temp.9.y.38
-temp.41 = p.x.33
-temp.19.x.42 = temp.41
-temp.43 = p.y.34
-temp.19.y.44 = temp.43
-temp.45 = temp.19.x.42
-temp.46 = p.x.33
-temp.24.x.47 = temp.46
-temp.48 = p.y.34
-temp.24.y.49 = temp.48
-temp.50 = temp.24.y.49
-temp.51 = temp.45 + temp.50
-return temp.51
+temp.33 = int 1
+temp.34 = int 2
+temp.2.x.35 = temp.33
+temp.2.y.36 = temp.34
+temp.37 = temp.2.x.35
+p.x.38 = temp.37
+temp.39 = temp.2.y.36
+p.y.40 = temp.39
+temp.41 = int 3
+temp.42 = int 4
+temp.11.x.43 = temp.41
+temp.11.y.44 = temp.42
+temp.45 = temp.11.x.43
+q.x.46 = temp.45
+temp.47 = temp.11.y.44
+q.y.48 = temp.47
+temp.49 = p.x.38
+temp.23.x.50 = temp.49
+temp.51 = p.y.40
+temp.23.y.52 = temp.51
+temp.53 = temp.23.x.50
+temp.54 = p.x.38
+temp.28.x.55 = temp.54
+temp.56 = p.y.40
+temp.28.y.57 = temp.56
+temp.58 = temp.28.y.57
+temp.59 = temp.53 + temp.58
+return temp.59
 
 
 ----------- dead_store_elimination -------------
@@ -51,26 +55,30 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.29 = int 1
-temp.30 = int 2
-temp.2.x.31 = temp.29
-temp.2.y.32 = temp.30
-p.x.33 = temp.2.x.31
-p.y.34 = temp.2.y.32
-temp.35 = int 3
-temp.36 = int 4
-temp.9.x.37 = temp.35
-temp.9.y.38 = temp.36
-temp.41 = p.x.33
-temp.19.x.42 = temp.41
-temp.43 = p.y.34
-temp.45 = temp.19.x.42
-temp.46 = p.x.33
-temp.48 = p.y.34
-temp.24.y.49 = temp.48
-temp.50 = temp.24.y.49
-temp.51 = temp.45 + temp.50
-return temp.51
+temp.33 = int 1
+temp.34 = int 2
+temp.2.x.35 = temp.33
+temp.2.y.36 = temp.34
+temp.37 = temp.2.x.35
+p.x.38 = temp.37
+temp.39 = temp.2.y.36
+p.y.40 = temp.39
+temp.41 = int 3
+temp.42 = int 4
+temp.11.x.43 = temp.41
+temp.11.y.44 = temp.42
+temp.45 = temp.11.x.43
+temp.47 = temp.11.y.44
+temp.49 = p.x.38
+temp.23.x.50 = temp.49
+temp.51 = p.y.40
+temp.53 = temp.23.x.50
+temp.54 = p.x.38
+temp.56 = p.y.40
+temp.28.y.57 = temp.56
+temp.58 = temp.28.y.57
+temp.59 = temp.53 + temp.58
+return temp.59
 
 
 ----------- dead_store_elimination -------------
@@ -84,22 +92,26 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.29 = int 1
-temp.30 = int 2
-temp.2.x.31 = temp.29
-temp.2.y.32 = temp.30
-p.x.33 = temp.2.x.31
-p.y.34 = temp.2.y.32
-temp.35 = int 3
-temp.36 = int 4
-temp.41 = p.x.33
-temp.19.x.42 = temp.41
-temp.45 = temp.19.x.42
-temp.48 = p.y.34
-temp.24.y.49 = temp.48
-temp.50 = temp.24.y.49
-temp.51 = temp.45 + temp.50
-return temp.51
+temp.33 = int 1
+temp.34 = int 2
+temp.2.x.35 = temp.33
+temp.2.y.36 = temp.34
+temp.37 = temp.2.x.35
+p.x.38 = temp.37
+temp.39 = temp.2.y.36
+p.y.40 = temp.39
+temp.41 = int 3
+temp.42 = int 4
+temp.11.x.43 = temp.41
+temp.11.y.44 = temp.42
+temp.49 = p.x.38
+temp.23.x.50 = temp.49
+temp.53 = temp.23.x.50
+temp.56 = p.y.40
+temp.28.y.57 = temp.56
+temp.58 = temp.28.y.57
+temp.59 = temp.53 + temp.58
+return temp.59
 
 
 ----------- dead_store_elimination -------------
@@ -113,17 +125,50 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.29 = int 1
-temp.30 = int 2
-temp.2.x.31 = temp.29
-temp.2.y.32 = temp.30
-p.x.33 = temp.2.x.31
-p.y.34 = temp.2.y.32
-temp.41 = p.x.33
-temp.19.x.42 = temp.41
-temp.45 = temp.19.x.42
-temp.48 = p.y.34
-temp.24.y.49 = temp.48
-temp.50 = temp.24.y.49
-temp.51 = temp.45 + temp.50
-return temp.51
+temp.33 = int 1
+temp.34 = int 2
+temp.2.x.35 = temp.33
+temp.2.y.36 = temp.34
+temp.37 = temp.2.x.35
+p.x.38 = temp.37
+temp.39 = temp.2.y.36
+p.y.40 = temp.39
+temp.41 = int 3
+temp.42 = int 4
+temp.49 = p.x.38
+temp.23.x.50 = temp.49
+temp.53 = temp.23.x.50
+temp.56 = p.y.40
+temp.28.y.57 = temp.56
+temp.58 = temp.28.y.57
+temp.59 = temp.53 + temp.58
+return temp.59
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.33 = int 1
+temp.34 = int 2
+temp.2.x.35 = temp.33
+temp.2.y.36 = temp.34
+temp.37 = temp.2.x.35
+p.x.38 = temp.37
+temp.39 = temp.2.y.36
+p.y.40 = temp.39
+temp.49 = p.x.38
+temp.23.x.50 = temp.49
+temp.53 = temp.23.x.50
+temp.56 = p.y.40
+temp.28.y.57 = temp.56
+temp.58 = temp.28.y.57
+temp.59 = temp.53 + temp.58
+return temp.59
