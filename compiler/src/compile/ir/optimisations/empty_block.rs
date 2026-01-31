@@ -64,11 +64,15 @@ pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
 
         match exit {
             BlockExitInstr::JumpToBlock(block_id) => {
-                if let Some(new_exit) = empty_blocks.get(block_id) {
-                    add_replacement!(*block_id);
+                let block_id = *block_id;
+                if let Some(new_exit) = empty_blocks.get(&block_id) {
+                    // Only redirect if it actually changes the exit instruction
+                    if *exit != *new_exit {
+                        add_replacement!(block_id);
 
-                    // Unconditional jumps can be replaced unconditionally with what the empty block was doing
-                    *exit = new_exit.clone();
+                        // Unconditional jumps can be replaced unconditionally with what the empty block was doing
+                        *exit = new_exit.clone();
+                    }
                 };
             }
             BlockExitInstr::ConditionalJump {
@@ -77,13 +81,19 @@ pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
                 // Conditional jumps can only be replaced if the target wasn't doing its own conditional jump
                 // or its own return.
                 if let Some(BlockExitInstr::JumpToBlock(new_target)) = empty_blocks.get(if_true) {
-                    add_replacement!(*if_true);
-                    *if_true = *new_target;
+                    // Only redirect if it actually changes the target
+                    if if_true != new_target {
+                        add_replacement!(*if_true);
+                        *if_true = *new_target;
+                    }
                 }
 
                 if let Some(BlockExitInstr::JumpToBlock(new_target)) = empty_blocks.get(if_false) {
-                    add_replacement!(*if_false);
-                    *if_false = *new_target;
+                    // Only redirect if it actually changes the target
+                    if if_false != new_target {
+                        add_replacement!(*if_false);
+                        *if_false = *new_target;
+                    }
                 }
             }
             BlockExitInstr::Return(_) => {}

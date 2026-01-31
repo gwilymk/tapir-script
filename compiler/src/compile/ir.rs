@@ -145,7 +145,7 @@ impl Display for Constant {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum BlockExitInstr {
     JumpToBlock(BlockId),
     ConditionalJump {

@@ -125,7 +125,9 @@ pub fn optimise(
         return;
     }
 
-    loop {
+    const MAX_ITERATIONS: u32 = 1000;
+
+    for _ in 0..MAX_ITERATIONS {
         let mut did_something = OptimisationResult::DidNothing;
 
         for (_, optimisation) in OPTIMISATIONS {
@@ -136,6 +138,8 @@ pub fn optimise(
             return;
         }
     }
+
+    panic!("Optimizer exceeded {MAX_ITERATIONS} iterations - likely infinite loop in optimization pass");
 }
 
 trait Optimisation: Sync {
@@ -476,5 +480,29 @@ mod test {
         expected.insert(SymbolId(6), SymbolId(19));
 
         assert_eq!(reduce_renames(&renames), expected);
+    }
+
+    /// Regression test: optimizer should not hang on infinite loops.
+    /// See regalloc_loop.tapir - this script contains an infinite loop
+    /// which previously caused the optimizer to run forever.
+    #[test]
+    fn optimizer_terminates_on_infinite_loop() {
+        use std::path::Path;
+
+        let source = r#"
+var x = 3;
+loop {
+    var y = x;
+    if true {}
+}
+"#;
+
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: true,
+        };
+
+        // This should complete, not hang
+        let _ = crate::compile(Path::new("test.tapir"), source, settings);
     }
 }
