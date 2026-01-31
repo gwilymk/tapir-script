@@ -1,9 +1,9 @@
 # Tapir-script prelude - utility functions available to all scripts
 
-## Returns the sine of x (in radians).
+## Returns the sine of x, where x in 0..1 maps to a full circle.
 builtin(0) fn sin(x: fix) -> fix;
 
-## Returns the cosine of x (in radians).
+## Returns the cosine of x, where x in 0..1 maps to a full circle.
 builtin(1) fn cos(x: fix) -> fix;
 
 ## Returns the square root of x.
