@@ -1,0 +1,26 @@
+extern fn assert(value: bool);
+
+# int.abs - tests the prelude's abs function
+var a = 5;
+assert(a.abs() == 5);
+var b = 0 - 5;
+assert(b.abs() == 5);
+var c = 0;
+assert(c.abs() == 0);
+
+# int.min
+var x = 3;
+var y = 5;
+assert(x.min(y) == 3);
+assert(y.min(x) == 3);
+assert(x.min(x) == 3);
+
+# int.max
+assert(x.max(y) == 5);
+assert(y.max(x) == 5);
+assert(x.max(x) == 3);
+
+# Chained calls
+var neg = 0 - 10;
+assert(neg.abs().min(5) == 5);
+assert(neg.abs().max(5) == 10);

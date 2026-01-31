@@ -1,0 +1,70 @@
+# Tests for method calls that return different types
+extern fn assert(value: bool);
+
+# int methods returning int
+assert((5).abs() == 5);
+assert((0 - 5).abs() == 5);
+assert((3).min(5) == 3);
+assert((5).min(3) == 3);
+assert((3).max(5) == 5);
+assert((5).max(3) == 5);
+
+# fix methods returning fix
+assert((5.5).abs() == 5.5);
+assert((0.0 - 5.5).abs() == 5.5);
+assert((3.5).min(5.5) == 3.5);
+assert((5.5).min(3.5) == 3.5);
+assert((3.5).max(5.5) == 5.5);
+assert((5.5).max(3.5) == 5.5);
+
+# fix methods returning int (round/floor/ceil)
+assert((2.4).round() == 2);
+assert((2.6).round() == 3);
+assert((2.4).floor() == 2);
+assert((2.6).floor() == 2);
+assert((2.4).ceil() == 3);
+assert((2.6).ceil() == 3);
+
+# fix2 methods returning int2
+var fv = fix2(2.4, 2.6);
+var rounded = fv.round();
+var floored = fv.floor();
+var ceiled = fv.ceil();
+assert(rounded.x == 2);
+assert(rounded.y == 3);
+assert(floored.x == 2);
+assert(floored.y == 2);
+assert(ceiled.x == 3);
+assert(ceiled.y == 3);
+
+# fix2 methods returning fix2
+var neg_fv = fix2(0.0 - 3.0, 0.0 - 4.0);
+var abs_fv = neg_fv.abs();
+assert(abs_fv.x == 3.0);
+assert(abs_fv.y == 4.0);
+
+# fix2 method returning fix (dot product)
+var a = fix2(3.0, 4.0);
+var b = fix2(1.0, 2.0);
+var dot = a.dot(b);
+assert(dot == 11.0);
+
+# int2 methods
+var iv = int2(0 - 3, 0 - 4);
+var abs_iv = iv.abs();
+assert(abs_iv.x == 3);
+assert(abs_iv.y == 4);
+
+# int2 dot product returns int
+var ia = int2(3, 4);
+var ib = int2(1, 2);
+assert(ia.dot(ib) == 11);
+
+# Chained method calls on scalar results
+var scalar_result = fix2(3.0, 4.0).dot(fix2(1.0, 0.0));
+assert(scalar_result == 3.0);
+assert(scalar_result.abs() == 3.0);
+
+# Method on temporary fix2
+assert(fix2(3.0, 4.0).swap().x == 4.0);
+assert(fix2(3.0, 4.0).swap().y == 3.0);

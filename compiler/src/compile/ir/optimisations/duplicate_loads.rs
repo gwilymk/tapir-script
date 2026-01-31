@@ -16,12 +16,11 @@ pub fn duplicate_loads(f: &mut TapIrFunction) -> OptimisationResult {
 
         for instr in block.instrs_mut() {
             if let TapIr::Constant(t, value) = instr {
-                let mut value = *value;
-                if let Constant::Fix(n) = value
-                    && n.frac() == 0
-                {
-                    value = Constant::Int(n.floor());
-                }
+                let value = *value;
+                // Note: We don't merge Fix and Int constants even for zero, because
+                // they're used in different type contexts (e.g., f* expects fix operands).
+                // The old code tried to merge Fix(n) with Int(n.floor()) when n.frac() == 0,
+                // but that was wrong because Fix(2.0) = 512 while Int(2) = 2.
 
                 let entry = constants_in_block.entry(value);
                 let target = *t;

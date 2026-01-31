@@ -1,0 +1,81 @@
+# Tests for values that survive across control flow
+extern fn assert(value: bool);
+
+# Values computed before if should be usable after
+var before_x = 5;
+var before_f = 5.0;
+var before_v = fix2(1.0, 2.0);
+
+if before_x > 3 {
+    var inside = 10;
+    assert(inside == 10);
+}
+
+assert(before_x == 5);
+assert(before_f == 5.0);
+assert(before_v.x == 1.0);
+assert(before_v.y == 2.0);
+
+# Values computed in different branches
+var branch_result = 0;
+if before_x > 3 {
+    branch_result = 100;
+} else {
+    branch_result = 200;
+}
+assert(branch_result == 100);
+
+# Loop with accumulator
+var acc = 0;
+var i = 0;
+loop {
+    if i >= 5 {
+        break;
+    }
+    acc = acc + i;
+    i = i + 1;
+}
+assert(acc == 10);  # 0+1+2+3+4 = 10
+assert(i == 5);
+
+# Fix values in loop
+var fix_acc = 0.0;
+var j = 0;
+loop {
+    if j >= 3 {
+        break;
+    }
+    fix_acc = fix_acc + 1.5;
+    j = j + 1;
+}
+assert(fix_acc == 4.5);
+
+# fix2 in loop
+var vec_acc = fix2(0.0, 0.0);
+var k = 0;
+loop {
+    if k >= 2 {
+        break;
+    }
+    vec_acc = vec_acc + fix2(1.0, 2.0);
+    k = k + 1;
+}
+assert(vec_acc.x == 2.0);
+assert(vec_acc.y == 4.0);
+
+# Nested if statements
+var nested_result = 0;
+if before_x > 0 {
+    if before_x > 2 {
+        if before_x > 4 {
+            nested_result = 3;
+        } else {
+            nested_result = 2;
+        }
+    } else {
+        nested_result = 1;
+    }
+} else {
+    nested_result = 0;
+}
+assert(nested_result == 3);

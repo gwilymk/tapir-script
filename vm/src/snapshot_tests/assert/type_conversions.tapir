@@ -1,0 +1,40 @@
+# Tests for potential type confusion between int and fix
+extern fn assert(value: bool);
+
+# Test that integer 2 is not confused with fix 2.0 (value 512)
+var int_two = 2;
+var fix_two = 2.0;
+assert(int_two == 2);
+assert(fix_two == 2.0);
+
+# After some operations, ensure values stay distinct
+var int_result = int_two * 3;
+var fix_result = fix_two * 3.0;
+assert(int_result == 6);
+assert(fix_result == 6.0);
+
+# Mixed int2 and fix2 with same "numeric" values
+var iv = int2(2, 3);
+var fv = fix2(2.0, 3.0);
+assert(iv.x == 2);
+assert(iv.y == 3);
+assert(fv.x == 2.0);
+assert(fv.y == 3.0);
+
+# Ensure int2 operations don't mix with fix2
+var iv2 = int2(4, 5);
+var fv2 = fix2(4.0, 5.0);
+var int_sum = iv + iv2;
+var fix_sum = fv + fv2;
+assert(int_sum.x == 6);
+assert(int_sum.y == 8);
+assert(fix_sum.x == 6.0);
+assert(fix_sum.y == 8.0);
+
+# Test that zero is handled correctly for both types
+var int_zero = 0;
+var fix_zero = 0.0;
+var int_neg = 0 - 5;
+var fix_neg = 0.0 - 5.0;
+assert(int_neg == 0 - 5);
+assert(fix_neg == 0.0 - 5.0);

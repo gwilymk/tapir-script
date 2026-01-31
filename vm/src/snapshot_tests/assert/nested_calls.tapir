@@ -1,0 +1,47 @@
+# Tests for nested method calls and complex expressions
+extern fn assert(value: bool);
+
+# Nested method calls on fix values
+var x = 5.5;
+assert(x.abs() == 5.5);
+assert((0.0 - x).abs() == 5.5);
+
+# Chained operations on fix2
+var v = fix2(3.0, 4.0);
+var v_neg = fix2(0.0 - 3.0, 0.0 - 4.0);
+assert(v_neg.abs().x == 3.0);
+assert(v_neg.abs().y == 4.0);
+
+# Multiple operations in sequence
+var a = fix2(1.0, 2.0);
+var b = fix2(3.0, 4.0);
+var c = a + b;
+var d = c * 2.0;
+var e = d - a;
+assert(e.x == 7.0);
+assert(e.y == 10.0);
+
+# Dot product of computed values
+var p1 = fix2(2.0, 0.0);
+var p2 = fix2(0.0, 3.0);
+assert(p1.dot(p2) == 0.0);
+assert((p1 + p2).dot(fix2(1.0, 1.0)) == 5.0);
+
+# Swap combined with other operations
+var s = fix2(5.0, 10.0);
+var swapped = s.swap();
+assert(swapped.x == 10.0);
+assert(swapped.y == 5.0);
+assert(swapped.swap().x == 5.0);
+
+# Round, floor, ceil on computed values
+var computed = fix2(1.0, 2.0) + fix2(0.7, 0.3);
+var r = computed.round();
+var f = computed.floor();
+var c2 = computed.ceil();
+assert(r.x == 2);  # 1.7 rounds to 2
+assert(r.y == 2);  # 2.3 rounds to 2
+assert(f.x == 1);  # 1.7 floors to 1
+assert(f.y == 2);  # 2.3 floors to 2
+assert(c2.x == 2); # 1.7 ceils to 2
+assert(c2.y == 3); # 2.3 ceils to 3

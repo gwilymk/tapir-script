@@ -1,0 +1,35 @@
+struct vec2 { x: int, y: int }
+
+fn vec2.negate(self) -> vec2 {
+    return vec2(0 - self.x, 0 - self.y);
+}
+
+fn vec2.transform(self) -> vec2 {
+    return vec2(self.x + 1, self.y + 1);
+}
+
+extern fn use_val(v: int);
+
+fn main() {
+    var v1 = vec2(1, 2);
+    var v2 = vec2(3, 4);
+    var v3 = vec2(5, 6);
+    var v4 = vec2(7, 8);
+    var v5 = vec2(9, 10);
+    var v6 = vec2(11, 12);
+    var v7 = vec2(13, 14);
+
+    use_val(v1.x);
+    use_val(v2.x);
+    use_val(v3.x);
+    use_val(v4.x);
+    use_val(v5.x);
+    use_val(v6.x);
+    use_val(v7.x);
+
+    var neg = v1.negate();
+    use_val(neg.x);
+
+    var trans = v2.transform();
+    use_val(trans.x);
+}

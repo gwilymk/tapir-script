@@ -666,12 +666,14 @@ mod test {
         glob!("snapshot_tests", "compiler/*.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
-            let enable_optimisations = input.starts_with("# optimise\n");
+            let enable_optimisations = input.starts_with("# optimise\n")
+                || input.starts_with("# prelude\n# optimise\n");
+            let enable_prelude = input.starts_with("# prelude\n");
 
             let compiler_settings = CompileSettings {
                 available_fields: None,
                 enable_optimisations,
-                enable_prelude: false,
+                enable_prelude,
             };
 
             let output = compile(path, &input, &compiler_settings).unwrap();

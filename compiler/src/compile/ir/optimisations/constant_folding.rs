@@ -258,10 +258,12 @@ pub fn constant_folding(
                 // ===================
                 // Add / subtract zero
                 // ===================
+                // x + 0 = x, x - 0 = x
                 (_, B::Add | B::Sub, Some(C::Int(0))) => take_lhs,
-                (Some(C::Int(0)), B::Add | B::Sub, _) => take_rhs,
                 (_, B::Add | B::Sub, Some(C::Fix(n))) if n == f0 => take_lhs,
-                (Some(C::Fix(n)), B::Add | B::Sub, _) if n == f0 => take_rhs,
+                // 0 + x = x (but NOT 0 - x, which equals -x)
+                (Some(C::Int(0)), B::Add, _) => take_rhs,
+                (Some(C::Fix(n)), B::Add, _) if n == f0 => take_rhs,
 
                 // ================
                 // Multiply by zero

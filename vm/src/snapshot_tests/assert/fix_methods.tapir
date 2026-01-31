@@ -1,0 +1,53 @@
+extern fn assert(value: bool);
+
+# fix.abs
+var a = 5.0;
+assert(a.abs() == 5.0);
+var b = 0.0 - 5.0;
+assert(b.abs() == 5.0);
+var c = 0.0;
+assert(c.abs() == 0.0);
+var d = 0.0 - 2.5;
+assert(d.abs() == 2.5);
+
+# fix.min
+var x = 3.0;
+var y = 5.0;
+assert(x.min(y) == 3.0);
+assert(y.min(x) == 3.0);
+assert(x.min(x) == 3.0);
+
+# fix.max
+assert(x.max(y) == 5.0);
+assert(y.max(x) == 5.0);
+assert(x.max(x) == 3.0);
+
+# fix.floor
+var f1 = 2.0;
+assert(f1.floor() == 2);
+var f2 = 2.5;
+assert(f2.floor() == 2);
+var f3 = 2.9;
+assert(f3.floor() == 2);
+var f4 = 0.0 - 2.5;
+assert(f4.floor() == 0 - 3);
+
+# fix.ceil
+assert(f1.ceil() == 2);
+var g2 = 2.1;
+assert(g2.ceil() == 3);
+assert(f3.ceil() == 3);
+var g4 = 0.0 - 2.5;
+assert(g4.ceil() == 0 - 2);
+
+# fix.round
+assert(f1.round() == 2);
+var r2 = 2.4;
+assert(r2.round() == 2);
+assert(f2.round() == 3);
+var r4 = 2.6;
+assert(r4.round() == 3);
+var r5 = 0.0 - 2.4;
+assert(r5.round() == 0 - 2);
+var r6 = 0.0 - 2.6;
+assert(r6.round() == 0 - 3);

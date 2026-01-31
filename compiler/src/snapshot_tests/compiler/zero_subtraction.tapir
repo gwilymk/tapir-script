@@ -1,0 +1,14 @@
+# optimise
+property int_prop: int;
+
+fn int.negate_with_local(self) -> int {
+    var zero = 0;
+    return zero - self;
+}
+
+fn int.negate_with_literal(self) -> int {
+    return 0 - self;
+}
+
+int_prop = int_prop.negate_with_local();
+int_prop = int_prop.negate_with_literal();

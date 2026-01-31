@@ -1,0 +1,27 @@
+extern fn assert(value: bool);
+
+# Basic assertions
+assert(true);
+assert(1 == 1);
+assert(5 > 3);
+assert(3 < 5);
+assert(5 >= 5);
+assert(5 <= 5);
+
+# Arithmetic
+assert(2 + 3 == 5);
+assert(10 - 3 == 7);
+assert(4 * 3 == 12);
+assert(15 // 3 == 5);
+
+# Variables
+var x = 10;
+assert(x == 10);
+x = x + 5;
+assert(x == 15);
+
+# Logical operators
+assert(true && true);
+assert(true || false);
+assert(!false);
+assert(!(1 == 2));

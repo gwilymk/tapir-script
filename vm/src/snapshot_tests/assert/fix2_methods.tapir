@@ -1,0 +1,64 @@
+extern fn assert(value: bool);
+
+# fix2 construction and field access
+var v1 = fix2(3.0, 4.0);
+assert(v1.x == 3.0);
+assert(v1.y == 4.0);
+
+var v2 = fix2(1.0, 2.0);
+
+# fix2 + fix2
+var sum = v1 + v2;
+assert(sum.x == 4.0);
+assert(sum.y == 6.0);
+
+# fix2 - fix2
+var diff = v1 - v2;
+assert(diff.x == 2.0);
+assert(diff.y == 2.0);
+
+# fix2 * fix
+var scaled = v1 * 2.0;
+assert(scaled.x == 6.0);
+assert(scaled.y == 8.0);
+
+# fix * fix2
+var scaled2 = 3.0 * v2;
+assert(scaled2.x == 3.0);
+assert(scaled2.y == 6.0);
+
+# fix2 / fix
+var divided = fix2(10.0, 20.0) / 2.0;
+assert(divided.x == 5.0);
+assert(divided.y == 10.0);
+
+# fix2.dot
+assert(v1.dot(v2) == 11.0);
+assert(fix2(1.0, 0.0).dot(fix2(0.0, 1.0)) == 0.0);
+
+# fix2.swap
+var swapped = v1.swap();
+assert(swapped.x == 4.0);
+assert(swapped.y == 3.0);
+
+# fix2.abs
+var neg = fix2(0.0 - 3.0, 0.0 - 4.0);
+var abs_neg = neg.abs();
+assert(abs_neg.x == 3.0);
+assert(abs_neg.y == 4.0);
+
+# fix2.round (returns int2)
+var to_round = fix2(2.4, 2.6);
+var rounded = to_round.round();
+assert(rounded.x == 2);
+assert(rounded.y == 3);
+
+# fix2.floor (returns int2)
+var floored = to_round.floor();
+assert(floored.x == 2);
+assert(floored.y == 2);
+
+# fix2.ceil (returns int2)
+var ceiled = to_round.ceil();
+assert(ceiled.x == 3);
+assert(ceiled.y == 3);

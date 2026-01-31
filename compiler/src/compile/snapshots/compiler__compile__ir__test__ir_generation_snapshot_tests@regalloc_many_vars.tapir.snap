@@ -1,0 +1,126 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/regalloc_many_vars.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn vec2@negate(self.x.11, self.y.12) -> int, int
+
+---- block 0 ----
+temp.17 = int 0
+temp.19.x.20 = self.x.11
+temp.19.y.21 = self.y.12
+temp.18 = temp.19.x.20
+temp.16 = temp.17 - temp.18
+temp.23 = int 0
+temp.25.x.26 = self.x.11
+temp.25.y.27 = self.y.12
+temp.24 = temp.25.y.27
+temp.22 = temp.23 - temp.24
+temp.13.x.14 = temp.16
+temp.13.y.15 = temp.22
+return temp.13.x.14, temp.13.y.15
+
+=======================
+fn vec2@transform(self.x.28, self.y.29) -> int, int
+
+---- block 0 ----
+temp.36.x.37 = self.x.28
+temp.36.y.38 = self.y.29
+temp.34 = temp.36.x.37
+temp.35 = int 1
+temp.33 = temp.34 + temp.35
+temp.42.x.43 = self.x.28
+temp.42.y.44 = self.y.29
+temp.40 = temp.42.y.44
+temp.41 = int 1
+temp.39 = temp.40 + temp.41
+temp.30.x.31 = temp.33
+temp.30.y.32 = temp.39
+return temp.30.x.31, temp.30.y.32
+
+=======================
+fn main() -> 
+
+---- block 0 ----
+temp.47 = int 1
+temp.48 = int 2
+v1.x.45 = temp.47
+v1.y.46 = temp.48
+temp.51 = int 3
+temp.52 = int 4
+v2.x.49 = temp.51
+v2.y.50 = temp.52
+temp.55 = int 5
+temp.56 = int 6
+v3.x.53 = temp.55
+v3.y.54 = temp.56
+temp.59 = int 7
+temp.60 = int 8
+v4.x.57 = temp.59
+v4.y.58 = temp.60
+temp.63 = int 9
+temp.64 = int 10
+v5.x.61 = temp.63
+v5.y.62 = temp.64
+temp.67 = int 11
+temp.68 = int 12
+v6.x.65 = temp.67
+v6.y.66 = temp.68
+temp.71 = int 13
+temp.72 = int 14
+v7.x.69 = temp.71
+v7.y.70 = temp.72
+temp.75.x.76 = v1.x.45
+temp.75.y.77 = v1.y.46
+temp.74 = temp.75.x.76
+temp.73 = extern use_val(temp.74)
+temp.80.x.81 = v2.x.49
+temp.80.y.82 = v2.y.50
+temp.79 = temp.80.x.81
+temp.78 = extern use_val(temp.79)
+temp.85.x.86 = v3.x.53
+temp.85.y.87 = v3.y.54
+temp.84 = temp.85.x.86
+temp.83 = extern use_val(temp.84)
+temp.90.x.91 = v4.x.57
+temp.90.y.92 = v4.y.58
+temp.89 = temp.90.x.91
+temp.88 = extern use_val(temp.89)
+temp.95.x.96 = v5.x.61
+temp.95.y.97 = v5.y.62
+temp.94 = temp.95.x.96
+temp.93 = extern use_val(temp.94)
+temp.100.x.101 = v6.x.65
+temp.100.y.102 = v6.y.66
+temp.99 = temp.100.x.101
+temp.98 = extern use_val(temp.99)
+temp.105.x.106 = v7.x.69
+temp.105.y.107 = v7.y.70
+temp.104 = temp.105.x.106
+temp.103 = extern use_val(temp.104)
+temp.109.x.110 = v1.x.45
+temp.109.y.111 = v1.y.46
+temp.108.x.112, temp.108.y.113 = vec2@negate(temp.109.x.110, temp.109.y.111)
+neg.x.114 = temp.108.x.112
+neg.y.115 = temp.108.y.113
+temp.118.x.119 = neg.x.114
+temp.118.y.120 = neg.y.115
+temp.117 = temp.118.x.119
+temp.116 = extern use_val(temp.117)
+temp.122.x.123 = v2.x.49
+temp.122.y.124 = v2.y.50
+temp.121.x.125, temp.121.y.126 = vec2@transform(temp.122.x.123, temp.122.y.124)
+trans.x.127 = temp.121.x.125
+trans.y.128 = temp.121.y.126
+temp.131.x.132 = trans.x.127
+temp.131.y.133 = trans.y.128
+temp.130 = temp.131.x.132
+temp.129 = extern use_val(temp.130)
+return

@@ -202,6 +202,84 @@ mod test {
         });
     }
 
+    /// A minimal test object that only supports the `assert` extern function.
+    /// Used for simple behavioral tests that verify correctness via assertions.
+    struct AssertTestObj {
+        assertion_count: usize,
+    }
+
+    unsafe impl TapirScript for AssertTestObj {
+        fn set_prop(&mut self, index: u8, _value: i32) {
+            panic!("Unexpected property set at index {index}");
+        }
+
+        fn get_prop(&self, index: u8) -> i32 {
+            panic!("Unexpected property get at index {index}");
+        }
+
+        type EventType = ();
+
+        fn script(self) -> Script<Self> {
+            unimplemented!("Shouldn't create the script this way in the tests")
+        }
+
+        fn create_event(&self, _index: u8, _args: &[i32]) -> Self::EventType {}
+
+        fn extern_call(&mut self, id: usize, stack: &mut Vec<i32>, first_arg: usize) {
+            match id {
+                0 => {
+                    // assert(value: bool)
+                    let value = stack[first_arg];
+                    if value == 0 {
+                        panic!(
+                            "Assertion #{} failed (0-indexed, {} passed before this)",
+                            self.assertion_count, self.assertion_count
+                        );
+                    }
+                    self.assertion_count += 1;
+                }
+                _ => panic!("Unknown extern function id: {id}"),
+            }
+        }
+    }
+
+    #[test]
+    fn assert_tests() {
+        glob!("snapshot_tests", "assert/**/*.tapir", |path| {
+            std::println!("{}", path.display());
+
+            let input = fs::read_to_string(path).unwrap();
+
+            let compiler_settings = CompileSettings {
+                available_fields: Some(vec![]),
+                enable_optimisations: true,
+                enable_prelude: true,
+            };
+
+            let compile_result =
+                compiler::compile(path.file_name().unwrap(), &input, compiler_settings).unwrap();
+
+            let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+            let mut test_obj = AssertTestObj { assertion_count: 0 };
+
+            let mut max_iterations = 1000;
+
+            while !vm.states.is_empty() && max_iterations >= 0 {
+                let mut object_safe_props = ObjectSafePropertiesImpl {
+                    properties: &mut test_obj,
+                    events: vec![],
+                };
+
+                vm.run_until_wait(&mut object_safe_props);
+                max_iterations -= 1;
+            }
+
+            if max_iterations == 0 {
+                panic!("ran for over 1000 waits, something seems to have gone wrong...");
+            }
+        });
+    }
+
     macro_rules! binop_test {
         ($($type: ident, $name:ident: ($code:tt, $expected:expr),)*) => {
             $(

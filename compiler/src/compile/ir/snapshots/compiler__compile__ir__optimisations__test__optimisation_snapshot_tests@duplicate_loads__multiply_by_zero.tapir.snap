@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/duplicate_loads/multiply_by_zero.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/duplicate_loads/multiply_by_zero.tapir
 ---
 ----------- before -------------
 =======================
@@ -134,14 +134,14 @@ getprop temp.23, 0
 temp.24 = temp.19
 storeprop temp.24, 0
 wait
-temp.26 = temp.19
+temp.26 = fix 0
 getprop temp.27, 1
-temp.28 = temp.19
+temp.28 = temp.26
 storeprop temp.28, 1
 wait
 getprop temp.30, 1
-temp.31 = temp.19
-temp.32 = temp.19
+temp.31 = temp.26
+temp.32 = temp.26
 storeprop temp.32, 1
 return 
 
@@ -161,15 +161,15 @@ getprop temp.23, 0
 temp.24 = temp.19
 storeprop temp.19, 0
 wait
-temp.26 = temp.19
+temp.26 = fix 0
 getprop temp.27, 1
-temp.28 = temp.19
-storeprop temp.19, 1
+temp.28 = temp.26
+storeprop temp.26, 1
 wait
 getprop temp.30, 1
-temp.31 = temp.19
-temp.32 = temp.19
-storeprop temp.19, 1
+temp.31 = temp.26
+temp.32 = temp.26
+storeprop temp.26, 1
 return 
 
 
@@ -183,7 +183,8 @@ storeprop temp.19, 0
 wait
 storeprop temp.19, 0
 wait
-storeprop temp.19, 1
+temp.26 = fix 0
+storeprop temp.26, 1
 wait
-storeprop temp.19, 1
+storeprop temp.26, 1
 return

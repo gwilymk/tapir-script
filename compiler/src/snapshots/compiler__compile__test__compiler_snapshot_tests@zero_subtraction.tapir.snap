@@ -1,0 +1,14 @@
+---
+source: compiler/src/compile.rs
+expression: decompiled
+input_file: compiler/src/snapshot_tests/compiler/zero_subtraction.tapir
+---
+00000000: getprop 3, 0
+00000001: loadk 2, 0
+00000003: sub 1, 2, 3
+00000004: setprop 1, 0
+00000005: getprop 3, 0
+00000006: sub 1, 2, 3
+00000007: setprop 1, 0
+00000008: ret
+00000009: ret

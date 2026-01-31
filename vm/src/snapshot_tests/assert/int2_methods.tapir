@@ -1,0 +1,62 @@
+extern fn assert(value: bool);
+
+# int2 construction and field access
+var v1 = int2(3, 4);
+assert(v1.x == 3);
+assert(v1.y == 4);
+
+var v2 = int2(1, 2);
+
+# int2 + int2
+var sum = v1 + v2;
+assert(sum.x == 4);
+assert(sum.y == 6);
+
+# int2 - int2
+var diff = v1 - v2;
+assert(diff.x == 2);
+assert(diff.y == 2);
+
+# int2 * int
+var scaled = v1 * 2;
+assert(scaled.x == 6);
+assert(scaled.y == 8);
+
+# int * int2
+var scaled2 = 3 * v2;
+assert(scaled2.x == 3);
+assert(scaled2.y == 6);
+
+# int2 / int
+var divided = int2(10, 20) / 2;
+assert(divided.x == 5);
+assert(divided.y == 10);
+
+# int2.dot
+assert(v1.dot(v2) == 11);  # 3*1 + 4*2 = 11
+assert(int2(1, 0).dot(int2(0, 1)) == 0);  # perpendicular
+
+# int2.abs
+var neg = int2(0 - 3, 0 - 4);
+var abs_neg = neg.abs();
+assert(abs_neg.x == 3);
+assert(abs_neg.y == 4);
+
+# int2.magnitude_squared
+assert(v1.magnitude_squared() == 25);  # 3*3 + 4*4 = 25
+assert(int2(0, 5).magnitude_squared() == 25);
+
+# int2.hadamard
+var h = v1.hadamard(v2);
+assert(h.x == 3);  # 3*1
+assert(h.y == 8);  # 4*2
+
+# int2.cross
+assert(int2(1, 0).cross(int2(0, 1)) == 1);
+assert(int2(0, 1).cross(int2(1, 0)) == 0 - 1);
+assert(v1.cross(v2) == 2);  # 3*2 - 4*1 = 2
+
+# int2.swap
+var swapped = v1.swap();
+assert(swapped.x == 4);
+assert(swapped.y == 3);
