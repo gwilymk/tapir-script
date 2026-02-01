@@ -2,11 +2,15 @@
 
 This document catalogs bugs discovered while creating comprehensive integration tests for the tapir-script compiler and VM.
 
-## 1. Nested User-Defined Structs Crash the Compiler
+---
 
-**Severity:** High (compiler crash)
+## FIXED BUGS
 
-**Description:** When a user-defined struct contains a field of another user-defined struct type, the compiler panics with "Target should have matching expansion".
+### 1. Nested User-Defined Structs Crash the Compiler
+
+**Status:** FIXED
+
+**Original Description:** When a user-defined struct contains a field of another user-defined struct type, the compiler paniced with "Target should have matching expansion".
 
 **Reproduction:**
 ```tapir
@@ -17,53 +21,73 @@ var r = Rectangle(Point(0, 0), Point(100, 50));
 assert(r.origin.x == 0);
 ```
 
-**Error:**
-```
-thread 'test::assert_tests' panicked at compiler/src/compile/ir/lowering.rs:1025:22:
-Target should have matching expansion
-```
-
-**Workaround:** Use prelude structs (int2, fix2) instead, or avoid nesting user-defined structs.
+**Test file:** `bug1_nested_structs.tapir`
 
 ---
 
-## 2. Global Struct Assignment Gets Optimized Away
+### 2. Global Struct Assignment Gets Optimized Away
 
-**Severity:** High (silent incorrect behavior)
+**Status:** FIXED
 
-**Description:** When assigning to a global variable of struct type, the optimizer incorrectly eliminates the assignment, leaving the global unmodified.
+**Original Description:** When assigning to a global variable of struct type, the optimizer incorrectly eliminated the assignment, leaving the global unmodified.
 
 **Reproduction:**
 ```tapir
 global g: int2;
 g = int2(10, 20);
-assert(g.x == 10);  # Fails - g.x is still 0
+assert(g.x == 10);  # Previously failed - g.x was still 0
 ```
 
-**Workaround:** Avoid global struct variables, or use separate int globals for each field.
+**Test file:** `bug2_global_struct_assignment.tapir`
 
 ---
 
-## 3. Struct Constructors Are Not Constant Expressions
+### 3. Struct Constructors Are Not Constant Expressions
 
-**Severity:** Medium (compile error)
+**Status:** FIXED
 
-**Description:** Global variables cannot be initialized with struct constructors because they are not treated as constant expressions.
+**Original Description:** Global variables could not be initialized with struct constructors because they were not treated as constant expressions.
 
 **Reproduction:**
 ```tapir
-global pos = int2(10, 20);  # Error: not a constant expression
+global pos = int2(10, 20);  # Previously errored: "not a constant expression"
 ```
 
-**Workaround:** Use type-only declaration and assign in code:
-```tapir
-global pos: int2;
-pos = int2(10, 20);
-```
+**Test file:** `bug3_global_struct_constant.tapir`
 
 ---
 
-## 4. Floor Division Bug with Negative Divisors
+### 5. Euclidean Modulo vs Truncating Modulo
+
+**Status:** FIXED
+
+**Original Description:** The `%` operator (Euclidean modulo) was behaving identically to `%%` (truncating modulo) due to AST lowering collapsing both operators to the same IR operation.
+
+**Root Cause:** AST conversion `(B::Mod, Type::Int) => *self = B::RealMod` was incorrectly converting Euclidean modulo to truncating modulo, and there was no separate `Mod` opcode in the bytecode.
+
+**Fix:** Added proper `Mod` opcode and removed the incorrect AST conversion.
+
+**Test file:** `modulo_operators.tapir`
+
+---
+
+### 7. Comparison Operators in Function If-Conditions (Potential Optimizer Bug)
+
+**Status:** FIXED (or never was a bug)
+
+**Original Description:** During testing, there were indications that `>`, `>=`, `==`, and `!=` operators in if-conditions inside functions may cause the optimizer to incorrectly eliminate code.
+
+**Current Status:** Comprehensive testing shows all comparison operators work correctly in function if-conditions.
+
+**Test file:** `bug7_comparison_optimizer.tapir`
+
+---
+
+## OPEN BUGS
+
+### 4. Floor Division Bug with Negative Divisors
+
+**Status:** OPEN
 
 **Severity:** Medium (incorrect behavior)
 
@@ -80,30 +104,13 @@ assert(7 / -4 == -2);  # Fails - returns -1 instead of -2
 
 **Workaround:** Avoid negative divisors, or use `//` (truncating division) if that's the intended behavior.
 
----
-
-## 5. Euclidean Modulo Behaves Like Truncating Modulo
-
-**Severity:** Medium (incorrect behavior)
-
-**Description:** The `%` operator is documented as Euclidean modulo but actually behaves identically to `%%` (truncating modulo).
-
-**Reproduction:**
-```tapir
-# Euclidean modulo should always return non-negative
-assert(-7 % 4 == 1);   # Fails - returns -3 instead of 1
-assert(-7 %% 4 == -3); # Passes - truncating modulo
-```
-
-**Expected:** Euclidean modulo: `-7 % 4 = 1` (always non-negative result)
-
-**Actual:** Both `%` and `%%` return `-3`
-
-**Workaround:** Add divisor when result is negative: `((a % b) + b) % b`
+**Test file:** `bug4_floor_division_negative.tapir` (failing assertions commented out)
 
 ---
 
-## 6. sqrt() Returns Incorrect Values for Non-Perfect Squares
+### 6. sqrt() Returns Incorrect Values for Non-Perfect Squares
+
+**Status:** OPEN
 
 **Severity:** Medium (incorrect behavior)
 
@@ -112,81 +119,85 @@ assert(-7 %% 4 == -3); # Passes - truncating modulo
 **Reproduction:**
 ```tapir
 var s = sqrt(2.0);
-assert(s > 1.41 && s < 1.42);  # Fails - s is 1.375
+assert(s > 1.41 && s < 1.42);  # Fails - s is ~1.375
 ```
 
 **Expected:** `sqrt(2.0) ≈ 1.414`
 
-**Actual:** Returns `1.375`
+**Actual:** Returns `~1.375`
 
 **Note:** Perfect squares work correctly: `sqrt(4.0) == 2.0`, `sqrt(9.0) == 3.0`
 
----
+**Root Cause:** Likely due to limited precision in fixed-point arithmetic implementation.
 
-## 7. Comparison Operators in Function If-Conditions (Potential Optimizer Bug)
-
-**Severity:** High (silent incorrect behavior) - *Needs verification*
-
-**Description:** During testing, there were indications that `>`, `>=`, `==`, and `!=` operators in if-conditions inside functions may cause the optimizer to incorrectly eliminate code. Only `<` and `<=` appeared to work reliably.
-
-**Reproduction:** (intermittent, needs isolation)
-```tapir
-fn check_greater(a: int, b: int) -> bool {
-    if a > b {
-        return true;
-    }
-    return false;
-}
-# Function body may get optimized away incorrectly
-```
-
-**Status:** This bug was observed during testing but needs further isolation to confirm. The tests were rewritten to use `<` and `<=` as a workaround.
+**Test file:** `bug6_sqrt_nonperfect.tapir` (failing assertions commented out)
 
 ---
 
-## 8. Global Variable Assignment in Spawned Tasks
+### 8. Global Struct Field Assignment in Functions
 
-**Severity:** High (silent incorrect behavior)
+**Status:** OPEN
 
-**Description:** Global variable assignments inside spawned task functions may be optimized away or not take effect correctly.
+**Severity:** Medium (silent incorrect behavior)
 
-**Reproduction:**
+**Description:** Individual field assignment to global structs inside functions doesn't work. Whole struct assignment works fine. This is NOT spawn-specific - it fails with regular function calls too.
+
+**What works:**
 ```tapir
-global result = 0;
+global g: int2;
 
-fn set_result(v: int) {
-    result = v;
+fn set_whole_struct(x: int, y: int) {
+    g = int2(x, y);  # Whole struct assignment works
 }
 
-spawn set_result(42);
-wait;
-assert(result == 42);  # May fail
+set_whole_struct(100, 200);
+assert(g.x == 100);  # Passes
 ```
 
-**Status:** Needs further investigation. Simplified spawn tests work, but complex interactions with globals fail.
+**What fails:**
+```tapir
+global g: int2;
+
+fn set_struct_fields(x: int, y: int) {
+    g.x = x;  # Individual field assignment fails
+    g.y = y;
+}
+
+set_struct_fields(100, 200);
+assert(g.x == 100);  # Fails - g.x is still 0
+```
+
+**Workaround:** Use whole struct assignment instead of individual field assignment:
+```tapir
+g = int2(x, y);  # Instead of g.x = x; g.y = y;
+```
+
+**Test files:**
+- `bug8_spawn_globals.tapir` (tests with spawn)
+- `bug8_test_nonspawn.tapir` (tests without spawn - same bug)
 
 ---
 
-## Test Files Affected
+## Test Files
 
-The following test files were simplified or modified to work around these bugs:
+Bug-specific test files:
+- `bug1_nested_structs.tapir` - Tests nested user-defined structs (FIXED)
+- `bug2_global_struct_assignment.tapir` - Tests global struct assignment (FIXED)
+- `bug3_global_struct_constant.tapir` - Tests struct constant initialization (FIXED)
+- `bug4_floor_division_negative.tapir` - Tests floor division with negative divisors (OPEN)
+- `bug6_sqrt_nonperfect.tapir` - Tests sqrt precision (OPEN)
+- `bug7_comparison_optimizer.tapir` - Tests comparison operators in functions (FIXED)
+- `bug8_spawn_globals.tapir` - Tests globals in spawned tasks (PARTIAL)
 
-- `structs.tapir` - Removed nested struct tests
-- `struct_methods.tapir` - Removed methods returning different struct types
-- `struct_assignment.tapir` - Uses only prelude structs
-- `globals_advanced.tapir` - Removed global struct tests
-- `spawn_complex_args.tapir` - Removed global struct argument tests
-- `spawn_globals_interaction.tapir` - Heavily simplified
-- `division_operators.tapir` - Removed negative divisor tests
-- `modulo_operators.tapir` - Removed negative number tests
-- `task_handles.tapir` - Left failing intentionally to verify fix later
+Other test files:
+- `division_operators.tapir` - Tests floor vs truncating division
+- `modulo_operators.tapir` - Tests Euclidean vs truncating modulo (FIXED)
+- `task_handles.tapir` - Uses globals in spawned tasks
 
 ---
 
 ## Recommendations
 
-1. **Priority 1:** Fix the nested struct compiler crash - this prevents users from using a common language pattern
-2. **Priority 2:** Fix the global struct assignment optimization - silent incorrect behavior is dangerous
-3. **Priority 3:** Fix sqrt() for non-perfect squares
-4. **Priority 4:** Decide on modulo/division semantics and either fix implementation or update documentation
-5. **Priority 5:** Investigate and fix the comparison operator optimizer bug
+1. **Priority 1:** Fix floor division with negative divisors - decide on semantics and fix implementation
+2. **Priority 2:** Fix sqrt() for non-perfect squares - this affects any game using distance calculations
+3. **Priority 3:** Fix global struct field assignment in functions - this limits struct usability

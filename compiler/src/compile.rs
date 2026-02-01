@@ -608,7 +608,7 @@ impl Bytecode {
             BinaryOperator::Sub => Opcode::Sub,
             BinaryOperator::Mul => Opcode::Mul,
             BinaryOperator::Div => Opcode::Div,
-            BinaryOperator::Mod => unreachable!("Shouldn't be compiling mod binops"),
+            BinaryOperator::Mod => Opcode::Mod,
             BinaryOperator::RealDiv => Opcode::RealDiv,
             BinaryOperator::RealMod => Opcode::RealMod,
             BinaryOperator::FixMul => Opcode::FixMul,

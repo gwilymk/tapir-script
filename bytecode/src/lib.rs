@@ -15,6 +15,7 @@ pub enum Opcode {
     Sub,
     Mul,
     Div,
+    Mod,
     RealMod,
     RealDiv,
 

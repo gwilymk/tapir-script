@@ -29,6 +29,7 @@ fn disassemble_non_constant(instr: u32, target: &mut dyn Write) -> fmt::Result {
         bytecode::Opcode::Sub => t1!("sub", 3),
         bytecode::Opcode::Mul => t1!("mul", 3),
         bytecode::Opcode::Div => t1!("div", 3),
+        bytecode::Opcode::Mod => t1!("mod", 3),
         bytecode::Opcode::RealMod => t1!("realmod", 3),
         bytecode::Opcode::RealDiv => t1!("realdiv", 3),
         bytecode::Opcode::EqEq => t1!("eq", 3),

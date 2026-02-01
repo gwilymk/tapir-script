@@ -1,8 +1,9 @@
 # Tests for modulo operators
-# Note: % and %% appear to both use truncating modulo in current impl
+# % = Euclidean modulo (result always has same sign as divisor, non-negative for positive divisor)
+# %% = Truncating modulo (result has same sign as dividend)
 extern fn assert(value: bool);
 
-# Positive modulo - both should give same result
+# Positive values - both operators give same result
 assert(17 % 5 == 2);
 assert(17 %% 5 == 2);
 assert(15 % 5 == 0);
@@ -27,3 +28,25 @@ assert(10 % 3 == 1);
 assert(11 % 3 == 2);
 assert(12 % 3 == 0);
 assert(13 % 3 == 1);
+
+# Negative dividend - key difference between % and %%
+# Euclidean (%) always returns non-negative for positive divisor
+# Truncating (%%) returns negative when dividend is negative
+assert(-7 % 4 == 1);     # Euclidean: -7 = -2*4 + 1
+assert(-7 %% 4 == -3);   # Truncating: -7 = -1*4 + (-3)
+
+assert(-1 % 4 == 3);     # Euclidean
+assert(-1 %% 4 == -1);   # Truncating
+
+assert(-10 % 3 == 2);    # Euclidean: -10 = -4*3 + 2
+assert(-10 %% 3 == -1);  # Truncating: -10 = -3*3 + (-1)
+
+assert(-17 % 5 == 3);    # Euclidean
+assert(-17 %% 5 == -2);  # Truncating
+
+# Negative divisor - Euclidean always returns non-negative
+assert(7 % -4 == 3);     # Euclidean: always non-negative
+assert(7 %% -4 == 3);    # Truncating: result has sign of dividend
+
+assert(-7 % -4 == 1);    # Euclidean: always non-negative
+assert(-7 %% -4 == -3);  # Truncating: result has sign of dividend
