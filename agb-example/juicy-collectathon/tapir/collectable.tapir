@@ -18,16 +18,33 @@ fn animate_spin() {
 }
 
 global has_been_collided = false;
+global is_health_coin = false;
+
+event fn become_health_coin() {
+    is_health_coin = true;
+}
 
 event fn collide_with_player() {
     if has_been_collided {
         return;
     }
     has_been_collided = true;
-    trigger IncreaseScore;
+
+    var coin_pos = position.round() + int2(8, 8);
+    trigger IncreaseScore(coin_pos.x, coin_pos.y);
 
     urgency.cancel();
 
+    # Wait one frame to allow main.rs to tell us if we're a health coin
+    wait 1;
+
+    if is_health_coin {
+        # Health coin - just disappear quickly, the CoinToHealth entity handles the animation
+        trigger DestroySelf;
+        return;
+    }
+
+    # Normal coin - float up and explode
     should_show = true;
     animate_wait = 1;
     var count = 16;

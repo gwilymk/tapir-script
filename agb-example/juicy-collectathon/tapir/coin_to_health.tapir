@@ -1,0 +1,81 @@
+property position: fix2;
+property target: int2;
+property should_show: bool;
+property frame: int;
+
+global t = 0;
+global start_x: fix;
+global start_y: fix;
+
+fn animate() {
+    loop {
+        frame = frame + 1;
+        wait 2;
+    }
+}
+
+spawn animate();
+
+start_x = position.x;
+start_y = position.y;
+
+should_show = true;
+
+var target_x = to_fix(target.x);
+var target_y = to_fix(target.y);
+
+var duration = 90; # frames (1.5 seconds at 60fps)
+
+# Spiral parameters
+var num_rotations = 2; # number of full spirals
+var max_radius = 40.; # starting spiral radius
+
+loop {
+    if t >= duration {
+        break;
+    }
+
+    # Progress from 0 to 1
+    var progress = to_fix(t) / to_fix(duration);
+
+    # Ease out - starts fast, slows down at end
+    var ease = 1. - (1. - progress) * (1. - progress);
+
+    # Base position - linear interpolation from start to target
+    var base_x = start_x + (target_x - start_x) * ease;
+    var base_y = start_y + (target_y - start_y) * ease;
+
+    # Spiral offset - radius shrinks as we approach target
+    var radius = max_radius * (1. - progress);
+
+    # Angle increases with time for spiral effect
+    # sin/cos take 0..1 as input (0..2pi), so num_rotations full rotations
+    var angle = to_fix(t) * to_fix(num_rotations) / to_fix(duration);
+
+    # Apply spiral offset using sin/cos approximation
+    var spiral_x = radius * cos(angle);
+    var spiral_y = radius * sin(angle);
+
+    position.x = base_x + spiral_x;
+    position.y = base_y + spiral_y;
+
+    t = t + 1;
+    wait 1;
+}
+
+# Snap to exact target position
+position.x = target_x;
+position.y = target_y;
+
+# Arrived at health bar - pop into particles
+var particle_pos = position.round() + int2(8, 8);
+trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
+trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
+trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
+trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
+trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
+
+trigger ScreenShake(2);
+trigger PlaySound(1);
+trigger HealthArrived;
+trigger DestroySelf;

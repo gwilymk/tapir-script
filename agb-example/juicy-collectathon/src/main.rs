@@ -15,6 +15,8 @@ pub(crate) mod declarative_enum_dispatch;
 mod entities;
 mod sfx;
 
+use core::cmp::Reverse;
+
 use agb::{
     display::{GraphicsFrame, HEIGHT, Rgb15, WIDTH, object::Object, tiled::VRAM_MANAGER},
     fixnum::{Rect, Vector2D, num, vec2},
@@ -26,7 +28,9 @@ use agb::{
 use alloc::vec::Vec;
 use tapir_script::{Fix, Script, TapirScript};
 
-use crate::entities::{Collectable, Enemy, Entity, EntityTrait, Particle};
+use crate::entities::{
+    CoinToHealth, Collectable, CollectableEvents, Enemy, Entity, EntityTrait, Particle,
+};
 
 type Fix2D = Vector2D<Fix>;
 
@@ -134,14 +138,34 @@ fn main(gba: &mut agb::Gba) {
                     AnimationEvent::SpawnParticle(x, y, kind) => {
                         new_entities.push(Particle::new(vec2(x, y), kind).into());
                     }
-                    AnimationEvent::IncreaseScore => {
+                    AnimationEvent::IncreaseScore(x, y) => {
+                        sfx::play_sfx(&mut mixer, 0, num!(1) + Fix::new(score % 10) / 20);
+
                         score += 1;
-                        if score % 10 == 0 && player_health < 10 {
-                            player_health += 1;
-                            sfx::play_sfx(&mut mixer, 1, num!(1));
-                        } else {
-                            sfx::play_sfx(&mut mixer, 0, num!(1) + Fix::new(score % 10) / 20);
+                        if score % 10 == 0 {
+                            // Tell the coin to skip its normal animation
+                            let Entity::Collectable(collectable) = entity else {
+                                continue;
+                            };
+
+                            collectable.on_become_health_coin();
+                            // Spawn flying coin that goes to health bar
+                            let target_x = WIDTH / 2 + player_health * 7;
+                            let target_y = 1;
+                            new_entities.push(
+                                CoinToHealth::new(
+                                    vec2(x.into(), y.into()),
+                                    vec2(target_x, target_y),
+                                )
+                                .into(),
+                            );
                         }
+                    }
+                    AnimationEvent::HealthArrived => {
+                        if player_health < 10 {
+                            player_health += 1;
+                        }
+                        // Sound already played by the coin_to_health script
                     }
                     AnimationEvent::ScreenShake(intensity) => {
                         screen_shaker.on_shake(intensity);
@@ -159,6 +183,8 @@ fn main(gba: &mut agb::Gba) {
         });
         entities.append(&mut new_entities);
         health_bar.update(player_health);
+
+        entities.sort_by_key(|e| Reverse(e.z()));
 
         let mut frame = gfx.frame();
         let screen_shake = screen_shaker.properties.amount;
@@ -178,7 +204,8 @@ fn main(gba: &mut agb::Gba) {
 pub enum AnimationEvent {
     DestroySelf,
     SpawnParticle(i32, i32, i32),
-    IncreaseScore,
+    IncreaseScore(i32, i32),
+    HealthArrived,
     ScreenShake(i32),
     HurtPlayer,
     PlayerDamaged,
