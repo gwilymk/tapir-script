@@ -58,25 +58,31 @@ fn main(mut gba: agb::Gba) -> ! {
 
         input.update();
 
-        let collectable_count = entities.iter().filter(|e| e.is_collectable()).count();
+        let collectable_count = entities
+            .iter()
+            .filter(|e| matches!(e, Entity::Collectable(_)))
+            .count();
         if rng::next_i32().rem_euclid(60) < 5 - collectable_count as i32 {
-            entities.push(Entity::Collectable(Collectable::new(vec2(
-                rng::next_i32().rem_euclid(WIDTH - 16).into(),
-                rng::next_i32().rem_euclid(HEIGHT - 16).into(),
-            ))));
+            entities.push(
+                Collectable::new(vec2(
+                    rng::next_i32().rem_euclid(WIDTH - 16).into(),
+                    rng::next_i32().rem_euclid(HEIGHT - 16).into(),
+                ))
+                .into(),
+            );
         }
 
         player.update(&input);
         let player_rect = player.bounding_rect();
 
-        let mut new_entities = Vec::new();
+        let mut new_entities: Vec<Entity> = Vec::new();
         entities.retain_mut(|entity| {
             let mut keep = true;
             for event in entity.update(player_rect) {
                 match event {
                     AnimationEvent::DestroySelf => keep = false,
                     AnimationEvent::SpawnParticle(x, y, _kind) => {
-                        new_entities.push(Entity::Particle(Particle::new(vec2(x, y))));
+                        new_entities.push(Particle::new(vec2(x, y)).into());
                     }
                     AnimationEvent::IncreaseScore => {}
                     AnimationEvent::ScreenShake => {
@@ -99,7 +105,7 @@ fn main(mut gba: agb::Gba) -> ! {
     }
 }
 
-enum AnimationEvent {
+pub enum AnimationEvent {
     DestroySelf,
     SpawnParticle(i32, i32, i32),
     IncreaseScore,
