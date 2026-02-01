@@ -11,8 +11,11 @@
 #![cfg_attr(test, reexport_test_harness_main = "test_main")]
 #![cfg_attr(test, test_runner(agb::test_runner::test_runner))]
 
+pub(crate) mod declarative_enum_dispatch;
+mod entities;
+
 use agb::{
-    display::{GraphicsFrame, HEIGHT, Rgb, Rgb15, WIDTH, object::Object, tiled::VRAM_MANAGER},
+    display::{GraphicsFrame, HEIGHT, Rgb15, WIDTH, object::Object, tiled::VRAM_MANAGER},
     fixnum::{Rect, Vector2D, num, vec2},
     include_aseprite,
     input::ButtonController,
@@ -20,6 +23,8 @@ use agb::{
 };
 use alloc::vec::Vec;
 use tapir_script::{Fix, Script, TapirScript};
+
+use crate::entities::{Collectable, Entity, EntityTrait, Particle};
 
 type Fix2D = Vector2D<Fix>;
 
@@ -45,10 +50,6 @@ fn main(mut gba: agb::Gba) -> ! {
     let mut gfx = gba.graphics.get();
 
     let mut entities: Vec<Entity> = Vec::new();
-    entities.push(Entity::Collectable(Collectable::new(vec2(
-        num!(10),
-        num!(10),
-    ))));
 
     let mut screen_shaker = ScreenShaker { amount: vec2(0, 0) }.script();
 
@@ -105,31 +106,6 @@ enum AnimationEvent {
     ScreenShake,
 }
 
-enum Entity {
-    Collectable(Collectable),
-    Particle(Particle),
-}
-
-impl Entity {
-    fn update(&mut self, player_rect: Rect<i32>) -> Vec<AnimationEvent> {
-        match self {
-            Entity::Collectable(c) => c.update(player_rect),
-            Entity::Particle(p) => p.update(),
-        }
-    }
-
-    fn show(&self, frame: &mut GraphicsFrame, screen_shake: Vector2D<i32>) {
-        match self {
-            Entity::Collectable(c) => c.show(frame, screen_shake),
-            Entity::Particle(p) => p.show(frame, screen_shake),
-        }
-    }
-
-    fn is_collectable(&self) -> bool {
-        matches!(self, Entity::Collectable(_))
-    }
-}
-
 struct Player {
     player_animation: Script<PlayerAnimation>,
 }
@@ -172,95 +148,6 @@ impl Player {
 struct PlayerAnimation {
     anim_frame: i32,
     position: Fix2D,
-}
-
-struct Collectable {
-    collectable_animation: Script<CollectableAnimation>,
-}
-
-impl Collectable {
-    pub fn new(pos: Fix2D) -> Self {
-        Self {
-            collectable_animation: CollectableAnimation {
-                position: pos,
-                anim_frame: 0,
-                should_show: true,
-            }
-            .script(),
-        }
-    }
-
-    pub fn update(&mut self, player_rect: Rect<i32>) -> Vec<AnimationEvent> {
-        if self.bounding_rect().touches(player_rect) {
-            self.collectable_animation.on_collide_with_player();
-        }
-
-        self.collectable_animation.run()
-    }
-
-    pub fn show(&self, frame: &mut GraphicsFrame, screen_shake: Vector2D<i32>) {
-        let properties = &self.collectable_animation.properties;
-
-        if properties.should_show {
-            Object::new(sprites::COIN.animation_sprite(properties.anim_frame as usize))
-                .set_pos(properties.position.round() + screen_shake)
-                .show(frame);
-        }
-    }
-
-    fn bounding_rect(&self) -> Rect<i32> {
-        Rect::new(
-            self.collectable_animation.properties.position.round(),
-            vec2(16, 16),
-        )
-    }
-}
-
-#[derive(TapirScript)]
-#[tapir("tapir/collectable.tapir", trigger_type = AnimationEvent)]
-struct CollectableAnimation {
-    position: Fix2D,
-    anim_frame: i32,
-    should_show: bool,
-}
-
-struct Particle {
-    particle_animation: Script<ParticleAnimation>,
-}
-
-#[derive(TapirScript)]
-#[tapir("tapir/particle.tapir", trigger_type = AnimationEvent)]
-struct ParticleAnimation {
-    position: Fix2D,
-    lifetime: i32,
-}
-
-impl ParticleAnimation {
-    fn rng(&self) -> i32 {
-        rng::next_i32()
-    }
-}
-
-impl Particle {
-    pub fn new(position: Vector2D<i32>) -> Self {
-        Self {
-            particle_animation: ParticleAnimation {
-                position: position.into(),
-                lifetime: rng::next_i32().rem_euclid(30) + 30,
-            }
-            .script(),
-        }
-    }
-
-    pub fn update(&mut self) -> Vec<AnimationEvent> {
-        self.particle_animation.run()
-    }
-
-    pub fn show(&self, frame: &mut GraphicsFrame, screen_shake: Vector2D<i32>) {
-        Object::new(sprites::COLLECT_PARTICLE.sprite(0))
-            .set_pos(self.particle_animation.properties.position.round() + screen_shake)
-            .show(frame);
-    }
 }
 
 #[derive(TapirScript)]
