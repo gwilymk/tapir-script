@@ -8,38 +8,34 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/struct_r
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.2.x.32, temp.2.y.33 = origin()
-temp.34 = temp.2.x.32
-p.x.35 = temp.34
-temp.36 = temp.2.y.33
-p.y.37 = temp.36
-temp.38 = p.x.35
-temp.12.x.39 = temp.38
-temp.40 = p.y.37
-temp.12.y.41 = temp.40
-temp.42 = temp.12.x.39
-temp.43 = p.x.35
-temp.17.x.44 = temp.43
-temp.45 = p.y.37
-temp.17.y.46 = temp.45
-temp.47 = temp.17.y.46
-temp.48 = temp.42 + temp.47
-storeprop temp.48, 0
+temp.2.x.27, temp.2.y.28 = origin()
+temp.29 = temp.2.x.27
+p.x.30 = temp.29
+temp.31 = temp.2.y.28
+p.y.32 = temp.31
+temp.33 = p.x.30
+temp.12.x.34 = temp.33
+temp.35 = p.y.32
+temp.12.y.36 = temp.35
+temp.37 = temp.12.x.34
+temp.38 = p.x.30
+temp.17.x.39 = temp.38
+temp.40 = p.y.32
+temp.17.y.41 = temp.40
+temp.42 = temp.17.y.41
+temp.43 = temp.37 + temp.42
+storeprop temp.43, 0
 return 
 
 =======================
 fn origin() -> int, int
 
 ---- block 0 ----
-temp.49 = int 0
-temp.50 = int 0
-temp.23.x.51 = temp.49
-temp.23.y.52 = temp.50
-temp.53 = temp.23.x.51
-temp.22.x.54 = temp.53
-temp.55 = temp.23.y.52
-temp.22.y.56 = temp.55
-return temp.22.x.54, temp.22.y.56
+temp.44 = int 0
+temp.45 = int 0
+temp.22.x.46 = temp.44
+temp.22.y.47 = temp.45
+return temp.22.x.46, temp.22.y.47
 
 
 ----------- inline_small_functions -------------
@@ -50,52 +46,44 @@ fn @toplevel() ->
 jmp 2
 
 ---- block 2 ----
-temp.59 = int 0
-temp.60 = int 0
-temp.23.x.61 = temp.59
-temp.23.y.63 = temp.60
-temp.62 = temp.23.x.61
-temp.22.x.65 = temp.62
-temp.64 = temp.23.y.63
-temp.22.y.66 = temp.64
+temp.50 = int 0
+temp.51 = int 0
+temp.22.x.52 = temp.50
+temp.22.y.53 = temp.51
 jmp 4
 
 ---- block 4 ----
-temp.57 = φ(temp.22.x.65 from 2)
-temp.58 = φ(temp.22.y.66 from 2)
-temp.2.x.32 = temp.57
-temp.2.y.33 = temp.58
+temp.48 = φ(temp.22.x.52 from 2)
+temp.49 = φ(temp.22.y.53 from 2)
+temp.2.x.27 = temp.48
+temp.2.y.28 = temp.49
 jmp 1
 
 ---- block 1 ----
-temp.34 = temp.2.x.32
-p.x.35 = temp.34
-temp.36 = temp.2.y.33
-p.y.37 = temp.36
-temp.38 = p.x.35
-temp.12.x.39 = temp.38
-temp.40 = p.y.37
-temp.12.y.41 = temp.40
-temp.42 = temp.12.x.39
-temp.43 = p.x.35
-temp.17.x.44 = temp.43
-temp.45 = p.y.37
-temp.17.y.46 = temp.45
-temp.47 = temp.17.y.46
-temp.48 = temp.42 + temp.47
-storeprop temp.48, 0
+temp.29 = temp.2.x.27
+p.x.30 = temp.29
+temp.31 = temp.2.y.28
+p.y.32 = temp.31
+temp.33 = p.x.30
+temp.12.x.34 = temp.33
+temp.35 = p.y.32
+temp.12.y.36 = temp.35
+temp.37 = temp.12.x.34
+temp.38 = p.x.30
+temp.17.x.39 = temp.38
+temp.40 = p.y.32
+temp.17.y.41 = temp.40
+temp.42 = temp.17.y.41
+temp.43 = temp.37 + temp.42
+storeprop temp.43, 0
 return 
 
 =======================
 fn origin() -> int, int
 
 ---- block 0 ----
-temp.49 = int 0
-temp.50 = int 0
-temp.23.x.51 = temp.49
-temp.23.y.52 = temp.50
-temp.53 = temp.23.x.51
-temp.22.x.54 = temp.53
-temp.55 = temp.23.y.52
-temp.22.y.56 = temp.55
-return temp.22.x.54, temp.22.y.56
+temp.44 = int 0
+temp.45 = int 0
+temp.22.x.46 = temp.44
+temp.22.y.47 = temp.45
+return temp.22.x.46, temp.22.y.47

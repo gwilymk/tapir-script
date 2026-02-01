@@ -7,75 +7,63 @@ input_file: compiler/src/compile/snapshot_tests/ir/struct_function_both.tapir
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.9 = int 1
-temp.10 = int 2
-temp.6.x.7 = temp.9
-temp.6.y.8 = temp.10
-temp.13 = temp.6.x.7
-temp.5.x.11 = temp.13
-temp.14 = temp.6.y.8
-temp.5.y.12 = temp.14
-temp.17 = temp.5.x.11
-p1.x.15 = temp.17
-temp.18 = temp.5.y.12
-p1.y.16 = temp.18
-temp.23 = int 3
-temp.24 = int 4
-temp.20.x.21 = temp.23
-temp.20.y.22 = temp.24
-temp.27 = temp.20.x.21
-temp.19.x.25 = temp.27
-temp.28 = temp.20.y.22
-temp.19.y.26 = temp.28
-temp.31 = temp.19.x.25
-p2.x.29 = temp.31
-temp.32 = temp.19.y.26
-p2.y.30 = temp.32
-temp.37 = p1.x.15
-temp.34.x.35 = temp.37
-temp.38 = p1.y.16
-temp.34.y.36 = temp.38
-temp.42 = p2.x.29
-temp.39.x.40 = temp.42
-temp.43 = p2.y.30
-temp.39.y.41 = temp.43
-temp.33.x.44, temp.33.y.45 = add_points(temp.34.x.35, temp.34.y.36, temp.39.x.40, temp.39.y.41)
-temp.48 = temp.33.x.44
-sum.x.46 = temp.48
-temp.49 = temp.33.y.45
-sum.y.47 = temp.49
+temp.6 = int 1
+temp.7 = int 2
+temp.5.x.8 = temp.6
+temp.5.y.9 = temp.7
+temp.12 = temp.5.x.8
+p1.x.10 = temp.12
+temp.13 = temp.5.y.9
+p1.y.11 = temp.13
+temp.15 = int 3
+temp.16 = int 4
+temp.14.x.17 = temp.15
+temp.14.y.18 = temp.16
+temp.21 = temp.14.x.17
+p2.x.19 = temp.21
+temp.22 = temp.14.y.18
+p2.y.20 = temp.22
+temp.27 = p1.x.10
+temp.24.x.25 = temp.27
+temp.28 = p1.y.11
+temp.24.y.26 = temp.28
+temp.32 = p2.x.19
+temp.29.x.30 = temp.32
+temp.33 = p2.y.20
+temp.29.y.31 = temp.33
+temp.23.x.34, temp.23.y.35 = add_points(temp.24.x.25, temp.24.y.26, temp.29.x.30, temp.29.y.31)
+temp.38 = temp.23.x.34
+sum.x.36 = temp.38
+temp.39 = temp.23.y.35
+sum.y.37 = temp.39
 return 
 
 =======================
-fn add_points(a.x.50, a.y.51, b.x.52, b.y.53) -> int, int
+fn add_points(a.x.40, a.y.41, b.x.42, b.y.43) -> int, int
 
 ---- block 0 ----
-temp.64 = a.x.50
+temp.51 = a.x.40
+temp.48.x.49 = temp.51
+temp.52 = a.y.41
+temp.48.y.50 = temp.52
+temp.46 = temp.48.x.49
+temp.56 = b.x.42
+temp.53.x.54 = temp.56
+temp.57 = b.y.43
+temp.53.y.55 = temp.57
+temp.47 = temp.53.x.54
+temp.45 = temp.46 + temp.47
+temp.64 = a.x.40
 temp.61.x.62 = temp.64
-temp.65 = a.y.51
+temp.65 = a.y.41
 temp.61.y.63 = temp.65
-temp.59 = temp.61.x.62
-temp.69 = b.x.52
+temp.59 = temp.61.y.63
+temp.69 = b.x.42
 temp.66.x.67 = temp.69
-temp.70 = b.y.53
+temp.70 = b.y.43
 temp.66.y.68 = temp.70
-temp.60 = temp.66.x.67
+temp.60 = temp.66.y.68
 temp.58 = temp.59 + temp.60
-temp.77 = a.x.50
-temp.74.x.75 = temp.77
-temp.78 = a.y.51
-temp.74.y.76 = temp.78
-temp.72 = temp.74.y.76
-temp.82 = b.x.52
-temp.79.x.80 = temp.82
-temp.83 = b.y.53
-temp.79.y.81 = temp.83
-temp.73 = temp.79.y.81
-temp.71 = temp.72 + temp.73
-temp.55.x.56 = temp.58
-temp.55.y.57 = temp.71
-temp.86 = temp.55.x.56
-temp.54.x.84 = temp.86
-temp.87 = temp.55.y.57
-temp.54.y.85 = temp.87
-return temp.54.x.84, temp.54.y.85
+temp.44.x.71 = temp.45
+temp.44.y.72 = temp.58
+return temp.44.x.71, temp.44.y.72

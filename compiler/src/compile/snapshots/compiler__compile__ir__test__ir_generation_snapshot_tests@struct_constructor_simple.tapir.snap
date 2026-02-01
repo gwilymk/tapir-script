@@ -13,64 +13,52 @@ return
 fn test_literal_args() -> 
 
 ---- block 0 ----
-temp.11 = int 1
-temp.12 = int 2
-temp.8.x.9 = temp.11
-temp.8.y.10 = temp.12
-temp.15 = temp.8.x.9
-temp.7.x.13 = temp.15
-temp.16 = temp.8.y.10
-temp.7.y.14 = temp.16
-temp.19 = temp.7.x.13
-p.x.17 = temp.19
-temp.20 = temp.7.y.14
-p.y.18 = temp.20
+temp.8 = int 1
+temp.9 = int 2
+temp.7.x.10 = temp.8
+temp.7.y.11 = temp.9
+temp.14 = temp.7.x.10
+p.x.12 = temp.14
+temp.15 = temp.7.y.11
+p.y.13 = temp.15
 return 
 
 =======================
 fn test_variable_args() -> 
 
 ---- block 0 ----
-temp.21 = int 5
-x.1 = temp.21
-temp.22 = int 10
-y.2 = temp.22
-temp.27 = x.1
-temp.28 = y.2
-temp.24.x.25 = temp.27
-temp.24.y.26 = temp.28
-temp.31 = temp.24.x.25
-temp.23.x.29 = temp.31
-temp.32 = temp.24.y.26
-temp.23.y.30 = temp.32
-temp.35 = temp.23.x.29
-p.x.33 = temp.35
-temp.36 = temp.23.y.30
-p.y.34 = temp.36
+temp.16 = int 5
+x.1 = temp.16
+temp.17 = int 10
+y.2 = temp.17
+temp.19 = x.1
+temp.20 = y.2
+temp.18.x.21 = temp.19
+temp.18.y.22 = temp.20
+temp.25 = temp.18.x.21
+p.x.23 = temp.25
+temp.26 = temp.18.y.22
+p.y.24 = temp.26
 return 
 
 =======================
 fn test_expression_args() -> 
 
 ---- block 0 ----
-temp.37 = int 10
-a.4 = temp.37
-temp.38 = int 20
-b.5 = temp.38
-temp.44 = a.4
-temp.45 = int 1
-temp.43 = temp.44 + temp.45
-temp.47 = b.5
-temp.48 = int 2
-temp.46 = temp.47 * temp.48
-temp.40.x.41 = temp.43
-temp.40.y.42 = temp.46
-temp.51 = temp.40.x.41
-temp.39.x.49 = temp.51
-temp.52 = temp.40.y.42
-temp.39.y.50 = temp.52
-temp.55 = temp.39.x.49
-p.x.53 = temp.55
-temp.56 = temp.39.y.50
-p.y.54 = temp.56
+temp.27 = int 10
+a.4 = temp.27
+temp.28 = int 20
+b.5 = temp.28
+temp.31 = a.4
+temp.32 = int 1
+temp.30 = temp.31 + temp.32
+temp.34 = b.5
+temp.35 = int 2
+temp.33 = temp.34 * temp.35
+temp.29.x.36 = temp.30
+temp.29.y.37 = temp.33
+temp.40 = temp.29.x.36
+p.x.38 = temp.40
+temp.41 = temp.29.y.37
+p.y.39 = temp.41
 return

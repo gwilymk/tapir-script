@@ -20,12 +20,8 @@ return
 fn make_point(x.1, y.2) -> int, int
 
 ---- block 0 ----
-temp.16 = x.1
-temp.17 = y.2
-temp.13.x.14 = temp.16
-temp.13.y.15 = temp.17
-temp.20 = temp.13.x.14
-temp.12.x.18 = temp.20
-temp.21 = temp.13.y.15
-temp.12.y.19 = temp.21
-return temp.12.x.18, temp.12.y.19
+temp.13 = x.1
+temp.14 = y.2
+temp.12.x.15 = temp.13
+temp.12.y.16 = temp.14
+return temp.12.x.15, temp.12.y.16

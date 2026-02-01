@@ -7,20 +7,16 @@ input_file: compiler/src/compile/snapshot_tests/ir/field_assignment_simple.tapir
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.5 = int 1
-temp.6 = int 2
-temp.2.x.3 = temp.5
-temp.2.y.4 = temp.6
-temp.9 = temp.2.x.3
-temp.1.x.7 = temp.9
-temp.10 = temp.2.y.4
-temp.1.y.8 = temp.10
-temp.13 = temp.1.x.7
-p.x.11 = temp.13
-temp.14 = temp.1.y.8
-p.y.12 = temp.14
-temp.15 = int 10
-p.x.11 = temp.15
-temp.16 = int 20
-p.y.12 = temp.16
+temp.2 = int 1
+temp.3 = int 2
+temp.1.x.4 = temp.2
+temp.1.y.5 = temp.3
+temp.8 = temp.1.x.4
+p.x.6 = temp.8
+temp.9 = temp.1.y.5
+p.y.7 = temp.9
+temp.10 = int 10
+p.x.6 = temp.10
+temp.11 = int 20
+p.y.7 = temp.11
 return

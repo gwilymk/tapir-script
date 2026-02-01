@@ -13,58 +13,50 @@ return
 fn test_read_fields() -> 
 
 ---- block 0 ----
-temp.9 = int 1
-temp.10 = int 2
-temp.6.x.7 = temp.9
-temp.6.y.8 = temp.10
-temp.13 = temp.6.x.7
-temp.5.x.11 = temp.13
-temp.14 = temp.6.y.8
-temp.5.y.12 = temp.14
-temp.17 = temp.5.x.11
-p.x.15 = temp.17
-temp.18 = temp.5.y.12
-p.y.16 = temp.18
-temp.23 = p.x.15
-temp.20.x.21 = temp.23
-temp.24 = p.y.16
-temp.20.y.22 = temp.24
-temp.19 = temp.20.x.21
-x.1 = temp.19
-temp.29 = p.x.15
-temp.26.x.27 = temp.29
-temp.30 = p.y.16
-temp.26.y.28 = temp.30
-temp.25 = temp.26.y.28
-y.2 = temp.25
+temp.6 = int 1
+temp.7 = int 2
+temp.5.x.8 = temp.6
+temp.5.y.9 = temp.7
+temp.12 = temp.5.x.8
+p.x.10 = temp.12
+temp.13 = temp.5.y.9
+p.y.11 = temp.13
+temp.18 = p.x.10
+temp.15.x.16 = temp.18
+temp.19 = p.y.11
+temp.15.y.17 = temp.19
+temp.14 = temp.15.x.16
+x.1 = temp.14
+temp.24 = p.x.10
+temp.21.x.22 = temp.24
+temp.25 = p.y.11
+temp.21.y.23 = temp.25
+temp.20 = temp.21.y.23
+y.2 = temp.20
 return 
 
 =======================
 fn test_field_in_expression() -> 
 
 ---- block 0 ----
-temp.35 = int 3
-temp.36 = int 4
-temp.32.x.33 = temp.35
-temp.32.y.34 = temp.36
-temp.39 = temp.32.x.33
-temp.31.x.37 = temp.39
-temp.40 = temp.32.y.34
-temp.31.y.38 = temp.40
-temp.43 = temp.31.x.37
-p.x.41 = temp.43
-temp.44 = temp.31.y.38
-p.y.42 = temp.44
-temp.51 = p.x.41
-temp.48.x.49 = temp.51
-temp.52 = p.y.42
-temp.48.y.50 = temp.52
-temp.46 = temp.48.x.49
-temp.56 = p.x.41
-temp.53.x.54 = temp.56
-temp.57 = p.y.42
-temp.53.y.55 = temp.57
-temp.47 = temp.53.y.55
-temp.45 = temp.46 + temp.47
-sum.4 = temp.45
+temp.27 = int 3
+temp.28 = int 4
+temp.26.x.29 = temp.27
+temp.26.y.30 = temp.28
+temp.33 = temp.26.x.29
+p.x.31 = temp.33
+temp.34 = temp.26.y.30
+p.y.32 = temp.34
+temp.41 = p.x.31
+temp.38.x.39 = temp.41
+temp.42 = p.y.32
+temp.38.y.40 = temp.42
+temp.36 = temp.38.x.39
+temp.46 = p.x.31
+temp.43.x.44 = temp.46
+temp.47 = p.y.32
+temp.43.y.45 = temp.47
+temp.37 = temp.43.y.45
+temp.35 = temp.36 + temp.37
+sum.4 = temp.35
 return

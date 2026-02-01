@@ -8,36 +8,32 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/inline/struct_f
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.31 = int 42
-temp.32 = int 0
-temp.4.x.33 = temp.31
-temp.4.y.34 = temp.32
-temp.35 = temp.4.x.33
-temp.3.x.36 = temp.35
-temp.37 = temp.4.y.34
-temp.3.y.38 = temp.37
-temp.39 = temp.3.x.36
-p.x.40 = temp.39
-temp.41 = temp.3.y.38
-p.y.42 = temp.41
-temp.43 = p.x.40
-temp.18.x.44 = temp.43
-temp.45 = p.y.42
-temp.18.y.46 = temp.45
-temp.47 = get_x(temp.18.x.44, temp.18.y.46)
-storeprop temp.47, 0
+temp.26 = int 42
+temp.27 = int 0
+temp.3.x.28 = temp.26
+temp.3.y.29 = temp.27
+temp.30 = temp.3.x.28
+p.x.31 = temp.30
+temp.32 = temp.3.y.29
+p.y.33 = temp.32
+temp.34 = p.x.31
+temp.13.x.35 = temp.34
+temp.36 = p.y.33
+temp.13.y.37 = temp.36
+temp.38 = get_x(temp.13.x.35, temp.13.y.37)
+storeprop temp.38, 0
 return 
 
 =======================
-fn get_x(p.x.23, p.y.24) -> int
+fn get_x(p.x.18, p.y.19) -> int
 
 ---- block 0 ----
-temp.48 = p.x.23
-temp.26.x.49 = temp.48
-temp.50 = p.y.24
-temp.26.y.51 = temp.50
-temp.52 = temp.26.x.49
-return temp.52
+temp.39 = p.x.18
+temp.21.x.40 = temp.39
+temp.41 = p.y.19
+temp.21.y.42 = temp.41
+temp.43 = temp.21.x.40
+return temp.43
 
 
 ----------- inline_small_functions -------------
@@ -45,48 +41,44 @@ return temp.52
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.31 = int 42
-temp.32 = int 0
-temp.4.x.33 = temp.31
-temp.4.y.34 = temp.32
-temp.35 = temp.4.x.33
-temp.3.x.36 = temp.35
-temp.37 = temp.4.y.34
-temp.3.y.38 = temp.37
-temp.39 = temp.3.x.36
-p.x.40 = temp.39
-temp.41 = temp.3.y.38
-p.y.42 = temp.41
-temp.43 = p.x.40
-temp.18.x.44 = temp.43
-temp.45 = p.y.42
-temp.18.y.46 = temp.45
+temp.26 = int 42
+temp.27 = int 0
+temp.3.x.28 = temp.26
+temp.3.y.29 = temp.27
+temp.30 = temp.3.x.28
+p.x.31 = temp.30
+temp.32 = temp.3.y.29
+p.y.33 = temp.32
+temp.34 = p.x.31
+temp.13.x.35 = temp.34
+temp.36 = p.y.33
+temp.13.y.37 = temp.36
 jmp 2
 
 ---- block 2 ----
-temp.54 = temp.18.x.44
-temp.26.x.56 = temp.54
-temp.55 = temp.18.y.46
-temp.26.y.58 = temp.55
-temp.57 = temp.26.x.56
+temp.45 = temp.13.x.35
+temp.21.x.47 = temp.45
+temp.46 = temp.13.y.37
+temp.21.y.49 = temp.46
+temp.48 = temp.21.x.47
 jmp 4
 
 ---- block 4 ----
-temp.53 = φ(temp.57 from 2)
-temp.47 = temp.53
+temp.44 = φ(temp.48 from 2)
+temp.38 = temp.44
 jmp 1
 
 ---- block 1 ----
-storeprop temp.47, 0
+storeprop temp.38, 0
 return 
 
 =======================
-fn get_x(p.x.23, p.y.24) -> int
+fn get_x(p.x.18, p.y.19) -> int
 
 ---- block 0 ----
-temp.48 = p.x.23
-temp.26.x.49 = temp.48
-temp.50 = p.y.24
-temp.26.y.51 = temp.50
-temp.52 = temp.26.x.49
-return temp.52
+temp.39 = p.x.18
+temp.21.x.40 = temp.39
+temp.41 = p.y.19
+temp.21.y.42 = temp.41
+temp.43 = temp.21.x.40
+return temp.43

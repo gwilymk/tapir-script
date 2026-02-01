@@ -224,7 +224,7 @@ impl<'a> BlockVisitor<'a> {
                         }
                         InternalOrExternalFunctionId::Builtin(f) => {
                             // Builtins return exactly one value
-                            debug_assert_eq!(temps.len(), 1);
+                            assert_eq!(temps.len(), 1);
                             self.current_block.push(TapIr::CallBuiltin {
                                 target: temps[0],
                                 f,
@@ -893,12 +893,7 @@ impl<'a> BlockVisitor<'a> {
         span: crate::tokens::Span,
         symtab: &mut SymTab,
     ) {
-        // Create a temporary to hold the constructed struct value
-        let temp_symbol = symtab.new_temporary();
-        let temp_layout =
-            symtab.ensure_local_layout(temp_symbol, struct_id, span, self.struct_registry);
-
-        // Evaluate args and collect expanded leaves
+        // Evaluate args into temps and collect their leaf symbols
         let mut arg_leaves = Vec::new();
         for arg in arguments {
             let arg_sym = symtab.new_temporary();
@@ -906,17 +901,14 @@ impl<'a> BlockVisitor<'a> {
             collect_leaf_symbols(arg_sym, symtab, &mut arg_leaves);
         }
 
-        // Copy args to temp leaves
-        let temp_leaves = temp_layout.leaf_symbols();
-        for (&target, &source) in temp_leaves.iter().zip(&arg_leaves) {
-            self.current_block.push(TapIr::Move { target, source });
-        }
-
-        // Get or create target layout
+        // Create target layout and copy args directly to target leaves
         let target_layout =
             symtab.ensure_local_layout(target_symbol, struct_id, span, self.struct_registry);
+        let target_leaves = target_layout.leaf_symbols();
 
-        self.copy_struct_layout(&temp_layout, &target_layout, symtab);
+        for (&target, &source) in target_leaves.iter().zip(&arg_leaves) {
+            self.current_block.push(TapIr::Move { target, source });
+        }
     }
 
     /// Emit a function call, handling struct return expansion and target collection.
@@ -989,11 +981,11 @@ impl<'a> BlockVisitor<'a> {
     /// Copies all fields from source layout to destination layout,
     /// handling all 9 storage class combinations uniformly.
     fn copy_struct_layout(&mut self, src: &StructLayout, dst: &StructLayout, symtab: &mut SymTab) {
-        debug_assert_eq!(
+        assert_eq!(
             src.struct_id, dst.struct_id,
             "Source and destination must have same struct type"
         );
-        debug_assert_eq!(
+        assert_eq!(
             src.fields.len(),
             dst.fields.len(),
             "Source and destination must have same number of fields"

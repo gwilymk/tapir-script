@@ -7,33 +7,29 @@ input_file: compiler/src/compile/snapshot_tests/ir/struct_function_param.tapir
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.7 = int 5
-temp.8 = int 10
-temp.4.x.5 = temp.7
-temp.4.y.6 = temp.8
-temp.11 = temp.4.x.5
-temp.3.x.9 = temp.11
-temp.12 = temp.4.y.6
-temp.3.y.10 = temp.12
-temp.15 = temp.3.x.9
-pt.x.13 = temp.15
-temp.16 = temp.3.y.10
-pt.y.14 = temp.16
-temp.21 = pt.x.13
-temp.18.x.19 = temp.21
-temp.22 = pt.y.14
-temp.18.y.20 = temp.22
-temp.17 = get_x(temp.18.x.19, temp.18.y.20)
-x.1 = temp.17
+temp.4 = int 5
+temp.5 = int 10
+temp.3.x.6 = temp.4
+temp.3.y.7 = temp.5
+temp.10 = temp.3.x.6
+pt.x.8 = temp.10
+temp.11 = temp.3.y.7
+pt.y.9 = temp.11
+temp.16 = pt.x.8
+temp.13.x.14 = temp.16
+temp.17 = pt.y.9
+temp.13.y.15 = temp.17
+temp.12 = get_x(temp.13.x.14, temp.13.y.15)
+x.1 = temp.12
 return 
 
 =======================
-fn get_x(p.x.23, p.y.24) -> int
+fn get_x(p.x.18, p.y.19) -> int
 
 ---- block 0 ----
-temp.29 = p.x.23
-temp.26.x.27 = temp.29
-temp.30 = p.y.24
-temp.26.y.28 = temp.30
-temp.25 = temp.26.x.27
-return temp.25
+temp.24 = p.x.18
+temp.21.x.22 = temp.24
+temp.25 = p.y.19
+temp.21.y.23 = temp.25
+temp.20 = temp.21.x.22
+return temp.20
