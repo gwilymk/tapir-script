@@ -270,9 +270,8 @@ impl<'a> BlockVisitor<'a> {
                             && let Some(Some((_struct_id, field_indices))) = field_info.0.get(idx)
                         {
                             // Navigate to the field using the layout structure
-                            let base_name = symtab.name_for_symbol(root_symbol).to_string();
                             let prop_layout = symtab
-                                .get_struct_layout_by_name(&base_name)
+                                .get_struct_layout(root_symbol)
                                 .expect("Property base should have a layout")
                                 .clone();
 
@@ -738,9 +737,8 @@ impl<'a> BlockVisitor<'a> {
                     && symtab.is_property_base(*base_symbol)
                 {
                     // This is a struct property field access - use layout navigation
-                    let base_name = symtab.name_for_symbol(*base_symbol);
                     let prop_layout = symtab
-                        .get_struct_layout_by_name(&base_name)
+                        .get_struct_layout(*base_symbol)
                         .expect("Property base should have a layout")
                         .clone();
 
@@ -778,13 +776,13 @@ impl<'a> BlockVisitor<'a> {
                 // Check if the base is a struct-typed global variable (e.g., "g" in "global g: Point;")
                 // Global structs are expanded into multiple scalar globals, so we use GetGlobal
                 // to read the specific field's global.
-                if let ast::ExpressionKind::Variable(var_name) = &base.kind
+                if let ast::ExpressionKind::Variable(_) = &base.kind
                     && let Some(base_symbol) = base.meta.get::<SymbolId>()
                     && GlobalId::from_symbol_id(*base_symbol).is_some()
                 {
                     // Use layout navigation to access the field
                     let global_layout = symtab
-                        .get_struct_layout_by_name(var_name)
+                        .get_struct_layout(*base_symbol)
                         .expect("Global should have a layout")
                         .clone();
 

@@ -203,21 +203,6 @@ impl StructLayout {
         }
     }
 
-    /// Get a nested layout by field name.
-    /// Returns None if the field doesn't exist or isn't a nested struct.
-    pub fn nested_by_name(
-        &self,
-        field_name: &str,
-        registry: &StructRegistry,
-    ) -> Option<&StructLayout> {
-        let struct_def = registry.get(self.struct_id);
-        let field_index = struct_def
-            .fields
-            .iter()
-            .position(|f| f.name == field_name)?;
-        self.nested_at(field_index)
-    }
-
     /// Navigate through a chain of field indices to get a nested layout.
     /// Returns None if any index is invalid or points to a non-nested field.
     pub fn navigate_nested(&self, indices: &[usize]) -> Option<&StructLayout> {
@@ -1080,11 +1065,9 @@ impl<'input> SymTabVisitor<'input> {
                 let mut layout_index = fields_base_index;
                 let layout =
                     StructLayout::for_global(struct_id, name, &mut layout_index, struct_registry);
-                visitor.symtab.register_named_struct_layout(
-                    name.to_string(),
-                    base_global_id.to_symbol_id(),
-                    layout,
-                );
+                visitor
+                    .symtab
+                    .register_struct_layout(base_global_id.to_symbol_id(), layout);
             } else {
                 // Scalar global - process as before
                 let (ty, initial_value) = evaluate_global_declaration(global, diagnostics);
@@ -1376,10 +1359,6 @@ pub struct SymTab<'input> {
     /// This provides a uniform representation for struct layouts across all storage classes.
     struct_layouts: HashMap<SymbolId, StructLayout>,
 
-    /// Maps struct layout names to their symbol IDs.
-    /// Used for looking up layouts by name (e.g., property names, global names).
-    named_struct_layouts: HashMap<String, SymbolId>,
-
     /// Maps property base symbol IDs to their struct IDs.
     /// Used to identify symbols that represent struct-typed property bases (e.g., "pos" for "property pos: Point;").
     property_base_struct_ids: HashMap<SymbolId, StructId>,
@@ -1411,7 +1390,6 @@ impl<'input> SymTab<'input> {
             global_names: HashMap::new(),
             builtin_functions,
             struct_layouts: HashMap::new(),
-            named_struct_layouts: HashMap::new(),
             property_base_struct_ids: HashMap::new(),
             property_base_symbols: HashMap::new(),
         }
@@ -1422,27 +1400,9 @@ impl<'input> SymTab<'input> {
         self.struct_layouts.insert(symbol_id, layout);
     }
 
-    /// Register a struct layout with a name for later lookup.
-    pub fn register_named_struct_layout(
-        &mut self,
-        name: String,
-        symbol_id: SymbolId,
-        layout: StructLayout,
-    ) {
-        self.struct_layouts.insert(symbol_id, layout);
-        self.named_struct_layouts.insert(name, symbol_id);
-    }
-
     /// Get the struct layout for a symbol, if it exists.
     pub fn get_struct_layout(&self, symbol_id: SymbolId) -> Option<&StructLayout> {
         self.struct_layouts.get(&symbol_id)
-    }
-
-    /// Get a struct layout by name.
-    pub fn get_struct_layout_by_name(&self, name: &str) -> Option<&StructLayout> {
-        self.named_struct_layouts
-            .get(name)
-            .and_then(|sym| self.struct_layouts.get(sym))
     }
 
     /// Ensure a local struct layout exists for a symbol, creating it if needed.
@@ -1499,8 +1459,8 @@ impl<'input> SymTab<'input> {
         struct_id: StructId,
         layout: StructLayout,
     ) {
-        self.register_property_base(name.clone(), symbol_id, struct_id);
-        self.register_named_struct_layout(name, symbol_id, layout);
+        self.register_property_base(name, symbol_id, struct_id);
+        self.register_struct_layout(symbol_id, layout);
     }
 
     /// Get the symbol ID for a property base by name.
@@ -1750,7 +1710,6 @@ impl<'input> SymTab<'input> {
             global_names: HashMap::new(),
             builtin_functions: HashMap::new(),
             struct_layouts: HashMap::new(),
-            named_struct_layouts: HashMap::new(),
             property_base_struct_ids: HashMap::new(),
             property_base_symbols: HashMap::new(),
         }
@@ -2209,11 +2168,17 @@ mod test {
             &mut diagnostics,
         );
 
-        // Check that the layout is registered
-        let layout = visitor.symtab.get_struct_layout_by_name("pos");
-        assert!(layout.is_some(), "Should have layout for 'pos'");
-
-        let layout = layout.unwrap();
+        // Check that the layout is registered (use symbol ID lookup)
+        let global_symbol = visitor
+            .symtab
+            .get_global_by_name("pos")
+            .expect("Should have global 'pos'")
+            .id
+            .to_symbol_id();
+        let layout = visitor
+            .symtab
+            .get_struct_layout(global_symbol)
+            .expect("Should have layout for 'pos'");
         // Point has 2 leaf fields (x and y)
         assert_eq!(layout.leaf_accessors().len(), 2);
 
@@ -2371,10 +2336,16 @@ mod test {
             &mut diagnostics,
         );
 
-        // Get the layout
+        // Get the layout (use symbol ID lookup)
+        let global_symbol = visitor
+            .symtab
+            .get_global_by_name("pos")
+            .expect("Should have global 'pos'")
+            .id
+            .to_symbol_id();
         let layout = visitor
             .symtab
-            .get_struct_layout_by_name("pos")
+            .get_struct_layout(global_symbol)
             .expect("Should have layout");
 
         // Point has 2 fields (x, y)
@@ -2428,10 +2399,16 @@ mod test {
             &mut diagnostics,
         );
 
-        // Get the layout
+        // Get the layout (use symbol ID lookup)
+        let global_symbol = visitor
+            .symtab
+            .get_global_by_name("bounds")
+            .expect("Should have global 'bounds'")
+            .id
+            .to_symbol_id();
         let layout = visitor
             .symtab
-            .get_struct_layout_by_name("bounds")
+            .get_struct_layout(global_symbol)
             .expect("Should have layout");
 
         // Should have 2 top-level fields (origin, size), both nested
@@ -2508,10 +2485,14 @@ mod test {
             &mut diagnostics,
         );
 
-        // Get the layout
+        // Get the layout (use symbol ID lookup via property base)
+        let prop_symbol = visitor
+            .symtab
+            .get_property_base_symbol("pos")
+            .expect("Should have property base 'pos'");
         let layout = visitor
             .symtab
-            .get_struct_layout_by_name("pos")
+            .get_struct_layout(prop_symbol)
             .expect("Should have layout");
 
         // Point has 2 fields (x, y)
