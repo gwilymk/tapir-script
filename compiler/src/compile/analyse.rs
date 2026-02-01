@@ -86,7 +86,7 @@ pub fn analyse(
     let references = extract_references(&ast, &symtab, &struct_registry);
 
     // Extract hover information
-    let hover_info = extract_hover_info(&ast, &symtab, &type_table, &struct_registry);
+    let hover_info = extract_hover_info(&ast, &symtab, &type_table, &struct_registry, &comments);
 
     // Extract signature help information
     let (signatures, call_sites) = extract_signature_help(&ast);

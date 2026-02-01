@@ -31,7 +31,7 @@ impl<'input> Lexer<'input> {
     pub fn into_comment_table(self) -> CommentTable<'input> {
         CommentTable {
             comments: self.comments,
-            input: self.input,
+            sources: vec![(self.file_id, self.input)],
         }
     }
 }
@@ -89,11 +89,19 @@ enum CommentKind {
 
 pub struct CommentTable<'input> {
     comments: Vec<Comment<'input>>,
-    input: &'input str,
+    sources: Vec<(FileId, &'input str)>,
 }
 
 impl<'input> CommentTable<'input> {
+    fn source_for(&self, file_id: FileId) -> Option<&'input str> {
+        self.sources
+            .iter()
+            .find(|(fid, _)| *fid == file_id)
+            .map(|(_, src)| *src)
+    }
+
     pub fn doc_for_item(&self, item: Span) -> Option<String> {
+        let source = self.source_for(item.file_id)?;
         let mut current_start = item.start;
         let mut doc_lines = vec![];
 
@@ -104,7 +112,7 @@ impl<'input> CommentTable<'input> {
                 .filter(|c| c.span.file_id == item.file_id)
                 .filter(|c| c.kind == CommentKind::Doc)
                 .filter(|c| c.span.end <= current_start)
-                .filter(|c| self.input[c.span.end..current_start].trim().is_empty())
+                .filter(|c| source[c.span.end..current_start].trim().is_empty())
                 .max_by_key(|c| c.span.end);
 
             if let Some(comment) = matching {
@@ -125,6 +133,7 @@ impl<'input> CommentTable<'input> {
 
     pub fn merge_from(&mut self, other: Self) {
         self.comments.extend(other.comments);
+        self.sources.extend(other.sources);
     }
 }
 

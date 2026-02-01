@@ -5,6 +5,7 @@ use crate::{
         Expression, ExpressionKind, InternalOrExternalFunctionId, MethodCallInfo, Script,
         Statement, StatementKind, SymbolId,
     },
+    lexer::CommentTable,
     tokens::Span,
     types::StructRegistry,
 };
@@ -24,6 +25,7 @@ pub fn extract_hover_info(
     symtab: &SymTab<'_>,
     type_table: &TypeTable<'_>,
     struct_registry: &StructRegistry,
+    comments: &CommentTable<'_>,
 ) -> HashMap<Span, HoverInfo> {
     let mut hover_info = HashMap::new();
     let mut function_signatures: HashMap<InternalOrExternalFunctionId, HoverInfo> = HashMap::new();
@@ -41,7 +43,7 @@ pub fn extract_hover_info(
             HoverInfo {
                 name: struct_def.name.clone(),
                 signature,
-                doc_comment: None,
+                doc_comment: comments.doc_for_item(struct_def.span),
             },
         );
     }
@@ -55,7 +57,7 @@ pub fn extract_hover_info(
             HoverInfo {
                 name: name.clone(),
                 signature: format!("property {}: {}", name, struct_def.name),
-                doc_comment: None,
+                doc_comment: comments.doc_for_item(span),
             },
         );
     }
@@ -76,7 +78,7 @@ pub fn extract_hover_info(
                     prop.ty,
                     struct_registry,
                 ),
-                doc_comment: None,
+                doc_comment: comments.doc_for_item(prop.span),
             },
         );
     }
@@ -93,7 +95,7 @@ pub fn extract_hover_info(
                     global.ty,
                     struct_registry,
                 ),
-                doc_comment: None,
+                doc_comment: comments.doc_for_item(global.span),
             },
         );
     }
@@ -118,7 +120,7 @@ pub fn extract_hover_info(
         let info = HoverInfo {
             name: function.name.to_string(),
             signature,
-            doc_comment: None,
+            doc_comment: comments.doc_for_item(function.span),
         };
 
         hover_info.insert(function.span, info.clone());
@@ -137,7 +139,7 @@ pub fn extract_hover_info(
         let info = HoverInfo {
             name: function.name.to_string(),
             signature,
-            doc_comment: None,
+            doc_comment: comments.doc_for_item(function.span),
         };
 
         hover_info.insert(function.span, info.clone());
@@ -164,7 +166,7 @@ pub fn extract_hover_info(
         let info = HoverInfo {
             name: function.name.to_string(),
             signature,
-            doc_comment: None,
+            doc_comment: comments.doc_for_item(function.span),
         };
 
         hover_info.insert(function.span, info.clone());
