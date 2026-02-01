@@ -141,9 +141,9 @@ mod test {
 
     use super::*;
 
-    use std::fs;
+    use std::{fs, path::Path};
 
-    use alloc::string::ToString;
+    use alloc::string::{String, ToString};
     use compiler::CompileSettings;
     use insta::{assert_ron_snapshot, glob};
     use serde::Serialize;
@@ -243,67 +243,81 @@ mod test {
         }
     }
 
+    fn run_assert_test(path: &Path, enable_optimisations: bool) -> Option<String> {
+        let input = fs::read_to_string(path).unwrap();
+
+        let compiler_settings = CompileSettings {
+            available_fields: Some(vec![]),
+            enable_optimisations,
+            enable_prelude: true,
+        };
+
+        let compile_result =
+            match compiler::compile(path.file_name().unwrap(), &input, compiler_settings) {
+                Ok(result) => result,
+                Err(mut diagnostic) => {
+                    std::eprintln!("{}", diagnostic.pretty_string(true));
+                    panic!("Failed to compile: {}", path.display());
+                }
+            };
+
+
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
+            let mut test_obj = AssertTestObj { assertion_count: 0 };
+
+            let mut max_iterations = 1000;
+
+            while !vm.states.is_empty() && max_iterations >= 0 {
+                let mut object_safe_props = ObjectSafePropertiesImpl {
+                    properties: &mut test_obj,
+                    events: vec![],
+                };
+
+                vm.run_until_wait(&mut object_safe_props);
+                max_iterations -= 1;
+            }
+
+            if max_iterations == 0 {
+                panic!("ran for over 1000 waits, something seems to have gone wrong...");
+            }
+        }));
+
+        if let Err(e) = result {
+            let msg: std::string::String = if let Some(s) = e.downcast_ref::<&str>() {
+                (*s).into()
+            } else if let Some(s) = e.downcast_ref::<std::string::String>() {
+                s.clone()
+            } else {
+                "unknown error".into()
+            };
+
+            return Some(msg);
+        }
+
+        None
+    }
+
     #[test]
     fn assert_tests() {
         let mut failures = vec![];
 
         glob!("snapshot_tests", "assert/**/*.tapir", |path| {
-            std::println!("{}", path.display());
+            if let Some(error) = run_assert_test(path, true) {
+                failures.push((path.display().to_string(), error, true));
+            }
 
-            let input = fs::read_to_string(path).unwrap();
-
-            let compiler_settings = CompileSettings {
-                available_fields: Some(vec![]),
-                enable_optimisations: true,
-                enable_prelude: true,
-            };
-
-            let compile_result =
-                match compiler::compile(path.file_name().unwrap(), &input, compiler_settings) {
-                    Ok(result) => result,
-                    Err(mut diagnostic) => {
-                        std::eprintln!("{}", diagnostic.pretty_string(true));
-                        panic!("Failed to compile: {}", path.display());
-                    }
-                };
-
-            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
-                let mut test_obj = AssertTestObj { assertion_count: 0 };
-
-                let mut max_iterations = 1000;
-
-                while !vm.states.is_empty() && max_iterations >= 0 {
-                    let mut object_safe_props = ObjectSafePropertiesImpl {
-                        properties: &mut test_obj,
-                        events: vec![],
-                    };
-
-                    vm.run_until_wait(&mut object_safe_props);
-                    max_iterations -= 1;
-                }
-
-                if max_iterations == 0 {
-                    panic!("ran for over 1000 waits, something seems to have gone wrong...");
-                }
-            }));
-
-            if let Err(e) = result {
-                let msg: std::string::String = if let Some(s) = e.downcast_ref::<&str>() {
-                    (*s).into()
-                } else if let Some(s) = e.downcast_ref::<std::string::String>() {
-                    s.clone()
-                } else {
-                    "unknown error".into()
-                };
-
-                failures.push((path.display().to_string(), msg));
+            if let Some(error) = run_assert_test(path, false) {
+                failures.push((path.display().to_string(), error, false));
             }
         });
 
         if !failures.is_empty() {
-            for (path, msg) in failures {
-                std::println!("'{path}' had error `{msg}`");
+            for (path, msg, optimisations) in failures {
+                std::println!(
+                    "'{path}' had error `{msg}` with optimisations {}",
+                    if optimisations { "enabled" } else { "disabled" }
+                );
             }
 
             panic!("Tests failed");
