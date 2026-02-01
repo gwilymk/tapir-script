@@ -232,8 +232,13 @@ struct Particle {
 #[tapir("tapir/particle.tapir", trigger_type = AnimationEvent)]
 struct ParticleAnimation {
     position: Fix2D,
-    velocity: Fix2D,
     lifetime: i32,
+}
+
+impl ParticleAnimation {
+    fn rng(&self) -> i32 {
+        rng::next_i32()
+    }
 }
 
 impl Particle {
@@ -241,12 +246,6 @@ impl Particle {
         Self {
             particle_animation: ParticleAnimation {
                 position: position.into(),
-                velocity: vec2(
-                    (rng::next_i32().rem_euclid(100) - 50).into(),
-                    (-rng::next_i32().rem_euclid(100)).into(),
-                )
-                .fast_normalise()
-                    * num!(2),
                 lifetime: rng::next_i32().rem_euclid(30) + 30,
             }
             .script(),

@@ -28,6 +28,7 @@ pub fn execute_pure(builtin_id: i16, args: &[i32]) -> Option<Result<i32, Builtin
         3 => Ok(floor(Fix::from_raw(args[0]))),
         4 => Ok(ceil(Fix::from_raw(args[0]))),
         5 => Ok(round(Fix::from_raw(args[0]))),
+        6 => Ok(Fix::new(args[0]).to_raw()),
         _ => return None,
     })
 }

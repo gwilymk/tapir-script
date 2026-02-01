@@ -18,6 +18,9 @@ builtin(4) fn fix.ceil(self) -> int;
 ## Rounds to the nearest integer.
 builtin(5) fn fix.round(self) -> int;
 
+## Returns the fix with the same value as the given int
+builtin(6) fn to_fix(x: int) -> fix;
+
 ## Returns the current frame number since script execution started.
 builtin(-1) fn frame() -> int;
 
