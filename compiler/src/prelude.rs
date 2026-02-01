@@ -1,6 +1,12 @@
 use std::path::Path;
 
-use crate::{ast::Script, grammar, lexer::Lexer, reporting::Diagnostics, tokens::FileId};
+use crate::{
+    ast::Script,
+    grammar,
+    lexer::{CommentTable, Lexer},
+    reporting::Diagnostics,
+    tokens::FileId,
+};
 
 const PRELUDE_SOURCE: &str = include_str!("../stdlib/prelude.tapir");
 const PRELUDE_FILENAME: &str = "stdlib/prelude.tapir";
@@ -21,7 +27,7 @@ pub fn parse_with_prelude<'input>(
     user_input: &'input str,
     diagnostics: &mut Diagnostics,
     enable_prelude: bool,
-) -> Option<Script<'input>> {
+) -> Option<(Script<'input>, CommentTable<'input>)> {
     let parser = grammar::ScriptParser::new();
 
     if enable_prelude {
@@ -50,13 +56,16 @@ pub fn parse_with_prelude<'input>(
 
         // Merge prelude into user AST
         user_ast.merge_from(prelude_ast);
-        Some(user_ast)
+        let mut user_comments = user_lexer.into_comment_table();
+        user_comments.merge_from(prelude_lexer.into_comment_table());
+
+        Some((user_ast, user_comments))
     } else {
         // Prelude mode: treat the user file as the prelude itself
         // Use PRELUDE_FILE_ID so builtin declarations are allowed
         let mut user_lexer = Lexer::new(user_input, PRELUDE_FILE_ID);
         match parser.parse(PRELUDE_FILE_ID, diagnostics, user_lexer.iter()) {
-            Ok(ast) => Some(ast),
+            Ok(ast) => Some((ast, user_lexer.into_comment_table())),
             Err(e) => {
                 diagnostics.add_lalrpop(e, PRELUDE_FILE_ID);
                 None

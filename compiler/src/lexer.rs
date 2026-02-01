@@ -97,6 +97,7 @@ impl<'input> CommentTable<'input> {
             let matching = self
                 .comments
                 .iter()
+                .filter(|c| c.span.file_id == item.file_id)
                 .filter(|c| c.kind == CommentKind::Doc)
                 .filter(|c| c.span.end <= current_start)
                 .filter(|c| source[c.span.end..current_start].trim().is_empty())
@@ -116,6 +117,10 @@ impl<'input> CommentTable<'input> {
             doc_lines.reverse();
             Some(doc_lines.join("\n"))
         }
+    }
+
+    pub fn merge_from(&mut self, other: Self) {
+        self.comments.extend(other.comments);
     }
 }
 

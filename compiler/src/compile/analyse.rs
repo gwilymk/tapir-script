@@ -45,7 +45,7 @@ pub fn analyse(
     };
     let mut diagnostics = Diagnostics::new(file_id, &filename, input);
 
-    let mut ast = match prelude::parse_with_prelude(
+    let (mut ast, comments) = match prelude::parse_with_prelude(
         &filename,
         input,
         &mut diagnostics,

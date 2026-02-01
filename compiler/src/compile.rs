@@ -133,7 +133,7 @@ pub fn compile(
         &mut diagnostics,
         settings.enable_prelude,
     ) {
-        Some(ast) => ast,
+        Some((ast, _)) => ast,
         None => return Err(diagnostics),
     };
 
