@@ -39,7 +39,7 @@ use super::{
 };
 
 pub struct TypeVisitor<'input, 'reg> {
-    type_table: Vec<Option<(Type, Option<Span>)>>,
+    type_table: HashMap<SymbolId, (Type, Option<Span>)>,
     functions: HashMap<InternalOrExternalFunctionId, FunctionInfo<'input>>,
     struct_registry: &'reg StructRegistry,
 
@@ -195,21 +195,22 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             );
         }
 
+        let mut type_table = HashMap::new();
+
         // Initialize type_table with properties first
-        let mut type_table: Vec<Option<(Type, Option<Span>)>> = symtab
-            .properties()
-            .iter()
-            .map(|prop| Some((prop.ty, None)))
-            .collect();
+        for (idx, property) in symtab.properties().iter().enumerate() {
+            type_table.insert(SymbolId(idx as u64), (property.ty, Some(property.span)));
+        }
 
         // Pre-populate property base types
         // This ensures type lookups work uniformly without special-case checks
         for (symbol_id, struct_id) in symtab.property_bases() {
-            let idx = symbol_id.0 as usize;
-            if type_table.len() <= idx {
-                type_table.resize(idx + 1, None);
-            }
-            type_table[idx] = Some((Type::Struct(struct_id), None));
+            type_table.insert(symbol_id, (Type::Struct(struct_id), None));
+        }
+
+        // Insert the globals into the types as well
+        for global in symtab.globals() {
+            type_table.insert(global.id.to_symbol_id(), (global.ty, Some(global.span)));
         }
 
         Self {
@@ -239,11 +240,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             return;
         }
 
-        if self.type_table.len() <= symbol_id.0 as usize {
-            self.type_table.resize(symbol_id.0 as usize + 1, None);
-        }
-
-        if let Some((table_type, expected_span)) = self.type_table[symbol_id.0 as usize]
+        if let Some(&(table_type, expected_span)) = self.type_table.get(&symbol_id)
             && table_type != ty
         {
             if ty == Type::Error {
@@ -285,7 +282,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             return;
         }
 
-        self.type_table[symbol_id.0 as usize] = Some((ty, Some(ident_span)));
+        self.type_table.insert(symbol_id, (ty, Some(ident_span)));
     }
 
     pub fn get_type(
@@ -295,14 +292,8 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Type {
-        // Check if this is a global
-        if let Some(global_id) = GlobalId::from_symbol_id(symbol_id) {
-            return symtab.get_global(global_id).ty;
-        }
-
-        // Property bases are pre-populated in the type_table during construction
-        match self.type_table.get(symbol_id.0 as usize) {
-            Some(Some((ty, _))) => *ty,
+        match self.type_table.get(&symbol_id) {
+            Some((ty, _)) => *ty,
             _ => {
                 ErrorKind::UnknownType {
                     name: symtab.name_for_symbol(symbol_id).into_owned(),
@@ -544,8 +535,8 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     })
                     .collect();
                 let target_span = path.last().map(|(_, span)| *span).unwrap_or(statement_span);
-                if let Some((target_type, root_struct_id, field_indices)) = self
-                    .resolve_field_path_with_indices(symbol_id, &field_idents, symtab, diagnostics)
+                if let Some((target_type, root_struct_id, field_indices)) =
+                    self.resolve_field_path_with_indices(symbol_id, &field_idents, diagnostics)
                 {
                     // Check that value type matches target field type
                     if value_type != Type::Error
@@ -583,13 +574,12 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         &self,
         root_symbol: SymbolId,
         path: &[ast::Ident<'input>],
-        _symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Option<(Type, StructId, Vec<usize>)> {
         // Get the root symbol's type from the type table
         // (property bases are pre-populated during TypeVisitor construction)
-        let mut current_type = match self.type_table.get(root_symbol.0 as usize) {
-            Some(Some((ty, _))) => *ty,
+        let mut current_type = match self.type_table.get(&root_symbol) {
+            Some((ty, _)) => *ty,
             _ => Type::Error,
         };
 
@@ -1085,29 +1075,12 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> TypeTable<'input> {
-        let mut types = Vec::with_capacity(self.type_table.len());
-        for (i, ty) in self.type_table.into_iter().enumerate() {
-            if let Some((ty, _span)) = ty {
-                types.push(ty);
-            } else {
-                // Push Error to maintain correct indexing
-                types.push(Type::Error);
-
-                // Only emit error for non-property symbols that should have types
-                // Properties are at the start and property bases are pre-populated
-                if symtab.get_property(SymbolId(i as u64)).is_none() {
-                    let span = symtab.span_for_symbol(SymbolId(i as u64));
-                    ErrorKind::UnknownType {
-                        name: symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),
-                    }
-                    .at(span, DiagnosticMessage::UnknownTypeLabel)
-                    .emit(diagnostics);
-                }
-            }
-        }
-
         TypeTable {
-            types,
+            types: self
+                .type_table
+                .iter()
+                .map(|(&symbol_id, &(ty, _))| (symbol_id, ty))
+                .collect(),
             triggers: self.trigger_types,
         }
     }
@@ -1622,7 +1595,7 @@ impl BlockAnalysisResult {
 
 #[derive(Clone, Serialize)]
 pub struct TypeTable<'input> {
-    types: Vec<Type>,
+    types: HashMap<SymbolId, Type>,
 
     triggers: HashMap<&'input str, TriggerInfo>,
 }
@@ -1639,10 +1612,7 @@ impl TypeTable<'_> {
         }
 
         // Handle case where type wasn't recorded (e.g., due to errors)
-        self.types
-            .get(symbol_id.0 as usize)
-            .copied()
-            .unwrap_or(Type::Error)
+        self.types.get(&symbol_id).copied().unwrap_or(Type::Error)
     }
 
     pub fn triggers(&self) -> Box<[Trigger]> {
@@ -1771,7 +1741,9 @@ mod test {
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+            let mut script = parser
+                .parse(file_id, &mut diagnostics, lexer.iter())
+                .unwrap();
 
             // Struct registration and type resolution
             let mut struct_registry = StructRegistry::default();
