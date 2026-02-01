@@ -44,7 +44,10 @@ fn entry(gba: agb::Gba) -> ! {
 fn main(mut gba: agb::Gba) -> ! {
     VRAM_MANAGER.set_background_palette_colour(0, 0, Rgb15::WHITE);
 
+    let mut player_health = 10;
+
     let mut player = Player::new();
+    let mut health_bar = HealthBar::new(player_health);
     let mut input = ButtonController::new();
 
     let mut gfx = gba.graphics.get();
@@ -91,18 +94,23 @@ fn main(mut gba: agb::Gba) -> ! {
                     }
                     AnimationEvent::HurtPlayer => {
                         player.player_animation.on_hurt();
+                        player_health -= 1;
                     }
                 }
             }
             keep
         });
         entities.append(&mut new_entities);
+        health_bar.update(player_health);
 
         let mut frame = gfx.frame();
-        player.show(&mut frame, screen_shaker.properties.amount);
+        let screen_shake = screen_shaker.properties.amount;
+
+        health_bar.show(&mut frame, screen_shake);
+        player.show(&mut frame, screen_shake);
 
         for entity in &entities {
-            entity.show(&mut frame, screen_shaker.properties.amount);
+            entity.show(&mut frame, screen_shake);
         }
 
         frame.commit();
@@ -170,5 +178,49 @@ struct ScreenShaker {
 impl ScreenShaker {
     fn rng(&self) -> i32 {
         rng::next_i32()
+    }
+}
+
+struct HealthBar {
+    animation: Script<HealthBarAnimation>,
+}
+
+#[derive(TapirScript)]
+#[tapir("tapir/health.tapir")]
+struct HealthBarAnimation {
+    health: i32,
+    health_frame: i32,
+}
+
+impl HealthBar {
+    pub fn new(player_heath: i32) -> Self {
+        Self {
+            animation: HealthBarAnimation {
+                health: player_heath,
+                health_frame: 0,
+            }
+            .script(),
+        }
+    }
+
+    pub fn update(&mut self, player_heath: i32) {
+        self.animation.properties.health = player_heath;
+        self.animation.run();
+    }
+
+    pub fn show(&self, frame: &mut GraphicsFrame, _screen_shake: Vector2D<i32>) {
+        let properties = &self.animation.properties;
+
+        for i in 0..properties.health {
+            Object::new(sprites::HEALTH.sprite(0))
+                .set_pos(vec2(WIDTH / 2 + i * 7, 1))
+                .show(frame);
+        }
+
+        if properties.health_frame != 0 {
+            Object::new(sprites::HEALTH.sprite(properties.health_frame as usize))
+                .set_pos(vec2(WIDTH / 2 + properties.health * 7, 1))
+                .show(frame);
+        }
     }
 }

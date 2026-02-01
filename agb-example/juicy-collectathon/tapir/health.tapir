@@ -1,0 +1,22 @@
+property health: int;
+property health_frame: int;
+
+var prev_health = health;
+loop {
+    wait;
+    
+    if prev_health != health {
+        loop {
+            if health_frame < 12 {
+                health_frame = health_frame + 1;
+            } else {
+                health_frame = 0;
+                break;
+            }
+
+            wait;
+        } 
+    }
+
+    prev_health = health;
+}
