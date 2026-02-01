@@ -47,8 +47,28 @@ fn modify_then_shadow() {
 modify_then_shadow();
 assert(shadow_test == 200);  # Global was modified before shadow
 
-# Note: Global struct assignment tests removed due to optimizer bug
-# The optimizer incorrectly eliminates assignments to global structs
+# Global struct field assignment in functions
+global g1: int2;
+
+fn set_whole_struct(x: int, y: int) {
+    g1 = int2(x, y);
+}
+
+set_whole_struct(100, 200);
+assert(g1.x == 100);
+assert(g1.y == 200);
+
+# Individual field assignment to global struct
+global g2: int2;
+
+fn set_struct_fields(x: int, y: int) {
+    g2.x = x;
+    g2.y = y;
+}
+
+set_struct_fields(300, 400);
+assert(g2.x == 300);
+assert(g2.y == 400);
 
 # Global with negative value
 global negative_val = 0 - 50;

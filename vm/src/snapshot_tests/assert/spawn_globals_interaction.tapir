@@ -1,4 +1,4 @@
-# Tests for spawn and globals interaction (simplified due to optimizer bugs)
+# Tests for spawn and globals interaction
 extern fn assert(value: bool);
 
 # Multiple spawned tasks writing same global
@@ -34,3 +34,16 @@ spawn add_ten();
 spawn add_hundred();
 wait;
 assert(sequence == 111);
+
+# Spawn modifying global struct fields
+global g_struct: int2;
+
+fn set_struct_fields(x: int, y: int) {
+    g_struct.x = x;
+    g_struct.y = y;
+}
+
+spawn set_struct_fields(100, 200);
+wait;
+assert(g_struct.x == 100);
+assert(g_struct.y == 200);

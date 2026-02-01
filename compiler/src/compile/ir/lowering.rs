@@ -290,6 +290,46 @@ impl<'a> BlockVisitor<'a> {
                         continue;
                     }
 
+                    // Check if root_symbol is a global struct field assignment
+                    if GlobalId::from_symbol_id(root_symbol).is_some()
+                        && let Some(field_info) = field_info
+                        && let Some(Some((_struct_id, field_indices))) = field_info.0.get(idx)
+                    {
+                        // Navigate to the field using the layout structure
+                        let global_layout = symtab
+                            .get_struct_layout(root_symbol)
+                            .expect("Global should have a layout")
+                            .clone();
+
+                        match global_layout.navigate(field_indices) {
+                            Some(FieldAccessor::Global(global_id)) => {
+                                // Scalar field - generate SetGlobal directly
+                                self.current_block.push(TapIr::SetGlobal {
+                                    global_index: global_id.0,
+                                    value: temp,
+                                });
+                            }
+                            Some(FieldAccessor::Nested(_, dst_layout)) => {
+                                // Nested struct assignment - copy all fields
+                                let src_layout = symtab
+                                    .get_struct_layout(temp)
+                                    .expect("Temp should have a layout")
+                                    .clone();
+                                let dst_layout = dst_layout.clone();
+                                self.copy_struct_layout(&src_layout, &dst_layout, symtab);
+                            }
+                            // Exhaustive matching ensures compile-time errors if new variants are added
+                            Some(FieldAccessor::Local(_)) => {
+                                unreachable!("Global layouts cannot contain Local accessors")
+                            }
+                            Some(FieldAccessor::Property(_)) => {
+                                unreachable!("Global layouts cannot contain Property accessors")
+                            }
+                            None => unreachable!("Field path should be valid"),
+                        }
+                        continue;
+                    }
+
                     // Resolve the actual target symbol - may be a field if this is a field assignment
                     let target_symbol = if let Some(field_info) = field_info {
                         if let Some(Some((struct_id, field_indices))) = field_info.0.get(idx) {
