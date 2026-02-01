@@ -21,9 +21,24 @@ cargo test -p compiler test_name
 # Update snapshots (uses insta)
 cargo insta test -p compiler
 cargo insta review
+```
 
-# Quick compile test (reads from stdin with -)
-echo 'property x: int; x = 42;' | cargo run -p compiler --bin tapirc -- -
+## CLI Usage
+
+The `tapirc` CLI is in the `tapir-cli` crate. Prefer using stdin with `-` for quick tests:
+
+```bash
+# Quick compile test (preferred - reads from stdin)
+echo 'property x: int; x = 42;' | cargo run -p tapir-cli -- compile -
+
+# Compile a file
+cargo run -p tapir-cli -- compile path/to/script.tapir
+
+# Disable optimizations (shows unoptimized bytecode)
+echo 'property x: int; x = 42;' | cargo run -p tapir-cli -- compile --no-opt -
+
+# Disable the prelude (no built-in functions)
+cargo run -p tapir-cli -- compile --no-prelude script.tapir
 ```
 
 ## Architecture
@@ -41,6 +56,9 @@ tapir-script (public facade)
 
 compiler (standalone, used at build time)
     └── bytecode
+
+tapir-cli (command-line tool)
+    └── compiler
 ```
 
 ### Compilation Pipeline
