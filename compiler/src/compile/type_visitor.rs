@@ -223,7 +223,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         }
 
         // Skip struct property bases - they don't have entries in the type table
-        if SymTab::is_struct_property_base_symbol(symbol_id) {
+        if symtab.is_struct_property_base_symbol(symbol_id) {
             return;
         }
 
@@ -289,7 +289,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         }
 
         // Check if this is a struct property base (e.g., "pos" for "property pos: Point;")
-        if let Some(struct_id) = SymTab::struct_id_from_base_symbol(symbol_id) {
+        if let Some(struct_id) = symtab.struct_id_from_base_symbol(symbol_id) {
             return Type::Struct(struct_id);
         }
 
@@ -537,7 +537,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     .collect();
                 let target_span = path.last().map(|(_, span)| *span).unwrap_or(statement_span);
                 if let Some((target_type, root_struct_id, field_indices)) =
-                    self.resolve_field_path_with_indices(symbol_id, &field_idents, diagnostics)
+                    self.resolve_field_path_with_indices(symbol_id, &field_idents, symtab, diagnostics)
                 {
                     // Check that value type matches target field type
                     if value_type != Type::Error
@@ -575,11 +575,12 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         &self,
         root_symbol: SymbolId,
         path: &[ast::Ident<'input>],
+        symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Option<(Type, StructId, Vec<usize>)> {
         // Check if this is a struct property base symbol first
         let mut current_type =
-            if let Some(struct_id) = SymTab::struct_id_from_base_symbol(root_symbol) {
+            if let Some(struct_id) = symtab.struct_id_from_base_symbol(root_symbol) {
                 Type::Struct(struct_id)
             } else {
                 // Get the root symbol's type from the type table
@@ -1063,7 +1064,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
 
                 // Only emit error for non-property symbols that should have types
                 // Properties are at the start and get their types from the symtab
-                if symtab.get_property(SymbolId(i as u64)).is_none() {
+                // Property bases (e.g., "pos" for "property pos: Point;") are also excluded
+                if symtab.get_property(SymbolId(i as u64)).is_none()
+                    && !symtab.is_property_base(SymbolId(i as u64))
+                {
                     let span = symtab.span_for_symbol(SymbolId(i as u64));
                     ErrorKind::UnknownType {
                         name: symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),

@@ -75,7 +75,7 @@ Script(
                     span: "[span]",
                     kind: Variable("pos"),
                     meta: {
-                      "compiler::ast::SymbolId": "SymbolId(2305843009213693952)",
+                      "compiler::ast::SymbolId": "SymbolId(2)",
                     },
                   ),
                   field: Ident(
@@ -95,7 +95,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2305843009213693952)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
           },
         ),
         Statement(
@@ -109,7 +109,7 @@ Script(
                     span: "[span]",
                     kind: Variable("pos"),
                     meta: {
-                      "compiler::ast::SymbolId": "SymbolId(2305843009213693952)",
+                      "compiler::ast::SymbolId": "SymbolId(2)",
                     },
                   ),
                   field: Ident(
@@ -129,7 +129,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2305843009213693952)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
           },
         ),
         Statement(
@@ -152,7 +152,7 @@ Script(
                     span: "[span]",
                     kind: Variable("pos"),
                     meta: {
-                      "compiler::ast::SymbolId": "SymbolId(2305843009213693952)",
+                      "compiler::ast::SymbolId": "SymbolId(2)",
                     },
                   ),
                   field: Ident(
@@ -165,7 +165,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3)]",
           },
         ),
         Statement(
@@ -188,7 +188,7 @@ Script(
                     span: "[span]",
                     kind: Variable("pos"),
                     meta: {
-                      "compiler::ast::SymbolId": "SymbolId(2305843009213693952)",
+                      "compiler::ast::SymbolId": "SymbolId(2)",
                     },
                   ),
                   field: Ident(
@@ -201,7 +201,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(3)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4)]",
           },
         ),
       ],

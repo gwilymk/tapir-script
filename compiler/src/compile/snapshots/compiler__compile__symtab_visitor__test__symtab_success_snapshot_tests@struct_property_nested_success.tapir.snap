@@ -111,7 +111,7 @@ Script(
                         span: "[span]",
                         kind: Variable("bounds"),
                         meta: {
-                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                          "compiler::ast::SymbolId": "SymbolId(4)",
                         },
                       ),
                       field: Ident(
@@ -138,7 +138,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2305843009213693953)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4)]",
           },
         ),
         Statement(
@@ -155,7 +155,7 @@ Script(
                         span: "[span]",
                         kind: Variable("bounds"),
                         meta: {
-                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                          "compiler::ast::SymbolId": "SymbolId(4)",
                         },
                       ),
                       field: Ident(
@@ -182,7 +182,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2305843009213693953)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4)]",
           },
         ),
         Statement(
@@ -199,7 +199,7 @@ Script(
                         span: "[span]",
                         kind: Variable("bounds"),
                         meta: {
-                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                          "compiler::ast::SymbolId": "SymbolId(4)",
                         },
                       ),
                       field: Ident(
@@ -226,7 +226,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2305843009213693953)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4)]",
           },
         ),
         Statement(
@@ -243,7 +243,7 @@ Script(
                         span: "[span]",
                         kind: Variable("bounds"),
                         meta: {
-                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                          "compiler::ast::SymbolId": "SymbolId(4)",
                         },
                       ),
                       field: Ident(
@@ -270,7 +270,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(2305843009213693953)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4)]",
           },
         ),
         Statement(
@@ -296,7 +296,7 @@ Script(
                         span: "[span]",
                         kind: Variable("bounds"),
                         meta: {
-                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                          "compiler::ast::SymbolId": "SymbolId(4)",
                         },
                       ),
                       field: Ident(
@@ -316,7 +316,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(4)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(5)]",
           },
         ),
         Statement(
@@ -342,7 +342,7 @@ Script(
                         span: "[span]",
                         kind: Variable("bounds"),
                         meta: {
-                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                          "compiler::ast::SymbolId": "SymbolId(4)",
                         },
                       ),
                       field: Ident(
@@ -362,7 +362,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(5)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(6)]",
           },
         ),
         Statement(
@@ -388,7 +388,7 @@ Script(
                         span: "[span]",
                         kind: Variable("bounds"),
                         meta: {
-                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                          "compiler::ast::SymbolId": "SymbolId(4)",
                         },
                       ),
                       field: Ident(
@@ -408,7 +408,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(6)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(7)]",
           },
         ),
         Statement(
@@ -434,7 +434,7 @@ Script(
                         span: "[span]",
                         kind: Variable("bounds"),
                         meta: {
-                          "compiler::ast::SymbolId": "SymbolId(2305843009213693953)",
+                          "compiler::ast::SymbolId": "SymbolId(4)",
                         },
                       ),
                       field: Ident(
@@ -454,7 +454,7 @@ Script(
             ],
           ),
           meta: {
-            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(7)]",
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(8)]",
           },
         ),
       ],

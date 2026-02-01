@@ -4,7 +4,9 @@ use crate::{
         OperatorOverloadInfo, SymbolId,
     },
     compile::{
-        symtab_visitor::{FieldAccessor, FunctionArgumentSymbols, GlobalId, StructLayout, SymTab},
+        symtab_visitor::{
+            FieldAccessor, FunctionArgumentSymbols, GlobalId, StructLayout, SymTab, SymbolStorage,
+        },
         type_visitor::{CallReturnInfo, FieldAccessInfo, FieldAssignmentInfo},
     },
     types::{StructRegistry, Type},
@@ -30,15 +32,7 @@ pub fn create_ir(
         if let Some(ref type_with_loc) = arg.ty {
             let arg_type = type_with_loc.resolved();
             if let crate::types::Type::Struct(struct_id) = arg_type {
-                let arg_name = symtab.name_for_symbol(symbol_id).to_string();
-                let layout = StructLayout::for_local(
-                    struct_id,
-                    &arg_name,
-                    arg.ident.span,
-                    symtab,
-                    struct_registry,
-                );
-                symtab.register_struct_layout(symbol_id, layout);
+                symtab.ensure_local_layout(symbol_id, struct_id, arg.ident.span, struct_registry);
             }
         }
     }
@@ -270,41 +264,36 @@ impl<'a> BlockVisitor<'a> {
 
                 for (idx, (&root_symbol, temp)) in target_symbols.iter().zip(temps).enumerate() {
                     // Check if root_symbol is a struct property base
-                    if SymTab::is_struct_property_base_symbol(root_symbol) {
+                    if symtab.is_struct_property_base_symbol(root_symbol) {
                         // Struct property field assignment
                         if let Some(field_info) = field_info
                             && let Some(Some((_struct_id, field_indices))) = field_info.0.get(idx)
                         {
-                            // Build the property path from root_symbol and field indices
+                            // Navigate to the field using the layout structure
                             let base_name = symtab.name_for_symbol(root_symbol).to_string();
-                            let prop_path = self.build_struct_property_path(
-                                &base_name,
-                                root_symbol,
-                                field_indices,
-                            );
+                            let prop_layout = symtab
+                                .get_struct_layout_by_name(&base_name)
+                                .expect("Property base should have a layout")
+                                .clone();
 
-                            if let Some(prop) = symtab.get_property_by_path(&prop_path) {
-                                // Scalar field - generate StoreProp directly
-                                self.current_block.push(TapIr::StoreProp {
-                                    prop_index: prop.index,
-                                    value: temp,
-                                });
-                            } else {
-                                // Nested struct assignment - use layout navigation
-                                let prop_layout = symtab
-                                    .get_struct_layout_by_name(&base_name)
-                                    .expect("Property base should have a layout")
-                                    .clone();
-                                let dst_layout = prop_layout
-                                    .navigate_nested(field_indices)
-                                    .expect("Nested field should have a layout")
-                                    .clone();
-                                let src_layout = symtab
-                                    .get_struct_layout(temp)
-                                    .expect("Temp should have a layout")
-                                    .clone();
-
-                                self.copy_struct_layout(&src_layout, &dst_layout, symtab);
+                            match prop_layout.navigate(field_indices) {
+                                Some(FieldAccessor::Property(prop_index)) => {
+                                    // Scalar field - generate StoreProp directly
+                                    self.current_block.push(TapIr::StoreProp {
+                                        prop_index: *prop_index,
+                                        value: temp,
+                                    });
+                                }
+                                Some(FieldAccessor::Nested(_, dst_layout)) => {
+                                    // Nested struct assignment - copy all fields
+                                    let src_layout = symtab
+                                        .get_struct_layout(temp)
+                                        .expect("Temp should have a layout")
+                                        .clone();
+                                    let dst_layout = dst_layout.clone();
+                                    self.copy_struct_layout(&src_layout, &dst_layout, symtab);
+                                }
+                                _ => panic!("Field should be Property or Nested"),
                             }
                         }
                         continue;
@@ -336,24 +325,12 @@ impl<'a> BlockVisitor<'a> {
                     // Check if temp has a struct layout - if so, copy fields instead of single move
                     if let Some(temp_layout) = symtab.get_struct_layout(temp).cloned() {
                         // Get or create the target layout
-                        let target_layout = if let Some(layout) =
-                            symtab.get_struct_layout(target_symbol).cloned()
-                        {
-                            // Target already has a layout (e.g., global struct)
-                            layout
-                        } else {
-                            // Local target - create layout
-                            let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                            let layout = StructLayout::for_local(
-                                temp_layout.struct_id,
-                                &target_name,
-                                statement.span,
-                                symtab,
-                                self.struct_registry,
-                            );
-                            symtab.register_struct_layout(target_symbol, layout.clone());
-                            layout
-                        };
+                        let target_layout = symtab.ensure_local_layout(
+                            target_symbol,
+                            temp_layout.struct_id,
+                            statement.span,
+                            self.struct_registry,
+                        );
 
                         self.copy_struct_layout(&temp_layout, &target_layout, symtab);
                     } else {
@@ -517,18 +494,8 @@ impl<'a> BlockVisitor<'a> {
         span: crate::tokens::Span,
         symtab: &mut SymTab,
     ) -> SymbolId {
-        // Ensure the root symbol has a layout
-        if symtab.get_struct_layout(root_symbol).is_none() {
-            let root_name = symtab.name_for_symbol(root_symbol).to_string();
-            let layout =
-                StructLayout::for_local(struct_id, &root_name, span, symtab, self.struct_registry);
-            symtab.register_struct_layout(root_symbol, layout);
-        }
-
-        // Navigate through field indices to find the target field
-        let layout = symtab
-            .get_struct_layout(root_symbol)
-            .expect("Should have layout");
+        // Ensure the root symbol has a layout and navigate to find the target field
+        let layout = symtab.ensure_local_layout(root_symbol, struct_id, span, self.struct_registry);
         layout
             .navigate_to_symbol(field_indices)
             .expect("Field path should be valid")
@@ -561,16 +528,12 @@ impl<'a> BlockVisitor<'a> {
                 let source = *expr.meta.get().expect("Should've resolved variable");
                 if let Some(source_layout) = symtab.get_struct_layout(source).cloned() {
                     // Struct-typed variable: copy all fields to target's layout
-                    let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    let target_layout = StructLayout::for_local(
+                    let target_layout = symtab.ensure_local_layout(
+                        target_symbol,
                         source_layout.struct_id,
-                        &target_name,
                         expr.span,
-                        symtab,
                         self.struct_registry,
                     );
-                    symtab.register_struct_layout(target_symbol, target_layout.clone());
-
                     self.copy_struct_layout(&source_layout, &target_layout, symtab);
                 } else {
                     // Scalar: load from any storage class (property, global, or local)
@@ -755,7 +718,7 @@ impl<'a> BlockVisitor<'a> {
                     symtab,
                 );
             }
-            ast::ExpressionKind::FieldAccess { base, field } => {
+            ast::ExpressionKind::FieldAccess { base, field: _ } => {
                 // Get the field info from type checking
                 let info = expr
                     .meta
@@ -765,29 +728,35 @@ impl<'a> BlockVisitor<'a> {
                 // Check if the base is a struct property base (e.g., "pos" in "property pos: Point;")
                 if let ast::ExpressionKind::Variable(_) = &base.kind
                     && let Some(base_symbol) = base.meta.get::<SymbolId>()
-                    && SymTab::is_struct_property_base_symbol(*base_symbol)
+                    && symtab.is_struct_property_base_symbol(*base_symbol)
                 {
-                    // This is a struct property field access - generate GetProp directly
-                    // Build the full path (e.g., "pos.x") and look up the expanded property
+                    // This is a struct property field access - use layout navigation
                     let base_name = symtab.name_for_symbol(*base_symbol);
-                    let full_path = format!("{}.{}", base_name, field.ident);
+                    let prop_layout = symtab
+                        .get_struct_layout_by_name(&base_name)
+                        .expect("Property base should have a layout")
+                        .clone();
 
-                    if let Some(prop) = symtab.get_property_by_path(&full_path) {
-                        self.current_block.push(TapIr::GetProp {
-                            target: target_symbol,
-                            prop_index: prop.index,
-                        });
-                    } else {
-                        // Property path not found - this shouldn't happen if type checking passed
-                        // Handle nested struct property access by building the full path
-                        self.handle_struct_property_field_access(
-                            target_symbol,
-                            &base_name,
-                            field.ident,
-                            info,
-                            expr.span,
-                            symtab,
-                        );
+                    match prop_layout.field(info.field_index) {
+                        Some(FieldAccessor::Property(prop_index)) => {
+                            // Scalar field - generate GetProp directly
+                            self.current_block.push(TapIr::GetProp {
+                                target: target_symbol,
+                                prop_index: *prop_index,
+                            });
+                        }
+                        Some(FieldAccessor::Nested(_, src_layout)) => {
+                            // Nested struct field - copy all fields to target
+                            let dst_layout = symtab.ensure_local_layout(
+                                target_symbol,
+                                src_layout.struct_id,
+                                expr.span,
+                                self.struct_registry,
+                            );
+                            let src_layout = src_layout.clone();
+                            self.copy_struct_layout(&src_layout, &dst_layout, symtab);
+                        }
+                        _ => panic!("Field should be Property or Nested"),
                     }
                     return;
                 }
@@ -799,48 +768,34 @@ impl<'a> BlockVisitor<'a> {
                     && let Some(base_symbol) = base.meta.get::<SymbolId>()
                     && GlobalId::from_symbol_id(*base_symbol).is_some()
                 {
-                    // Build the field path for this access
-                    let struct_def = self.struct_registry.get(info.base_struct_id);
-                    let field_def = &struct_def.fields[info.field_index];
-                    let field_path = &field_def.name;
+                    // Use layout navigation to access the field
+                    let global_layout = symtab
+                        .get_struct_layout_by_name(var_name)
+                        .expect("Global should have a layout")
+                        .clone();
 
-                    if let Type::Struct(nested_struct_id) = field_def.ty {
-                        // Nested struct field - need to read multiple globals
-                        let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                        let dst_layout = StructLayout::for_local(
-                            nested_struct_id,
-                            &target_name,
-                            expr.span,
-                            symtab,
-                            self.struct_registry,
-                        );
-                        symtab.register_struct_layout(target_symbol, dst_layout.clone());
-
-                        // Get layouts and copy using unified approach
-                        let global_layout = symtab
-                            .get_struct_layout_by_name(var_name)
-                            .expect("Global should have a layout")
-                            .clone();
-                        let src_layout = global_layout
-                            .nested_by_name(field_path, self.struct_registry)
-                            .expect("Nested field should have a layout")
-                            .clone();
-
-                        self.copy_struct_layout(&src_layout, &dst_layout, symtab);
-                        return;
+                    match global_layout.field(info.field_index) {
+                        Some(FieldAccessor::Global(global_id)) => {
+                            // Scalar field - generate GetGlobal directly
+                            self.current_block.push(TapIr::GetGlobal {
+                                target: target_symbol,
+                                global_index: global_id.0,
+                            });
+                        }
+                        Some(FieldAccessor::Nested(_, src_layout)) => {
+                            // Nested struct field - copy all fields to target
+                            let dst_layout = symtab.ensure_local_layout(
+                                target_symbol,
+                                src_layout.struct_id,
+                                expr.span,
+                                self.struct_registry,
+                            );
+                            let src_layout = src_layout.clone();
+                            self.copy_struct_layout(&src_layout, &dst_layout, symtab);
+                        }
+                        _ => panic!("Global field should be Global or Nested"),
                     }
-
-                    // Scalar field - look up GlobalId and use GetGlobal
-                    if let Some(field_global_id) =
-                        symtab.get_global_struct_field_id(var_name, field_path)
-                    {
-                        self.current_block.push(TapIr::GetGlobal {
-                            target: target_symbol,
-                            global_index: field_global_id.0,
-                        });
-                        return;
-                    }
-                    // Fall through to regular handling if not found (shouldn't happen)
+                    return;
                 }
 
                 // Regular field access (not a struct property base or global struct)
@@ -848,24 +803,13 @@ impl<'a> BlockVisitor<'a> {
                 let base_temp = symtab.new_temporary();
                 self.blocks_for_expression(base, base_temp, symtab);
 
-                // Ensure the base has a layout. If not (e.g., function call result),
-                // create one using the struct type from FieldAccessInfo.
-                if symtab.get_struct_layout(base_temp).is_none() {
-                    let base_name = symtab.name_for_symbol(base_temp).to_string();
-                    let layout = StructLayout::for_local(
-                        info.base_struct_id,
-                        &base_name,
-                        expr.span,
-                        symtab,
-                        self.struct_registry,
-                    );
-                    symtab.register_struct_layout(base_temp, layout);
-                }
-
-                let base_layout = symtab
-                    .get_struct_layout(base_temp)
-                    .expect("Base should have layout")
-                    .clone();
+                // Ensure the base has a layout (may not have one for function call results)
+                let base_layout = symtab.ensure_local_layout(
+                    base_temp,
+                    info.base_struct_id,
+                    expr.span,
+                    self.struct_registry,
+                );
 
                 // Get the field's symbol from the base layout
                 let field_symbol = base_layout
@@ -877,16 +821,12 @@ impl<'a> BlockVisitor<'a> {
                     base_layout.field(info.field_index)
                 {
                     // Field is struct-typed: create layout for target and copy
-                    let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    let target_layout = StructLayout::for_local(
+                    let target_layout = symtab.ensure_local_layout(
+                        target_symbol,
                         field_layout.struct_id,
-                        &target_name,
                         expr.span,
-                        symtab,
                         self.struct_registry,
                     );
-                    symtab.register_struct_layout(target_symbol, target_layout.clone());
-
                     self.copy_struct_layout(field_layout, &target_layout, symtab);
                 } else {
                     // Scalar field: simple move
@@ -951,15 +891,8 @@ impl<'a> BlockVisitor<'a> {
     ) {
         // Create a temporary to hold the constructed struct value
         let temp_symbol = symtab.new_temporary();
-        let temp_name = symtab.name_for_symbol(temp_symbol).to_string();
-        let temp_layout = StructLayout::for_local(
-            struct_id,
-            &temp_name,
-            span,
-            symtab,
-            self.struct_registry,
-        );
-        symtab.register_struct_layout(temp_symbol, temp_layout.clone());
+        let temp_layout =
+            symtab.ensure_local_layout(temp_symbol, struct_id, span, self.struct_registry);
 
         // Evaluate args and collect expanded leaves
         let mut arg_leaves = Vec::new();
@@ -976,20 +909,8 @@ impl<'a> BlockVisitor<'a> {
         }
 
         // Get or create target layout
-        let target_layout = if let Some(layout) = symtab.get_struct_layout(target_symbol).cloned() {
-            layout
-        } else {
-            let target_name = symtab.name_for_symbol(target_symbol).to_string();
-            let layout = StructLayout::for_local(
-                temp_layout.struct_id,
-                &target_name,
-                span,
-                symtab,
-                self.struct_registry,
-            );
-            symtab.register_struct_layout(target_symbol, layout.clone());
-            layout
-        };
+        let target_layout =
+            symtab.ensure_local_layout(target_symbol, struct_id, span, self.struct_registry);
 
         self.copy_struct_layout(&temp_layout, &target_layout, symtab);
     }
@@ -1011,15 +932,7 @@ impl<'a> BlockVisitor<'a> {
                 if let Some(CallReturnInfo(ret_types)) = return_info
                     && let Some(Type::Struct(struct_id)) = ret_types.first()
                 {
-                    let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    let layout = StructLayout::for_local(
-                        *struct_id,
-                        &target_name,
-                        span,
-                        symtab,
-                        self.struct_registry,
-                    );
-                    symtab.register_struct_layout(target_symbol, layout);
+                    symtab.ensure_local_layout(target_symbol, *struct_id, span, self.struct_registry);
                 }
                 let mut targets = Vec::new();
                 collect_leaf_symbols(target_symbol, symtab, &mut targets);
@@ -1034,15 +947,7 @@ impl<'a> BlockVisitor<'a> {
                 if let Some(CallReturnInfo(ret_types)) = return_info
                     && let Some(Type::Struct(struct_id)) = ret_types.first()
                 {
-                    let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    let layout = StructLayout::for_local(
-                        *struct_id,
-                        &target_name,
-                        span,
-                        symtab,
-                        self.struct_registry,
-                    );
-                    symtab.register_struct_layout(target_symbol, layout);
+                    symtab.ensure_local_layout(target_symbol, *struct_id, span, self.struct_registry);
                 }
                 let mut targets = Vec::new();
                 collect_leaf_symbols(target_symbol, symtab, &mut targets);
@@ -1088,42 +993,45 @@ impl<'a> BlockVisitor<'a> {
     /// Load a scalar value from a symbol into a target local.
     /// Dispatches based on the source symbol's storage class.
     fn emit_load_symbol(&mut self, target: SymbolId, source: SymbolId, symtab: &SymTab) {
-        if let Some(property) = symtab.get_property(source) {
-            self.current_block.push(TapIr::GetProp {
-                target,
-                prop_index: property.index,
-            });
-        } else if let Some(global_id) = GlobalId::from_symbol_id(source) {
-            self.current_block.push(TapIr::GetGlobal {
-                target,
-                global_index: global_id.0,
-            });
-        } else {
-            self.current_block.push(TapIr::Move {
-                target,
-                source,
-            });
+        match symtab.get_storage(source) {
+            SymbolStorage::Property(idx) => {
+                self.current_block.push(TapIr::GetProp {
+                    target,
+                    prop_index: idx,
+                });
+            }
+            SymbolStorage::Global(idx) => {
+                self.current_block.push(TapIr::GetGlobal {
+                    target,
+                    global_index: idx,
+                });
+            }
+            SymbolStorage::Local => {
+                self.current_block.push(TapIr::Move { target, source });
+            }
         }
     }
 
     /// Store a value into a symbol.
     /// Dispatches based on the destination symbol's storage class.
     fn emit_store_symbol(&mut self, dest: SymbolId, value: SymbolId, symtab: &SymTab) {
-        if let Some(property) = symtab.get_property(dest) {
-            self.current_block.push(TapIr::StoreProp {
-                prop_index: property.index,
-                value,
-            });
-        } else if let Some(global_id) = GlobalId::from_symbol_id(dest) {
-            self.current_block.push(TapIr::SetGlobal {
-                global_index: global_id.0,
-                value,
-            });
-        } else {
-            self.current_block.push(TapIr::Move {
-                target: dest,
-                source: value,
-            });
+        match symtab.get_storage(dest) {
+            SymbolStorage::Property(idx) => {
+                self.current_block.push(TapIr::StoreProp {
+                    prop_index: idx,
+                    value,
+                });
+            }
+            SymbolStorage::Global(idx) => {
+                self.current_block.push(TapIr::SetGlobal {
+                    global_index: idx,
+                    value,
+                });
+            }
+            SymbolStorage::Local => {
+                self.current_block
+                    .push(TapIr::Move { target: dest, source: value });
+            }
         }
     }
 
@@ -1195,89 +1103,5 @@ impl<'a> BlockVisitor<'a> {
                 self.emit_store(dst, temp);
             }
         }
-    }
-
-    /// Handle nested struct property field access.
-    /// For deeply nested paths like `pos.origin.x`, recursively builds the path
-    /// and generates GetProp for scalar fields.
-    fn handle_struct_property_field_access(
-        &mut self,
-        target_symbol: SymbolId,
-        base_path: &str,
-        field_name: &str,
-        info: &FieldAccessInfo,
-        span: crate::tokens::Span,
-        symtab: &mut SymTab,
-    ) {
-        // Build the full path
-        let full_path = format!("{}.{}", base_path, field_name);
-
-        // Check if this is a scalar property
-        if let Some(prop) = symtab.get_property_by_path(&full_path) {
-            self.current_block.push(TapIr::GetProp {
-                target: target_symbol,
-                prop_index: prop.index,
-            });
-            return;
-        }
-
-        // This must be a nested struct field - we need to recursively get all scalar fields
-        // and copy them to the target's expansion
-        let struct_def = self.struct_registry.get(info.base_struct_id);
-        let field_def = &struct_def.fields[info.field_index];
-
-        if let Type::Struct(nested_struct_id) = field_def.ty {
-            // Create layout for target
-            let target_name = symtab.name_for_symbol(target_symbol).to_string();
-            let dst_layout = StructLayout::for_local(
-                nested_struct_id,
-                &target_name,
-                span,
-                symtab,
-                self.struct_registry,
-            );
-            symtab.register_struct_layout(target_symbol, dst_layout.clone());
-
-            // Get property base layout and navigate to the nested field
-            let prop_layout = symtab
-                .get_struct_layout_by_name(base_path)
-                .expect("Property base should have a layout")
-                .clone();
-            let src_layout = prop_layout
-                .nested_by_name(field_name, self.struct_registry)
-                .expect("Nested field should have a layout")
-                .clone();
-
-            self.copy_struct_layout(&src_layout, &dst_layout, symtab);
-        }
-    }
-
-    /// Build a property path from a base name and field indices.
-    fn build_struct_property_path(
-        &self,
-        base_name: &str,
-        base_symbol: SymbolId,
-        field_indices: &[usize],
-    ) -> String {
-        // Get the struct ID from the base symbol
-        let Some(struct_id) = SymTab::struct_id_from_base_symbol(base_symbol) else {
-            return base_name.to_string();
-        };
-
-        let mut path = base_name.to_string();
-        let mut current_struct_id = struct_id;
-
-        for &field_index in field_indices {
-            let struct_def = self.struct_registry.get(current_struct_id);
-            let field = &struct_def.fields[field_index];
-            path = format!("{}.{}", path, field.name);
-
-            // Update current_struct_id if the field is a struct
-            if let Type::Struct(nested_id) = field.ty {
-                current_struct_id = nested_id;
-            }
-        }
-
-        path
     }
 }
