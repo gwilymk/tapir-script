@@ -30,21 +30,13 @@ event fn collide_with_player() {
     }
     has_been_collided = true;
 
-    var coin_pos = position.round() + int2(8, 8);
-    trigger IncreaseScore(coin_pos.x, coin_pos.y);
+    trigger IncreaseScore;
 
     urgency.cancel();
 
     # Wait one frame to allow main.rs to tell us if we're a health coin
     wait 1;
 
-    if is_health_coin {
-        # Health coin - just disappear quickly, the CoinToHealth entity handles the animation
-        trigger DestroySelf;
-        return;
-    }
-
-    # Normal coin - float up and explode
     should_show = true;
     animate_wait = 1;
     var count = 16;
@@ -56,6 +48,13 @@ event fn collide_with_player() {
         position.y = position.y - 1.;
         wait 3;
         count = count - 1;
+    }
+
+    if is_health_coin {
+        var position = position.round();
+        trigger CoinToHealth(position.x, position.y);
+        trigger DestroySelf;
+        return;
     }
 
     var particle_position = position.round() + int2(8, 8);

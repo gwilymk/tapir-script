@@ -138,7 +138,7 @@ fn main(gba: &mut agb::Gba) {
                     AnimationEvent::SpawnParticle(x, y, kind) => {
                         new_entities.push(Particle::new(vec2(x, y), kind).into());
                     }
-                    AnimationEvent::IncreaseScore(x, y) => {
+                    AnimationEvent::IncreaseScore => {
                         sfx::play_sfx(&mut mixer, 0, num!(1) + Fix::new(score % 10) / 20);
 
                         score += 1;
@@ -149,16 +149,6 @@ fn main(gba: &mut agb::Gba) {
                             };
 
                             collectable.on_become_health_coin();
-                            // Spawn flying coin that goes to health bar
-                            let target_x = WIDTH / 2 + player_health * 7;
-                            let target_y = 1;
-                            new_entities.push(
-                                CoinToHealth::new(
-                                    vec2(x.into(), y.into()),
-                                    vec2(target_x, target_y),
-                                )
-                                .into(),
-                            );
                         }
                     }
                     AnimationEvent::HealthArrived => {
@@ -176,6 +166,15 @@ fn main(gba: &mut agb::Gba) {
                     AnimationEvent::PlayerDamaged | AnimationEvent::PlayerDied => {}
                     AnimationEvent::PlaySound(sfx_id) => {
                         sfx::play_sfx(&mut mixer, sfx_id, num!(1));
+                    }
+                    AnimationEvent::CoinToHealth(x, y) => {
+                        // Spawn flying coin that goes to health bar
+                        let target_x = WIDTH / 2 + player_health * 7;
+                        let target_y = 1;
+                        new_entities.push(
+                            CoinToHealth::new(vec2(x.into(), y.into()), vec2(target_x, target_y))
+                                .into(),
+                        );
                     }
                 }
             }
@@ -204,13 +203,14 @@ fn main(gba: &mut agb::Gba) {
 pub enum AnimationEvent {
     DestroySelf,
     SpawnParticle(i32, i32, i32),
-    IncreaseScore(i32, i32),
+    IncreaseScore,
     HealthArrived,
     ScreenShake(i32),
     HurtPlayer,
     PlayerDamaged,
     PlayerDied,
     PlaySound(i32),
+    CoinToHealth(i32, i32),
 }
 
 struct Player {
