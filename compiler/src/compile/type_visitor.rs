@@ -195,13 +195,25 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             );
         }
 
-        Self {
-            type_table: symtab
-                .properties()
-                .iter()
-                .map(|prop| Some((prop.ty, None)))
-                .collect(),
+        // Initialize type_table with properties first
+        let mut type_table: Vec<Option<(Type, Option<Span>)>> = symtab
+            .properties()
+            .iter()
+            .map(|prop| Some((prop.ty, None)))
+            .collect();
 
+        // Pre-populate property base types
+        // This ensures type lookups work uniformly without special-case checks
+        for (symbol_id, struct_id) in symtab.property_bases() {
+            let idx = symbol_id.0 as usize;
+            if type_table.len() <= idx {
+                type_table.resize(idx + 1, None);
+            }
+            type_table[idx] = Some((Type::Struct(struct_id), None));
+        }
+
+        Self {
+            type_table,
             functions: resolved_functions,
             struct_registry,
             trigger_types: HashMap::new(),
@@ -288,11 +300,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             return symtab.get_global(global_id).ty;
         }
 
-        // Check if this is a struct property base (e.g., "pos" for "property pos: Point;")
-        if let Some(struct_id) = symtab.struct_id_from_base_symbol(symbol_id) {
-            return Type::Struct(struct_id);
-        }
-
+        // Property bases are pre-populated in the type_table during construction
         match self.type_table.get(symbol_id.0 as usize) {
             Some(Some((ty, _))) => *ty,
             _ => {
@@ -575,20 +583,15 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         &self,
         root_symbol: SymbolId,
         path: &[ast::Ident<'input>],
-        symtab: &SymTab,
+        _symtab: &SymTab,
         diagnostics: &mut Diagnostics,
     ) -> Option<(Type, StructId, Vec<usize>)> {
-        // Check if this is a struct property base symbol first
-        let mut current_type =
-            if let Some(struct_id) = symtab.struct_id_from_base_symbol(root_symbol) {
-                Type::Struct(struct_id)
-            } else {
-                // Get the root symbol's type from the type table
-                match self.type_table.get(root_symbol.0 as usize) {
-                    Some(Some((ty, _))) => *ty,
-                    _ => Type::Error,
-                }
-            };
+        // Get the root symbol's type from the type table
+        // (property bases are pre-populated during TypeVisitor construction)
+        let mut current_type = match self.type_table.get(root_symbol.0 as usize) {
+            Some(Some((ty, _))) => *ty,
+            _ => Type::Error,
+        };
 
         // The root must be a struct
         let root_struct_id = match current_type {
@@ -1063,11 +1066,8 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 types.push(Type::Error);
 
                 // Only emit error for non-property symbols that should have types
-                // Properties are at the start and get their types from the symtab
-                // Property bases (e.g., "pos" for "property pos: Point;") are also excluded
-                if symtab.get_property(SymbolId(i as u64)).is_none()
-                    && !symtab.is_property_base(SymbolId(i as u64))
-                {
+                // Properties are at the start and property bases are pre-populated
+                if symtab.get_property(SymbolId(i as u64)).is_none() {
                     let span = symtab.span_for_symbol(SymbolId(i as u64));
                     ErrorKind::UnknownType {
                         name: symtab.name_for_symbol(SymbolId(i as u64)).into_owned(),

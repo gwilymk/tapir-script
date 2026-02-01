@@ -1489,6 +1489,14 @@ impl<'input> SymTab<'input> {
         self.property_base_struct_ids.get(&symbol_id).copied()
     }
 
+    /// Iterate over all property bases (symbol_id, struct_id) pairs.
+    /// Used to pre-populate types in the type table.
+    pub fn property_bases(&self) -> impl Iterator<Item = (SymbolId, StructId)> + '_ {
+        self.property_base_struct_ids
+            .iter()
+            .map(|(&sym, &struct_id)| (sym, struct_id))
+    }
+
     /// Get the storage class for a symbol.
     ///
     /// This determines what instruction to use for loads/stores:
