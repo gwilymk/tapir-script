@@ -89,8 +89,7 @@ impl StructLayout {
             match field.ty {
                 Type::Struct(nested_id) => {
                     // Create nested layout recursively (no symbol for properties)
-                    let nested =
-                        Self::for_property(nested_id, &field_name, base_index, registry);
+                    let nested = Self::for_property(nested_id, &field_name, base_index, registry);
                     fields.push(FieldAccessor::Nested(None, Box::new(nested)));
                 }
                 _ => {
@@ -206,9 +205,16 @@ impl StructLayout {
 
     /// Get a nested layout by field name.
     /// Returns None if the field doesn't exist or isn't a nested struct.
-    pub fn nested_by_name(&self, field_name: &str, registry: &StructRegistry) -> Option<&StructLayout> {
+    pub fn nested_by_name(
+        &self,
+        field_name: &str,
+        registry: &StructRegistry,
+    ) -> Option<&StructLayout> {
         let struct_def = registry.get(self.struct_id);
-        let field_index = struct_def.fields.iter().position(|f| f.name == field_name)?;
+        let field_index = struct_def
+            .fields
+            .iter()
+            .position(|f| f.name == field_name)?;
         self.nested_at(field_index)
     }
 
@@ -923,19 +929,22 @@ impl<'input> SymTabVisitor<'input> {
                         .is_some_and(|info| info.rust_field_name == name)
                 }) {
                     let mut base_index = first_prop.index;
-                    let layout =
-                        StructLayout::for_property(struct_id, name, &mut base_index, struct_registry);
+                    let layout = StructLayout::for_property(
+                        struct_id,
+                        name,
+                        &mut base_index,
+                        struct_registry,
+                    );
                     // Create a real symbol for this property base
-                    let symbol_id =
-                        visitor
-                            .symtab
-                            .new_symbol_owned(name.to_string(), decl.name.ident.span);
-                    visitor
+                    let symbol_id = visitor
                         .symtab
-                        .register_property_base(name.to_string(), symbol_id, struct_id);
-                    visitor
-                        .symtab
-                        .register_named_struct_layout(name.to_string(), symbol_id, layout);
+                        .new_symbol_owned(name.to_string(), decl.name.ident.span);
+                    visitor.symtab.register_struct_property_base(
+                        name.to_string(),
+                        symbol_id,
+                        struct_id,
+                        layout,
+                    );
                 }
             }
         }
@@ -965,7 +974,10 @@ impl<'input> SymTabVisitor<'input> {
             } else if ty == Type::Error {
                 // No type annotation - try to infer from initializer
                 if let Some(expr) = &global.value {
-                    if let ExpressionKind::Call { name: call_name, .. } = &expr.kind {
+                    if let ExpressionKind::Call {
+                        name: call_name, ..
+                    } = &expr.kind
+                    {
                         // Look up the constructor name in the struct registry
                         struct_registry
                             .iter()
@@ -1337,19 +1349,6 @@ impl<'input> NameTable<'input> {
         None
     }
 
-    /// Check if a name is a struct property base.
-    #[allow(dead_code)]
-    pub fn is_struct_property_base(&self, name: &str, symtab: &SymTab) -> bool {
-        symtab.get_property_base_symbol(name).is_some()
-    }
-
-    /// Get the struct ID for a struct property base name.
-    #[allow(dead_code)]
-    pub fn get_struct_property_base(&self, name: &str, symtab: &SymTab) -> Option<StructId> {
-        let symbol_id = symtab.get_property_base_symbol(name)?;
-        symtab.get_property_base_struct_id(symbol_id)
-    }
-
     pub fn push_scope(&mut self) {
         self.names.push(HashMap::new())
     }
@@ -1424,7 +1423,12 @@ impl<'input> SymTab<'input> {
     }
 
     /// Register a struct layout with a name for later lookup.
-    pub fn register_named_struct_layout(&mut self, name: String, symbol_id: SymbolId, layout: StructLayout) {
+    pub fn register_named_struct_layout(
+        &mut self,
+        name: String,
+        symbol_id: SymbolId,
+        layout: StructLayout,
+    ) {
         self.struct_layouts.insert(symbol_id, layout);
         self.named_struct_layouts.insert(name, symbol_id);
     }
@@ -1461,7 +1465,11 @@ impl<'input> SymTab<'input> {
 
     /// Get the GlobalId for a specific field of a global struct.
     /// `field_path` is the dot-separated path like "x" or "origin.x".
-    pub fn get_global_struct_field_id(&self, global_name: &str, field_path: &str) -> Option<GlobalId> {
+    pub fn get_global_struct_field_id(
+        &self,
+        global_name: &str,
+        field_path: &str,
+    ) -> Option<GlobalId> {
         // Find the field index by looking up the global by full path
         let full_path = format!("{}.{}", global_name, field_path);
         self.global_names.get(full_path.as_str()).copied()
@@ -1469,9 +1477,30 @@ impl<'input> SymTab<'input> {
 
     /// Register a property base symbol for a struct-typed property.
     /// This is called when processing property declarations for struct types.
-    pub fn register_property_base(&mut self, name: String, symbol_id: SymbolId, struct_id: StructId) {
+    ///
+    /// **Important:** For property bases, use `register_struct_property_base` instead,
+    /// which handles both property base registration AND layout registration atomically.
+    fn register_property_base(&mut self, name: String, symbol_id: SymbolId, struct_id: StructId) {
         self.property_base_struct_ids.insert(symbol_id, struct_id);
         self.property_base_symbols.insert(name, symbol_id);
+    }
+
+    /// Register a struct property base with its layout.
+    ///
+    /// This is the ONLY way to register a struct property base. It atomically registers:
+    /// - The property base symbol and struct ID mapping
+    /// - The struct layout for later field access
+    ///
+    /// This prevents bugs from forgetting to register one or the other.
+    pub fn register_struct_property_base(
+        &mut self,
+        name: String,
+        symbol_id: SymbolId,
+        struct_id: StructId,
+        layout: StructLayout,
+    ) {
+        self.register_property_base(name.clone(), symbol_id, struct_id);
+        self.register_named_struct_layout(name, symbol_id, layout);
     }
 
     /// Get the symbol ID for a property base by name.
@@ -1653,10 +1682,10 @@ impl<'input> SymTab<'input> {
     pub fn get_struct_property_base_type(&self, name: &str) -> Option<StructId> {
         // Find a property with this rust_field_name
         for prop in &self.properties {
-            if let Some(ref info) = prop.struct_info {
-                if info.rust_field_name == name {
-                    return Some(info.struct_id);
-                }
+            if let Some(ref info) = prop.struct_info
+                && info.rust_field_name == name
+            {
+                return Some(info.struct_id);
             }
         }
         None
@@ -1677,19 +1706,6 @@ impl<'input> SymTab<'input> {
             .into_iter()
             .map(|(name, (struct_id, span))| (name, struct_id, span))
             .collect()
-    }
-
-    /// Check if a symbol ID represents a struct property base.
-    /// Check if a symbol represents a struct property base.
-    /// This is now an alias for `is_property_base`.
-    pub fn is_struct_property_base_symbol(&self, symbol_id: SymbolId) -> bool {
-        self.property_base_struct_ids.contains_key(&symbol_id)
-    }
-
-    /// Extract struct ID from a struct property base symbol.
-    /// This is now an alias for `get_property_base_struct_id`.
-    pub fn struct_id_from_base_symbol(&self, symbol_id: SymbolId) -> Option<StructId> {
-        self.property_base_struct_ids.get(&symbol_id).copied()
     }
 
     pub fn get_global_by_name(&self, name: &str) -> Option<&GlobalInfo> {
@@ -2313,12 +2329,7 @@ mod test {
             struct_info: None,
         }];
 
-        let symtab = SymTab::new(
-            &properties,
-            HashMap::new(),
-            HashMap::new(),
-            HashMap::new(),
-        );
+        let symtab = SymTab::new(&properties, HashMap::new(), HashMap::new(), HashMap::new());
 
         // Property symbol is SymbolId(0)
         let prop_symbol = SymbolId(0);
@@ -2556,7 +2567,10 @@ mod test {
         for accessor in &layout.fields {
             match accessor {
                 FieldAccessor::Local(_) => {}
-                _ => panic!("Expected Local accessor for local struct, got {:?}", accessor),
+                _ => panic!(
+                    "Expected Local accessor for local struct, got {:?}",
+                    accessor
+                ),
             }
         }
 

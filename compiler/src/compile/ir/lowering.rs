@@ -264,7 +264,7 @@ impl<'a> BlockVisitor<'a> {
 
                 for (idx, (&root_symbol, temp)) in target_symbols.iter().zip(temps).enumerate() {
                     // Check if root_symbol is a struct property base
-                    if symtab.is_struct_property_base_symbol(root_symbol) {
+                    if symtab.is_property_base(root_symbol) {
                         // Struct property field assignment
                         if let Some(field_info) = field_info
                             && let Some(Some((_struct_id, field_indices))) = field_info.0.get(idx)
@@ -293,7 +293,14 @@ impl<'a> BlockVisitor<'a> {
                                     let dst_layout = dst_layout.clone();
                                     self.copy_struct_layout(&src_layout, &dst_layout, symtab);
                                 }
-                                _ => panic!("Field should be Property or Nested"),
+                                // Exhaustive matching ensures compile-time errors if new variants are added
+                                Some(FieldAccessor::Local(_)) => {
+                                    unreachable!("Property layouts cannot contain Local accessors")
+                                }
+                                Some(FieldAccessor::Global(_)) => {
+                                    unreachable!("Property layouts cannot contain Global accessors")
+                                }
+                                None => unreachable!("Field path should be valid"),
                             }
                         }
                         continue;
@@ -728,7 +735,7 @@ impl<'a> BlockVisitor<'a> {
                 // Check if the base is a struct property base (e.g., "pos" in "property pos: Point;")
                 if let ast::ExpressionKind::Variable(_) = &base.kind
                     && let Some(base_symbol) = base.meta.get::<SymbolId>()
-                    && symtab.is_struct_property_base_symbol(*base_symbol)
+                    && symtab.is_property_base(*base_symbol)
                 {
                     // This is a struct property field access - use layout navigation
                     let base_name = symtab.name_for_symbol(*base_symbol);
@@ -756,7 +763,14 @@ impl<'a> BlockVisitor<'a> {
                             let src_layout = src_layout.clone();
                             self.copy_struct_layout(&src_layout, &dst_layout, symtab);
                         }
-                        _ => panic!("Field should be Property or Nested"),
+                        // Exhaustive matching ensures compile-time errors if new variants are added
+                        Some(FieldAccessor::Local(_)) => {
+                            unreachable!("Property layouts cannot contain Local accessors")
+                        }
+                        Some(FieldAccessor::Global(_)) => {
+                            unreachable!("Property layouts cannot contain Global accessors")
+                        }
+                        None => unreachable!("Field index should be valid"),
                     }
                     return;
                 }
@@ -793,7 +807,14 @@ impl<'a> BlockVisitor<'a> {
                             let src_layout = src_layout.clone();
                             self.copy_struct_layout(&src_layout, &dst_layout, symtab);
                         }
-                        _ => panic!("Global field should be Global or Nested"),
+                        // Exhaustive matching ensures compile-time errors if new variants are added
+                        Some(FieldAccessor::Local(_)) => {
+                            unreachable!("Global layouts cannot contain Local accessors")
+                        }
+                        Some(FieldAccessor::Property(_)) => {
+                            unreachable!("Global layouts cannot contain Property accessors")
+                        }
+                        None => unreachable!("Field index should be valid"),
                     }
                     return;
                 }
@@ -932,7 +953,12 @@ impl<'a> BlockVisitor<'a> {
                 if let Some(CallReturnInfo(ret_types)) = return_info
                     && let Some(Type::Struct(struct_id)) = ret_types.first()
                 {
-                    symtab.ensure_local_layout(target_symbol, *struct_id, span, self.struct_registry);
+                    symtab.ensure_local_layout(
+                        target_symbol,
+                        *struct_id,
+                        span,
+                        self.struct_registry,
+                    );
                 }
                 let mut targets = Vec::new();
                 collect_leaf_symbols(target_symbol, symtab, &mut targets);
@@ -947,7 +973,12 @@ impl<'a> BlockVisitor<'a> {
                 if let Some(CallReturnInfo(ret_types)) = return_info
                     && let Some(Type::Struct(struct_id)) = ret_types.first()
                 {
-                    symtab.ensure_local_layout(target_symbol, *struct_id, span, self.struct_registry);
+                    symtab.ensure_local_layout(
+                        target_symbol,
+                        *struct_id,
+                        span,
+                        self.struct_registry,
+                    );
                 }
                 let mut targets = Vec::new();
                 collect_leaf_symbols(target_symbol, symtab, &mut targets);
@@ -1029,8 +1060,10 @@ impl<'a> BlockVisitor<'a> {
                 });
             }
             SymbolStorage::Local => {
-                self.current_block
-                    .push(TapIr::Move { target: dest, source: value });
+                self.current_block.push(TapIr::Move {
+                    target: dest,
+                    source: value,
+                });
             }
         }
     }
@@ -1056,7 +1089,11 @@ impl<'a> BlockVisitor<'a> {
                     global_index: id.0,
                 });
             }
-            FieldAccessor::Nested(..) => panic!("Cannot load nested struct as scalar"),
+            FieldAccessor::Nested(..) => {
+                unreachable!(
+                    "emit_load is for scalars only; use copy_struct_layout for nested structs"
+                )
+            }
         }
     }
 
@@ -1081,7 +1118,11 @@ impl<'a> BlockVisitor<'a> {
                     value,
                 });
             }
-            FieldAccessor::Nested(..) => panic!("Cannot store scalar into nested struct"),
+            FieldAccessor::Nested(..) => {
+                unreachable!(
+                    "emit_store is for scalars only; use copy_struct_layout for nested structs"
+                )
+            }
         }
     }
 

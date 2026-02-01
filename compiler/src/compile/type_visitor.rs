@@ -235,7 +235,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         }
 
         // Skip struct property bases - they don't have entries in the type table
-        if symtab.is_struct_property_base_symbol(symbol_id) {
+        if symtab.is_property_base(symbol_id) {
             return;
         }
 
@@ -544,8 +544,8 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     })
                     .collect();
                 let target_span = path.last().map(|(_, span)| *span).unwrap_or(statement_span);
-                if let Some((target_type, root_struct_id, field_indices)) =
-                    self.resolve_field_path_with_indices(symbol_id, &field_idents, symtab, diagnostics)
+                if let Some((target_type, root_struct_id, field_indices)) = self
+                    .resolve_field_path_with_indices(symbol_id, &field_idents, symtab, diagnostics)
                 {
                     // Check that value type matches target field type
                     if value_type != Type::Error

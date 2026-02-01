@@ -418,7 +418,7 @@ fn add_symbol_hover(
     }
 
     // Check if it's a struct property base (e.g., "pos" in "pos.x = 10")
-    if let Some(struct_id) = symtab.struct_id_from_base_symbol(symbol_id) {
+    if let Some(struct_id) = symtab.get_property_base_struct_id(symbol_id) {
         let name = symtab.name_for_symbol(symbol_id);
         let struct_def = struct_registry.get(struct_id);
         hover_info.insert(
