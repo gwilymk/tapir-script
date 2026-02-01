@@ -174,14 +174,14 @@ Unlike properties, globals are internal to the script and not accessible from Ru
 | `+`  | Addition                                         |
 | `-`  | Subtraction                                      |
 | `*`  | Multiplication (fix-aware)                       |
-| `/`  | Floor division (rounds toward negative infinity) |
+| `/`  | Euclidean division (pairs with `%`)              |
 | `%`  | Euclidean modulo (always non-negative)           |
 | `//` | Truncating division (rounds toward zero)         |
 | `%%` | Truncating modulo                                |
 
-For positive numbers, `/` and `//` give the same result. For negative dividends:
-- `-7 / 4 = -2` (floor: rounds toward -infinity)
-- `-7 // 4 = -1` (truncating: rounds toward zero)
+Euclidean division (`/`) and modulo (`%`) satisfy `a == (a / b) * b + (a % b)` with `a % b` always non-negative:
+- `-7 / 4 = -2`, `-7 % 4 = 1` (because `-2 * 4 + 1 = -7`)
+- `-7 // 4 = -1`, `-7 %% 4 = -3` (truncating: rounds toward zero)
 
 ### Comparison (work on `int` and `fix`, return `bool`)
 

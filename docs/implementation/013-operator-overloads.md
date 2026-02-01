@@ -55,7 +55,7 @@ fn LeftType op RightType(left_name, right_name) -> ReturnType { ... }
 | `+`      | `fn Point + Point(a, b)`          |                     |
 | `-`      | `fn Point - Point(a, b)`          |                     |
 | `*`      | `fn Vec2 * fix(v, s)`             |                     |
-| `/`      | `fn Vec2 / fix(v, s)`             | Floor division      |
+| `/`      | `fn Vec2 / fix(v, s)`             | Euclidean division  |
 | `%`      | `fn Point % int(p, n)`            | Euclidean modulo    |
 | `//`     | `fn Vec2 // fix(v, s)`            | Truncating division |
 | `%%`     | `fn Point %% int(p, n)`           | Truncating modulo   |

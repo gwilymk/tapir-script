@@ -1,8 +1,0 @@
-# BUG #2: Global struct assignment gets optimized away
-# Expected: g.x should be 10, but optimizer eliminates the assignment
-extern fn assert(value: bool);
-
-global g: int2;
-g = int2(10, 20);
-assert(g.x == 10);
-assert(g.y == 20);

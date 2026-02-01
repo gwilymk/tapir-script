@@ -42,9 +42,10 @@ The VM uses a register-based model with a growable stack. Registers are addresse
 | `Add`     | `a + b`                                          |
 | `Sub`     | `a - b`                                          |
 | `Mul`     | `a * b`                                          |
-| `Div`     | `a.div_euclid(b)` (floor division)               |
+| `Div`     | `a.div_euclid(b)` (Euclidean division)           |
+| `Mod`     | `a.rem_euclid(b)` (Euclidean modulo)             |
 | `RealDiv` | `a / b` (truncating division)                    |
-| `RealMod` | `a.rem_euclid(b)`                                |
+| `RealMod` | `a % b` (truncating modulo)                      |
 | `FixMul`  | Fixed-point multiply                             |
 | `FixDiv`  | Fixed-point divide                               |
 
