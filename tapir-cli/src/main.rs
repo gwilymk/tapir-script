@@ -1,18 +1,47 @@
-use std::{env, fs, io::Read, process::ExitCode};
+use std::{fs, io::Read, process::ExitCode};
 
+use clap::{Parser, Subcommand};
 use compiler::{CompileResult, CompileSettings, Diagnostics, disassemble};
 
+#[derive(Parser)]
+#[command(name = "tapirc")]
+#[command(about = "Tapir-script toolchain", long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    /// Compile a tapir-script file
+    Compile {
+        /// Input file to compile (use - for stdin)
+        file: String,
+
+        /// Disable optimizations
+        #[arg(long)]
+        no_opt: bool,
+
+        /// Disable the prelude
+        #[arg(long)]
+        no_prelude: bool,
+    },
+}
+
 fn main() -> ExitCode {
-    let args: Vec<String> = env::args().collect();
+    let cli = Cli::parse();
 
-    if args.len() != 2 {
-        eprintln!("Usage: tapirc <file.tapir>");
-        eprintln!("       tapirc -  (read from stdin)");
-        return ExitCode::from(2);
+    match cli.command {
+        Command::Compile {
+            file,
+            no_opt,
+            no_prelude,
+        } => compile_command(&file, no_opt, no_prelude),
     }
+}
 
-    let filename = &args[1];
-    let (display_name, input) = if filename == "-" {
+fn compile_command(file: &str, no_opt: bool, no_prelude: bool) -> ExitCode {
+    let (display_name, input) = if file == "-" {
         let mut input = String::new();
         if let Err(e) = std::io::stdin().read_to_string(&mut input) {
             eprintln!("Error reading from stdin: {}", e);
@@ -20,10 +49,10 @@ fn main() -> ExitCode {
         }
         ("<stdin>".to_string(), input)
     } else {
-        match fs::read_to_string(filename) {
-            Ok(content) => (filename.clone(), content),
+        match fs::read_to_string(file) {
+            Ok(content) => (file.to_string(), content),
             Err(e) => {
-                eprintln!("Error reading file '{}': {}", filename, e);
+                eprintln!("Error reading file '{}': {}", file, e);
                 return ExitCode::from(2);
             }
         }
@@ -31,15 +60,13 @@ fn main() -> ExitCode {
 
     let settings = CompileSettings {
         available_fields: None,
-        enable_optimisations: true,
-        enable_prelude: true,
+        enable_optimisations: !no_opt,
+        enable_prelude: !no_prelude,
     };
 
     match compiler::compile(&display_name, &input, settings) {
         Ok(result) => {
-            // Print result first
             print_result(&result);
-            // Print any warnings at the end
             if result.warnings.has_any() {
                 print_diagnostics(result.warnings);
             }
@@ -131,7 +158,6 @@ fn print_result(result: &CompileResult) {
 }
 
 fn print_diagnostics(mut diagnostics: Diagnostics) {
-    // Use colors if stderr is a terminal
     let use_colors = std::io::IsTerminal::is_terminal(&std::io::stderr());
     eprint!("{}", diagnostics.pretty_string(use_colors));
 }

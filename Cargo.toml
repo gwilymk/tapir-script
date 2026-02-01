@@ -5,6 +5,7 @@ members = [
     "builtins",
     "bytecode",
     "compiler",
+    "tapir-cli",
     "tapir-lsp",
     "tapir-script",
     "tapir-script-macros",
