@@ -24,6 +24,7 @@ event fn collide_with_player() {
         return;
     }
     has_been_collided = true;
+    trigger IncreaseScore;
 
     urgency.cancel();
 
@@ -49,7 +50,7 @@ event fn collide_with_player() {
     trigger SpawnParticle(particle_position.x, particle_position.y, 0);
 
     trigger ScreenShake(3);
-    trigger IncreaseScore;
+    trigger PlaySound(5);
 
     trigger DestroySelf;
 }

@@ -13,6 +13,7 @@
 
 pub(crate) mod declarative_enum_dispatch;
 mod entities;
+mod sfx;
 
 use agb::{
     display::{GraphicsFrame, HEIGHT, Rgb15, WIDTH, object::Object, tiled::VRAM_MANAGER},
@@ -20,6 +21,7 @@ use agb::{
     include_aseprite,
     input::ButtonController,
     rng,
+    sound::mixer::Frequency,
 };
 use alloc::vec::Vec;
 use tapir_script::{Fix, Script, TapirScript};
@@ -37,12 +39,16 @@ include_aseprite!(mod sprites, "gfx/sprites.aseprite");
 // The main function must take 1 arguments and never returns, and must be marked with
 // the #[agb::entry] macro.
 #[agb::entry]
-fn entry(gba: agb::Gba) -> ! {
-    main(gba);
+fn entry(mut gba: agb::Gba) -> ! {
+    loop {
+        main(&mut gba);
+    }
 }
 
-fn main(mut gba: agb::Gba) -> ! {
+fn main(gba: &mut agb::Gba) {
     VRAM_MANAGER.set_background_palette_colour(0, 0, Rgb15::WHITE);
+
+    let mut mixer = gba.mixer.mixer(Frequency::Hz18157);
 
     let mut player_health = 10;
     let mut score = 0;
@@ -57,7 +63,7 @@ fn main(mut gba: agb::Gba) -> ! {
 
     let mut screen_shaker = ScreenShaker { amount: vec2(0, 0) }.script();
 
-    loop {
+    'outer: loop {
         screen_shaker.run();
 
         input.update();
@@ -95,14 +101,31 @@ fn main(mut gba: agb::Gba) -> ! {
             }
         }
 
+        let mut new_entities: Vec<Entity> = Vec::new();
         for event in player.update(&input) {
-            if matches!(event, AnimationEvent::PlayerDamaged) {
-                player_health -= 1;
+            match event {
+                AnimationEvent::PlayerDamaged => {
+                    player_health -= 1;
+                    if player_health <= 0 {
+                        player.player_animation.on_die();
+                    }
+                }
+                AnimationEvent::SpawnParticle(x, y, kind) => {
+                    new_entities.push(Particle::new(vec2(x, y), kind).into());
+                }
+                AnimationEvent::ScreenShake(intensity) => {
+                    screen_shaker.on_shake(intensity);
+                }
+                AnimationEvent::PlayerDied => {
+                    break 'outer;
+                }
+                AnimationEvent::PlaySound(sfx_id) => {
+                    sfx::play_sfx(&mut mixer, sfx_id, num!(1));
+                }
+                _ => {}
             }
         }
         let player_rect = player.bounding_rect();
-
-        let mut new_entities: Vec<Entity> = Vec::new();
         entities.retain_mut(|entity| {
             let mut keep = true;
             for event in entity.update(player_rect) {
@@ -115,6 +138,9 @@ fn main(mut gba: agb::Gba) -> ! {
                         score += 1;
                         if score % 10 == 0 && player_health < 10 {
                             player_health += 1;
+                            sfx::play_sfx(&mut mixer, 1, num!(1));
+                        } else {
+                            sfx::play_sfx(&mut mixer, 0, num!(1) + Fix::new(score % 10) / 20);
                         }
                     }
                     AnimationEvent::ScreenShake(intensity) => {
@@ -123,7 +149,10 @@ fn main(mut gba: agb::Gba) -> ! {
                     AnimationEvent::HurtPlayer => {
                         player.player_animation.on_hurt();
                     }
-                    AnimationEvent::PlayerDamaged => {}
+                    AnimationEvent::PlayerDamaged | AnimationEvent::PlayerDied => {}
+                    AnimationEvent::PlaySound(sfx_id) => {
+                        sfx::play_sfx(&mut mixer, sfx_id, num!(1));
+                    }
                 }
             }
             keep
@@ -141,6 +170,7 @@ fn main(mut gba: agb::Gba) -> ! {
             entity.show(&mut frame, screen_shake);
         }
 
+        mixer.frame();
         frame.commit();
     }
 }
@@ -152,6 +182,8 @@ pub enum AnimationEvent {
     ScreenShake(i32),
     HurtPlayer,
     PlayerDamaged,
+    PlayerDied,
+    PlaySound(i32),
 }
 
 struct Player {

@@ -27,6 +27,10 @@ fn explode() {
         position.y = position.y - 0.2;
         animation_frame = (amount / 8) % 2;
 
+        if animation_frame == 1 {
+            trigger PlaySound(3);
+        }
+
         wait;
     }
 
@@ -41,7 +45,10 @@ fn explode() {
     trigger SpawnParticle(position.x, position.y, 1);
     trigger SpawnParticle(position.x, position.y, 1);
     trigger SpawnParticle(position.x, position.y, 1);
+    trigger PlaySound(2);
 }
+
+trigger PlaySound(6);
 
 var target_position = next_target_position();
 var velocity = fix2(0., 0.);

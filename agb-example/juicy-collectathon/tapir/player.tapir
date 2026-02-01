@@ -62,7 +62,7 @@ event fn hurt() {
     }
 
     is_stunned = true;
-    trigger PlayerDamaged;
+    trigger PlaySound(4);
 
     current_speed = fix2(0., 0.);
     blink_task.cancel();
@@ -87,4 +87,43 @@ event fn hurt() {
 
     is_stunned = false;
     blink_task = spawn blink_task();
+
+    trigger PlayerDamaged;
+}
+
+event fn die() {
+    is_stunned = true;
+    blink_task.cancel();
+    current_speed = fix2(0., 0.);
+    anim_frame = 3;
+
+    var count = 200;
+    loop {
+        if count <= 0 {
+            break;
+        }
+        count = count - 1;
+
+        position.y = position.y - 0.3;
+        wait;
+
+        var pos = position.round();
+
+        if count % 60 == 0 {
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
+            trigger PlaySound(2);
+
+            trigger ScreenShake(10);
+        }
+    }
+
+    trigger PlayerDied;
+    trigger PlaySound(2);
+    trigger PlaySound(2);
 }
