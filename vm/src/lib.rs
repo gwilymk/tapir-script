@@ -261,7 +261,6 @@ mod test {
                 }
             };
 
-
         let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             let mut vm = Vm::new(&compile_result.bytecode, &compile_result.globals);
             let mut test_obj = AssertTestObj { assertion_count: 0 };

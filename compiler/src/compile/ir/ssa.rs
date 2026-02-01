@@ -287,7 +287,9 @@ mod test {
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+            let mut script = parser
+                .parse(file_id, &mut diagnostics, lexer.iter())
+                .unwrap();
 
             let compile_settings = CompileSettings {
                 available_fields: None,

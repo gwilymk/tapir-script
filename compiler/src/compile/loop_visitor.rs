@@ -99,7 +99,9 @@ mod test {
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+            let mut script = parser
+                .parse(file_id, &mut diagnostics, lexer.iter())
+                .unwrap();
 
             for function in &mut script.functions {
                 visit_loop_check(function, &mut diagnostics);
@@ -122,7 +124,9 @@ mod test {
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+            let mut script = parser
+                .parse(file_id, &mut diagnostics, lexer.iter())
+                .unwrap();
 
             for function in &mut script.functions {
                 visit_loop_check(function, &mut diagnostics);
