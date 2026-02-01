@@ -286,6 +286,17 @@ impl<'a> BlockVisitor<'a> {
                                 }
                                 None => unreachable!("Field path should be valid"),
                             }
+                        } else {
+                            // Direct assignment to entire struct property (e.g., position = fix2(...))
+                            let src_layout = symtab
+                                .get_struct_layout(temp)
+                                .expect("Temp should have a layout for struct assignment")
+                                .clone();
+                            let dst_layout = symtab
+                                .get_struct_layout(root_symbol)
+                                .expect("Property base should have a layout")
+                                .clone();
+                            self.copy_struct_layout(&src_layout, &dst_layout, symtab);
                         }
                         continue;
                     }
