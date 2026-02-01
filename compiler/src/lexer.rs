@@ -11,6 +11,7 @@ pub struct Lexer<'input> {
     token_stream: SpannedIter<'input, Token<'input>>,
     file_id: FileId,
     comments: Vec<Comment<'input>>,
+    input: &'input str,
 }
 
 impl<'input> Lexer<'input> {
@@ -19,6 +20,7 @@ impl<'input> Lexer<'input> {
             token_stream: Token::lexer(input).spanned(),
             file_id,
             comments: vec![],
+            input,
         }
     }
 
@@ -29,6 +31,7 @@ impl<'input> Lexer<'input> {
     pub fn into_comment_table(self) -> CommentTable<'input> {
         CommentTable {
             comments: self.comments,
+            input: self.input,
         }
     }
 }
@@ -86,10 +89,11 @@ enum CommentKind {
 
 pub struct CommentTable<'input> {
     comments: Vec<Comment<'input>>,
+    input: &'input str,
 }
 
 impl<'input> CommentTable<'input> {
-    pub fn doc_for_item(&self, source: &str, item: Span) -> Option<String> {
+    pub fn doc_for_item(&self, item: Span) -> Option<String> {
         let mut current_start = item.start;
         let mut doc_lines = vec![];
 
@@ -100,7 +104,7 @@ impl<'input> CommentTable<'input> {
                 .filter(|c| c.span.file_id == item.file_id)
                 .filter(|c| c.kind == CommentKind::Doc)
                 .filter(|c| c.span.end <= current_start)
-                .filter(|c| source[c.span.end..current_start].trim().is_empty())
+                .filter(|c| self.input[c.span.end..current_start].trim().is_empty())
                 .max_by_key(|c| c.span.end);
 
             if let Some(comment) = matching {
