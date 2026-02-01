@@ -25,6 +25,12 @@ impl<'input> Lexer<'input> {
     pub fn iter(&mut self) -> LexerIter<'_, 'input> {
         LexerIter { lexer: self }
     }
+
+    pub fn into_comment_table(self) -> CommentTable<'input> {
+        CommentTable {
+            comments: self.comments,
+        }
+    }
 }
 
 pub struct LexerIter<'l, 'input> {
@@ -66,15 +72,51 @@ impl<'l, 'input> Iterator for LexerIter<'l, 'input> {
     }
 }
 
-pub struct Comment<'input> {
+struct Comment<'input> {
     content: &'input str,
     kind: CommentKind,
     span: Span,
 }
 
-pub enum CommentKind {
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CommentKind {
     Regular,
     Doc,
+}
+
+pub struct CommentTable<'input> {
+    comments: Vec<Comment<'input>>,
+}
+
+impl<'input> CommentTable<'input> {
+    pub fn doc_for_item(&self, source: &str, item: Span) -> Option<String> {
+        let mut current_start = item.start;
+        let mut doc_lines = vec![];
+
+        loop {
+            let matching = self
+                .comments
+                .iter()
+                .filter(|c| c.kind == CommentKind::Doc)
+                .filter(|c| c.span.end <= current_start)
+                .filter(|c| source[c.span.end..current_start].trim().is_empty())
+                .max_by_key(|c| c.span.end);
+
+            if let Some(comment) = matching {
+                doc_lines.push(comment.content.trim_start_matches("##").trim());
+                current_start = comment.span.start;
+            } else {
+                break;
+            }
+        }
+
+        if doc_lines.is_empty() {
+            None
+        } else {
+            doc_lines.reverse();
+            Some(doc_lines.join("\n"))
+        }
+    }
 }
 
 #[cfg(test)]
