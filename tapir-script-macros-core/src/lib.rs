@@ -180,12 +180,17 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 .enumerate()
                 .map(|(i, ty)| {
                     let ret_ident = format_ident!("ret{}", i);
-                    let target = quote!(stack[first_arg + #i]);
+                    let target = quote!({
+                        if stack.len() <= first_arg + #i {
+                            stack.resize(first_arg + #i + 1, 0);
+                        }
+                        &mut stack[first_arg + #i]
+                    });
 
                     let target_writer = match *ty {
-                        Type::Int => quote! { #target = #ret_ident },
-                        Type::Fix => quote! { #target = #ret_ident.to_raw() },
-                        Type::Bool => quote! { #target = #ret_ident as i32 },
+                        Type::Int => quote! { *#target = #ret_ident },
+                        Type::Fix => quote! { *#target = #ret_ident.to_raw() },
+                        Type::Bool => quote! { *#target = #ret_ident as i32 },
                         _ => panic!("Unknown type {ty}"),
                     };
 
