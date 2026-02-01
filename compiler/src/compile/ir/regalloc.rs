@@ -65,20 +65,38 @@ impl RegAllocator {
     }
 
     fn write_symbol(&mut self, symbol: SymbolId, block_id: BlockId) {
-        if self.blocks_in_loops.contains(&block_id) {
-            // In a loop - propagate write to dominator to keep register alive
-            let idom = self
-                .dominators
-                .immediate_dominator(block_id)
-                .expect("Block in loop must have a dominator");
-            self.phony_writes.entry(idom).or_default().push(symbol);
-            self.read_symbol(symbol);
-        } else if let Some(register) = self.register_allocations.get(&symbol) {
-            // Not in a loop, already allocated - safe to free the register
-            self.available_registers.insert(*register);
-        } else {
-            // Not in a loop, not allocated - just allocate
-            self.read_symbol(symbol);
+        self.write_symbols_batch([symbol].into_iter(), block_id);
+    }
+
+    /// Write multiple symbols in a batch.
+    /// This is important for instructions that write multiple targets (like Call returning a struct),
+    /// because we must allocate registers for all targets before freeing any.
+    /// Otherwise, freeing a register during one write could cause another write to reuse it.
+    fn write_symbols_batch(&mut self, symbols: impl Iterator<Item = SymbolId>, block_id: BlockId) {
+        // Collect registers to free (for symbols already allocated)
+        let mut registers_to_free = Vec::new();
+
+        for symbol in symbols {
+            if self.blocks_in_loops.contains(&block_id) {
+                // In a loop - propagate write to dominator to keep register alive
+                let idom = self
+                    .dominators
+                    .immediate_dominator(block_id)
+                    .expect("Block in loop must have a dominator");
+                self.phony_writes.entry(idom).or_default().push(symbol);
+                self.read_symbol(symbol);
+            } else if let Some(register) = self.register_allocations.get(&symbol) {
+                // Already allocated - defer freeing until after all allocations
+                registers_to_free.push(*register);
+            } else {
+                // Not allocated - allocate now
+                self.read_symbol(symbol);
+            }
+        }
+
+        // Free registers after all allocations are done
+        for register in registers_to_free {
+            self.available_registers.insert(register);
         }
     }
 
@@ -148,9 +166,9 @@ pub fn allocate_registers(function: &mut TapIrFunction) -> RegisterAllocations {
                 register_allocator.read_symbol(source);
             }
 
-            for target in instr.targets() {
-                register_allocator.write_symbol(target, block.id());
-            }
+            // Use batch write to handle multi-target instructions correctly
+            // (e.g., Call returning a struct with multiple fields)
+            register_allocator.write_symbols_batch(instr.targets(), block.id());
         }
 
         for phi in block.block_entry().iter().rev() {
