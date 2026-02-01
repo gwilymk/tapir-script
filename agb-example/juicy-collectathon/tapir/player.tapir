@@ -110,13 +110,13 @@ event fn die() {
         var pos = position.round();
 
         if count % 60 == 0 {
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 1);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
+            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
             trigger PlaySound(2);
 
             trigger ScreenShake(10);

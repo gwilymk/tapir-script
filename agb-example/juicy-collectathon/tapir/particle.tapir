@@ -29,7 +29,7 @@ var vel_y = rng() % 100;
 lifetime = rng() % 30 + 30;
 
 var speed = 2.;
-if frame == 1 {
+if frame == 1 || frame == 2 {
     speed = 4.;
     lifetime = lifetime * 2;
 }
