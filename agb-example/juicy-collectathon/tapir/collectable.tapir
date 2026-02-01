@@ -1,0 +1,74 @@
+property anim_frame: int;
+property position: fix2;
+property should_show: bool;
+
+global animate: task;
+global urgency: task;
+
+animate = spawn animate_spin();
+urgency = spawn flash();
+
+global animate_wait = 3;
+
+fn animate_spin() {
+    loop {
+        anim_frame = anim_frame + 1;
+        wait animate_wait;
+    }
+}
+
+global has_been_collided = false;
+
+event fn collide_with_player() {
+    if has_been_collided {
+        return;
+    }
+    has_been_collided = true;
+
+    urgency.cancel();
+
+    animate_wait = 1;
+    var count = 16;
+    loop {
+        if count <= 0 {
+            break;
+        }
+
+        position.y = position.y - 1.;
+        wait 3;
+        count = count - 1;
+    }
+
+    var particle_position = position.round() + int2(8, 8);
+
+    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
+    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
+    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
+    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
+    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
+
+    trigger ScreenShake;
+
+    trigger DestroySelf;
+}
+
+fn flash() {
+    wait 5 * 60; # give 5 seconds before it starts flashing
+
+    var num_flashes = 10;
+    var flash_wait = 15;
+    loop {
+        should_show = true;
+        wait flash_wait;
+        should_show = false;
+        wait flash_wait;
+
+        num_flashes = num_flashes - 1;
+        flash_wait = flash_wait - 1;
+        if num_flashes <= 0 {
+            break;
+        }
+    }
+
+    trigger DestroySelf;
+}

@@ -1,0 +1,48 @@
+property anim_frame: int;
+property position: fix2;
+
+global ACCEL = 0.3;
+global DECEL = 0.7;
+
+global MAX_SPEED = 2.;
+
+global current_speed = fix2(0, 0);
+
+fn blink_task() {
+    loop {
+        wait 100;
+        anim_frame = 1;
+        wait;
+        anim_frame = 2;
+        wait 10;
+        anim_frame = 1;
+        wait;
+        anim_frame = 0;
+    }
+}
+ 
+spawn blink_task();
+
+event fn input(x: fix, y: fix) {
+    var dir = fix2(x, y);
+    current_speed = current_speed + dir * ACCEL;
+
+    if dir.x * current_speed.x <= 0. {
+        current_speed.x = current_speed.x * DECEL;
+    }
+
+    if dir.y * current_speed.y <= 0. {
+        current_speed.y = current_speed.y * DECEL;
+    }
+
+    current_speed.x = current_speed.x.clamp(-MAX_SPEED, MAX_SPEED);
+    current_speed.y = current_speed.y.clamp(-MAX_SPEED, MAX_SPEED);
+
+    if current_speed.x.abs() < 0.1 { current_speed.x = 0.; }
+    if current_speed.y.abs() < 0.1 { current_speed.y = 0.; }
+
+    position = position + current_speed;
+
+    position.x = position.x.clamp(0., 240. - 16.);
+    position.y = position.y.clamp(0., 160. - 16.);
+}

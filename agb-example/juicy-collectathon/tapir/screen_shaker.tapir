@@ -1,0 +1,21 @@
+extern fn rng() -> int;
+
+property amount: int2;
+
+global shake_amount = 0;
+
+event fn shake() {
+    shake_amount = 10;
+}
+
+loop {
+    wait 2;
+
+    if shake_amount <= 0 {
+        amount = int2(0, 0);
+        continue;
+    }
+
+    amount = int2(rng() % 5 - 2, rng() % 5 - 2);
+    shake_amount = shake_amount - 1;
+}

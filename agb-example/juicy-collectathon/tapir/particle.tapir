@@ -1,0 +1,27 @@
+property position: fix2;
+property velocity: fix2;
+property lifetime: int;
+
+spawn kill();
+spawn kill_if_offscreen();
+
+fn kill() {
+    wait lifetime;
+    trigger DestroySelf;
+}
+
+fn kill_if_offscreen() {
+    loop {
+        if position.y > 160. {
+            trigger DestroySelf;
+        }
+
+        wait;
+    }
+}
+
+loop {
+    position = position + velocity;
+    velocity.y = velocity.y + 0.1;
+    wait;
+}

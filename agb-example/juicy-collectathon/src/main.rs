@@ -1,0 +1,277 @@
+// Games made using `agb` are no_std which means you don't have access to the standard
+// rust library. This is because the game boy advance doesn't have an operating
+// system, so most of the content of the standard library doesn't apply.
+#![no_std]
+// `agb` defines its own `main` function, so you must declare your game's main function
+// using the #[agb::entry] proc macro. Failing to do so will cause failure in linking
+// which won't be a particularly clear error message.
+#![no_main]
+// This is required to allow writing tests
+#![cfg_attr(test, feature(custom_test_frameworks))]
+#![cfg_attr(test, reexport_test_harness_main = "test_main")]
+#![cfg_attr(test, test_runner(agb::test_runner::test_runner))]
+
+use agb::{
+    display::{GraphicsFrame, HEIGHT, Rgb, Rgb15, WIDTH, object::Object, tiled::VRAM_MANAGER},
+    fixnum::{Rect, Vector2D, num, vec2},
+    include_aseprite,
+    input::ButtonController,
+    rng,
+};
+use alloc::vec::Vec;
+use tapir_script::{Fix, Script, TapirScript};
+
+type Fix2D = Vector2D<Fix>;
+
+// By default no_std crates don't get alloc, so you won't be able to use things like Vec
+// until you declare the extern crate. `agb` provides an allocator so it will all work
+extern crate alloc;
+
+include_aseprite!(mod sprites, "gfx/sprites.aseprite");
+
+// The main function must take 1 arguments and never returns, and must be marked with
+// the #[agb::entry] macro.
+#[agb::entry]
+fn entry(gba: agb::Gba) -> ! {
+    main(gba);
+}
+
+fn main(mut gba: agb::Gba) -> ! {
+    VRAM_MANAGER.set_background_palette_colour(0, 0, Rgb15::WHITE);
+
+    let mut player = Player::new();
+    let mut input = ButtonController::new();
+
+    let mut gfx = gba.graphics.get();
+
+    let mut entities: Vec<Entity> = Vec::new();
+    entities.push(Entity::Collectable(Collectable::new(vec2(
+        num!(10),
+        num!(10),
+    ))));
+
+    let mut screen_shaker = ScreenShaker { amount: vec2(0, 0) }.script();
+
+    loop {
+        screen_shaker.run();
+
+        input.update();
+
+        let collectable_count = entities.iter().filter(|e| e.is_collectable()).count();
+        if rng::next_i32().rem_euclid(60) < 5 - collectable_count as i32 {
+            entities.push(Entity::Collectable(Collectable::new(vec2(
+                rng::next_i32().rem_euclid(WIDTH - 16).into(),
+                rng::next_i32().rem_euclid(HEIGHT - 16).into(),
+            ))));
+        }
+
+        player.update(&input);
+        let player_rect = player.bounding_rect();
+
+        let mut new_entities = Vec::new();
+        entities.retain_mut(|entity| {
+            let mut keep = true;
+            for event in entity.update(player_rect) {
+                match event {
+                    AnimationEvent::DestroySelf => keep = false,
+                    AnimationEvent::SpawnParticle(x, y, _kind) => {
+                        new_entities.push(Entity::Particle(Particle::new(vec2(x, y))));
+                    }
+                    AnimationEvent::IncreaseScore => {}
+                    AnimationEvent::ScreenShake => {
+                        screen_shaker.on_shake();
+                    }
+                }
+            }
+            keep
+        });
+        entities.append(&mut new_entities);
+
+        let mut frame = gfx.frame();
+        player.show(&mut frame, screen_shaker.properties.amount);
+
+        for entity in &entities {
+            entity.show(&mut frame, screen_shaker.properties.amount);
+        }
+
+        frame.commit();
+    }
+}
+
+enum AnimationEvent {
+    DestroySelf,
+    SpawnParticle(i32, i32, i32),
+    IncreaseScore,
+    ScreenShake,
+}
+
+enum Entity {
+    Collectable(Collectable),
+    Particle(Particle),
+}
+
+impl Entity {
+    fn update(&mut self, player_rect: Rect<i32>) -> Vec<AnimationEvent> {
+        match self {
+            Entity::Collectable(c) => c.update(player_rect),
+            Entity::Particle(p) => p.update(),
+        }
+    }
+
+    fn show(&self, frame: &mut GraphicsFrame, screen_shake: Vector2D<i32>) {
+        match self {
+            Entity::Collectable(c) => c.show(frame, screen_shake),
+            Entity::Particle(p) => p.show(frame, screen_shake),
+        }
+    }
+
+    fn is_collectable(&self) -> bool {
+        matches!(self, Entity::Collectable(_))
+    }
+}
+
+struct Player {
+    player_animation: Script<PlayerAnimation>,
+}
+
+impl Player {
+    pub fn new() -> Self {
+        Self {
+            player_animation: PlayerAnimation {
+                anim_frame: 0,
+                position: vec2(num!(100), num!(100)),
+            }
+            .script(),
+        }
+    }
+
+    pub fn update(&mut self, input: &ButtonController) {
+        let vector = input.vector();
+        self.player_animation.on_input(vector.x, vector.y);
+        self.player_animation.run();
+    }
+
+    pub fn bounding_rect(&self) -> Rect<i32> {
+        Rect::new(
+            self.player_animation.properties.position.round(),
+            vec2(16, 16),
+        )
+    }
+
+    pub fn show(&self, frame: &mut GraphicsFrame, screen_shake: Vector2D<i32>) {
+        let properties = &self.player_animation.properties;
+
+        Object::new(sprites::PLAYER.animation_sprite(properties.anim_frame as usize))
+            .set_pos(properties.position.round() + screen_shake)
+            .show(frame);
+    }
+}
+
+#[derive(TapirScript, Debug)]
+#[tapir("tapir/player.tapir", trigger_type = AnimationEvent)]
+struct PlayerAnimation {
+    anim_frame: i32,
+    position: Fix2D,
+}
+
+struct Collectable {
+    collectable_animation: Script<CollectableAnimation>,
+}
+
+impl Collectable {
+    pub fn new(pos: Fix2D) -> Self {
+        Self {
+            collectable_animation: CollectableAnimation {
+                position: pos,
+                anim_frame: 0,
+                should_show: true,
+            }
+            .script(),
+        }
+    }
+
+    pub fn update(&mut self, player_rect: Rect<i32>) -> Vec<AnimationEvent> {
+        if self.bounding_rect().touches(player_rect) {
+            self.collectable_animation.on_collide_with_player();
+        }
+
+        self.collectable_animation.run()
+    }
+
+    pub fn show(&self, frame: &mut GraphicsFrame, screen_shake: Vector2D<i32>) {
+        let properties = &self.collectable_animation.properties;
+
+        if properties.should_show {
+            Object::new(sprites::COIN.animation_sprite(properties.anim_frame as usize))
+                .set_pos(properties.position.round() + screen_shake)
+                .show(frame);
+        }
+    }
+
+    fn bounding_rect(&self) -> Rect<i32> {
+        Rect::new(
+            self.collectable_animation.properties.position.round(),
+            vec2(16, 16),
+        )
+    }
+}
+
+#[derive(TapirScript)]
+#[tapir("tapir/collectable.tapir", trigger_type = AnimationEvent)]
+struct CollectableAnimation {
+    position: Fix2D,
+    anim_frame: i32,
+    should_show: bool,
+}
+
+struct Particle {
+    particle_animation: Script<ParticleAnimation>,
+}
+
+#[derive(TapirScript)]
+#[tapir("tapir/particle.tapir", trigger_type = AnimationEvent)]
+struct ParticleAnimation {
+    position: Fix2D,
+    velocity: Fix2D,
+    lifetime: i32,
+}
+
+impl Particle {
+    pub fn new(position: Vector2D<i32>) -> Self {
+        Self {
+            particle_animation: ParticleAnimation {
+                position: position.into(),
+                velocity: vec2(
+                    (rng::next_i32().rem_euclid(100) - 50).into(),
+                    (-rng::next_i32().rem_euclid(100)).into(),
+                )
+                .fast_normalise()
+                    * num!(2),
+                lifetime: rng::next_i32().rem_euclid(30) + 30,
+            }
+            .script(),
+        }
+    }
+
+    pub fn update(&mut self) -> Vec<AnimationEvent> {
+        self.particle_animation.run()
+    }
+
+    pub fn show(&self, frame: &mut GraphicsFrame, screen_shake: Vector2D<i32>) {
+        Object::new(sprites::COLLECT_PARTICLE.sprite(0))
+            .set_pos(self.particle_animation.properties.position.round() + screen_shake)
+            .show(frame);
+    }
+}
+
+#[derive(TapirScript)]
+#[tapir("tapir/screen_shaker.tapir")]
+struct ScreenShaker {
+    amount: Vector2D<i32>,
+}
+
+impl ScreenShaker {
+    fn rng(&self) -> i32 {
+        rng::next_i32()
+    }
+}
