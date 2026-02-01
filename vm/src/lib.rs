@@ -245,6 +245,8 @@ mod test {
 
     #[test]
     fn assert_tests() {
+        let mut failures = vec![];
+
         glob!("snapshot_tests", "assert/**/*.tapir", |path| {
             std::println!("{}", path.display());
 
@@ -294,9 +296,18 @@ mod test {
                 } else {
                     "unknown error".into()
                 };
-                panic!("Test failed in {}: {}", path.display(), msg);
+
+                failures.push((path.display().to_string(), msg));
             }
         });
+
+        if !failures.is_empty() {
+            for (path, msg) in failures {
+                std::println!("'{path}' had error `{msg}`");
+            }
+
+            panic!("Tests failed");
+        }
     }
 
     macro_rules! binop_test {
