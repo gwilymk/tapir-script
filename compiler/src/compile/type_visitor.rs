@@ -816,6 +816,8 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         expected_return_type: &FunctionReturn,
         diagnostics: &mut Diagnostics,
     ) -> BlockAnalysisResult {
+        let mut escape_kind = BlockAnalysisResult::AllBranchesReturn;
+
         for statement in ast.iter_mut() {
             match &mut statement.kind {
                 ast::StatementKind::Wait { frames } => {
@@ -834,8 +836,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         }
                     }
                 }
-                ast::StatementKind::Break
-                | ast::StatementKind::Continue
+                ast::StatementKind::Break => {
+                    return BlockAnalysisResult::SomeBranchBreaks;
+                }
+                ast::StatementKind::Continue
                 | ast::StatementKind::Nop
                 | ast::StatementKind::Error => {}
                 ast::StatementKind::VariableDeclaration { idents, values } => {
@@ -896,6 +900,10 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         && rhs_analysis_result == BlockAnalysisResult::AllBranchesReturn
                     {
                         return BlockAnalysisResult::AllBranchesReturn;
+                    } else if lhs_analysis_result == BlockAnalysisResult::SomeBranchBreaks
+                        || rhs_analysis_result == BlockAnalysisResult::SomeBranchBreaks
+                    {
+                        escape_kind = BlockAnalysisResult::SomeBranchBreaks;
                     }
                 }
                 ast::StatementKind::Return { values } => {
@@ -952,7 +960,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         }
                     }
 
-                    return BlockAnalysisResult::AllBranchesReturn;
+                    return escape_kind;
                 }
                 ast::StatementKind::Expression { expression } => {
                     // Type check the expression; the result is discarded.
@@ -982,6 +990,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                                 return BlockAnalysisResult::AllBranchesReturn;
                             }
                         }
+                        BlockAnalysisResult::SomeBranchBreaks => {}
                     }
                 }
                 ast::StatementKind::Block { block } => {
@@ -1049,7 +1058,11 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             }
         }
 
-        BlockAnalysisResult::ContainsNonReturningBranch
+        if escape_kind == BlockAnalysisResult::SomeBranchBreaks {
+            BlockAnalysisResult::SomeBranchBreaks
+        } else {
+            BlockAnalysisResult::ContainsNonReturningBranch
+        }
     }
 
     pub fn into_type_table(
@@ -1578,6 +1591,7 @@ fn is_overloadable_operator(op: BinaryOperator) -> bool {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum BlockAnalysisResult {
     AllBranchesReturn,
+    SomeBranchBreaks,
     ContainsNonReturningBranch,
 }
 

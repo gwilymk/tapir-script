@@ -1,0 +1,23 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: err_str
+input_file: compiler/src/compile/snapshot_tests/type_visitor/loop_with_break_fail.tapir
+---
+[E0015] Error: Function foo should return results, but not all branches return.
+   ╭─[ loop_with_break_fail.tapir:1:4 ]
+   │
+ 1 │ fn foo() -> int {
+   │    ─┬─      ─┬─  
+   │     ╰──────────── Function defined here
+   │              │   
+   │              ╰─── Function returns results
+───╯
+[E0015] Error: Function nested should return results, but not all branches return.
+    ╭─[ loop_with_break_fail.tapir:11:4 ]
+    │
+ 11 │ fn nested() -> int {
+    │    ───┬──      ─┬─  
+    │       ╰───────────── Function defined here
+    │                 │   
+    │                 ╰─── Function returns results
+────╯

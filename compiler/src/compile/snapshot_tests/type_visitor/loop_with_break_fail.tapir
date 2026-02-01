@@ -1,0 +1,21 @@
+fn foo() -> int {
+    loop {
+        if true {
+            break;
+        }
+
+        return 4;
+    }
+}
+
+fn nested() -> int {
+    loop {
+        if true {
+            if true {
+                break;
+            }
+        }
+
+        return 1;
+    }
+}
