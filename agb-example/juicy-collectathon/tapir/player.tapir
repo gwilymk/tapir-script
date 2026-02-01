@@ -9,6 +9,7 @@ global MAX_SPEED = 2.;
 global current_speed = fix2(0, 0);
 
 global blink_task: task;
+global is_stunned = false;
 
 fn blink_task() {
     anim_frame = 0;
@@ -28,6 +29,10 @@ fn blink_task() {
 blink_task = spawn blink_task();
 
 event fn input(x: fix, y: fix) {
+    if is_stunned {
+        return;
+    }
+
     var dir = fix2(x, y);
     current_speed = current_speed + dir * ACCEL;
 
@@ -52,14 +57,18 @@ event fn input(x: fix, y: fix) {
 }
 
 event fn hurt() {
-    if anim_frame == 3 {
+    if is_stunned {
         return;
     }
-    
+
+    is_stunned = true;
+    trigger PlayerDamaged;
+
+    current_speed = fix2(0., 0.);
     blink_task.cancel();
     anim_frame = 3;
     
-    var count = 30;
+    var count = 10;
     loop {
         if count <= 0 {
             break;
@@ -76,5 +85,6 @@ event fn hurt() {
         wait;
     }
 
-    spawn blink_task();
+    is_stunned = false;
+    blink_task = spawn blink_task();
 }

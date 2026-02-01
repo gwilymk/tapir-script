@@ -1,10 +1,12 @@
 property position: fix2;
-property lifetime: int;
+property frame: int;
 
 extern fn rng() -> int;
 
 spawn kill();
 spawn kill_if_offscreen();
+
+global lifetime: int;
 
 fn kill() {
     wait lifetime;
@@ -23,7 +25,16 @@ fn kill_if_offscreen() {
 
 var vel_x = rng() % 100 - 50;
 var vel_y = rng() % 100;
-var velocity = fix2(to_fix(vel_x), -to_fix(vel_y)).fast_normalise() * 2.;
+
+lifetime = rng() % 30 + 30;
+
+var speed = 2.;
+if frame == 1 {
+    speed = 4.;
+    lifetime = lifetime * 2;
+}
+
+var velocity = fix2(to_fix(vel_x), -to_fix(vel_y)).fast_normalise() * speed;
 
 loop {
     position = position + velocity;

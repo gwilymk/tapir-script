@@ -48,7 +48,8 @@ event fn collide_with_player() {
     trigger SpawnParticle(particle_position.x, particle_position.y, 0);
     trigger SpawnParticle(particle_position.x, particle_position.y, 0);
 
-    trigger ScreenShake;
+    trigger ScreenShake(3);
+    trigger IncreaseScore;
 
     trigger DestroySelf;
 }

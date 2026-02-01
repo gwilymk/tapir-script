@@ -3,9 +3,11 @@ extern fn rng() -> int;
 property amount: int2;
 
 global shake_amount = 0;
+global shake_intensity = 0;
 
-event fn shake() {
+event fn shake(intensity: int) {
     shake_amount = 10;
+    shake_intensity = intensity;
 }
 
 loop {
@@ -16,6 +18,6 @@ loop {
         continue;
     }
 
-    amount = int2(rng() % 5 - 2, rng() % 5 - 2);
+    amount = int2(rng() % shake_intensity - shake_intensity / 2, rng() % shake_intensity - shake_intensity / 2);
     shake_amount = shake_amount - 1;
 }

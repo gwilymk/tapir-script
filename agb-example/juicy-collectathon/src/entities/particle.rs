@@ -11,14 +11,14 @@ use crate::{AnimationEvent, Fix2D, entities::EntityData, sprites};
 #[tapir("tapir/particle.tapir", trigger_type = AnimationEvent)]
 pub struct Particle {
     position: Fix2D,
-    lifetime: i32,
+    frame: i32,
 }
 
 impl Particle {
-    pub fn new(position: Vector2D<i32>) -> Self {
+    pub fn new(position: Vector2D<i32>, frame: i32) -> Self {
         Self {
             position: position.into(),
-            lifetime: rng::next_i32().rem_euclid(30) + 30,
+            frame,
         }
     }
 
@@ -29,7 +29,7 @@ impl Particle {
 
 impl EntityData for Particle {
     fn show(&self, frame: &mut GraphicsFrame, screen_shake: Vector2D<i32>) {
-        Object::new(sprites::COLLECT_PARTICLE.sprite(0))
+        Object::new(sprites::PARTICLE.sprite(self.frame as usize))
             .set_pos(self.position.round() + screen_shake)
             .show(frame);
     }

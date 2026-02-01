@@ -31,13 +31,16 @@ fn explode() {
     }
 
     trigger DestroySelf;
+    trigger ScreenShake(7);
 
     var position = position.round();
-    trigger SpawnParticle(position.x, position.y, 0);
-    trigger SpawnParticle(position.x, position.y, 0);
-    trigger SpawnParticle(position.x, position.y, 0);
-    trigger SpawnParticle(position.x, position.y, 0);
-    trigger SpawnParticle(position.x, position.y, 0);
+    trigger SpawnParticle(position.x, position.y, 1);
+    trigger SpawnParticle(position.x, position.y, 1);
+    trigger SpawnParticle(position.x, position.y, 1);
+    trigger SpawnParticle(position.x, position.y, 1);
+    trigger SpawnParticle(position.x, position.y, 1);
+    trigger SpawnParticle(position.x, position.y, 1);
+    trigger SpawnParticle(position.x, position.y, 1);
 }
 
 var target_position = next_target_position();

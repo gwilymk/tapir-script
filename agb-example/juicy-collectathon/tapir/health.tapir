@@ -1,11 +1,13 @@
 property health: int;
 property health_frame: int;
+property health_offset: int;
 
 var prev_health = health;
 loop {
     wait;
-    
-    if prev_health != health {
+
+    if prev_health > health {
+        # Lost health - play animation forward
         loop {
             if health_frame < 12 {
                 health_frame = health_frame + 1;
@@ -15,7 +17,24 @@ loop {
             }
 
             wait;
-        } 
+        }
+    } else {
+        if prev_health < health {
+            # Gained health - play animation backward
+            # Offset by 1 so we animate the new bar, not one past it
+            health_offset = 1;
+            health_frame = 12;
+            loop {
+                if health_frame > 0 {
+                    health_frame = health_frame - 1;
+                } else {
+                    break;
+                }
+
+                wait;
+            }
+            health_offset = 0;
+        }
     }
 
     prev_health = health;

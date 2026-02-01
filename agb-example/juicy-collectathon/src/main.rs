@@ -45,6 +45,7 @@ fn main(mut gba: agb::Gba) -> ! {
     VRAM_MANAGER.set_background_palette_colour(0, 0, Rgb15::WHITE);
 
     let mut player_health = 10;
+    let mut score = 0;
 
     let mut player = Player::new();
     let mut health_bar = HealthBar::new(player_health);
@@ -53,7 +54,6 @@ fn main(mut gba: agb::Gba) -> ! {
     let mut gfx = gba.graphics.get();
 
     let mut entities: Vec<Entity> = Vec::new();
-    entities.push(Enemy::new(vec2(num!(30.), num!(50.))).into());
 
     let mut screen_shaker = ScreenShaker { amount: vec2(0, 0) }.script();
 
@@ -61,6 +61,8 @@ fn main(mut gba: agb::Gba) -> ! {
         screen_shaker.run();
 
         input.update();
+
+        let player_pos = player.player_animation.properties.position;
 
         let collectable_count = entities
             .iter()
@@ -76,7 +78,28 @@ fn main(mut gba: agb::Gba) -> ! {
             );
         }
 
-        player.update(&input);
+        // Spawn enemies randomly, away from the player
+        let enemy_count = entities
+            .iter()
+            .filter(|e| matches!(e, Entity::Enemy(_)))
+            .count();
+        if rng::next_i32().rem_euclid(120) < 3 - enemy_count as i32 {
+            // Generate a random spawn position
+            let spawn_pos: Fix2D = vec2(
+                rng::next_i32().rem_euclid(WIDTH - 16).into(),
+                rng::next_i32().rem_euclid(HEIGHT - 16).into(),
+            );
+            let diff = spawn_pos - player_pos;
+            if diff.magnitude_squared() > num!(50 * 50) {
+                entities.push(Enemy::new(spawn_pos).into());
+            }
+        }
+
+        for event in player.update(&input) {
+            if matches!(event, AnimationEvent::PlayerDamaged) {
+                player_health -= 1;
+            }
+        }
         let player_rect = player.bounding_rect();
 
         let mut new_entities: Vec<Entity> = Vec::new();
@@ -85,17 +108,22 @@ fn main(mut gba: agb::Gba) -> ! {
             for event in entity.update(player_rect) {
                 match event {
                     AnimationEvent::DestroySelf => keep = false,
-                    AnimationEvent::SpawnParticle(x, y, _kind) => {
-                        new_entities.push(Particle::new(vec2(x, y)).into());
+                    AnimationEvent::SpawnParticle(x, y, kind) => {
+                        new_entities.push(Particle::new(vec2(x, y), kind).into());
                     }
-                    AnimationEvent::IncreaseScore => {}
-                    AnimationEvent::ScreenShake => {
-                        screen_shaker.on_shake();
+                    AnimationEvent::IncreaseScore => {
+                        score += 1;
+                        if score % 10 == 0 && player_health < 10 {
+                            player_health += 1;
+                        }
+                    }
+                    AnimationEvent::ScreenShake(intensity) => {
+                        screen_shaker.on_shake(intensity);
                     }
                     AnimationEvent::HurtPlayer => {
                         player.player_animation.on_hurt();
-                        player_health -= 1;
                     }
+                    AnimationEvent::PlayerDamaged => {}
                 }
             }
             keep
@@ -121,8 +149,9 @@ pub enum AnimationEvent {
     DestroySelf,
     SpawnParticle(i32, i32, i32),
     IncreaseScore,
-    ScreenShake,
+    ScreenShake(i32),
     HurtPlayer,
+    PlayerDamaged,
 }
 
 struct Player {
@@ -140,10 +169,10 @@ impl Player {
         }
     }
 
-    pub fn update(&mut self, input: &ButtonController) {
+    pub fn update(&mut self, input: &ButtonController) -> Vec<AnimationEvent> {
         let vector = input.vector();
         self.player_animation.on_input(vector.x, vector.y);
-        self.player_animation.run();
+        self.player_animation.run()
     }
 
     pub fn bounding_rect(&self) -> Rect<i32> {
@@ -190,6 +219,7 @@ struct HealthBar {
 struct HealthBarAnimation {
     health: i32,
     health_frame: i32,
+    health_offset: i32,
 }
 
 impl HealthBar {
@@ -198,6 +228,7 @@ impl HealthBar {
             animation: HealthBarAnimation {
                 health: player_heath,
                 health_frame: 0,
+                health_offset: 0,
             }
             .script(),
         }
@@ -210,8 +241,9 @@ impl HealthBar {
 
     pub fn show(&self, frame: &mut GraphicsFrame, _screen_shake: Vector2D<i32>) {
         let properties = &self.animation.properties;
+        let display_health = properties.health - properties.health_offset;
 
-        for i in 0..properties.health {
+        for i in 0..display_health {
             Object::new(sprites::HEALTH.sprite(0))
                 .set_pos(vec2(WIDTH / 2 + i * 7, 1))
                 .show(frame);
@@ -219,7 +251,7 @@ impl HealthBar {
 
         if properties.health_frame != 0 {
             Object::new(sprites::HEALTH.sprite(properties.health_frame as usize))
-                .set_pos(vec2(WIDTH / 2 + properties.health * 7, 1))
+                .set_pos(vec2(WIDTH / 2 + display_health * 7, 1))
                 .show(frame);
         }
     }
