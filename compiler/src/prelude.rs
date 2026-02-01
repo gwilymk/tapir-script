@@ -29,8 +29,8 @@ pub fn parse_with_prelude<'input>(
         diagnostics.add_file(PRELUDE_FILE_ID, PRELUDE_FILENAME, PRELUDE_SOURCE);
 
         // Parse prelude
-        let prelude_lexer = Lexer::new(PRELUDE_SOURCE, PRELUDE_FILE_ID);
-        let prelude_ast = match parser.parse(PRELUDE_FILE_ID, diagnostics, prelude_lexer) {
+        let mut prelude_lexer = Lexer::new(PRELUDE_SOURCE, PRELUDE_FILE_ID);
+        let prelude_ast = match parser.parse(PRELUDE_FILE_ID, diagnostics, prelude_lexer.iter()) {
             Ok(ast) => ast,
             Err(e) => {
                 diagnostics.add_lalrpop(e, PRELUDE_FILE_ID);
@@ -39,8 +39,8 @@ pub fn parse_with_prelude<'input>(
         };
 
         // Parse user code
-        let user_lexer = Lexer::new(user_input, USER_FILE_ID);
-        let mut user_ast = match parser.parse(USER_FILE_ID, diagnostics, user_lexer) {
+        let mut user_lexer = Lexer::new(user_input, USER_FILE_ID);
+        let mut user_ast = match parser.parse(USER_FILE_ID, diagnostics, user_lexer.iter()) {
             Ok(ast) => ast,
             Err(e) => {
                 diagnostics.add_lalrpop(e, USER_FILE_ID);
@@ -54,8 +54,8 @@ pub fn parse_with_prelude<'input>(
     } else {
         // Prelude mode: treat the user file as the prelude itself
         // Use PRELUDE_FILE_ID so builtin declarations are allowed
-        let user_lexer = Lexer::new(user_input, PRELUDE_FILE_ID);
-        match parser.parse(PRELUDE_FILE_ID, diagnostics, user_lexer) {
+        let mut user_lexer = Lexer::new(user_input, PRELUDE_FILE_ID);
+        match parser.parse(PRELUDE_FILE_ID, diagnostics, user_lexer.iter()) {
             Ok(ast) => Some(ast),
             Err(e) => {
                 diagnostics.add_lalrpop(e, PRELUDE_FILE_ID);

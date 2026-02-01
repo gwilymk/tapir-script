@@ -16,17 +16,25 @@ impl<'input> Lexer<'input> {
             file_id,
         }
     }
+
+    pub fn iter(&mut self) -> LexerIter<'_, 'input> {
+        LexerIter { lexer: self }
+    }
 }
 
-impl<'input> Iterator for Lexer<'input> {
+pub struct LexerIter<'l, 'input> {
+    lexer: &'l mut Lexer<'input>,
+}
+
+impl<'l, 'input> Iterator for LexerIter<'l, 'input> {
     type Item = Spanned<Token<'input>, usize, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (token, span) = self.token_stream.next()?;
+        let (token, span) = self.lexer.token_stream.next()?;
 
         Some(match token {
             Ok(token) => Ok((span.start, token, span.end)),
-            Err(err) => Err(err.with_span(self.file_id, span.start, span.end)),
+            Err(err) => Err(err.with_span(self.lexer.file_id, span.start, span.end)),
         })
     }
 }
@@ -44,8 +52,9 @@ mod test {
         glob!("snapshot_tests", "lexer/*.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
-            let lexer = Lexer::new(&input, FileId::new(0));
+            let mut lexer = Lexer::new(&input, FileId::new(0));
             let output = lexer
+                .iter()
                 .map(|token| token.map(|(_, token, _)| token))
                 .collect::<Vec<_>>();
 

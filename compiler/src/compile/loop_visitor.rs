@@ -93,13 +93,13 @@ mod test {
         glob!("snapshot_tests", "loop_visitor/*_success.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
-            let lexer = Lexer::new(&input, FileId::new(0));
+            let mut lexer = Lexer::new(&input, FileId::new(0));
             let parser = grammar::ScriptParser::new();
             let file_id = FileId::new(0);
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
             for function in &mut script.functions {
                 visit_loop_check(function, &mut diagnostics);
@@ -116,13 +116,13 @@ mod test {
         glob!("snapshot_tests", "loop_visitor/*_fail.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
-            let lexer = Lexer::new(&input, FileId::new(0));
+            let mut lexer = Lexer::new(&input, FileId::new(0));
             let parser = grammar::ScriptParser::new();
             let file_id = FileId::new(0);
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
             for function in &mut script.functions {
                 visit_loop_check(function, &mut diagnostics);

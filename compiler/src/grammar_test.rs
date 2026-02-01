@@ -10,13 +10,13 @@ fn snapshot_success() {
         let input = fs::read_to_string(path).unwrap();
 
         let file_id = FileId::new(0);
-        let lexer = Lexer::new(&input, file_id);
+        let mut lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
         let ast = parser
-            .parse(FileId::new(0), &mut diagnostics, lexer)
+            .parse(FileId::new(0), &mut diagnostics, lexer.iter())
             .unwrap();
 
         assert_ron_snapshot!(ast, {
@@ -32,12 +32,12 @@ fn snapshot_failures() {
 
         let file_id = FileId::new(0);
 
-        let lexer = Lexer::new(&input, file_id);
+        let mut lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-        match parser.parse(file_id, &mut diagnostics, lexer) {
+        match parser.parse(file_id, &mut diagnostics, lexer.iter()) {
             Ok(_) => {}
             Err(e) => {
                 diagnostics.add_lalrpop(e, file_id);

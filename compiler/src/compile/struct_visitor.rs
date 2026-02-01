@@ -594,13 +594,13 @@ mod tests {
             let input = fs::read_to_string(path).unwrap();
 
             let file_id = FileId::new(0);
-            let lexer = Lexer::new(&input, file_id);
+            let mut lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
             let mut script = parser
-                .parse(FileId::new(0), &mut diagnostics, lexer)
+                .parse(FileId::new(0), &mut diagnostics, lexer.iter())
                 .unwrap();
 
             let mut registry = StructRegistry::default();
@@ -626,13 +626,13 @@ mod tests {
             let input = fs::read_to_string(path).unwrap();
 
             let file_id = FileId::new(0);
-            let lexer = Lexer::new(&input, file_id);
+            let mut lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
             let mut script = parser
-                .parse(FileId::new(0), &mut diagnostics, lexer)
+                .parse(FileId::new(0), &mut diagnostics, lexer.iter())
                 .unwrap();
 
             let mut registry = StructRegistry::default();

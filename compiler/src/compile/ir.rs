@@ -514,13 +514,13 @@ mod test {
         glob!("snapshot_tests", "ir/*.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
-            let lexer = Lexer::new(&input, FileId::new(0));
+            let mut lexer = Lexer::new(&input, FileId::new(0));
             let parser = grammar::ScriptParser::new();
             let file_id = FileId::new(0);
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
             let compile_settings = CompileSettings {
                 available_fields: None,

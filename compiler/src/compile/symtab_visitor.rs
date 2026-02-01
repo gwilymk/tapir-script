@@ -1765,13 +1765,13 @@ mod test {
         glob!("snapshot_tests", "symtab_visitor/*_success.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
-            let lexer = Lexer::new(&input, FileId::new(0));
+            let mut lexer = Lexer::new(&input, FileId::new(0));
             let parser = grammar::ScriptParser::new();
             let file_id = FileId::new(0);
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
             // Struct registration and type resolution
             let mut struct_registry = StructRegistry::default();
@@ -1812,13 +1812,13 @@ mod test {
             let input = fs::read_to_string(path).unwrap();
 
             let file_id = FileId::new(0);
-            let lexer = Lexer::new(&input, file_id);
+            let mut lexer = Lexer::new(&input, file_id);
             let parser = grammar::ScriptParser::new();
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
             let mut script = parser
-                .parse(FileId::new(0), &mut diagnostics, lexer)
+                .parse(FileId::new(0), &mut diagnostics, lexer.iter())
                 .unwrap();
 
             // Struct registration and type resolution
@@ -1860,13 +1860,13 @@ mod test {
         .unwrap();
 
         let file_id = FileId::new(0);
-        let lexer = Lexer::new(&input, file_id);
+        let mut lexer = Lexer::new(&input, file_id);
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "property_not_in_struct.tapir", &input);
 
         let mut script = parser
-            .parse(FileId::new(0), &mut diagnostics, lexer)
+            .parse(FileId::new(0), &mut diagnostics, lexer.iter())
             .unwrap();
 
         let struct_registry = StructRegistry::default();
@@ -1993,12 +1993,12 @@ mod test {
     /// Helper to create a SymTabVisitor from source code and return the globals
     fn parse_and_get_globals(input: &str) -> (Vec<GlobalInfo>, Diagnostics) {
         let file_id = FileId::new(0);
-        let lexer = Lexer::new(input, file_id);
+        let mut lexer = Lexer::new(input, file_id);
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
 
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
         // Struct registration and type resolution
         let mut struct_registry = StructRegistry::default();
@@ -2140,11 +2140,11 @@ mod test {
             struct Point { x: int, y: int }
             global pos = Point(10, 20);
         "#;
-        let lexer = Lexer::new(input, file_id);
+        let mut lexer = Lexer::new(input, file_id);
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
         let mut struct_registry = StructRegistry::default();
         let struct_names =
@@ -2308,11 +2308,11 @@ mod test {
             struct Point { x: int, y: int }
             global pos = Point(10, 20);
         "#;
-        let lexer = Lexer::new(input, file_id);
+        let mut lexer = Lexer::new(input, file_id);
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
         let mut struct_registry = StructRegistry::default();
         let struct_names =
@@ -2371,11 +2371,11 @@ mod test {
             struct Rect { origin: Point, size: Point }
             global bounds = Rect(Point(1, 2), Point(100, 50));
         "#;
-        let lexer = Lexer::new(input, file_id);
+        let mut lexer = Lexer::new(input, file_id);
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
         let mut struct_registry = StructRegistry::default();
         let struct_names =
@@ -2457,11 +2457,11 @@ mod test {
             struct Point { x: int, y: int }
             property pos: Point;
         "#;
-        let lexer = Lexer::new(input, file_id);
+        let mut lexer = Lexer::new(input, file_id);
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer).unwrap();
+        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
 
         let mut struct_registry = StructRegistry::default();
         let struct_names =
