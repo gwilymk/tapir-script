@@ -1070,11 +1070,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         escape_kind
     }
 
-    pub fn into_type_table(
-        self,
-        symtab: &SymTab,
-        diagnostics: &mut Diagnostics,
-    ) -> TypeTable<'input> {
+    pub fn into_type_table(self) -> TypeTable<'input> {
         TypeTable {
             types: self
                 .type_table
@@ -1718,7 +1714,7 @@ mod test {
             );
 
             let symtab = symtab_visitor.get_symtab();
-            let type_table = type_visitor.into_type_table(symtab, &mut diagnostics);
+            let type_table = type_visitor.into_type_table();
 
             let all_types: Vec<_> = symtab
                 .all_symbols()
@@ -1785,7 +1781,7 @@ mod test {
                 &mut diagnostics,
             );
 
-            type_visitor.into_type_table(symtab_visitor.get_symtab(), &mut diagnostics);
+            type_visitor.into_type_table();
 
             let err_str = diagnostics.pretty_string(false);
 

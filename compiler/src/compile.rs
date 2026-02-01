@@ -69,7 +69,7 @@ pub fn analyse_ast<'input>(
     }
     type_visitor.check_global_annotations(&ast.globals, symtab_visitor.get_symtab(), diagnostics);
 
-    let type_table = type_visitor.into_type_table(symtab_visitor.get_symtab(), diagnostics);
+    let type_table = type_visitor.into_type_table();
     (symtab_visitor.into_symtab(), type_table, struct_registry)
 }
 
