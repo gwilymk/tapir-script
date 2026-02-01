@@ -7,20 +7,28 @@ input_file: compiler/src/compile/snapshot_tests/ir/global_nested_struct_initiali
 fn @toplevel() -> 
 
 ---- block 0 ----
-getglobal temp.2.x.3, 1
-getglobal temp.2.y.4, 2
+getglobal temp.5, 1
+temp.2.x.3 = temp.5
+getglobal temp.6, 2
+temp.2.y.4 = temp.6
 temp.1 = temp.2.x.3
 temp.0 = extern test(temp.1)
-getglobal temp.7.x.8, 1
-getglobal temp.7.y.9, 2
-temp.6 = temp.7.y.9
-temp.5 = extern test(temp.6)
-getglobal temp.12.x.13, 3
-getglobal temp.12.y.14, 4
-temp.11 = temp.12.x.13
-temp.10 = extern test(temp.11)
-getglobal temp.17.x.18, 3
-getglobal temp.17.y.19, 4
-temp.16 = temp.17.y.19
-temp.15 = extern test(temp.16)
+getglobal temp.12, 1
+temp.9.x.10 = temp.12
+getglobal temp.13, 2
+temp.9.y.11 = temp.13
+temp.8 = temp.9.y.11
+temp.7 = extern test(temp.8)
+getglobal temp.19, 3
+temp.16.x.17 = temp.19
+getglobal temp.20, 4
+temp.16.y.18 = temp.20
+temp.15 = temp.16.x.17
+temp.14 = extern test(temp.15)
+getglobal temp.26, 3
+temp.23.x.24 = temp.26
+getglobal temp.27, 4
+temp.23.y.25 = temp.27
+temp.22 = temp.23.y.25
+temp.21 = extern test(temp.22)
 return

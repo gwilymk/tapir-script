@@ -48,12 +48,12 @@ pub fn extract_hover_info(
 
     // Add hover info for struct property bases (e.g., "pos" in "property pos: Point;")
     // These need to be added before expanded properties so they take precedence
-    for (name, base) in symtab.struct_property_bases() {
-        let struct_def = struct_registry.get(base.struct_id);
+    for (name, struct_id, span) in symtab.struct_property_bases() {
+        let struct_def = struct_registry.get(struct_id);
         hover_info.insert(
-            base.span,
+            span,
             HoverInfo {
-                name: name.to_string(),
+                name: name.clone(),
                 signature: format!("property {}: {}", name, struct_def.name),
                 doc_comment: None,
             },

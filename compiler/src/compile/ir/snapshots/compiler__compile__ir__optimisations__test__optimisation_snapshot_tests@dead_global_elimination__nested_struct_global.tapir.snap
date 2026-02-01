@@ -8,50 +8,58 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/dead_global_eli
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.51 = int 1
-temp.52 = int 2
-temp.8.x.53 = temp.51
-temp.8.y.54 = temp.52
-temp.55 = temp.8.x.53
-temp.7.x.56 = temp.55
-temp.57 = temp.8.y.54
-temp.7.y.58 = temp.57
-temp.59 = int 3
-temp.60 = int 4
-temp.18.x.61 = temp.59
-temp.18.y.62 = temp.60
-temp.63 = temp.18.x.61
-temp.17.x.64 = temp.63
-temp.65 = temp.18.y.62
-temp.17.y.66 = temp.65
-temp.0.origin.x.67 = temp.7.x.56
-temp.0.origin.y.68 = temp.7.y.58
-temp.0.size.x.69 = temp.17.x.64
-temp.0.size.y.70 = temp.17.y.66
-temp.71 = temp.0.origin.x.67
-setglobal 1, temp.71
-temp.72 = temp.0.origin.y.68
-setglobal 2, temp.72
-temp.73 = temp.0.size.x.69
-setglobal 3, temp.73
-temp.74 = temp.0.size.y.70
-setglobal 4, temp.74
-getglobal temp.33.x.75, 1
-getglobal temp.33.y.76, 2
-temp.77 = temp.33.x.75
-temp.78 = extern test(temp.77)
-getglobal temp.38.x.79, 1
-getglobal temp.38.y.80, 2
-temp.81 = temp.38.y.80
-temp.82 = extern test(temp.81)
-getglobal temp.43.x.83, 3
-getglobal temp.43.y.84, 4
-temp.85 = temp.43.x.83
-temp.86 = extern test(temp.85)
-getglobal temp.48.x.87, 3
-getglobal temp.48.y.88, 4
-temp.89 = temp.48.y.88
-temp.90 = extern test(temp.89)
+temp.59 = int 1
+temp.60 = int 2
+temp.8.x.61 = temp.59
+temp.8.y.62 = temp.60
+temp.63 = temp.8.x.61
+temp.7.x.64 = temp.63
+temp.65 = temp.8.y.62
+temp.7.y.66 = temp.65
+temp.67 = int 3
+temp.68 = int 4
+temp.18.x.69 = temp.67
+temp.18.y.70 = temp.68
+temp.71 = temp.18.x.69
+temp.17.x.72 = temp.71
+temp.73 = temp.18.y.70
+temp.17.y.74 = temp.73
+temp.0.origin.x.75 = temp.7.x.64
+temp.0.origin.y.76 = temp.7.y.66
+temp.0.size.x.77 = temp.17.x.72
+temp.0.size.y.78 = temp.17.y.74
+temp.79 = temp.0.origin.x.75
+setglobal 1, temp.79
+temp.80 = temp.0.origin.y.76
+setglobal 2, temp.80
+temp.81 = temp.0.size.x.77
+setglobal 3, temp.81
+temp.82 = temp.0.size.y.78
+setglobal 4, temp.82
+getglobal temp.83, 1
+temp.33.x.84 = temp.83
+getglobal temp.85, 2
+temp.33.y.86 = temp.85
+temp.87 = temp.33.x.84
+temp.88 = extern test(temp.87)
+getglobal temp.89, 1
+temp.40.x.90 = temp.89
+getglobal temp.91, 2
+temp.40.y.92 = temp.91
+temp.93 = temp.40.y.92
+temp.94 = extern test(temp.93)
+getglobal temp.95, 3
+temp.47.x.96 = temp.95
+getglobal temp.97, 4
+temp.47.y.98 = temp.97
+temp.99 = temp.47.x.96
+temp.100 = extern test(temp.99)
+getglobal temp.101, 3
+temp.54.x.102 = temp.101
+getglobal temp.103, 4
+temp.54.y.104 = temp.103
+temp.105 = temp.54.y.104
+temp.106 = extern test(temp.105)
 return 
 
 
@@ -60,50 +68,58 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.51 = int 1
-temp.52 = int 2
-temp.8.x.53 = temp.51
-temp.8.y.54 = temp.52
-temp.55 = temp.8.x.53
-temp.7.x.56 = temp.55
-temp.57 = temp.8.y.54
-temp.7.y.58 = temp.57
-temp.59 = int 3
-temp.60 = int 4
-temp.18.x.61 = temp.59
-temp.18.y.62 = temp.60
-temp.63 = temp.18.x.61
-temp.17.x.64 = temp.63
-temp.65 = temp.18.y.62
-temp.17.y.66 = temp.65
-temp.0.origin.x.67 = temp.7.x.56
-temp.0.origin.y.68 = temp.7.y.58
-temp.0.size.x.69 = temp.17.x.64
-temp.0.size.y.70 = temp.17.y.66
-temp.71 = temp.0.origin.x.67
-setglobal 0, temp.71
-temp.72 = temp.0.origin.y.68
-setglobal 1, temp.72
-temp.73 = temp.0.size.x.69
-setglobal 2, temp.73
-temp.74 = temp.0.size.y.70
-setglobal 3, temp.74
-getglobal temp.33.x.75, 0
-getglobal temp.33.y.76, 1
-temp.77 = temp.33.x.75
-temp.78 = extern test(temp.77)
-getglobal temp.38.x.79, 0
-getglobal temp.38.y.80, 1
-temp.81 = temp.38.y.80
-temp.82 = extern test(temp.81)
-getglobal temp.43.x.83, 2
-getglobal temp.43.y.84, 3
-temp.85 = temp.43.x.83
-temp.86 = extern test(temp.85)
-getglobal temp.48.x.87, 2
-getglobal temp.48.y.88, 3
-temp.89 = temp.48.y.88
-temp.90 = extern test(temp.89)
+temp.59 = int 1
+temp.60 = int 2
+temp.8.x.61 = temp.59
+temp.8.y.62 = temp.60
+temp.63 = temp.8.x.61
+temp.7.x.64 = temp.63
+temp.65 = temp.8.y.62
+temp.7.y.66 = temp.65
+temp.67 = int 3
+temp.68 = int 4
+temp.18.x.69 = temp.67
+temp.18.y.70 = temp.68
+temp.71 = temp.18.x.69
+temp.17.x.72 = temp.71
+temp.73 = temp.18.y.70
+temp.17.y.74 = temp.73
+temp.0.origin.x.75 = temp.7.x.64
+temp.0.origin.y.76 = temp.7.y.66
+temp.0.size.x.77 = temp.17.x.72
+temp.0.size.y.78 = temp.17.y.74
+temp.79 = temp.0.origin.x.75
+setglobal 0, temp.79
+temp.80 = temp.0.origin.y.76
+setglobal 1, temp.80
+temp.81 = temp.0.size.x.77
+setglobal 2, temp.81
+temp.82 = temp.0.size.y.78
+setglobal 3, temp.82
+getglobal temp.83, 0
+temp.33.x.84 = temp.83
+getglobal temp.85, 1
+temp.33.y.86 = temp.85
+temp.87 = temp.33.x.84
+temp.88 = extern test(temp.87)
+getglobal temp.89, 0
+temp.40.x.90 = temp.89
+getglobal temp.91, 1
+temp.40.y.92 = temp.91
+temp.93 = temp.40.y.92
+temp.94 = extern test(temp.93)
+getglobal temp.95, 2
+temp.47.x.96 = temp.95
+getglobal temp.97, 3
+temp.47.y.98 = temp.97
+temp.99 = temp.47.x.96
+temp.100 = extern test(temp.99)
+getglobal temp.101, 2
+temp.54.x.102 = temp.101
+getglobal temp.103, 3
+temp.54.y.104 = temp.103
+temp.105 = temp.54.y.104
+temp.106 = extern test(temp.105)
 return 
 
 
@@ -112,44 +128,104 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.51 = int 1
-temp.52 = int 2
-temp.8.x.53 = temp.51
-temp.8.y.54 = temp.52
-temp.55 = temp.8.x.53
-temp.7.x.56 = temp.55
-temp.57 = temp.8.y.54
-temp.7.y.58 = temp.57
-temp.59 = int 3
-temp.60 = int 4
-temp.18.x.61 = temp.59
-temp.18.y.62 = temp.60
-temp.63 = temp.18.x.61
-temp.17.x.64 = temp.63
-temp.65 = temp.18.y.62
-temp.17.y.66 = temp.65
-temp.0.origin.x.67 = temp.7.x.56
-temp.0.origin.y.68 = temp.7.y.58
-temp.0.size.x.69 = temp.17.x.64
-temp.0.size.y.70 = temp.17.y.66
-temp.71 = temp.0.origin.x.67
-setglobal 0, temp.71
-temp.72 = temp.0.origin.y.68
-setglobal 1, temp.72
-temp.73 = temp.0.size.x.69
-setglobal 2, temp.73
-temp.74 = temp.0.size.y.70
-setglobal 3, temp.74
-getglobal temp.33.x.75, 0
-temp.77 = temp.33.x.75
-temp.78 = extern test(temp.77)
-getglobal temp.38.y.80, 1
-temp.81 = temp.38.y.80
-temp.82 = extern test(temp.81)
-getglobal temp.43.x.83, 2
-temp.85 = temp.43.x.83
-temp.86 = extern test(temp.85)
-getglobal temp.48.y.88, 3
-temp.89 = temp.48.y.88
-temp.90 = extern test(temp.89)
+temp.59 = int 1
+temp.60 = int 2
+temp.8.x.61 = temp.59
+temp.8.y.62 = temp.60
+temp.63 = temp.8.x.61
+temp.7.x.64 = temp.63
+temp.65 = temp.8.y.62
+temp.7.y.66 = temp.65
+temp.67 = int 3
+temp.68 = int 4
+temp.18.x.69 = temp.67
+temp.18.y.70 = temp.68
+temp.71 = temp.18.x.69
+temp.17.x.72 = temp.71
+temp.73 = temp.18.y.70
+temp.17.y.74 = temp.73
+temp.0.origin.x.75 = temp.7.x.64
+temp.0.origin.y.76 = temp.7.y.66
+temp.0.size.x.77 = temp.17.x.72
+temp.0.size.y.78 = temp.17.y.74
+temp.79 = temp.0.origin.x.75
+setglobal 0, temp.79
+temp.80 = temp.0.origin.y.76
+setglobal 1, temp.80
+temp.81 = temp.0.size.x.77
+setglobal 2, temp.81
+temp.82 = temp.0.size.y.78
+setglobal 3, temp.82
+getglobal temp.83, 0
+temp.33.x.84 = temp.83
+getglobal temp.85, 1
+temp.87 = temp.33.x.84
+temp.88 = extern test(temp.87)
+getglobal temp.89, 0
+getglobal temp.91, 1
+temp.40.y.92 = temp.91
+temp.93 = temp.40.y.92
+temp.94 = extern test(temp.93)
+getglobal temp.95, 2
+temp.47.x.96 = temp.95
+getglobal temp.97, 3
+temp.99 = temp.47.x.96
+temp.100 = extern test(temp.99)
+getglobal temp.101, 2
+getglobal temp.103, 3
+temp.54.y.104 = temp.103
+temp.105 = temp.54.y.104
+temp.106 = extern test(temp.105)
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.59 = int 1
+temp.60 = int 2
+temp.8.x.61 = temp.59
+temp.8.y.62 = temp.60
+temp.63 = temp.8.x.61
+temp.7.x.64 = temp.63
+temp.65 = temp.8.y.62
+temp.7.y.66 = temp.65
+temp.67 = int 3
+temp.68 = int 4
+temp.18.x.69 = temp.67
+temp.18.y.70 = temp.68
+temp.71 = temp.18.x.69
+temp.17.x.72 = temp.71
+temp.73 = temp.18.y.70
+temp.17.y.74 = temp.73
+temp.0.origin.x.75 = temp.7.x.64
+temp.0.origin.y.76 = temp.7.y.66
+temp.0.size.x.77 = temp.17.x.72
+temp.0.size.y.78 = temp.17.y.74
+temp.79 = temp.0.origin.x.75
+setglobal 0, temp.79
+temp.80 = temp.0.origin.y.76
+setglobal 1, temp.80
+temp.81 = temp.0.size.x.77
+setglobal 2, temp.81
+temp.82 = temp.0.size.y.78
+setglobal 3, temp.82
+getglobal temp.83, 0
+temp.33.x.84 = temp.83
+temp.87 = temp.33.x.84
+temp.88 = extern test(temp.87)
+getglobal temp.91, 1
+temp.40.y.92 = temp.91
+temp.93 = temp.40.y.92
+temp.94 = extern test(temp.93)
+getglobal temp.95, 2
+temp.47.x.96 = temp.95
+temp.99 = temp.47.x.96
+temp.100 = extern test(temp.99)
+getglobal temp.103, 3
+temp.54.y.104 = temp.103
+temp.105 = temp.54.y.104
+temp.106 = extern test(temp.105)
 return

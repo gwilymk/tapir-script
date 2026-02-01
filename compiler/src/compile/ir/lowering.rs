@@ -31,13 +31,14 @@ pub fn create_ir(
             let arg_type = type_with_loc.resolved();
             if let crate::types::Type::Struct(struct_id) = arg_type {
                 let arg_name = symtab.name_for_symbol(symbol_id).to_string();
-                symtab.expand_struct_symbol(
-                    symbol_id,
-                    &arg_name,
+                let layout = StructLayout::for_local(
                     struct_id,
+                    &arg_name,
                     arg.ident.span,
+                    symtab,
                     struct_registry,
                 );
+                symtab.register_struct_layout(symbol_id, layout);
             }
         }
     }
@@ -88,12 +89,10 @@ pub fn create_ir(
     )
 }
 
-/// Collect all leaf (scalar) symbols from a struct expansion recursively.
+/// Collect all leaf (scalar) symbols from a struct layout recursively.
 fn collect_leaf_symbols(symbol_id: SymbolId, symtab: &SymTab, out: &mut Vec<SymbolId>) {
-    if let Some(expansion) = symtab.get_struct_expansion(symbol_id) {
-        for &field_symbol in &expansion.fields {
-            collect_leaf_symbols(field_symbol, symtab, out);
-        }
+    if let Some(layout) = symtab.get_struct_layout(symbol_id) {
+        out.extend(layout.leaf_symbols());
     } else {
         out.push(symbol_id);
     }
@@ -291,8 +290,21 @@ impl<'a> BlockVisitor<'a> {
                                     value: temp,
                                 });
                             } else {
-                                // Nested struct assignment - store all scalar fields
-                                self.store_struct_property_fields(&prop_path, temp, symtab);
+                                // Nested struct assignment - use layout navigation
+                                let prop_layout = symtab
+                                    .get_struct_layout_by_name(&base_name)
+                                    .expect("Property base should have a layout")
+                                    .clone();
+                                let dst_layout = prop_layout
+                                    .navigate_nested(field_indices)
+                                    .expect("Nested field should have a layout")
+                                    .clone();
+                                let src_layout = symtab
+                                    .get_struct_layout(temp)
+                                    .expect("Temp should have a layout")
+                                    .clone();
+
+                                self.copy_struct_layout(&src_layout, &dst_layout, symtab);
                             }
                         }
                         continue;
@@ -330,19 +342,17 @@ impl<'a> BlockVisitor<'a> {
                             // Target already has a layout (e.g., global struct)
                             layout
                         } else {
-                            // Local target - expand it to create layout
+                            // Local target - create layout
                             let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                            symtab.expand_struct_symbol(
-                                target_symbol,
-                                &target_name,
+                            let layout = StructLayout::for_local(
                                 temp_layout.struct_id,
+                                &target_name,
                                 statement.span,
+                                symtab,
                                 self.struct_registry,
                             );
-                            symtab
-                                .get_struct_layout(target_symbol)
-                                .expect("Just expanded")
-                                .clone()
+                            symtab.register_struct_layout(target_symbol, layout.clone());
+                            layout
                         };
 
                         self.copy_struct_layout(&temp_layout, &target_layout, symtab);
@@ -507,28 +517,21 @@ impl<'a> BlockVisitor<'a> {
         span: crate::tokens::Span,
         symtab: &mut SymTab,
     ) -> SymbolId {
-        // Ensure the root symbol has a struct expansion
-        if symtab.get_struct_expansion(root_symbol).is_none() {
+        // Ensure the root symbol has a layout
+        if symtab.get_struct_layout(root_symbol).is_none() {
             let root_name = symtab.name_for_symbol(root_symbol).to_string();
-            symtab.expand_struct_symbol(
-                root_symbol,
-                &root_name,
-                struct_id,
-                span,
-                self.struct_registry,
-            );
+            let layout =
+                StructLayout::for_local(struct_id, &root_name, span, symtab, self.struct_registry);
+            symtab.register_struct_layout(root_symbol, layout);
         }
 
         // Navigate through field indices to find the target field
-        let mut current_symbol = root_symbol;
-        for &field_index in field_indices {
-            let expansion = symtab
-                .get_struct_expansion(current_symbol)
-                .expect("Field path should have struct expansion");
-            current_symbol = expansion.fields[field_index];
-        }
-
-        current_symbol
+        let layout = symtab
+            .get_struct_layout(root_symbol)
+            .expect("Should have layout");
+        layout
+            .navigate_to_symbol(field_indices)
+            .expect("Field path should be valid")
     }
 
     /// Sets the value of the expression to the symbol at target_symbol
@@ -557,19 +560,16 @@ impl<'a> BlockVisitor<'a> {
             ast::ExpressionKind::Variable(_) => {
                 let source = *expr.meta.get().expect("Should've resolved variable");
                 if let Some(source_layout) = symtab.get_struct_layout(source).cloned() {
-                    // Struct-typed variable: copy all fields to target's expansion
+                    // Struct-typed variable: copy all fields to target's layout
                     let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    symtab.expand_struct_symbol(
-                        target_symbol,
-                        &target_name,
+                    let target_layout = StructLayout::for_local(
                         source_layout.struct_id,
+                        &target_name,
                         expr.span,
+                        symtab,
                         self.struct_registry,
                     );
-                    let target_layout = symtab
-                        .get_struct_layout(target_symbol)
-                        .expect("Just expanded")
-                        .clone();
+                    symtab.register_struct_layout(target_symbol, target_layout.clone());
 
                     self.copy_struct_layout(&source_layout, &target_layout, symtab);
                 } else {
@@ -807,21 +807,26 @@ impl<'a> BlockVisitor<'a> {
                     if let Type::Struct(nested_struct_id) = field_def.ty {
                         // Nested struct field - need to read multiple globals
                         let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                        let target_expansion = symtab.expand_struct_symbol(
-                            target_symbol,
-                            &target_name,
+                        let dst_layout = StructLayout::for_local(
                             nested_struct_id,
+                            &target_name,
                             expr.span,
+                            symtab,
                             self.struct_registry,
                         );
+                        symtab.register_struct_layout(target_symbol, dst_layout.clone());
 
-                        // Read each scalar field from its global
-                        self.read_global_struct_fields(
-                            var_name,
-                            field_path,
-                            &target_expansion,
-                            symtab,
-                        );
+                        // Get layouts and copy using unified approach
+                        let global_layout = symtab
+                            .get_struct_layout_by_name(var_name)
+                            .expect("Global should have a layout")
+                            .clone();
+                        let src_layout = global_layout
+                            .nested_by_name(field_path, self.struct_registry)
+                            .expect("Nested field should have a layout")
+                            .clone();
+
+                        self.copy_struct_layout(&src_layout, &dst_layout, symtab);
                         return;
                     }
 
@@ -843,44 +848,46 @@ impl<'a> BlockVisitor<'a> {
                 let base_temp = symtab.new_temporary();
                 self.blocks_for_expression(base, base_temp, symtab);
 
-                // Ensure the base is expanded. If not (e.g., function call result),
-                // expand it using the struct type from FieldAccessInfo.
-                if symtab.get_struct_expansion(base_temp).is_none() {
+                // Ensure the base has a layout. If not (e.g., function call result),
+                // create one using the struct type from FieldAccessInfo.
+                if symtab.get_struct_layout(base_temp).is_none() {
                     let base_name = symtab.name_for_symbol(base_temp).to_string();
-                    symtab.expand_struct_symbol(
-                        base_temp,
-                        &base_name,
+                    let layout = StructLayout::for_local(
                         info.base_struct_id,
+                        &base_name,
                         expr.span,
+                        symtab,
                         self.struct_registry,
                     );
+                    symtab.register_struct_layout(base_temp, layout);
                 }
 
-                let base_expansion = symtab
-                    .get_struct_expansion(base_temp)
-                    .expect("Base should be expanded")
+                let base_layout = symtab
+                    .get_struct_layout(base_temp)
+                    .expect("Base should have layout")
                     .clone();
 
-                // Get the field's symbol from the base expansion
-                let field_symbol = base_expansion.fields[info.field_index];
+                // Get the field's symbol from the base layout
+                let field_symbol = base_layout
+                    .field_symbol(info.field_index)
+                    .expect("Field should have symbol");
 
                 // Check if this field is struct-typed (has its own layout)
-                if let Some(field_layout) = symtab.get_struct_layout(field_symbol).cloned() {
+                if let Some(FieldAccessor::Nested(_, field_layout)) =
+                    base_layout.field(info.field_index)
+                {
                     // Field is struct-typed: create layout for target and copy
                     let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    symtab.expand_struct_symbol(
-                        target_symbol,
-                        &target_name,
+                    let target_layout = StructLayout::for_local(
                         field_layout.struct_id,
+                        &target_name,
                         expr.span,
+                        symtab,
                         self.struct_registry,
                     );
-                    let target_layout = symtab
-                        .get_struct_layout(target_symbol)
-                        .expect("Just expanded")
-                        .clone();
+                    symtab.register_struct_layout(target_symbol, target_layout.clone());
 
-                    self.copy_struct_layout(&field_layout, &target_layout, symtab);
+                    self.copy_struct_layout(field_layout, &target_layout, symtab);
                 } else {
                     // Scalar field: simple move
                     self.current_block.push(TapIr::Move {
@@ -945,13 +952,14 @@ impl<'a> BlockVisitor<'a> {
         // Create a temporary to hold the constructed struct value
         let temp_symbol = symtab.new_temporary();
         let temp_name = symtab.name_for_symbol(temp_symbol).to_string();
-        symtab.expand_struct_symbol(
-            temp_symbol,
-            &temp_name,
+        let temp_layout = StructLayout::for_local(
             struct_id,
+            &temp_name,
             span,
+            symtab,
             self.struct_registry,
         );
+        symtab.register_struct_layout(temp_symbol, temp_layout.clone());
 
         // Evaluate args and collect expanded leaves
         let mut arg_leaves = Vec::new();
@@ -962,34 +970,25 @@ impl<'a> BlockVisitor<'a> {
         }
 
         // Copy args to temp leaves
-        let mut temp_leaves = Vec::new();
-        collect_leaf_symbols(temp_symbol, symtab, &mut temp_leaves);
+        let temp_leaves = temp_layout.leaf_symbols();
         for (&target, &source) in temp_leaves.iter().zip(&arg_leaves) {
             self.current_block.push(TapIr::Move { target, source });
         }
-
-        // Copy temp to target (handles local, global, and property targets uniformly)
-        let temp_layout = symtab
-            .get_struct_layout(temp_symbol)
-            .expect("Just expanded temp")
-            .clone();
 
         // Get or create target layout
         let target_layout = if let Some(layout) = symtab.get_struct_layout(target_symbol).cloned() {
             layout
         } else {
             let target_name = symtab.name_for_symbol(target_symbol).to_string();
-            symtab.expand_struct_symbol(
-                target_symbol,
-                &target_name,
+            let layout = StructLayout::for_local(
                 temp_layout.struct_id,
+                &target_name,
                 span,
+                symtab,
                 self.struct_registry,
             );
-            symtab
-                .get_struct_layout(target_symbol)
-                .expect("Just expanded")
-                .clone()
+            symtab.register_struct_layout(target_symbol, layout.clone());
+            layout
         };
 
         self.copy_struct_layout(&temp_layout, &target_layout, symtab);
@@ -1008,18 +1007,19 @@ impl<'a> BlockVisitor<'a> {
     ) {
         match function_id {
             InternalOrExternalFunctionId::Internal(f) => {
-                // Expand target if function returns a struct
+                // Create layout for target if function returns a struct
                 if let Some(CallReturnInfo(ret_types)) = return_info
                     && let Some(Type::Struct(struct_id)) = ret_types.first()
                 {
                     let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    symtab.expand_struct_symbol(
-                        target_symbol,
-                        &target_name,
+                    let layout = StructLayout::for_local(
                         *struct_id,
+                        &target_name,
                         span,
+                        symtab,
                         self.struct_registry,
                     );
+                    symtab.register_struct_layout(target_symbol, layout);
                 }
                 let mut targets = Vec::new();
                 collect_leaf_symbols(target_symbol, symtab, &mut targets);
@@ -1030,18 +1030,19 @@ impl<'a> BlockVisitor<'a> {
                 });
             }
             InternalOrExternalFunctionId::External(f) => {
-                // Expand target if function returns a struct
+                // Create layout for target if function returns a struct
                 if let Some(CallReturnInfo(ret_types)) = return_info
                     && let Some(Type::Struct(struct_id)) = ret_types.first()
                 {
                     let target_name = symtab.name_for_symbol(target_symbol).to_string();
-                    symtab.expand_struct_symbol(
-                        target_symbol,
-                        &target_name,
+                    let layout = StructLayout::for_local(
                         *struct_id,
+                        &target_name,
                         span,
+                        symtab,
                         self.struct_registry,
                     );
+                    symtab.register_struct_layout(target_symbol, layout);
                 }
                 let mut targets = Vec::new();
                 collect_leaf_symbols(target_symbol, symtab, &mut targets);
@@ -1061,30 +1062,6 @@ impl<'a> BlockVisitor<'a> {
             }
             InternalOrExternalFunctionId::StructConstructor(_) => {
                 unreachable!("Struct constructors should be handled separately")
-            }
-        }
-    }
-
-    /// Recursively copy fields from one struct expansion to another (local-to-local).
-    fn copy_struct_fields(
-        &mut self,
-        source: &crate::compile::symtab_visitor::ExpandedStruct,
-        target: &crate::compile::symtab_visitor::ExpandedStruct,
-        symtab: &SymTab,
-    ) {
-        for (&source_field, &target_field) in source.fields.iter().zip(&target.fields) {
-            // Check if this field is struct-typed (has nested expansion)
-            if let Some(source_nested) = symtab.get_struct_expansion(source_field) {
-                let target_nested = symtab
-                    .get_struct_expansion(target_field)
-                    .expect("Target should have matching expansion");
-                self.copy_struct_fields(source_nested, target_nested, symtab);
-            } else {
-                // Scalar field
-                self.current_block.push(TapIr::Move {
-                    target: target_field,
-                    source: source_field,
-                });
             }
         }
     }
@@ -1171,7 +1148,7 @@ impl<'a> BlockVisitor<'a> {
                     global_index: id.0,
                 });
             }
-            FieldAccessor::Nested(_) => panic!("Cannot load nested struct as scalar"),
+            FieldAccessor::Nested(..) => panic!("Cannot load nested struct as scalar"),
         }
     }
 
@@ -1196,7 +1173,7 @@ impl<'a> BlockVisitor<'a> {
                     value,
                 });
             }
-            FieldAccessor::Nested(_) => panic!("Cannot store scalar into nested struct"),
+            FieldAccessor::Nested(..) => panic!("Cannot store scalar into nested struct"),
         }
     }
 
@@ -1209,135 +1186,13 @@ impl<'a> BlockVisitor<'a> {
         symtab: &mut SymTab,
     ) {
         match (src, dst) {
-            (FieldAccessor::Nested(src_nested), FieldAccessor::Nested(dst_nested)) => {
+            (FieldAccessor::Nested(_, src_nested), FieldAccessor::Nested(_, dst_nested)) => {
                 self.copy_struct_layout(src_nested, dst_nested, symtab);
             }
             _ => {
                 let temp = symtab.new_temporary();
                 self.emit_load(temp, src);
                 self.emit_store(dst, temp);
-            }
-        }
-    }
-
-    /// Copy a struct from a source expansion to a target symbol.
-    /// Dispatches based on target's storage class:
-    /// - Local: expand target and copy with Move
-    /// - Global: use global field lookups with SetGlobal
-    fn copy_struct_to_target(
-        &mut self,
-        source: &crate::compile::symtab_visitor::ExpandedStruct,
-        target_symbol: SymbolId,
-        target_name: &str,
-        span: crate::tokens::Span,
-        symtab: &mut SymTab,
-    ) {
-        use crate::compile::symtab_visitor::SymbolStorage;
-
-        match symtab.get_storage(target_symbol) {
-            SymbolStorage::Local => {
-                // Expand target and copy field-by-field
-                let target_expansion = symtab.expand_struct_symbol(
-                    target_symbol,
-                    target_name,
-                    source.struct_id,
-                    span,
-                    self.struct_registry,
-                );
-                self.copy_struct_fields(source, &target_expansion, symtab);
-            }
-            SymbolStorage::Global(_) => {
-                // Target is a global struct - use global field lookups
-                // Strip "global." prefix if present
-                let global_name = target_name
-                    .strip_prefix("global.")
-                    .unwrap_or(target_name);
-                self.write_global_struct_fields(global_name, "", source, symtab);
-            }
-            SymbolStorage::Property(_) => {
-                // Struct property targets are handled separately via StructPropertyBase
-                // detection in the assignment code path. This case shouldn't be reached
-                // for struct constructors, but if it is, we need the existing
-                // store_struct_property_fields which uses different resolution.
-                unreachable!("Struct property assignment should be handled via StructPropertyBase path");
-            }
-        }
-    }
-
-    /// Read scalar fields from a global struct into an expanded target.
-    /// `global_name` is the name of the global (e.g., "g").
-    /// `field_prefix` is the path prefix for nested fields (e.g., "origin" for "g.origin.x").
-    fn read_global_struct_fields(
-        &mut self,
-        global_name: &str,
-        field_prefix: &str,
-        target: &crate::compile::symtab_visitor::ExpandedStruct,
-        symtab: &SymTab,
-    ) {
-        let struct_def = self.struct_registry.get(target.struct_id);
-        for (i, field_def) in struct_def.fields.iter().enumerate() {
-            let field_path = if field_prefix.is_empty() {
-                field_def.name.clone()
-            } else {
-                format!("{}.{}", field_prefix, field_def.name)
-            };
-
-            let target_symbol = target.fields[i];
-
-            if let Type::Struct(_) = field_def.ty {
-                // Nested struct - recurse
-                let nested_expansion = symtab
-                    .get_struct_expansion(target_symbol)
-                    .expect("Nested struct should be expanded")
-                    .clone();
-                self.read_global_struct_fields(global_name, &field_path, &nested_expansion, symtab);
-            } else {
-                // Scalar field - GetGlobal
-                if let Some(global_id) = symtab.get_global_struct_field_id(global_name, &field_path)
-                {
-                    self.current_block.push(TapIr::GetGlobal {
-                        target: target_symbol,
-                        global_index: global_id.0,
-                    });
-                }
-            }
-        }
-    }
-
-    /// Write scalar fields from an expanded source to a global struct.
-    fn write_global_struct_fields(
-        &mut self,
-        global_name: &str,
-        field_prefix: &str,
-        source: &crate::compile::symtab_visitor::ExpandedStruct,
-        symtab: &SymTab,
-    ) {
-        let struct_def = self.struct_registry.get(source.struct_id);
-        for (i, field_def) in struct_def.fields.iter().enumerate() {
-            let field_path = if field_prefix.is_empty() {
-                field_def.name.clone()
-            } else {
-                format!("{}.{}", field_prefix, field_def.name)
-            };
-
-            let source_symbol = source.fields[i];
-
-            if let Type::Struct(_) = field_def.ty {
-                // Nested struct - recurse
-                let nested_expansion = symtab
-                    .get_struct_expansion(source_symbol)
-                    .expect("Nested struct should be expanded")
-                    .clone();
-                self.write_global_struct_fields(global_name, &field_path, &nested_expansion, symtab);
-            } else {
-                // Scalar field - SetGlobal
-                if let Some(global_id) = symtab.get_global_struct_field_id(global_name, &field_path)
-                {
-                    self.current_block.push(TapIr::SetGlobal {
-                        global_index: global_id.0,
-                        value: source_symbol,
-                    });
-                }
             }
         }
     }
@@ -1372,65 +1227,28 @@ impl<'a> BlockVisitor<'a> {
         let field_def = &struct_def.fields[info.field_index];
 
         if let Type::Struct(nested_struct_id) = field_def.ty {
-            // Create expansion for target
+            // Create layout for target
             let target_name = symtab.name_for_symbol(target_symbol).to_string();
-            symtab.expand_struct_symbol(
-                target_symbol,
-                &target_name,
+            let dst_layout = StructLayout::for_local(
                 nested_struct_id,
+                &target_name,
                 span,
+                symtab,
                 self.struct_registry,
             );
+            symtab.register_struct_layout(target_symbol, dst_layout.clone());
 
-            // Get all leaf properties for this path and copy them
-            self.copy_struct_property_fields_to_expansion(
-                target_symbol,
-                &full_path,
-                nested_struct_id,
-                symtab,
-            );
-        }
-    }
+            // Get property base layout and navigate to the nested field
+            let prop_layout = symtab
+                .get_struct_layout_by_name(base_path)
+                .expect("Property base should have a layout")
+                .clone();
+            let src_layout = prop_layout
+                .nested_by_name(field_name, self.struct_registry)
+                .expect("Nested field should have a layout")
+                .clone();
 
-    /// Copy scalar property fields matching a path prefix to an expanded struct symbol.
-    fn copy_struct_property_fields_to_expansion(
-        &mut self,
-        target_symbol: SymbolId,
-        path_prefix: &str,
-        struct_id: crate::types::StructId,
-        symtab: &SymTab,
-    ) {
-        let target_expansion = symtab
-            .get_struct_expansion(target_symbol)
-            .expect("Target should be expanded")
-            .clone();
-
-        let struct_def = self.struct_registry.get(struct_id);
-
-        for (i, field) in struct_def.fields.iter().enumerate() {
-            let field_path = format!("{}.{}", path_prefix, field.name);
-            let target_field = target_expansion.fields[i];
-
-            match field.ty {
-                Type::Struct(nested_id) => {
-                    // Recursively copy nested struct fields
-                    self.copy_struct_property_fields_to_expansion(
-                        target_field,
-                        &field_path,
-                        nested_id,
-                        symtab,
-                    );
-                }
-                _ => {
-                    // Scalar field - get from property
-                    if let Some(prop) = symtab.get_property_by_path(&field_path) {
-                        self.current_block.push(TapIr::GetProp {
-                            target: target_field,
-                            prop_index: prop.index,
-                        });
-                    }
-                }
-            }
+            self.copy_struct_layout(&src_layout, &dst_layout, symtab);
         }
     }
 
@@ -1461,41 +1279,5 @@ impl<'a> BlockVisitor<'a> {
         }
 
         path
-    }
-
-    /// Store all scalar fields from a source symbol to struct property paths.
-    fn store_struct_property_fields(
-        &mut self,
-        path_prefix: &str,
-        source_symbol: SymbolId,
-        symtab: &SymTab,
-    ) {
-        // Get the struct expansion for the source
-        let Some(expansion) = symtab.get_struct_expansion(source_symbol).cloned() else {
-            return;
-        };
-
-        let struct_def = self.struct_registry.get(expansion.struct_id);
-
-        for (i, field) in struct_def.fields.iter().enumerate() {
-            let field_path = format!("{}.{}", path_prefix, field.name);
-            let source_field = expansion.fields[i];
-
-            match field.ty {
-                Type::Struct(_) => {
-                    // Recursively store nested struct fields
-                    self.store_struct_property_fields(&field_path, source_field, symtab);
-                }
-                _ => {
-                    // Scalar field - generate StoreProp
-                    if let Some(prop) = symtab.get_property_by_path(&field_path) {
-                        self.current_block.push(TapIr::StoreProp {
-                            prop_index: prop.index,
-                            value: source_field,
-                        });
-                    }
-                }
-            }
-        }
     }
 }

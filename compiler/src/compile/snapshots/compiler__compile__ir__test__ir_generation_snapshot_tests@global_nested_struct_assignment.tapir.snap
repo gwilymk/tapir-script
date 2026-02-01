@@ -35,12 +35,16 @@ temp.29 = temp.0.size.x.5
 setglobal 3, temp.29
 temp.30 = temp.0.size.y.6
 setglobal 4, temp.30
-getglobal temp.33.x.34, 1
-getglobal temp.33.y.35, 2
+getglobal temp.36, 1
+temp.33.x.34 = temp.36
+getglobal temp.37, 2
+temp.33.y.35 = temp.37
 temp.32 = temp.33.x.34
 temp.31 = extern test(temp.32)
-getglobal temp.38.x.39, 3
-getglobal temp.38.y.40, 4
-temp.37 = temp.38.y.40
-temp.36 = extern test(temp.37)
+getglobal temp.43, 3
+temp.40.x.41 = temp.43
+getglobal temp.44, 4
+temp.40.y.42 = temp.44
+temp.39 = temp.40.y.42
+temp.38 = extern test(temp.39)
 return
