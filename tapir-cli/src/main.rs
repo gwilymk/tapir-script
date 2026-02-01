@@ -26,6 +26,8 @@ enum Command {
         #[arg(long)]
         no_prelude: bool,
     },
+    /// Start the language server (LSP) over stdio
+    Lsp,
 }
 
 fn main() -> ExitCode {
@@ -37,6 +39,17 @@ fn main() -> ExitCode {
             no_opt,
             no_prelude,
         } => compile_command(&file, no_opt, no_prelude),
+        Command::Lsp => lsp_command(),
+    }
+}
+
+fn lsp_command() -> ExitCode {
+    match tapir_lsp::run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("LSP error: {}", e);
+            ExitCode::FAILURE
+        }
     }
 }
 

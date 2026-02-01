@@ -13,13 +13,13 @@ function getServerOptions(): ServerOptions {
   let serverPath = config.get<string>("serverPath");
 
   if (!serverPath) {
-    // Default: assume tapir-lsp is in PATH
-    serverPath = "tapir-lsp";
+    // Default: assume tapirc is in PATH
+    serverPath = "tapirc";
   }
 
   return {
     command: serverPath,
-    args: [],
+    args: ["lsp"],
   };
 }
 

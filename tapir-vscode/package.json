@@ -48,7 +48,7 @@
         "tapir.serverPath": {
           "type": "string",
           "default": "",
-          "description": "Path to the tapir-lsp executable. If empty, searches in PATH."
+          "description": "Path to the tapirc executable. If empty, searches in PATH."
         }
       }
     }

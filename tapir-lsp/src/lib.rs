@@ -16,7 +16,8 @@ use lsp_types::{
 use handlers::{handle_notification, handle_request};
 use state::FileState;
 
-fn main() -> Result<(), Box<dyn Error + Sync + Send>> {
+/// Run the tapir language server over stdio.
+pub fn run() -> Result<(), Box<dyn Error + Sync + Send>> {
     eprintln!("[tapir-lsp] Starting...");
 
     let (connection, io_thread) = Connection::stdio();

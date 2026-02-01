@@ -10,3 +10,4 @@ path = "src/main.rs"
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 compiler = { path = "../compiler" }
+tapir-lsp = { path = "../tapir-lsp" }
