@@ -7,35 +7,39 @@ input_file: compiler/src/compile/snapshot_tests/ir/method_on_struct.tapir
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.6 = int 3
-temp.7 = int 4
-temp.3.x.4 = temp.6
-temp.3.y.5 = temp.7
-temp.10 = temp.3.x.4
-p.x.8 = temp.10
-temp.11 = temp.3.y.5
-p.y.9 = temp.11
-temp.16 = p.x.8
-temp.13.x.14 = temp.16
-temp.17 = p.y.9
-temp.13.y.15 = temp.17
-temp.12 = Point@sum(temp.13.x.14, temp.13.y.15)
-total.1 = temp.12
+temp.7 = int 3
+temp.8 = int 4
+temp.4.x.5 = temp.7
+temp.4.y.6 = temp.8
+temp.11 = temp.4.x.5
+temp.3.x.9 = temp.11
+temp.12 = temp.4.y.6
+temp.3.y.10 = temp.12
+temp.15 = temp.3.x.9
+p.x.13 = temp.15
+temp.16 = temp.3.y.10
+p.y.14 = temp.16
+temp.21 = p.x.13
+temp.18.x.19 = temp.21
+temp.22 = p.y.14
+temp.18.y.20 = temp.22
+temp.17 = Point@sum(temp.18.x.19, temp.18.y.20)
+total.1 = temp.17
 return 
 
 =======================
-fn Point@sum(self.x.18, self.y.19) -> int
+fn Point@sum(self.x.23, self.y.24) -> int
 
 ---- block 0 ----
-temp.26 = self.x.18
-temp.23.x.24 = temp.26
-temp.27 = self.y.19
-temp.23.y.25 = temp.27
-temp.21 = temp.23.x.24
-temp.31 = self.x.18
+temp.31 = self.x.23
 temp.28.x.29 = temp.31
-temp.32 = self.y.19
+temp.32 = self.y.24
 temp.28.y.30 = temp.32
-temp.22 = temp.28.y.30
-temp.20 = temp.21 + temp.22
-return temp.20
+temp.26 = temp.28.x.29
+temp.36 = self.x.23
+temp.33.x.34 = temp.36
+temp.37 = self.y.24
+temp.33.y.35 = temp.37
+temp.27 = temp.33.y.35
+temp.25 = temp.26 + temp.27
+return temp.25

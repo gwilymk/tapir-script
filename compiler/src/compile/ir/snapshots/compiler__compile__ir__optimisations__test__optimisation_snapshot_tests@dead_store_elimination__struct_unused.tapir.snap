@@ -14,34 +14,42 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.33 = int 1
-temp.34 = int 2
-temp.2.x.35 = temp.33
-temp.2.y.36 = temp.34
-temp.37 = temp.2.x.35
-p.x.38 = temp.37
-temp.39 = temp.2.y.36
-p.y.40 = temp.39
-temp.41 = int 3
-temp.42 = int 4
-temp.11.x.43 = temp.41
-temp.11.y.44 = temp.42
-temp.45 = temp.11.x.43
-q.x.46 = temp.45
-temp.47 = temp.11.y.44
-q.y.48 = temp.47
-temp.49 = p.x.38
-temp.23.x.50 = temp.49
-temp.51 = p.y.40
-temp.23.y.52 = temp.51
-temp.53 = temp.23.x.50
-temp.54 = p.x.38
-temp.28.x.55 = temp.54
-temp.56 = p.y.40
-temp.28.y.57 = temp.56
-temp.58 = temp.28.y.57
-temp.59 = temp.53 + temp.58
-return temp.59
+temp.43 = int 1
+temp.44 = int 2
+temp.3.x.45 = temp.43
+temp.3.y.46 = temp.44
+temp.47 = temp.3.x.45
+temp.2.x.48 = temp.47
+temp.49 = temp.3.y.46
+temp.2.y.50 = temp.49
+temp.51 = temp.2.x.48
+p.x.52 = temp.51
+temp.53 = temp.2.y.50
+p.y.54 = temp.53
+temp.55 = int 3
+temp.56 = int 4
+temp.17.x.57 = temp.55
+temp.17.y.58 = temp.56
+temp.59 = temp.17.x.57
+temp.16.x.60 = temp.59
+temp.61 = temp.17.y.58
+temp.16.y.62 = temp.61
+temp.63 = temp.16.x.60
+q.x.64 = temp.63
+temp.65 = temp.16.y.62
+q.y.66 = temp.65
+temp.67 = p.x.52
+temp.33.x.68 = temp.67
+temp.69 = p.y.54
+temp.33.y.70 = temp.69
+temp.71 = temp.33.x.68
+temp.72 = p.x.52
+temp.38.x.73 = temp.72
+temp.74 = p.y.54
+temp.38.y.75 = temp.74
+temp.76 = temp.38.y.75
+temp.77 = temp.71 + temp.76
+return temp.77
 
 
 ----------- dead_store_elimination -------------
@@ -55,30 +63,38 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.33 = int 1
-temp.34 = int 2
-temp.2.x.35 = temp.33
-temp.2.y.36 = temp.34
-temp.37 = temp.2.x.35
-p.x.38 = temp.37
-temp.39 = temp.2.y.36
-p.y.40 = temp.39
-temp.41 = int 3
-temp.42 = int 4
-temp.11.x.43 = temp.41
-temp.11.y.44 = temp.42
-temp.45 = temp.11.x.43
-temp.47 = temp.11.y.44
-temp.49 = p.x.38
-temp.23.x.50 = temp.49
-temp.51 = p.y.40
-temp.53 = temp.23.x.50
-temp.54 = p.x.38
-temp.56 = p.y.40
-temp.28.y.57 = temp.56
-temp.58 = temp.28.y.57
-temp.59 = temp.53 + temp.58
-return temp.59
+temp.43 = int 1
+temp.44 = int 2
+temp.3.x.45 = temp.43
+temp.3.y.46 = temp.44
+temp.47 = temp.3.x.45
+temp.2.x.48 = temp.47
+temp.49 = temp.3.y.46
+temp.2.y.50 = temp.49
+temp.51 = temp.2.x.48
+p.x.52 = temp.51
+temp.53 = temp.2.y.50
+p.y.54 = temp.53
+temp.55 = int 3
+temp.56 = int 4
+temp.17.x.57 = temp.55
+temp.17.y.58 = temp.56
+temp.59 = temp.17.x.57
+temp.16.x.60 = temp.59
+temp.61 = temp.17.y.58
+temp.16.y.62 = temp.61
+temp.63 = temp.16.x.60
+temp.65 = temp.16.y.62
+temp.67 = p.x.52
+temp.33.x.68 = temp.67
+temp.69 = p.y.54
+temp.71 = temp.33.x.68
+temp.72 = p.x.52
+temp.74 = p.y.54
+temp.38.y.75 = temp.74
+temp.76 = temp.38.y.75
+temp.77 = temp.71 + temp.76
+return temp.77
 
 
 ----------- dead_store_elimination -------------
@@ -92,26 +108,34 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.33 = int 1
-temp.34 = int 2
-temp.2.x.35 = temp.33
-temp.2.y.36 = temp.34
-temp.37 = temp.2.x.35
-p.x.38 = temp.37
-temp.39 = temp.2.y.36
-p.y.40 = temp.39
-temp.41 = int 3
-temp.42 = int 4
-temp.11.x.43 = temp.41
-temp.11.y.44 = temp.42
-temp.49 = p.x.38
-temp.23.x.50 = temp.49
-temp.53 = temp.23.x.50
-temp.56 = p.y.40
-temp.28.y.57 = temp.56
-temp.58 = temp.28.y.57
-temp.59 = temp.53 + temp.58
-return temp.59
+temp.43 = int 1
+temp.44 = int 2
+temp.3.x.45 = temp.43
+temp.3.y.46 = temp.44
+temp.47 = temp.3.x.45
+temp.2.x.48 = temp.47
+temp.49 = temp.3.y.46
+temp.2.y.50 = temp.49
+temp.51 = temp.2.x.48
+p.x.52 = temp.51
+temp.53 = temp.2.y.50
+p.y.54 = temp.53
+temp.55 = int 3
+temp.56 = int 4
+temp.17.x.57 = temp.55
+temp.17.y.58 = temp.56
+temp.59 = temp.17.x.57
+temp.16.x.60 = temp.59
+temp.61 = temp.17.y.58
+temp.16.y.62 = temp.61
+temp.67 = p.x.52
+temp.33.x.68 = temp.67
+temp.71 = temp.33.x.68
+temp.74 = p.y.54
+temp.38.y.75 = temp.74
+temp.76 = temp.38.y.75
+temp.77 = temp.71 + temp.76
+return temp.77
 
 
 ----------- dead_store_elimination -------------
@@ -125,24 +149,32 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.33 = int 1
-temp.34 = int 2
-temp.2.x.35 = temp.33
-temp.2.y.36 = temp.34
-temp.37 = temp.2.x.35
-p.x.38 = temp.37
-temp.39 = temp.2.y.36
-p.y.40 = temp.39
-temp.41 = int 3
-temp.42 = int 4
-temp.49 = p.x.38
-temp.23.x.50 = temp.49
-temp.53 = temp.23.x.50
-temp.56 = p.y.40
-temp.28.y.57 = temp.56
-temp.58 = temp.28.y.57
-temp.59 = temp.53 + temp.58
-return temp.59
+temp.43 = int 1
+temp.44 = int 2
+temp.3.x.45 = temp.43
+temp.3.y.46 = temp.44
+temp.47 = temp.3.x.45
+temp.2.x.48 = temp.47
+temp.49 = temp.3.y.46
+temp.2.y.50 = temp.49
+temp.51 = temp.2.x.48
+p.x.52 = temp.51
+temp.53 = temp.2.y.50
+p.y.54 = temp.53
+temp.55 = int 3
+temp.56 = int 4
+temp.17.x.57 = temp.55
+temp.17.y.58 = temp.56
+temp.59 = temp.17.x.57
+temp.61 = temp.17.y.58
+temp.67 = p.x.52
+temp.33.x.68 = temp.67
+temp.71 = temp.33.x.68
+temp.74 = p.y.54
+temp.38.y.75 = temp.74
+temp.76 = temp.38.y.75
+temp.77 = temp.71 + temp.76
+return temp.77
 
 
 ----------- dead_store_elimination -------------
@@ -156,19 +188,95 @@ return
 fn test() -> int
 
 ---- block 0 ----
-temp.33 = int 1
-temp.34 = int 2
-temp.2.x.35 = temp.33
-temp.2.y.36 = temp.34
-temp.37 = temp.2.x.35
-p.x.38 = temp.37
-temp.39 = temp.2.y.36
-p.y.40 = temp.39
-temp.49 = p.x.38
-temp.23.x.50 = temp.49
-temp.53 = temp.23.x.50
-temp.56 = p.y.40
-temp.28.y.57 = temp.56
-temp.58 = temp.28.y.57
-temp.59 = temp.53 + temp.58
-return temp.59
+temp.43 = int 1
+temp.44 = int 2
+temp.3.x.45 = temp.43
+temp.3.y.46 = temp.44
+temp.47 = temp.3.x.45
+temp.2.x.48 = temp.47
+temp.49 = temp.3.y.46
+temp.2.y.50 = temp.49
+temp.51 = temp.2.x.48
+p.x.52 = temp.51
+temp.53 = temp.2.y.50
+p.y.54 = temp.53
+temp.55 = int 3
+temp.56 = int 4
+temp.17.x.57 = temp.55
+temp.17.y.58 = temp.56
+temp.67 = p.x.52
+temp.33.x.68 = temp.67
+temp.71 = temp.33.x.68
+temp.74 = p.y.54
+temp.38.y.75 = temp.74
+temp.76 = temp.38.y.75
+temp.77 = temp.71 + temp.76
+return temp.77
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.43 = int 1
+temp.44 = int 2
+temp.3.x.45 = temp.43
+temp.3.y.46 = temp.44
+temp.47 = temp.3.x.45
+temp.2.x.48 = temp.47
+temp.49 = temp.3.y.46
+temp.2.y.50 = temp.49
+temp.51 = temp.2.x.48
+p.x.52 = temp.51
+temp.53 = temp.2.y.50
+p.y.54 = temp.53
+temp.55 = int 3
+temp.56 = int 4
+temp.67 = p.x.52
+temp.33.x.68 = temp.67
+temp.71 = temp.33.x.68
+temp.74 = p.y.54
+temp.38.y.75 = temp.74
+temp.76 = temp.38.y.75
+temp.77 = temp.71 + temp.76
+return temp.77
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+return 
+
+=======================
+fn test() -> int
+
+---- block 0 ----
+temp.43 = int 1
+temp.44 = int 2
+temp.3.x.45 = temp.43
+temp.3.y.46 = temp.44
+temp.47 = temp.3.x.45
+temp.2.x.48 = temp.47
+temp.49 = temp.3.y.46
+temp.2.y.50 = temp.49
+temp.51 = temp.2.x.48
+p.x.52 = temp.51
+temp.53 = temp.2.y.50
+p.y.54 = temp.53
+temp.67 = p.x.52
+temp.33.x.68 = temp.67
+temp.71 = temp.33.x.68
+temp.74 = p.y.54
+temp.38.y.75 = temp.74
+temp.76 = temp.38.y.75
+temp.77 = temp.71 + temp.76
+return temp.77

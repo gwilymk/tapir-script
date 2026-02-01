@@ -172,24 +172,9 @@ impl<'a> BlockVisitor<'a> {
                 let temps: Vec<SymbolId> = if target_symbols.len() == values.len() {
                     // Paired assignment: evaluate all RHS into temporaries first,
                     // then move to targets (enables swap idiom: a, b = b, a)
-                    //
-                    // Special case: struct constructors assign directly to target fields
-                    // since their arguments don't depend on the targets (no swap issue).
                     values
                         .iter()
-                        .zip(target_symbols.iter())
-                        .map(|(value, &target)| {
-                            // Check if this is a struct constructor - if so, assign directly
-                            if let ast::ExpressionKind::Call { .. } = &value.kind
-                                && let Some(InternalOrExternalFunctionId::StructConstructor(_)) =
-                                    value.meta.get()
-                            {
-                                // Struct constructor: assign directly to target
-                                self.blocks_for_expression(value, target, symtab);
-                                return target; // No temp needed, already assigned to target
-                            }
-
-                            // Non-struct: use temporary as before
+                        .map(|value| {
                             let temp = symtab.new_temporary();
                             self.blocks_for_expression(value, temp, symtab);
                             temp

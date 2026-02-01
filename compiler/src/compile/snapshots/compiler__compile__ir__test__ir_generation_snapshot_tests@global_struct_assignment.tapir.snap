@@ -7,14 +7,18 @@ input_file: compiler/src/compile/snapshot_tests/ir/global_struct_assignment.tapi
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.3 = int 10
-temp.4 = int 20
-temp.0.x.1 = temp.3
-temp.0.y.2 = temp.4
-temp.5 = temp.0.x.1
-setglobal 1, temp.5
-temp.6 = temp.0.y.2
-setglobal 2, temp.6
-getglobal temp.8, 1
-temp.7 = extern test(temp.8)
+temp.4 = int 10
+temp.5 = int 20
+temp.1.x.2 = temp.4
+temp.1.y.3 = temp.5
+temp.8 = temp.1.x.2
+temp.0.x.6 = temp.8
+temp.9 = temp.1.y.3
+temp.0.y.7 = temp.9
+temp.10 = temp.0.x.6
+setglobal 1, temp.10
+temp.11 = temp.0.y.7
+setglobal 2, temp.11
+getglobal temp.13, 1
+temp.12 = extern test(temp.13)
 return

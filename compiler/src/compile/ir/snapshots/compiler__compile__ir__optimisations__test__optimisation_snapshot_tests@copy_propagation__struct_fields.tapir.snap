@@ -8,30 +8,34 @@ input_file: compiler/src/compile/ir/snapshot_tests/optimisations/copy_propagatio
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.28 = int 1
-temp.29 = int 2
-temp.5.x.30 = temp.28
-temp.5.y.31 = temp.29
-temp.32 = temp.5.x.30
-p.x.33 = temp.32
-temp.34 = temp.5.y.31
-p.y.35 = temp.34
-temp.36 = p.x.33
-temp.15.x.37 = temp.36
-temp.38 = p.y.35
-temp.15.y.39 = temp.38
-temp.40 = temp.15.x.37
-a.41 = temp.40
-temp.42 = p.x.33
-temp.21.x.43 = temp.42
-temp.44 = p.y.35
-temp.21.y.45 = temp.44
-temp.46 = temp.21.y.45
-b.47 = temp.46
-temp.48 = a.41
-c.49 = temp.48
-temp.50 = b.47
-d.51 = temp.50
+temp.33 = int 1
+temp.34 = int 2
+temp.6.x.35 = temp.33
+temp.6.y.36 = temp.34
+temp.37 = temp.6.x.35
+temp.5.x.38 = temp.37
+temp.39 = temp.6.y.36
+temp.5.y.40 = temp.39
+temp.41 = temp.5.x.38
+p.x.42 = temp.41
+temp.43 = temp.5.y.40
+p.y.44 = temp.43
+temp.45 = p.x.42
+temp.20.x.46 = temp.45
+temp.47 = p.y.44
+temp.20.y.48 = temp.47
+temp.49 = temp.20.x.46
+a.50 = temp.49
+temp.51 = p.x.42
+temp.26.x.52 = temp.51
+temp.53 = p.y.44
+temp.26.y.54 = temp.53
+temp.55 = temp.26.y.54
+b.56 = temp.55
+temp.57 = a.50
+c.58 = temp.57
+temp.59 = b.56
+d.60 = temp.59
 return 
 
 
@@ -40,28 +44,32 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.28 = int 1
-temp.29 = int 2
-temp.5.x.30 = temp.28
-temp.5.y.31 = temp.29
-temp.32 = temp.28
-p.x.33 = temp.28
-temp.34 = temp.29
-p.y.35 = temp.29
-temp.36 = temp.28
-temp.15.x.37 = temp.28
-temp.38 = temp.29
-temp.15.y.39 = temp.29
-temp.40 = temp.28
-a.41 = temp.28
-temp.42 = temp.28
-temp.21.x.43 = temp.28
-temp.44 = temp.29
-temp.21.y.45 = temp.29
-temp.46 = temp.29
-b.47 = temp.29
-temp.48 = temp.28
-c.49 = temp.28
-temp.50 = temp.29
-d.51 = temp.29
+temp.33 = int 1
+temp.34 = int 2
+temp.6.x.35 = temp.33
+temp.6.y.36 = temp.34
+temp.37 = temp.33
+temp.5.x.38 = temp.33
+temp.39 = temp.34
+temp.5.y.40 = temp.34
+temp.41 = temp.33
+p.x.42 = temp.33
+temp.43 = temp.34
+p.y.44 = temp.34
+temp.45 = temp.33
+temp.20.x.46 = temp.33
+temp.47 = temp.34
+temp.20.y.48 = temp.34
+temp.49 = temp.33
+a.50 = temp.33
+temp.51 = temp.33
+temp.26.x.52 = temp.33
+temp.53 = temp.34
+temp.26.y.54 = temp.34
+temp.55 = temp.34
+b.56 = temp.34
+temp.57 = temp.33
+c.58 = temp.33
+temp.59 = temp.34
+d.60 = temp.34
 return

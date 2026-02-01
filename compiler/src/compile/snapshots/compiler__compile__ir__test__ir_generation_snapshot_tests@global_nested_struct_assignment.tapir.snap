@@ -7,44 +7,52 @@ input_file: compiler/src/compile/snapshot_tests/ir/global_nested_struct_assignme
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.11 = int 1
-temp.12 = int 2
-temp.8.x.9 = temp.11
-temp.8.y.10 = temp.12
-temp.15 = temp.8.x.9
-temp.7.x.13 = temp.15
-temp.16 = temp.8.y.10
-temp.7.y.14 = temp.16
-temp.21 = int 100
-temp.22 = int 50
-temp.18.x.19 = temp.21
-temp.18.y.20 = temp.22
-temp.25 = temp.18.x.19
-temp.17.x.23 = temp.25
-temp.26 = temp.18.y.20
-temp.17.y.24 = temp.26
-temp.0.origin.x.2 = temp.7.x.13
-temp.0.origin.y.3 = temp.7.y.14
-temp.0.size.x.5 = temp.17.x.23
-temp.0.size.y.6 = temp.17.y.24
-temp.27 = temp.0.origin.x.2
-setglobal 1, temp.27
-temp.28 = temp.0.origin.y.3
-setglobal 2, temp.28
-temp.29 = temp.0.size.x.5
-setglobal 3, temp.29
-temp.30 = temp.0.size.y.6
-setglobal 4, temp.30
-getglobal temp.36, 1
-temp.33.x.34 = temp.36
-getglobal temp.37, 2
-temp.33.y.35 = temp.37
-temp.32 = temp.33.x.34
-temp.31 = extern test(temp.32)
-getglobal temp.43, 3
-temp.40.x.41 = temp.43
-getglobal temp.44, 4
-temp.40.y.42 = temp.44
-temp.39 = temp.40.y.42
-temp.38 = extern test(temp.39)
+temp.12 = int 1
+temp.13 = int 2
+temp.9.x.10 = temp.12
+temp.9.y.11 = temp.13
+temp.16 = temp.9.x.10
+temp.8.x.14 = temp.16
+temp.17 = temp.9.y.11
+temp.8.y.15 = temp.17
+temp.22 = int 100
+temp.23 = int 50
+temp.19.x.20 = temp.22
+temp.19.y.21 = temp.23
+temp.26 = temp.19.x.20
+temp.18.x.24 = temp.26
+temp.27 = temp.19.y.21
+temp.18.y.25 = temp.27
+temp.1.origin.x.3 = temp.8.x.14
+temp.1.origin.y.4 = temp.8.y.15
+temp.1.size.x.6 = temp.18.x.24
+temp.1.size.y.7 = temp.18.y.25
+temp.34 = temp.1.origin.x.3
+temp.0.origin.x.29 = temp.34
+temp.35 = temp.1.origin.y.4
+temp.0.origin.y.30 = temp.35
+temp.36 = temp.1.size.x.6
+temp.0.size.x.32 = temp.36
+temp.37 = temp.1.size.y.7
+temp.0.size.y.33 = temp.37
+temp.38 = temp.0.origin.x.29
+setglobal 1, temp.38
+temp.39 = temp.0.origin.y.30
+setglobal 2, temp.39
+temp.40 = temp.0.size.x.32
+setglobal 3, temp.40
+temp.41 = temp.0.size.y.33
+setglobal 4, temp.41
+getglobal temp.47, 1
+temp.44.x.45 = temp.47
+getglobal temp.48, 2
+temp.44.y.46 = temp.48
+temp.43 = temp.44.x.45
+temp.42 = extern test(temp.43)
+getglobal temp.54, 3
+temp.51.x.52 = temp.54
+getglobal temp.55, 4
+temp.51.y.53 = temp.55
+temp.50 = temp.51.y.53
+temp.49 = extern test(temp.50)
 return
