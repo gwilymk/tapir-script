@@ -51,6 +51,11 @@ fn int.max(self, other: int) -> int {
     return self;
 }
 
+## Clamps self to the range [min, max].
+fn int.clamp(self, min: int, max: int) -> int {
+    return self.max(min).min(max);
+}
+
 ## Returns the absolute value.
 fn fix.abs(self) -> fix {
     if self < 0.0 {
@@ -76,6 +81,29 @@ fn fix.max(self, other: fix) -> fix {
     }
 
     return self;
+}
+
+## Clamps self to the range [min, max].
+fn fix.clamp(self, min: fix, max: fix) -> fix {
+    return self.max(min).min(max);
+}
+
+## Linearly interpolates between self and other by t (0.0 to 1.0).
+fn fix.lerp(self, other: fix, t: fix) -> fix {
+    return self + (other - self) * t;
+}
+
+## Returns the interpolation factor t such that lerp(self, other, t) == value.
+fn fix.inverse_lerp(self, other: fix, value: fix) -> fix {
+    return (value - self) / (other - self);
+}
+
+## Smooth Hermite interpolation between self and other by t (0.0 to 1.0).
+## Produces smoother transitions than lerp with gradual acceleration and deceleration.
+fn fix.smoothstep(self, other: fix, t: fix) -> fix {
+    var clamped = t.clamp(0.0, 1.0);
+    var smooth = clamped * clamped * (3.0 - 2.0 * clamped);
+    return self.lerp(other, smooth);
 }
 
 ## A 2D vector with integer components.
@@ -234,4 +262,21 @@ fn fix2.normalise(self) -> fix2 {
 ## Returns an approximate unit vector (faster but less accurate).
 fn fix2.fast_normalise(self) -> fix2 {
     return self / self.fast_magnitude();
+}
+
+## Clamps each component to the range [min, max].
+fn fix2.clamp(self, min: fix, max: fix) -> fix2 {
+    return fix2(self.x.clamp(min, max), self.y.clamp(min, max));
+}
+
+## Linearly interpolates between self and other by t (0.0 to 1.0).
+fn fix2.lerp(self, other: fix2, t: fix) -> fix2 {
+    return self + (other - self) * t;
+}
+
+## Smooth Hermite interpolation between self and other by t (0.0 to 1.0).
+fn fix2.smoothstep(self, other: fix2, t: fix) -> fix2 {
+    var clamped = t.clamp(0.0, 1.0);
+    var smooth = clamped * clamped * (3.0 - 2.0 * clamped);
+    return self.lerp(other, smooth);
 }
