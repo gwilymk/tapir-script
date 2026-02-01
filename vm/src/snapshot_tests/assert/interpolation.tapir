@@ -1,0 +1,62 @@
+extern fn assert(value: bool);
+
+# int.clamp
+var i1 = 5;
+assert(i1.clamp(0, 10) == 5);
+assert(i1.clamp(6, 10) == 6);
+assert(i1.clamp(0, 3) == 3);
+var i2 = 0 - 5;
+assert(i2.clamp(0 - 10, 10) == 0 - 5);
+assert(i2.clamp(0 - 3, 10) == 0 - 3);
+assert(i2.clamp(0 - 10, 0 - 6) == 0 - 6);
+
+# fix.clamp - the bug that was fixed
+var f1 = 0.5;
+assert(f1.clamp(0.0, 1.0) == 0.5);
+assert(f1.clamp(0.6, 1.0) == 0.6);
+assert(f1.clamp(0.0, 0.3) == 0.3);
+
+var f2 = 0.0;
+assert(f2.clamp(0.0 - 2.0, 2.0) == 0.0);
+
+var f3 = 5.0;
+assert(f3.clamp(0.0 - 2.0, 2.0) == 2.0);
+
+var f4 = 0.0 - 5.0;
+assert(f4.clamp(0.0 - 2.0, 2.0) == 0.0 - 2.0);
+
+# fix.lerp
+var a = 0.0;
+var b = 10.0;
+assert(a.lerp(b, 0.0) == 0.0);
+assert(a.lerp(b, 1.0) == 10.0);
+assert(a.lerp(b, 0.5) == 5.0);
+assert(a.lerp(b, 0.25) == 2.5);
+
+# fix.inverse_lerp
+assert(a.inverse_lerp(b, 0.0) == 0.0);
+assert(a.inverse_lerp(b, 10.0) == 1.0);
+assert(a.inverse_lerp(b, 5.0) == 0.5);
+
+# fix.smoothstep (just check it's in valid range)
+var s1 = a.smoothstep(b, 0.0);
+assert(s1 == 0.0);
+var s2 = a.smoothstep(b, 1.0);
+assert(s2 == 10.0);
+var s3 = a.smoothstep(b, 0.5);
+# smoothstep(0.5) = 0.5 * 0.5 * (3 - 2 * 0.5) = 0.25 * 2 = 0.5
+# so result = lerp(0, 10, 0.5) = 5
+assert(s3 == 5.0);
+
+# fix2.clamp
+var v1 = fix2(0.5, 1.5);
+var v1c = v1.clamp(0.0, 1.0);
+assert(v1c.x == 0.5);
+assert(v1c.y == 1.0);
+
+# fix2.lerp
+var va = fix2(0.0, 0.0);
+var vb = fix2(10.0, 20.0);
+var vl = va.lerp(vb, 0.5);
+assert(vl.x == 5.0);
+assert(vl.y == 10.0);

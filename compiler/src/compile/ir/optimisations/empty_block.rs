@@ -80,20 +80,49 @@ pub fn remove_empty_blocks(f: &mut TapIrFunction) -> OptimisationResult {
             } => {
                 // Conditional jumps can only be replaced if the target wasn't doing its own conditional jump
                 // or its own return.
-                if let Some(BlockExitInstr::JumpToBlock(new_target)) = empty_blocks.get(if_true) {
-                    // Only redirect if it actually changes the target
-                    if if_true != new_target {
-                        add_replacement!(*if_true);
-                        *if_true = *new_target;
-                    }
+                let new_true_target = if let Some(BlockExitInstr::JumpToBlock(new_target)) =
+                    empty_blocks.get(if_true)
+                {
+                    Some(*new_target)
+                } else {
+                    None
+                };
+
+                let new_false_target = if let Some(BlockExitInstr::JumpToBlock(new_target)) =
+                    empty_blocks.get(if_false)
+                {
+                    Some(*new_target)
+                } else {
+                    None
+                };
+
+                // Don't collapse if both branches would end up at the same destination.
+                // This would corrupt phi nodes that distinguish between the two branches,
+                // since both phi sources would then appear to come from the same block.
+                let would_merge_to_same = match (new_true_target, new_false_target) {
+                    (Some(t), Some(f)) => t == f,
+                    (Some(t), None) => t == *if_false,
+                    (None, Some(f)) => *if_true == f,
+                    (None, None) => false,
+                };
+
+                if would_merge_to_same {
+                    // Skip this optimization to preserve phi semantics
+                    continue;
                 }
 
-                if let Some(BlockExitInstr::JumpToBlock(new_target)) = empty_blocks.get(if_false) {
-                    // Only redirect if it actually changes the target
-                    if if_false != new_target {
-                        add_replacement!(*if_false);
-                        *if_false = *new_target;
-                    }
+                if let Some(new_target) = new_true_target
+                    && if_true != &new_target
+                {
+                    add_replacement!(*if_true);
+                    *if_true = new_target;
+                }
+
+                if let Some(new_target) = new_false_target
+                    && if_false != &new_target
+                {
+                    add_replacement!(*if_false);
+                    *if_false = new_target;
                 }
             }
             BlockExitInstr::Return(_) => {}

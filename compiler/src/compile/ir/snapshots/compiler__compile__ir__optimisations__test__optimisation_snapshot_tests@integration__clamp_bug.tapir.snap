@@ -1,0 +1,331 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/integration/clamp_bug.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.14 = max_test(temp.12, temp.13)
+storeprop temp.14, 1
+return 
+
+=======================
+fn max_test(a.2, b.3) -> fix
+
+---- block 3 ----
+temp.15 = a.2
+temp.16 = b.3
+temp.17 = temp.15 < temp.16
+conditional_jump temp.17 0 1
+
+---- block 0 ----
+temp.18 = b.3
+return temp.18
+
+---- block 1 ----
+jmp 2
+
+---- block 2 ----
+temp.19 = a.2
+return temp.19
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.14 = max_test(temp.12, temp.13)
+storeprop temp.14, 1
+return 
+
+=======================
+fn max_test(a.2, b.3) -> fix
+
+---- block 3 ----
+temp.15 = a.2
+temp.16 = b.3
+temp.17 = temp.15 < temp.16
+conditional_jump temp.17 0 1
+
+---- block 0 ----
+temp.18 = b.3
+return temp.18
+
+---- block 1 ----
+temp.19 = a.2
+jmp 2
+
+---- block 2 ----
+return temp.19
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.14 = max_test(temp.12, temp.13)
+storeprop temp.14, 1
+return 
+
+=======================
+fn max_test(a.2, b.3) -> fix
+
+---- block 3 ----
+temp.15 = a.2
+temp.16 = b.3
+temp.17 = a.2 < b.3
+conditional_jump temp.17 0 1
+
+---- block 0 ----
+temp.18 = b.3
+return b.3
+
+---- block 1 ----
+temp.19 = a.2
+jmp 2
+
+---- block 2 ----
+return a.2
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.14 = max_test(temp.12, temp.13)
+storeprop temp.14, 1
+return 
+
+=======================
+fn max_test(a.2, b.3) -> fix
+
+---- block 3 ----
+temp.17 = a.2 < b.3
+conditional_jump temp.17 0 1
+
+---- block 0 ----
+return b.3
+
+---- block 1 ----
+jmp 2
+
+---- block 2 ----
+return a.2
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.14 = max_test(temp.12, temp.13)
+storeprop temp.14, 1
+return 
+
+=======================
+fn max_test(a.2, b.3) -> fix
+
+---- block 3 ----
+temp.17 = a.2 < b.3
+conditional_jump temp.17 0 2
+
+---- block 0 ----
+return b.3
+
+---- block 2 ----
+return a.2
+
+
+----------- inline_small_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+jmp 2
+
+---- block 2 ----
+temp.21 = temp.12 < temp.13
+conditional_jump temp.21 3 4
+
+---- block 3 ----
+jmp 6
+
+---- block 4 ----
+jmp 6
+
+---- block 6 ----
+temp.20 = φ(temp.13 from 3, temp.12 from 4)
+temp.14 = temp.20
+jmp 1
+
+---- block 1 ----
+storeprop temp.14, 1
+return 
+
+=======================
+fn max_test(a.2, b.3) -> fix
+
+---- block 3 ----
+temp.17 = a.2 < b.3
+conditional_jump temp.17 0 2
+
+---- block 0 ----
+return b.3
+
+---- block 2 ----
+return a.2
+
+
+----------- remove_unreferenced_functions -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+jmp 2
+
+---- block 2 ----
+temp.21 = temp.12 < temp.13
+conditional_jump temp.21 3 4
+
+---- block 3 ----
+jmp 6
+
+---- block 4 ----
+jmp 6
+
+---- block 6 ----
+temp.20 = φ(temp.13 from 3, temp.12 from 4)
+temp.14 = temp.20
+jmp 1
+
+---- block 1 ----
+storeprop temp.14, 1
+return 
+
+
+----------- simplify_blocks -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.21 = temp.12 < temp.13
+jmp 2
+
+---- block 2 ----
+conditional_jump temp.21 3 4
+
+---- block 3 ----
+jmp 6
+
+---- block 4 ----
+jmp 6
+
+---- block 6 ----
+temp.20 = φ(temp.13 from 3, temp.12 from 4)
+temp.14 = temp.20
+storeprop temp.14, 1
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- copy_propagation -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.21 = temp.12 < temp.13
+jmp 2
+
+---- block 2 ----
+conditional_jump temp.21 3 4
+
+---- block 3 ----
+jmp 6
+
+---- block 4 ----
+jmp 6
+
+---- block 6 ----
+temp.20 = φ(temp.13 from 3, temp.12 from 4)
+temp.14 = temp.20
+storeprop temp.20, 1
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.21 = temp.12 < temp.13
+jmp 2
+
+---- block 2 ----
+conditional_jump temp.21 3 4
+
+---- block 3 ----
+jmp 6
+
+---- block 4 ----
+jmp 6
+
+---- block 6 ----
+temp.20 = φ(temp.13 from 3, temp.12 from 4)
+storeprop temp.20, 1
+jmp 1
+
+---- block 1 ----
+return 
+
+
+----------- empty_block -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.12, 0
+temp.13 = fix 1
+temp.21 = temp.12 < temp.13
+conditional_jump temp.21 3 4
+
+---- block 3 ----
+jmp 6
+
+---- block 4 ----
+jmp 6
+
+---- block 6 ----
+temp.20 = φ(temp.13 from 3, temp.12 from 4)
+storeprop temp.20, 1
+return

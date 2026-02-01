@@ -1,7 +1,7 @@
 ---
-source: crates/tapir-script/compiler/src/compile/ir/optimisations.rs
+source: compiler/src/compile/ir/optimisations.rs
 expression: output
-input_file: crates/tapir-script/compiler/src/compile/ir/snapshot_tests/optimisations/empty_block/nested_if.tapir
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/empty_block/nested_if.tapir
 ---
 ----------- before -------------
 =======================
@@ -53,7 +53,7 @@ conditional_jump temp.12 0 2
 
 ---- block 0 ----
 temp.13 = y.11
-conditional_jump temp.13 6 6
+conditional_jump temp.13 4 5
 
 ---- block 2 ----
 x.14 = φ(x.9 from 1, x.15 from 6, x.9 from 3)
@@ -61,6 +61,12 @@ temp.16 = x.14
 z.17 = temp.16
 return 
 
+---- block 4 ----
+jmp 6
+
+---- block 5 ----
+jmp 6
+
 ---- block 6 ----
-x.15 = φ(x.9 from 4, x.9 from 5, x.9 from 0, x.9 from 0)
+x.15 = φ(x.9 from 4, x.9 from 5)
 jmp 2

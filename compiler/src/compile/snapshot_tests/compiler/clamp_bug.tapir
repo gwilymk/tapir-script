@@ -1,0 +1,12 @@
+# optimise
+property input: fix;
+property result: fix;
+
+fn max_test(a: fix, b: fix) -> fix {
+    if a < b {
+        return b;
+    }
+    return a;
+}
+
+result = max_test(input, 1.0);
