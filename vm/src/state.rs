@@ -195,7 +195,8 @@ impl State {
                     type1!(id, first_arg);
 
                     let stack_to_copy_start = self.stack_offset + usize::from(first_arg + 1);
-                    properties.add_event(id, &self.stack[stack_to_copy_start..]);
+                    let args = self.stack.get(stack_to_copy_start..).unwrap_or(&[]);
+                    properties.add_event(id, args);
                 }
 
                 O::JumpIf => {

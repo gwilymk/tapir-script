@@ -1,0 +1,33 @@
+# Tests for trigger statements
+extern fn assert(value: bool);
+
+# Track execution to ensure triggers don't crash
+global after_trigger_no_args = false;
+global after_trigger_with_args = false;
+
+# Trigger with no arguments (this was causing a panic)
+trigger EmptyTrigger;
+after_trigger_no_args = true;
+assert(after_trigger_no_args);
+
+# Trigger with one argument
+trigger SingleArg(42);
+assert(after_trigger_no_args);
+
+# Trigger with multiple arguments
+trigger MultipleArgs(1, 2, 3);
+after_trigger_with_args = true;
+assert(after_trigger_with_args);
+
+# Trigger inside a function
+fn do_trigger() {
+    trigger InsideFunction;
+}
+
+do_trigger();
+assert(after_trigger_with_args);
+
+# Trigger with expression arguments
+var x = 10;
+trigger WithExpression(x + 5, x * 2);
+assert(x == 10);
