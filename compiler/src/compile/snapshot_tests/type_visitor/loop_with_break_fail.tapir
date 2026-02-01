@@ -19,3 +19,17 @@ fn nested() -> int {
         return 1;
     }
 }
+
+fn multiple_paths() -> int {
+    loop {
+        if true {
+            break;
+        }
+
+        if true {
+            break;
+        }
+
+        return 1;
+    }
+}

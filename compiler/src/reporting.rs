@@ -93,6 +93,7 @@ pub enum DiagnosticMessage {
     FunctionDoesNotHaveReturn {
         name: String,
     },
+    FunctionCouldReturnDueToThis,
     BreakOrContinueOutsideOfLoop,
     DivideByZero,
     DivisionOccursHere,
@@ -381,6 +382,7 @@ impl DiagnosticMessage {
             DiagnosticMessage::FunctionDoesNotHaveReturn { name } => {
                 format!("Function {name} should return results, but not all branches return.")
             }
+            DiagnosticMessage::FunctionCouldReturnDueToThis => "Function could return due to this".into(),
             DiagnosticMessage::BreakOrContinueOutsideOfLoop => {
                 "`break` or `continue` must be within a loop".into()
             }

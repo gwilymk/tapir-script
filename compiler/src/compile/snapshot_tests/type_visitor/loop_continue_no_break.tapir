@@ -1,0 +1,11 @@
+fn continue_no_break() -> int {
+    loop {
+        continue;
+    }
+}
+
+fn continue_no_break_() -> int {
+    loop {
+        continue;
+    }
+}

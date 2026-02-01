@@ -1,0 +1,21 @@
+fn bar() -> int {
+    loop { break; }
+    return 1;
+}
+
+fn bar2() -> int {
+    loop {
+        if true {
+            break;
+        }
+    }
+
+    return 1;
+}
+
+fn break_after_return() -> int {
+    loop {
+        return 1;
+        break;
+    }
+}

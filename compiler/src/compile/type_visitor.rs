@@ -797,15 +797,20 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         if !function.return_types.types.is_empty()
             && block_analysis_result != BlockAnalysisResult::AllBranchesReturn
         {
-            ErrorKind::FunctionDoesNotHaveReturn {
+            let mut error = ErrorKind::FunctionDoesNotHaveReturn {
                 name: function.name.to_string(),
             }
             .at(function.span, DiagnosticMessage::FunctionDefinedHere)
             .label(
                 function.return_types.span,
                 DiagnosticMessage::FunctionReturnsResults,
-            )
-            .emit(diagnostics);
+            );
+
+            if let Some(span) = block_analysis_result.span() {
+                error = error.label(span, DiagnosticMessage::FunctionCouldReturnDueToThis);
+            }
+
+            error.emit(diagnostics);
         }
     }
 
@@ -816,7 +821,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
         expected_return_type: &FunctionReturn,
         diagnostics: &mut Diagnostics,
     ) -> BlockAnalysisResult {
-        let mut escape_kind = BlockAnalysisResult::AllBranchesReturn;
+        let mut escape_kind = BlockAnalysisResult::ContainsNonReturningBranch(None);
 
         for statement in ast.iter_mut() {
             match &mut statement.kind {
@@ -837,7 +842,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     }
                 }
                 ast::StatementKind::Break => {
-                    return BlockAnalysisResult::SomeBranchBreaks;
+                    return BlockAnalysisResult::SomeBranchBreaks(statement.span);
                 }
                 ast::StatementKind::Continue
                 | ast::StatementKind::Nop
@@ -896,14 +901,18 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     let rhs_analysis_result =
                         self.visit_block(false_block, symtab, expected_return_type, diagnostics);
 
-                    if lhs_analysis_result == BlockAnalysisResult::AllBranchesReturn
-                        && rhs_analysis_result == BlockAnalysisResult::AllBranchesReturn
-                    {
-                        return BlockAnalysisResult::AllBranchesReturn;
-                    } else if lhs_analysis_result == BlockAnalysisResult::SomeBranchBreaks
-                        || rhs_analysis_result == BlockAnalysisResult::SomeBranchBreaks
-                    {
-                        escape_kind = BlockAnalysisResult::SomeBranchBreaks;
+                    match (lhs_analysis_result, rhs_analysis_result) {
+                        (
+                            BlockAnalysisResult::AllBranchesReturn,
+                            BlockAnalysisResult::AllBranchesReturn,
+                        ) => {
+                            return BlockAnalysisResult::AllBranchesReturn;
+                        }
+                        (BlockAnalysisResult::SomeBranchBreaks(span), _)
+                        | (_, BlockAnalysisResult::SomeBranchBreaks(span)) => {
+                            escape_kind = BlockAnalysisResult::SomeBranchBreaks(span);
+                        }
+                        _ => {}
                     }
                 }
                 ast::StatementKind::Return { values } => {
@@ -960,7 +969,14 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         }
                     }
 
-                    return escape_kind;
+                    if matches!(
+                        escape_kind,
+                        BlockAnalysisResult::ContainsNonReturningBranch(_)
+                    ) {
+                        return BlockAnalysisResult::AllBranchesReturn;
+                    } else {
+                        return escape_kind;
+                    }
                 }
                 ast::StatementKind::Expression { expression } => {
                     // Type check the expression; the result is discarded.
@@ -985,12 +1001,15 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                         BlockAnalysisResult::AllBranchesReturn => {
                             return BlockAnalysisResult::AllBranchesReturn;
                         }
-                        BlockAnalysisResult::ContainsNonReturningBranch => {
+                        BlockAnalysisResult::ContainsNonReturningBranch(_) => {
                             if statement.meta.has::<LoopContainsNoBreak>() {
                                 return BlockAnalysisResult::AllBranchesReturn;
                             }
                         }
-                        BlockAnalysisResult::SomeBranchBreaks => {}
+                        BlockAnalysisResult::SomeBranchBreaks(span) => {
+                            escape_kind =
+                                BlockAnalysisResult::ContainsNonReturningBranch(Some(span));
+                        }
                     }
                 }
                 ast::StatementKind::Block { block } => {
@@ -1058,11 +1077,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             }
         }
 
-        if escape_kind == BlockAnalysisResult::SomeBranchBreaks {
-            BlockAnalysisResult::SomeBranchBreaks
-        } else {
-            BlockAnalysisResult::ContainsNonReturningBranch
-        }
+        escape_kind
     }
 
     pub fn into_type_table(
@@ -1591,8 +1606,18 @@ fn is_overloadable_operator(op: BinaryOperator) -> bool {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum BlockAnalysisResult {
     AllBranchesReturn,
-    SomeBranchBreaks,
-    ContainsNonReturningBranch,
+    SomeBranchBreaks(Span),
+    ContainsNonReturningBranch(Option<Span>),
+}
+
+impl BlockAnalysisResult {
+    fn span(self) -> Option<Span> {
+        match self {
+            BlockAnalysisResult::AllBranchesReturn => None,
+            BlockAnalysisResult::SomeBranchBreaks(span) => Some(span),
+            BlockAnalysisResult::ContainsNonReturningBranch(span) => span,
+        }
+    }
 }
 
 #[derive(Clone, Serialize)]

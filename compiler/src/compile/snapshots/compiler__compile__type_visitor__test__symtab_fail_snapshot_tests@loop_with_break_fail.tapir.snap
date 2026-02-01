@@ -11,6 +11,10 @@ input_file: compiler/src/compile/snapshot_tests/type_visitor/loop_with_break_fai
    │     ╰──────────── Function defined here
    │              │   
    │              ╰─── Function returns results
+   │ 
+ 4 │             break;
+   │             ───┬──  
+   │                ╰──── Function could return due to this
 ───╯
 [E0015] Error: Function nested should return results, but not all branches return.
     ╭─[ loop_with_break_fail.tapir:11:4 ]
@@ -20,4 +24,21 @@ input_file: compiler/src/compile/snapshot_tests/type_visitor/loop_with_break_fai
     │       ╰───────────── Function defined here
     │                 │   
     │                 ╰─── Function returns results
+    │ 
+ 15 │                 break;
+    │                 ───┬──  
+    │                    ╰──── Function could return due to this
+────╯
+[E0015] Error: Function multiple_paths should return results, but not all branches return.
+    ╭─[ loop_with_break_fail.tapir:23:4 ]
+    │
+ 23 │ fn multiple_paths() -> int {
+    │    ───────┬──────      ─┬─  
+    │           ╰───────────────── Function defined here
+    │                         │   
+    │                         ╰─── Function returns results
+    │ 
+ 30 │             break;
+    │             ───┬──  
+    │                ╰──── Function could return due to this
 ────╯
