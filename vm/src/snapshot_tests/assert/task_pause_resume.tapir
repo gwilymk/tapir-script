@@ -1,0 +1,121 @@
+# Tests for task pause and resume
+
+extern fn assert(value: bool);
+
+global task_ran_count = 0;
+
+fn counting_task() {
+    task_ran_count = task_ran_count + 1;
+    wait;
+    task_ran_count = task_ran_count + 1;
+    wait;
+    task_ran_count = task_ran_count + 1;
+}
+
+# Test 1: Basic pause prevents execution
+task_ran_count = 0;
+var t1 = spawn counting_task();
+t1.pause();
+wait 5;
+assert(task_ran_count == 0);  # Paused immediately, never ran
+
+# Test 2: Resume continues execution
+t1.resume();
+wait;
+assert(task_ran_count == 1);  # Ran first iteration after resume
+wait;
+assert(task_ran_count == 2);  # Ran second iteration
+wait;
+assert(task_ran_count == 3);  # Ran third iteration
+# t1 now finished
+
+# Test 3: Pause after task has started
+task_ran_count = 0;
+var t2 = spawn counting_task();
+wait;  # Let it run once
+assert(task_ran_count == 1);
+t2.pause();
+wait 5;
+assert(task_ran_count == 1);  # Stayed at 1, didn't progress
+t2.resume();
+wait;
+assert(task_ran_count == 2);  # Continued from where it was
+wait;
+assert(task_ran_count == 3);  # Task finishes
+# t2 now finished
+
+# Test 4: Double pause is a no-op
+task_ran_count = 0;
+var t3 = spawn counting_task();
+t3.pause();
+t3.pause();  # Should be a no-op
+wait 3;
+assert(task_ran_count == 0);
+t3.resume();
+wait;
+assert(task_ran_count == 1);
+t3.cancel();  # Clean up
+
+# Test 5: Double resume is a no-op
+task_ran_count = 0;
+var t4 = spawn counting_task();
+t4.pause();
+t4.resume();
+t4.resume();  # Should be a no-op
+wait;
+assert(task_ran_count == 1);
+t4.cancel();  # Clean up
+
+# Test 6: Resume on running task is no-op
+task_ran_count = 0;
+var t5 = spawn counting_task();
+t5.resume();  # Already running, should be no-op
+wait;
+assert(task_ran_count == 1);
+t5.cancel();  # Clean up
+
+# Test 7: Cancel while paused
+task_ran_count = 0;
+var t6 = spawn counting_task();
+wait;  # Let it run once
+assert(task_ran_count == 1);
+t6.pause();
+t6.cancel();  # Cancel while paused
+t6.resume();  # Trying to resume cancelled task
+wait 5;
+assert(task_ran_count == 1);  # Should not have run more
+
+# Test 8: Pause/resume on empty task handle (task ID 0) is no-op
+global empty_task: task;
+empty_task.pause();  # Should do nothing
+empty_task.resume();  # Should do nothing
+
+# Test 9: Pause/resume on finished task is no-op
+task_ran_count = 0;
+var t7 = spawn counting_task();
+wait 5;  # Let it finish
+assert(task_ran_count == 3);  # Finished
+t7.pause();  # Task already gone
+t7.resume();  # Task already gone
+# No assertion needed, just shouldn't crash
+
+# Test 10: Self-pause (task pauses itself)
+global self_pause_count = 0;
+global self_pause_handle: task;
+
+fn self_pausing_task() {
+    self_pause_count = 1;
+    self_pause_handle.pause();  # Pause self
+    self_pause_count = 2;  # Should not run until resumed
+    wait;
+    self_pause_count = 3;
+}
+
+self_pause_handle = spawn self_pausing_task();
+wait 3;
+assert(self_pause_count == 1);  # Paused after first assignment
+self_pause_handle.resume();
+wait;
+assert(self_pause_count == 2);  # Continued after resume
+wait;
+assert(self_pause_count == 3);  # Finished

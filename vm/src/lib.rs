@@ -30,10 +30,17 @@ impl<'a> Vm<'a> {
     fn run_until_wait(&mut self, properties: &mut dyn ObjectSafeProperties) {
         let mut state_index = 0;
         while state_index < self.states.len() {
-            // Check if this state has been cancelled
-            if self.states[state_index].cancelled {
-                self.states.swap_remove(state_index);
-                continue;
+            // Check task status
+            match self.states[state_index].status {
+                state::TaskStatus::Cancelled => {
+                    self.states.swap_remove(state_index);
+                    continue;
+                }
+                state::TaskStatus::Paused => {
+                    state_index += 1;
+                    continue;
+                }
+                state::TaskStatus::Running => {}
             }
 
             match self.states[state_index].run_until_wait(
@@ -60,6 +67,17 @@ impl<'a> Vm<'a> {
                     // Continue running same state (don't increment)
                     // If we cancelled self, we'll catch it on next iteration
                 }
+                state::RunResult::Pause(task_id) => {
+                    // Find the state with matching task_id and mark it as paused
+                    self.pause_task(task_id);
+                    // Continue running same state (don't increment)
+                    // If we paused self, we'll catch it on next iteration
+                }
+                state::RunResult::Resume(task_id) => {
+                    // Find the state with matching task_id and mark it as not paused
+                    self.resume_task(task_id);
+                    // Continue running same state (don't increment)
+                }
             }
         }
 
@@ -75,8 +93,44 @@ impl<'a> Vm<'a> {
         let task_id = task_id as u32;
         for state in &mut self.states {
             if state.task_id == task_id {
-                state.cancelled = true;
+                state.status = state::TaskStatus::Cancelled;
                 return true;
+            }
+        }
+        false // Task not found (already finished)
+    }
+
+    /// Pause a task by its task ID. Returns true if a task was found and paused.
+    /// No-op if task_id is 0 (empty sentinel) or if no matching task is found.
+    pub fn pause_task(&mut self, task_id: i32) -> bool {
+        if task_id <= 0 {
+            return false; // 0 and negative IDs are invalid
+        }
+        let task_id = task_id as u32;
+        for state in &mut self.states {
+            if state.task_id == task_id {
+                state.status = state::TaskStatus::Paused;
+                return true;
+            }
+        }
+        false // Task not found (already finished)
+    }
+
+    /// Resume a task by its task ID. Returns true if a task was found and resumed.
+    /// No-op if task_id is 0 (empty sentinel), if no matching task is found, or if the task is cancelled.
+    pub fn resume_task(&mut self, task_id: i32) -> bool {
+        if task_id <= 0 {
+            return false; // 0 and negative IDs are invalid
+        }
+        let task_id = task_id as u32;
+        for state in &mut self.states {
+            if state.task_id == task_id {
+                // Only resume if paused (don't resurrect cancelled tasks)
+                if state.status == state::TaskStatus::Paused {
+                    state.status = state::TaskStatus::Running;
+                    return true;
+                }
+                return false;
             }
         }
         false // Task not found (already finished)

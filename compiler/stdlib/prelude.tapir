@@ -27,6 +27,12 @@ builtin(-1) fn frame() -> int;
 ## Cancels this task, stopping its execution.
 builtin(-2) fn task.cancel(self);
 
+## Pauses this task, suspending its execution until resumed.
+builtin(-3) fn task.pause(self);
+
+## Resumes a paused task, allowing it to continue execution.
+builtin(-4) fn task.resume(self);
+
 ## Returns the absolute value.
 fn int.abs(self) -> int {
     if self < 0 {

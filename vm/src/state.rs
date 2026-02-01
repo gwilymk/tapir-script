@@ -5,6 +5,13 @@ use alloc::{boxed::Box, vec::Vec};
 
 type Fix = Num<i32, 8>;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum TaskStatus {
+    Running,
+    Paused,
+    Cancelled,
+}
+
 #[derive(Debug)]
 pub(crate) struct State {
     pc: usize,
@@ -12,8 +19,8 @@ pub(crate) struct State {
     stack_offset: usize,
     /// Task ID for this thread (0 for main thread or threads without handles)
     pub task_id: u32,
-    /// Whether this state has been cancelled
-    pub cancelled: bool,
+    /// Current status of this task
+    pub status: TaskStatus,
     /// Remaining frames to wait (0 = not waiting)
     wait_remaining: i32,
 }
@@ -27,6 +34,10 @@ pub(crate) enum RunResult {
     },
     /// Cancel a task by its task ID
     Cancel(i32),
+    /// Pause a task by its task ID
+    Pause(i32),
+    /// Resume a task by its task ID
+    Resume(i32),
 }
 
 impl State {
@@ -36,7 +47,7 @@ impl State {
             stack,
             stack_offset: 0,
             task_id: 0,
-            cancelled: false,
+            status: TaskStatus::Running,
             wait_remaining: 0,
         }
     }
@@ -47,7 +58,7 @@ impl State {
             stack,
             stack_offset: 0,
             task_id,
-            cancelled: false,
+            status: TaskStatus::Running,
             wait_remaining: 0,
         }
     }
@@ -259,6 +270,18 @@ impl State {
                     if builtin_id == -2 {
                         let task_id = self.get_reg(first_arg);
                         return RunResult::Cancel(task_id);
+                    }
+
+                    // Special case: builtin ID -3 is task.pause()
+                    if builtin_id == -3 {
+                        let task_id = self.get_reg(first_arg);
+                        return RunResult::Pause(task_id);
+                    }
+
+                    // Special case: builtin ID -4 is task.resume()
+                    if builtin_id == -4 {
+                        let task_id = self.get_reg(first_arg);
+                        return RunResult::Resume(task_id);
                     }
 
                     let args_start = self.stack_offset + usize::from(first_arg);
