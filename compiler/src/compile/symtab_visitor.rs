@@ -1771,7 +1771,9 @@ mod test {
 
             let mut diagnostics = Diagnostics::new(file_id, path.file_name().unwrap(), &input);
 
-            let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+            let mut script = parser
+                .parse(file_id, &mut diagnostics, lexer.iter())
+                .unwrap();
 
             // Struct registration and type resolution
             let mut struct_registry = StructRegistry::default();
@@ -1998,7 +2000,9 @@ mod test {
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
 
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+        let mut script = parser
+            .parse(file_id, &mut diagnostics, lexer.iter())
+            .unwrap();
 
         // Struct registration and type resolution
         let mut struct_registry = StructRegistry::default();
@@ -2144,7 +2148,9 @@ mod test {
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+        let mut script = parser
+            .parse(file_id, &mut diagnostics, lexer.iter())
+            .unwrap();
 
         let mut struct_registry = StructRegistry::default();
         let struct_names =
@@ -2312,7 +2318,9 @@ mod test {
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+        let mut script = parser
+            .parse(file_id, &mut diagnostics, lexer.iter())
+            .unwrap();
 
         let mut struct_registry = StructRegistry::default();
         let struct_names =
@@ -2375,7 +2383,9 @@ mod test {
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+        let mut script = parser
+            .parse(file_id, &mut diagnostics, lexer.iter())
+            .unwrap();
 
         let mut struct_registry = StructRegistry::default();
         let struct_names =
@@ -2461,7 +2471,9 @@ mod test {
         let parser = grammar::ScriptParser::new();
 
         let mut diagnostics = Diagnostics::new(file_id, "test.tapir", input);
-        let mut script = parser.parse(file_id, &mut diagnostics, lexer.iter()).unwrap();
+        let mut script = parser
+            .parse(file_id, &mut diagnostics, lexer.iter())
+            .unwrap();
 
         let mut struct_registry = StructRegistry::default();
         let struct_names =
@@ -2520,7 +2532,6 @@ mod test {
 
         // Register a simple Point struct
         let struct_id = struct_registry.register(StructDef {
-            doc_comment: None,
             name: "Point".to_string(),
             fields: vec![
                 StructField {
@@ -2570,7 +2581,6 @@ mod test {
 
         // Register Point struct
         let point_id = struct_registry.register(StructDef {
-            doc_comment: None,
             name: "Point".to_string(),
             fields: vec![
                 StructField {
@@ -2589,7 +2599,6 @@ mod test {
 
         // Register Rect struct with nested Points
         let rect_id = struct_registry.register(StructDef {
-            doc_comment: None,
             name: "Rect".to_string(),
             fields: vec![
                 StructField {

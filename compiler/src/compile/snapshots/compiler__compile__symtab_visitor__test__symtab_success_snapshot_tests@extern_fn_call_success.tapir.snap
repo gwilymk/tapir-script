@@ -9,7 +9,6 @@ Script(
   globals: [],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -66,7 +65,6 @@ Script(
   ],
   extern_functions: [
     ExternFunctionDefinition(
-      doc_comment: None,
       name: "get_value",
       span: "[span]",
       arguments: [

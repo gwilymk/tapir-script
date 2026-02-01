@@ -6,7 +6,6 @@ input_file: compiler/src/snapshot_tests/grammar/operator_overloads.tapir
 Script(
   struct_declarations: [
     StructDeclaration(
-      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Point",
@@ -39,7 +38,6 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
-      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Vec2",
@@ -76,7 +74,6 @@ Script(
   globals: [],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -92,7 +89,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -231,7 +227,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -350,7 +345,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -469,7 +463,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -606,7 +599,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -743,7 +735,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -880,7 +871,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -1017,7 +1007,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -1136,7 +1125,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -1255,7 +1243,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -1374,7 +1361,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -1493,7 +1479,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",
@@ -1632,7 +1617,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Operator(OperatorDef(
         left_type: Ident(
           span: "[span]",

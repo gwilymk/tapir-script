@@ -6,7 +6,6 @@ input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_nested_str
 Script(
   struct_declarations: [
     StructDeclaration(
-      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Point",
@@ -39,7 +38,6 @@ Script(
       span: "[span]",
     ),
     StructDeclaration(
-      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Rectangle",
@@ -75,7 +73,6 @@ Script(
   property_declarations: [],
   globals: [
     GlobalDeclaration(
-      doc_comment: None,
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -135,7 +132,6 @@ Script(
   ],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",

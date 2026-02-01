@@ -7,7 +7,6 @@ Script(
   struct_declarations: [],
   property_declarations: [
     PropertyDeclaration(
-      doc_comment: None,
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -25,7 +24,6 @@ Script(
   globals: [],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -141,7 +139,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "get_delay",
       span: "[span]",

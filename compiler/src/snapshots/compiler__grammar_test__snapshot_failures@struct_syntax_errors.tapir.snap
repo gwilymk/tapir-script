@@ -46,5 +46,5 @@ input_file: compiler/src/snapshot_tests/grammar/errors/struct_syntax_errors.tapi
     │ ┬  
     │ ╰── Unexpected token
     │ 
-    │ Note: Expected one of tokens wait, var, "if", "extern", "fn", return, spawn, loop, break, continue, event, trigger, global, property, builtin, "struct", "self", identifier, integer, hex_integer, fix, doc_comment, true, false, "{", "(", "=", "!", "~", "-"
+    │ Note: Expected one of tokens wait, var, "if", "extern", "fn", return, spawn, loop, break, continue, event, trigger, global, property, builtin, "struct", "self", identifier, integer, hex_integer, fix, true, false, "{", "(", "=", "!", "~", "-"
 ────╯

@@ -44,7 +44,6 @@ extern {
         integer => Token::Integer(<&'input str>),
         hex_integer => Token::HexInteger(<&'input str>),
         fix => Token::Fix(<&'input str>),
-        doc_comment => Token::DocComment(<&'input str>),
 
         true => Token::True,
         false => Token::False,
@@ -86,11 +85,6 @@ extern {
 
 pub Script: Script<'input> = <TopLevelStatement*> => Script::from_top_level(<>, file_id);
 
-DocComments: Option<String> = {
-    () => None,
-    <comments: doc_comment+> => Some(comments.join("\n")),
-};
-
 TopLevelStatement: TopLevelStatement<'input> = {
     <Statement> => TopLevelStatement::Statement(<>),
     <FunctionDefinition> => TopLevelStatement::FunctionDefinition(<>),
@@ -107,32 +101,32 @@ TopLevelStatement: TopLevelStatement<'input> = {
 
 GlobalDecl: GlobalDeclaration<'input> = {
     // Initialized global: global name = expr; or global name: type = expr;
-    <doc:DocComments> <start:@L> global <name:TypedIdentifier> "=" <value:Expression> ";" <end:@R> =>
-        GlobalDeclaration { doc_comment: doc, name, value: Some(value), span: Span::new(file_id, start, end) },
+    <start:@L> global <name:TypedIdentifier> "=" <value:Expression> ";" <end:@R> =>
+        GlobalDeclaration { name, value: Some(value), span: Span::new(file_id, start, end) },
 
     // Uninitialized global: global name: type; (type is required for uninitialized globals)
-    <doc:DocComments> <start:@L> global <name:TypedIdentifierRequired> ";" <end:@R> =>
-        GlobalDeclaration { doc_comment: doc, name, value: None, span: Span::new(file_id, start, end) },
+    <start:@L> global <name:TypedIdentifierRequired> ";" <end:@R> =>
+        GlobalDeclaration { name, value: None, span: Span::new(file_id, start, end) },
 }
 
 PropertyDecl: PropertyDeclaration<'input> = {
-    <doc:DocComments> <start:@L> property <name:TypedIdentifierRequired> ";" <end:@R> =>
-        PropertyDeclaration { doc_comment: doc, name, span: Span::new(file_id, start, end) },
+    <start:@L> property <name:TypedIdentifierRequired> ";" <end:@R> =>
+        PropertyDeclaration { name, span: Span::new(file_id, start, end) },
 }
 
 StructDecl: StructDeclaration<'input> = {
-    <doc:DocComments> <start:@L> "struct" <name:Type> "{" <fields:CommaSeparated<TypedIdentifierRequired>> "}" <end:@R> =>
-        StructDeclaration { doc_comment: doc, name, fields, span: Span::new(file_id, start, end) },
+    <start:@L> "struct" <name:Type> "{" <fields:CommaSeparated<TypedIdentifierRequired>> "}" <end:@R> =>
+        StructDeclaration { name, fields, span: Span::new(file_id, start, end) },
 }
 
 BuiltinFunctionDecl: BuiltinFunction<'input> = {
     // Regular builtin: builtin(id) fn name(...) -> ret;
-    <doc:DocComments> builtin "(" <builtin_id: BuiltinId> ")" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_type: FunctionReturn> ";" =>
-        BuiltinFunction { doc_comment: doc, receiver_type: None, name, builtin_id, arguments, return_type, span: Span::new(file_id, start, end), meta: Metadata::new() },
+    builtin "(" <builtin_id: BuiltinId> ")" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_type: FunctionReturn> ";" =>
+        BuiltinFunction { receiver_type: None, name, builtin_id, arguments, return_type, span: Span::new(file_id, start, end), meta: Metadata::new() },
 
     // Builtin method: builtin(id) fn Type.name(...) -> ret;
-    <doc:DocComments> builtin "(" <builtin_id: BuiltinId> ")" "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_type: FunctionReturn> ";" =>
-        BuiltinFunction { doc_comment: doc, receiver_type: Some(receiver), name, builtin_id, arguments, return_type, span: Span::new(file_id, start, end), meta: Metadata::new() },
+    builtin "(" <builtin_id: BuiltinId> ")" "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_type: FunctionReturn> ";" =>
+        BuiltinFunction { receiver_type: Some(receiver), name, builtin_id, arguments, return_type, span: Span::new(file_id, start, end), meta: Metadata::new() },
 }
 
 BuiltinId: BuiltinFunctionId = {
@@ -148,21 +142,20 @@ BuiltinId: BuiltinFunctionId = {
 
 FunctionDefinition: Function<'input> = {
     // Regular function: fn name(...) { ... }
-    <doc:DocComments> <modifiers: FunctionModifiers> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { doc_comment: doc, kind: FunctionKind::Regular, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+    <modifiers: FunctionModifiers> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
+        Function { kind: FunctionKind::Regular, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 
     // Method: fn Type.name(...) { ... }
-    <doc:DocComments> <modifiers: FunctionModifiers> "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { doc_comment: doc, kind: FunctionKind::Method { receiver_type: receiver }, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+    <modifiers: FunctionModifiers> "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
+        Function { kind: FunctionKind::Method { receiver_type: receiver }, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 
     // Operator: fn LeftType op RightType(...) { ... }
-    <doc:DocComments> <modifiers: FunctionModifiers> "fn"
+    <modifiers: FunctionModifiers> "fn"
     <left_type: TypeIdentifier>
     <start: @L> <op: OverloadableOp> <end: @R>
     <right_type: TypeIdentifier>
     "(" <arguments: OperatorArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
         Function {
-            doc_comment: doc,
             kind: FunctionKind::Operator(OperatorDef { left_type, op, right_type }),
             name: "",
             arguments,
@@ -200,15 +193,15 @@ OperatorArguments: Vec<TypedIdent<'input>> = {
 }
 
 ExternFunctionDefinition: ExternFunctionDefinition<'input> = {
-    <doc:DocComments> "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> ";" =>
-        ExternFunctionDefinition { doc_comment: doc, name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() },
+    "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> ";" =>
+        ExternFunctionDefinition { name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() },
 
-    <doc:DocComments> "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <block_start: @L> Block <block_end: @R> => {
+    "extern" "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <block_start: @L> Block <block_end: @R> => {
         let span = Span::new(file_id, block_start, block_end);
         ErrorKind::ExternFunctionWithBlock { name: name.to_string() }
             .at(span, DiagnosticMessage::ExternFunctionCannotHaveBody)
             .emit(diagnostics);
-        ExternFunctionDefinition { doc_comment: doc, name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() }
+        ExternFunctionDefinition { name, arguments, return_types, span: Span::new(file_id, start, end), meta: Metadata::new() }
     }
 }
 

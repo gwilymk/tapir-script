@@ -9,7 +9,6 @@ Script(
   globals: [],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -25,7 +24,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Method(
         receiver_type: Ident(
           span: "[span]",
@@ -86,7 +84,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Method(
         receiver_type: Ident(
           span: "[span]",
@@ -158,7 +155,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Method(
         receiver_type: Ident(
           span: "[span]",
@@ -218,7 +214,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Method(
         receiver_type: Ident(
           span: "[span]",
@@ -312,7 +307,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Method(
         receiver_type: Ident(
           span: "[span]",
@@ -341,7 +335,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Method(
         receiver_type: Ident(
           span: "[span]",
@@ -439,7 +432,6 @@ Script(
   extern_functions: [],
   builtin_functions: [
     BuiltinFunction(
-      doc_comment: None,
       receiver_type: Some(Ident(
         span: "[span]",
         ident: "fix",
@@ -469,7 +461,6 @@ Script(
       meta: {},
     ),
     BuiltinFunction(
-      doc_comment: None,
       receiver_type: Some(Ident(
         span: "[span]",
         ident: "fix",
@@ -499,7 +490,6 @@ Script(
       meta: {},
     ),
     BuiltinFunction(
-      doc_comment: None,
       receiver_type: Some(Ident(
         span: "[span]",
         ident: "fix",

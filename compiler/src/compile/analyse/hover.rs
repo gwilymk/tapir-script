@@ -41,7 +41,7 @@ pub fn extract_hover_info(
             HoverInfo {
                 name: struct_def.name.clone(),
                 signature,
-                doc_comment: struct_def.doc_comment.clone(),
+                doc_comment: None,
             },
         );
     }
@@ -118,7 +118,7 @@ pub fn extract_hover_info(
         let info = HoverInfo {
             name: function.name.to_string(),
             signature,
-            doc_comment: function.doc_comment.clone(),
+            doc_comment: None,
         };
 
         hover_info.insert(function.span, info.clone());
@@ -137,7 +137,7 @@ pub fn extract_hover_info(
         let info = HoverInfo {
             name: function.name.to_string(),
             signature,
-            doc_comment: function.doc_comment.clone(),
+            doc_comment: None,
         };
 
         hover_info.insert(function.span, info.clone());
@@ -164,7 +164,7 @@ pub fn extract_hover_info(
         let info = HoverInfo {
             name: function.name.to_string(),
             signature,
-            doc_comment: function.doc_comment.clone(),
+            doc_comment: None,
         };
 
         hover_info.insert(function.span, info.clone());
@@ -499,7 +499,7 @@ fn extract_from_expression(
                         HoverInfo {
                             name: struct_def.name.clone(),
                             signature,
-                            doc_comment: struct_def.doc_comment.clone(),
+                            doc_comment: None,
                         },
                     );
                 } else if let Some(sig) = function_signatures.get(function_id) {

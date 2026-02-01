@@ -6,7 +6,6 @@ input_file: compiler/src/snapshot_tests/grammar/doc_comments.tapir
 Script(
   struct_declarations: [
     StructDeclaration(
-      doc_comment: Some("A documented struct."),
       name: TypeWithLocation(
         t: None,
         name: "Point",
@@ -41,7 +40,6 @@ Script(
   ],
   property_declarations: [
     PropertyDeclaration(
-      doc_comment: Some("A documented property."),
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -58,7 +56,6 @@ Script(
   ],
   globals: [
     GlobalDeclaration(
-      doc_comment: Some("A documented global."),
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -80,7 +77,6 @@ Script(
   ],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -96,7 +92,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: Some("Adds two numbers.\nReturns their sum."),
       kind: Regular,
       name: "add",
       span: "[span]",
@@ -167,7 +162,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "undocumented",
       span: "[span]",
@@ -185,7 +179,6 @@ Script(
   ],
   extern_functions: [
     ExternFunctionDefinition(
-      doc_comment: Some("An extern function with docs."),
       name: "log",
       span: "[span]",
       arguments: [

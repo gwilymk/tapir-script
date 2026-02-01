@@ -1,12 +1,16 @@
 use logos::{Logos, SpannedIter};
 
-use crate::tokens::{FileId, LexicalError, Token};
+use crate::{
+    Span,
+    tokens::{FileId, LexicalError, Token},
+};
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 pub struct Lexer<'input> {
     token_stream: SpannedIter<'input, Token<'input>>,
     file_id: FileId,
+    comments: Vec<Comment<'input>>,
 }
 
 impl<'input> Lexer<'input> {
@@ -14,6 +18,7 @@ impl<'input> Lexer<'input> {
         Self {
             token_stream: Token::lexer(input).spanned(),
             file_id,
+            comments: vec![],
         }
     }
 
@@ -30,13 +35,46 @@ impl<'l, 'input> Iterator for LexerIter<'l, 'input> {
     type Item = Spanned<Token<'input>, usize, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let (token, span) = self.lexer.token_stream.next()?;
+        loop {
+            let (token, span) = self.lexer.token_stream.next()?;
 
-        Some(match token {
-            Ok(token) => Ok((span.start, token, span.end)),
-            Err(err) => Err(err.with_span(self.lexer.file_id, span.start, span.end)),
-        })
+            match token {
+                Ok(token) => {
+                    if let Token::Comment(comment) = token {
+                        let kind = if comment.starts_with("##") {
+                            CommentKind::Doc
+                        } else {
+                            CommentKind::Regular
+                        };
+
+                        self.lexer.comments.push(Comment {
+                            content: comment,
+                            kind,
+                            span: Span::new(self.lexer.file_id, span.start, span.end),
+                        });
+
+                        continue;
+                    }
+
+                    return Some(Ok((span.start, token, span.end)));
+                }
+                Err(err) => {
+                    return Some(Err(err.with_span(self.lexer.file_id, span.start, span.end)));
+                }
+            };
+        }
     }
+}
+
+pub struct Comment<'input> {
+    content: &'input str,
+    kind: CommentKind,
+    span: Span,
+}
+
+pub enum CommentKind {
+    Regular,
+    Doc,
 }
 
 #[cfg(test)]

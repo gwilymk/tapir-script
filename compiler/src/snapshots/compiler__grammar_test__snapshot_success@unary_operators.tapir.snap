@@ -9,7 +9,6 @@ Script(
   globals: [],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -907,7 +906,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "test_unary_on_vars",
       span: "[span]",
@@ -1077,7 +1075,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "negate",
       span: "[span]",
@@ -1132,7 +1129,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "invert",
       span: "[span]",
@@ -1187,7 +1183,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "unary_in_condition",
       span: "[span]",
@@ -1244,7 +1239,6 @@ Script(
       meta: {},
     ),
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "unary_in_loop",
       span: "[span]",

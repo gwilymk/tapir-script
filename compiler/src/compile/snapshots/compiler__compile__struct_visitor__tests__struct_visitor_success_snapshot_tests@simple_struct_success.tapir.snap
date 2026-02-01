@@ -6,7 +6,6 @@ input_file: compiler/src/compile/snapshot_tests/struct_visitor/simple_struct_suc
 StructRegistry(
   structs: [
     StructDef(
-      doc_comment: None,
       name: "Point",
       fields: [
         StructField(
@@ -23,7 +22,6 @@ StructRegistry(
       span: "[span]",
     ),
     StructDef(
-      doc_comment: None,
       name: "Size",
       fields: [
         StructField(
@@ -40,7 +38,6 @@ StructRegistry(
       span: "[span]",
     ),
     StructDef(
-      doc_comment: None,
       name: "Rect",
       fields: [
         StructField(

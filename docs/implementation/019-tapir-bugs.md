@@ -83,6 +83,20 @@ global pos = int2(10, 20);  # Previously errored: "not a constant expression"
 
 ---
 
+### 8. Global Struct Field Assignment in Functions
+
+**Status:** FIXED
+
+**Original Description:** Individual field assignment to global structs inside functions didn't work. Whole struct assignment worked fine. This was NOT spawn-specific - it failed with regular function calls too.
+
+**Root Cause:** The IR lowering phase didn't handle global struct field assignments. The type_table used a Vec which couldn't handle GlobalId-based symbols (which use large values with a bit flag), and the assignment code path had no special handling for global struct bases.
+
+**Fix:** Changed type_table to HashMap and added global struct field assignment handling in `lowering.rs`, similar to how property base field assignments were already handled.
+
+**Test files:** Tests merged into `globals_advanced.tapir` and `spawn_globals_interaction.tapir`
+
+---
+
 ## OPEN BUGS
 
 ### 4. Floor Division Bug with Negative Divisors
@@ -134,50 +148,6 @@ assert(s > 1.41 && s < 1.42);  # Fails - s is ~1.375
 
 ---
 
-### 8. Global Struct Field Assignment in Functions
-
-**Status:** OPEN
-
-**Severity:** Medium (silent incorrect behavior)
-
-**Description:** Individual field assignment to global structs inside functions doesn't work. Whole struct assignment works fine. This is NOT spawn-specific - it fails with regular function calls too.
-
-**What works:**
-```tapir
-global g: int2;
-
-fn set_whole_struct(x: int, y: int) {
-    g = int2(x, y);  # Whole struct assignment works
-}
-
-set_whole_struct(100, 200);
-assert(g.x == 100);  # Passes
-```
-
-**What fails:**
-```tapir
-global g: int2;
-
-fn set_struct_fields(x: int, y: int) {
-    g.x = x;  # Individual field assignment fails
-    g.y = y;
-}
-
-set_struct_fields(100, 200);
-assert(g.x == 100);  # Fails - g.x is still 0
-```
-
-**Workaround:** Use whole struct assignment instead of individual field assignment:
-```tapir
-g = int2(x, y);  # Instead of g.x = x; g.y = y;
-```
-
-**Test files:**
-- `bug8_spawn_globals.tapir` (tests with spawn)
-- `bug8_test_nonspawn.tapir` (tests without spawn - same bug)
-
----
-
 ## Test Files
 
 Bug-specific test files:
@@ -187,12 +157,12 @@ Bug-specific test files:
 - `bug4_floor_division_negative.tapir` - Tests floor division with negative divisors (OPEN)
 - `bug6_sqrt_nonperfect.tapir` - Tests sqrt precision (OPEN)
 - `bug7_comparison_optimizer.tapir` - Tests comparison operators in functions (FIXED)
-- `bug8_spawn_globals.tapir` - Tests globals in spawned tasks (PARTIAL)
 
 Other test files:
 - `division_operators.tapir` - Tests floor vs truncating division
 - `modulo_operators.tapir` - Tests Euclidean vs truncating modulo (FIXED)
-- `task_handles.tapir` - Uses globals in spawned tasks
+- `globals_advanced.tapir` - Includes global struct field assignment tests (bug #8 fix)
+- `spawn_globals_interaction.tapir` - Includes spawned global struct field tests (bug #8 fix)
 
 ---
 
@@ -200,4 +170,3 @@ Other test files:
 
 1. **Priority 1:** Fix floor division with negative divisors - decide on semantics and fix implementation
 2. **Priority 2:** Fix sqrt() for non-perfect squares - this affects any game using distance calculations
-3. **Priority 3:** Fix global struct field assignment in functions - this limits struct usability

@@ -8,7 +8,6 @@ Script(
   property_declarations: [],
   globals: [
     GlobalDeclaration(
-      doc_comment: None,
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -26,7 +25,6 @@ Script(
   ],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",
@@ -154,7 +152,6 @@ Script(
   ],
   extern_functions: [
     ExternFunctionDefinition(
-      doc_comment: None,
       name: "test",
       span: "[span]",
       arguments: [

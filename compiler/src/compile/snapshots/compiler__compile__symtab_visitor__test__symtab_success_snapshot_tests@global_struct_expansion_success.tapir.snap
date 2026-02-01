@@ -6,7 +6,6 @@ input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_struct_exp
 Script(
   struct_declarations: [
     StructDeclaration(
-      doc_comment: None,
       name: TypeWithLocation(
         t: None,
         name: "Point",
@@ -42,7 +41,6 @@ Script(
   property_declarations: [],
   globals: [
     GlobalDeclaration(
-      doc_comment: None,
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -58,7 +56,6 @@ Script(
       span: "[span]",
     ),
     GlobalDeclaration(
-      doc_comment: None,
       name: TypedIdent(
         ident: Ident(
           span: "[span]",
@@ -90,7 +87,6 @@ Script(
   ],
   functions: [
     Function(
-      doc_comment: None,
       kind: Regular,
       name: "@toplevel",
       span: "[span]",

@@ -82,8 +82,6 @@ pub struct Script<'input> {
 /// For methods: `builtin(N) fn Type.name(self, args) -> ret;`
 #[derive(Clone, Debug, Serialize)]
 pub struct BuiltinFunction<'input> {
-    /// Doc comment for this builtin function, if any
-    pub doc_comment: Option<String>,
     /// If Some, this is a method on the given type (e.g., "Point", "fix").
     /// Uses Ident to preserve span for error messages.
     pub receiver_type: Option<Ident<'input>>,
@@ -97,8 +95,6 @@ pub struct BuiltinFunction<'input> {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct PropertyDeclaration<'input> {
-    /// Doc comment for this property, if any
-    pub doc_comment: Option<String>,
     pub name: TypedIdent<'input>,
     pub span: Span,
 }
@@ -106,8 +102,6 @@ pub struct PropertyDeclaration<'input> {
 /// A struct type declaration: `struct Point { x: int, y: int }`
 #[derive(Clone, Debug, Serialize)]
 pub struct StructDeclaration<'input> {
-    /// Doc comment for this struct, if any
-    pub doc_comment: Option<String>,
     /// The name of the struct as a type (allows parsing `struct int {}` to give better errors)
     pub name: TypeWithLocation<'input>,
     /// The fields of the struct (type is required by grammar)
@@ -118,8 +112,6 @@ pub struct StructDeclaration<'input> {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct GlobalDeclaration<'input> {
-    /// Doc comment for this global, if any
-    pub doc_comment: Option<String>,
     pub name: TypedIdent<'input>,
     /// The initializer expression. None for uninitialized globals.
     pub value: Option<Expression<'input>>,
@@ -164,7 +156,6 @@ impl<'input> Script<'input> {
         }
 
         let top_level_function = Function {
-            doc_comment: None,
             kind: FunctionKind::Regular,
             name: "@toplevel",
             span: Span::new(file_id, 0, 0),
@@ -217,8 +208,6 @@ impl<'input> Script<'input> {
 
 #[derive(Clone, Debug, Serialize)]
 pub struct ExternFunctionDefinition<'input> {
-    /// Doc comment for this extern function, if any
-    pub doc_comment: Option<String>,
     pub name: &'input str,
     pub span: Span,
     pub arguments: Vec<TypedIdent<'input>>,
@@ -256,8 +245,6 @@ pub enum FunctionKind<'input> {
 /// A function definition
 #[derive(Clone, Debug, Serialize)]
 pub struct Function<'input> {
-    /// Doc comment for this function, if any
-    pub doc_comment: Option<String>,
     /// The kind of function (regular, method, or operator)
     pub kind: FunctionKind<'input>,
     /// The function/method name (empty string for operators)
