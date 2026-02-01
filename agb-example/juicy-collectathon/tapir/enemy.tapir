@@ -1,0 +1,64 @@
+global is_exploding = false;
+
+extern fn rng() -> int;
+
+property animation_frame: int;
+property position: fix2;
+
+event fn hit() {
+    if is_exploding {
+        return;
+    }
+
+    is_exploding = true;
+    trigger HurtPlayer;
+
+    explode();
+}
+
+fn explode() {
+    var amount = 60;
+    loop {
+        if amount <= 0 {
+            break;
+        }
+        amount = amount - 1;
+
+        position.y = position.y - 0.2;
+        animation_frame = (amount / 8) % 2;
+
+        wait;
+    }
+
+    trigger DestroySelf;
+
+    var position = position.round();
+    trigger SpawnParticle(position.x, position.y, 0);
+    trigger SpawnParticle(position.x, position.y, 0);
+    trigger SpawnParticle(position.x, position.y, 0);
+    trigger SpawnParticle(position.x, position.y, 0);
+    trigger SpawnParticle(position.x, position.y, 0);
+}
+
+var target_position = next_target_position();
+var velocity = fix2(0., 0.);
+
+loop {
+    if is_exploding {
+        break;
+    }
+
+    if (position - target_position).magnitude_squared() < 4. {
+        target_position = next_target_position();
+    }
+
+    var target_velocity = (target_position - position).fast_normalise() * 3.;
+    velocity = (5. * velocity + target_velocity) / 6.;
+
+    position = position + velocity;
+    wait 1;
+}
+
+fn next_target_position() -> fix2 {
+    return fix2(to_fix(rng() % 240), to_fix(rng() % 160));
+}

@@ -8,7 +8,11 @@ global MAX_SPEED = 2.;
 
 global current_speed = fix2(0, 0);
 
+global blink_task: task;
+
 fn blink_task() {
+    anim_frame = 0;
+
     loop {
         wait 100;
         anim_frame = 1;
@@ -21,7 +25,7 @@ fn blink_task() {
     }
 }
  
-spawn blink_task();
+blink_task = spawn blink_task();
 
 event fn input(x: fix, y: fix) {
     var dir = fix2(x, y);
@@ -45,4 +49,32 @@ event fn input(x: fix, y: fix) {
 
     position.x = position.x.clamp(0., 240. - 16.);
     position.y = position.y.clamp(0., 160. - 16.);
+}
+
+event fn hurt() {
+    if anim_frame == 3 {
+        return;
+    }
+    
+    blink_task.cancel();
+    anim_frame = 3;
+    
+    var count = 30;
+    loop {
+        if count <= 0 {
+            break;
+        }
+
+        count = count - 1;
+        position.x = position.x + 1.;
+        wait;
+        position.x = position.x - 1.;
+        wait;
+        position.x = position.x - 1.;
+        wait;
+        position.x = position.x + 1.;
+        wait;
+    }
+
+    spawn blink_task();
 }

@@ -27,6 +27,7 @@ event fn collide_with_player() {
 
     urgency.cancel();
 
+    should_show = true;
     animate_wait = 1;
     var count = 16;
     loop {

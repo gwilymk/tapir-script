@@ -10,9 +10,11 @@ use tapir_script::{Script, TapirScript};
 use crate::AnimationEvent;
 
 mod collectable;
+mod enemy;
 mod particle;
 
 pub use collectable::Collectable;
+pub use enemy::Enemy;
 pub use particle::Particle;
 
 enum_dispatch!(
@@ -24,6 +26,7 @@ enum_dispatch!(
     pub enum Entity {
         Collectable(Script<Collectable>),
         Particle(Script<Particle>),
+        Enemy(Script<Enemy>),
     }
 );
 

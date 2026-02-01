@@ -24,7 +24,7 @@ use agb::{
 use alloc::vec::Vec;
 use tapir_script::{Fix, Script, TapirScript};
 
-use crate::entities::{Collectable, Entity, EntityTrait, Particle};
+use crate::entities::{Collectable, Enemy, Entity, EntityTrait, Particle};
 
 type Fix2D = Vector2D<Fix>;
 
@@ -50,6 +50,7 @@ fn main(mut gba: agb::Gba) -> ! {
     let mut gfx = gba.graphics.get();
 
     let mut entities: Vec<Entity> = Vec::new();
+    entities.push(Enemy::new(vec2(num!(30.), num!(50.))).into());
 
     let mut screen_shaker = ScreenShaker { amount: vec2(0, 0) }.script();
 
@@ -88,6 +89,9 @@ fn main(mut gba: agb::Gba) -> ! {
                     AnimationEvent::ScreenShake => {
                         screen_shaker.on_shake();
                     }
+                    AnimationEvent::HurtPlayer => {
+                        player.player_animation.on_hurt();
+                    }
                 }
             }
             keep
@@ -110,6 +114,7 @@ pub enum AnimationEvent {
     SpawnParticle(i32, i32, i32),
     IncreaseScore,
     ScreenShake,
+    HurtPlayer,
 }
 
 struct Player {
