@@ -1,4 +1,5 @@
-use tapir_script::{ConvertBetweenTapir, TapirScript, Vector2D};
+use agb_fixnum::Vector2D;
+use tapir_script::{ConvertBetweenTapir, TapirScript};
 
 /// A simple 2D vector for testing struct properties with derive macro.
 #[derive(Clone, Debug, PartialEq, ConvertBetweenTapir)]

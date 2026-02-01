@@ -7,9 +7,12 @@ pub use tapir_script_macros::{ConvertBetweenTapir, TapirScript};
 pub use vm::{Script, TapirScript};
 
 pub type Fix = agb_fixnum::Num<i32, 8>;
-pub use agb_fixnum::Vector2D;
+use agb_fixnum::Vector2D;
 
-pub use alloc::vec::Vec;
+#[doc(hidden)]
+pub mod __private {
+    pub use alloc::vec::Vec;
+}
 
 impl ConvertBetweenTapir for Vector2D<i32> {
     fn write_to_tapir(&self, target: &mut [i32]) -> usize {

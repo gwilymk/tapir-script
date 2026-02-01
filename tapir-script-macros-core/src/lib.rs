@@ -263,7 +263,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 }
             }
 
-            fn extern_call(&mut self, id: usize, stack: &mut Vec<i32>, first_arg: usize) {
+            fn extern_call(&mut self, id: usize, stack: &mut tapir_script::__private::Vec<i32>, first_arg: usize) {
                 match id {
                     #(#extern_functions,)*
                     _ => unreachable!("Invalid extern function id {id}"),
@@ -324,7 +324,7 @@ fn generate_event_handlers(
                 quote!(fn #event_name(&mut self, #(#arg_definitions,)*)),
                 quote! {
                     fn #event_name(&mut self, #(#arg_definitions,)*) {
-                        let mut initial_stack = ::tapir_script::Vec::with_capacity(#initial_stack_vector_len);
+                        let mut initial_stack = ::tapir_script::__private::Vec::with_capacity(#initial_stack_vector_len);
                         #(#initial_stack_vector;)*
 
                         unsafe { self.__private_trigger_event(initial_stack, #initial_pc); }
