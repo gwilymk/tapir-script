@@ -15,10 +15,12 @@ pub mod __private {
 }
 
 impl ConvertBetweenTapir for Vector2D<i32> {
+    const SIZE: usize = 2;
+
     fn write_to_tapir(&self, target: &mut [i32]) -> usize {
         target[0] = self.x;
         target[1] = self.y;
-        2
+        Self::SIZE
     }
 
     fn read_from_tapir(values: &[i32]) -> (Self, usize) {
@@ -27,16 +29,18 @@ impl ConvertBetweenTapir for Vector2D<i32> {
                 x: values[0],
                 y: values[1],
             },
-            2,
+            Self::SIZE,
         )
     }
 }
 
 impl ConvertBetweenTapir for Vector2D<Fix> {
+    const SIZE: usize = 2;
+
     fn write_to_tapir(&self, target: &mut [i32]) -> usize {
         target[0] = self.x.to_raw();
         target[1] = self.y.to_raw();
-        2
+        Self::SIZE
     }
 
     fn read_from_tapir(values: &[i32]) -> (Self, usize) {
@@ -45,7 +49,7 @@ impl ConvertBetweenTapir for Vector2D<Fix> {
                 x: Fix::from_raw(values[0]),
                 y: Fix::from_raw(values[1]),
             },
-            2,
+            Self::SIZE,
         )
     }
 }
@@ -55,6 +59,9 @@ impl ConvertBetweenTapir for Vector2D<Fix> {
 /// This trait handles both scalar types (i32, Fix, bool) and composite types (structs).
 /// For structs, derive this trait using `#[derive(ConvertBetweenTapir)]`.
 pub trait ConvertBetweenTapir: Sized {
+    /// Number of i32 slots this type occupies (compile-time constant).
+    const SIZE: usize;
+
     /// Writes self into target slice, assuming target has enough space.
     /// Returns the number of i32 slots used.
     fn write_to_tapir(&self, target: &mut [i32]) -> usize;
@@ -62,38 +69,51 @@ pub trait ConvertBetweenTapir: Sized {
     /// Reads Self from the values slice.
     /// Returns Self and the number of i32 slots consumed.
     fn read_from_tapir(values: &[i32]) -> (Self, usize);
+
+    /// Convenience method: resize vec and write. Uses SIZE for exact allocation.
+    fn write_to_tapir_vec(&self, target: &mut alloc::vec::Vec<i32>) {
+        let start = target.len();
+        target.resize(start + Self::SIZE, 0);
+        self.write_to_tapir(&mut target[start..]);
+    }
 }
 
 impl ConvertBetweenTapir for i32 {
+    const SIZE: usize = 1;
+
     fn write_to_tapir(&self, target: &mut [i32]) -> usize {
         target[0] = *self;
-        1
+        Self::SIZE
     }
 
     fn read_from_tapir(values: &[i32]) -> (Self, usize) {
-        (values[0], 1)
+        (values[0], Self::SIZE)
     }
 }
 
 impl ConvertBetweenTapir for bool {
+    const SIZE: usize = 1;
+
     fn write_to_tapir(&self, target: &mut [i32]) -> usize {
         target[0] = (*self).into();
-        1
+        Self::SIZE
     }
 
     fn read_from_tapir(values: &[i32]) -> (Self, usize) {
-        (values[0] != 0, 1)
+        (values[0] != 0, Self::SIZE)
     }
 }
 
 impl ConvertBetweenTapir for Fix {
+    const SIZE: usize = 1;
+
     fn write_to_tapir(&self, target: &mut [i32]) -> usize {
         target[0] = self.to_raw();
-        1
+        Self::SIZE
     }
 
     fn read_from_tapir(values: &[i32]) -> (Self, usize) {
-        (Fix::from_raw(values[0]), 1)
+        (Fix::from_raw(values[0]), Self::SIZE)
     }
 }
 

@@ -436,6 +436,22 @@ pub fn convert_between_tapir_derive(struct_def: TokenStream) -> TokenStream {
         .map(|f| f.ident.as_ref().unwrap())
         .collect();
 
+    let field_types: Vec<_> = named_fields
+        .named
+        .iter()
+        .map(|f| &f.ty)
+        .collect();
+
+    // Generate SIZE: sum of all field sizes (compile-time constant)
+    let size_computation = if field_types.is_empty() {
+        quote! { 0 }
+    } else {
+        let size_terms = field_types.iter().map(|ty| {
+            quote! { <#ty as ::tapir_script::ConvertBetweenTapir>::SIZE }
+        });
+        quote! { #(#size_terms)+* }
+    };
+
     // Generate into_tapir: write each field recursively
     let into_tapir_writes: Vec<_> = field_idents
         .iter()
@@ -460,6 +476,8 @@ pub fn convert_between_tapir_derive(struct_def: TokenStream) -> TokenStream {
     quote! {
         #[automatically_derived]
         impl #impl_generics ::tapir_script::ConvertBetweenTapir for #struct_name #ty_generics #where_clause {
+            const SIZE: usize = #size_computation;
+
             fn write_to_tapir(&self, target: &mut [i32]) -> usize {
                 let mut index = 0;
                 #(#into_tapir_writes)*
