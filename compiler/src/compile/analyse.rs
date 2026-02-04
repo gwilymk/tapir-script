@@ -217,6 +217,7 @@ mod test {
             available_fields: None,
             enable_optimisations: false,
             enable_prelude: false,
+            has_event_type: true,
         };
 
         let result = analyse("test.tapir", input, &settings);
@@ -252,6 +253,7 @@ mod test {
             available_fields: None,
             enable_optimisations: false,
             enable_prelude: false,
+            has_event_type: true,
         };
 
         let result = analyse("test.tapir", input, &settings);
@@ -271,6 +273,7 @@ mod test {
             available_fields: None,
             enable_optimisations: false,
             enable_prelude: false,
+            has_event_type: true,
         };
 
         let result = analyse("big_tapir_test.tapir", input, &settings);
@@ -318,6 +321,7 @@ mod test {
             available_fields: None,
             enable_optimisations: false,
             enable_prelude: true,
+            has_event_type: true,
         }
     }
 

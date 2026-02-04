@@ -75,6 +75,8 @@ fn compile_command(file: &str, no_opt: bool, no_prelude: bool) -> ExitCode {
         available_fields: None,
         enable_optimisations: !no_opt,
         enable_prelude: !no_prelude,
+        // CLI doesn't know about Rust attributes, so be permissive
+        has_event_type: true,
     };
 
     match compiler::compile(&display_name, &input, settings) {

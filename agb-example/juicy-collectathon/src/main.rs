@@ -29,7 +29,7 @@ use alloc::vec::Vec;
 use tapir_script::{Fix, Script, TapirScript};
 
 use crate::entities::{
-    CoinToHealth, Collectable, CollectableEvents, Enemy, Entity, EntityTrait, Particle,
+    CoinToHealth, Collectable, CollectableEvent, Enemy, Entity, EntityTrait, Particle,
 };
 
 type Fix2D = Vector2D<Fix>;
@@ -111,14 +111,16 @@ fn main(gba: &mut agb::Gba) {
                 AnimationEvent::PlayerDamaged => {
                     player_health -= 1;
                     if player_health <= 0 {
-                        player.player_animation.on_die();
+                        player
+                            .player_animation
+                            .send_event(PlayerAnimationEvent::Die);
                     }
                 }
                 AnimationEvent::SpawnParticle(x, y, kind) => {
                     new_entities.push(Particle::new(vec2(x, y), kind).into());
                 }
                 AnimationEvent::ScreenShake(intensity) => {
-                    screen_shaker.on_shake(intensity);
+                    screen_shaker.send_event(ScreenShakerEvent::Shake(intensity));
                 }
                 AnimationEvent::PlayerDied => {
                     break 'outer;
@@ -148,7 +150,7 @@ fn main(gba: &mut agb::Gba) {
                                 continue;
                             };
 
-                            collectable.on_become_health_coin();
+                            collectable.send_event(CollectableEvent::BecomeHealthCoin);
                         }
                     }
                     AnimationEvent::HealthArrived => {
@@ -158,10 +160,12 @@ fn main(gba: &mut agb::Gba) {
                         // Sound already played by the coin_to_health script
                     }
                     AnimationEvent::ScreenShake(intensity) => {
-                        screen_shaker.on_shake(intensity);
+                        screen_shaker.send_event(ScreenShakerEvent::Shake(intensity));
                     }
                     AnimationEvent::HurtPlayer => {
-                        player.player_animation.on_hurt();
+                        player
+                            .player_animation
+                            .send_event(PlayerAnimationEvent::Hurt);
                     }
                     AnimationEvent::PlayerDamaged | AnimationEvent::PlayerDied => {}
                     AnimationEvent::PlaySound(sfx_id) => {
@@ -214,7 +218,7 @@ pub enum AnimationEvent {
 }
 
 struct Player {
-    player_animation: Script<PlayerAnimation>,
+    player_animation: Script<PlayerAnimation, PlayerAnimationEvent>,
 }
 
 impl Player {
@@ -230,7 +234,8 @@ impl Player {
 
     pub fn update(&mut self, input: &ButtonController) -> Vec<AnimationEvent> {
         let vector = input.vector();
-        self.player_animation.on_input(vector.x, vector.y);
+        self.player_animation
+            .send_event(PlayerAnimationEvent::Input(vector.x, vector.y));
         self.player_animation.run()
     }
 
@@ -250,15 +255,25 @@ impl Player {
     }
 }
 
+pub enum PlayerAnimationEvent {
+    Input(Fix, Fix),
+    Hurt,
+    Die,
+}
+
 #[derive(TapirScript, Debug)]
-#[tapir("tapir/player.tapir", trigger_type = AnimationEvent)]
+#[tapir("tapir/player.tapir", trigger_type = AnimationEvent, event_type = PlayerAnimationEvent)]
 struct PlayerAnimation {
     anim_frame: i32,
     position: Fix2D,
 }
 
+pub enum ScreenShakerEvent {
+    Shake(i32),
+}
+
 #[derive(TapirScript)]
-#[tapir("tapir/screen_shaker.tapir")]
+#[tapir("tapir/screen_shaker.tapir", event_type = ScreenShakerEvent)]
 struct ScreenShaker {
     amount: Vector2D<i32>,
 }

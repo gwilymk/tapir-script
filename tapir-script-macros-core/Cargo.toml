@@ -7,5 +7,6 @@ edition = "2021"
 proc-macro2 = "1"
 quote = "1"
 syn = "2"
+heck = "0.5"
 
 compiler = { path = "../compiler" }

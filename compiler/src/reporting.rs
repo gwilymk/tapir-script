@@ -206,6 +206,8 @@ pub enum DiagnosticMessage {
         operator: crate::ast::UnaryOperator,
         operand_type: Type,
     },
+    /// Script has event handlers but no event_type was specified in the macro
+    EventHandlerWithoutEventType,
 
     // Parse errors
     UnrecognizedEof,
@@ -505,6 +507,9 @@ impl DiagnosticMessage {
             }
             DiagnosticMessage::InvalidTypeForUnaryOperator { operator, operand_type } => {
                 format!("Operator `{operator}` cannot be applied to type `{operand_type}`")
+            }
+            DiagnosticMessage::EventHandlerWithoutEventType => {
+                "Script contains event handlers but no event_type was specified. Add `event_type = MyEventEnum` to your #[tapir(...)] attribute.".into()
             }
 
             // Parse errors
@@ -830,6 +835,9 @@ pub enum ErrorKind {
         operand_type: Type,
     },
 
+    /// Script has event handlers but no event_type was specified in the macro
+    EventHandlerWithoutEventType,
+
     // Parse errors
     UnrecognizedEof {
         expected: Box<[String]>,
@@ -908,6 +916,7 @@ impl ErrorKind {
             Self::OperatorMustReturnOneValue { .. } => "E0051",
             Self::TypeMismatch { .. } => "E0054",
             Self::InvalidTypeForUnaryOperator { .. } => "E0058",
+            Self::EventHandlerWithoutEventType => "E0059",
             Self::UnrecognizedEof { .. } => "E0025",
             Self::UnrecognizedToken { .. } => "E0026",
             Self::ExtraToken { .. } => "E0027",
@@ -1128,6 +1137,7 @@ impl ErrorKind {
                 operator: *operator,
                 operand_type: *operand_type,
             },
+            Self::EventHandlerWithoutEventType => DiagnosticMessage::EventHandlerWithoutEventType,
             Self::UnrecognizedEof { .. } => DiagnosticMessage::UnrecognizedEof,
             Self::UnrecognizedToken { token } => DiagnosticMessage::UnrecognizedToken {
                 token: token.clone(),

@@ -1,10 +1,11 @@
 #![deny(clippy::all)]
 use std::{
-    env, fs, iter,
+    env, fs,
     path::{Path, PathBuf},
 };
 
 use compiler::{CompileSettings, Type};
+use heck::ToUpperCamelCase;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
 use syn::{parse2, DeriveInput, Ident, LitStr, Token};
@@ -16,7 +17,10 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         panic!("Can only be defined on structs");
     };
 
-    let (reduced_filename, trigger_type) = get_script_path(&ast);
+    let script_info = get_script_path(&ast);
+    let reduced_filename = script_info.path;
+    let trigger_type = script_info.trigger_type;
+    let event_type = script_info.event_type;
 
     let file_content = fs::read_to_string(&reduced_filename)
         .unwrap_or_else(|e| panic!("Failed to read file {}: {e}", reduced_filename.display()));
@@ -34,6 +38,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
             available_fields,
             enable_optimisations: true,
             enable_prelude: true,
+            has_event_type: event_type.is_some(),
         },
     ) {
         Ok(mut content) => {
@@ -221,7 +226,6 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     );
 
     let struct_name = ast.ident;
-    let visibility = ast.vis;
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let reduced_filename = reduced_filename.canonicalize().unwrap();
@@ -231,23 +235,28 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
     let globals = &compiled_content.globals;
     let event_handlers = compiled_content.event_handlers;
 
-    let (event_handler_trait_fns, event_handler_trait_impls) =
-        generate_event_handlers(&event_handlers);
+    let handle_event_impl = generate_handle_event(&event_handlers, &event_type);
 
-    let event_handler_trait_name = format_ident!("{}Events", struct_name);
+    // Determine the EventType: use the user's type if specified, otherwise NoEventType
+    let event_type_decl = event_type
+        .as_ref()
+        .map(|t| quote! { #t })
+        .unwrap_or_else(|| quote! { ::tapir_script::NoEventType });
 
     quote! {
         #[automatically_derived]
         unsafe impl #impl_generics ::tapir_script::TapirScript for #struct_name #ty_generics #where_clause {
-            fn script(self) -> ::tapir_script::Script<Self> {
+            fn script(self) -> ::tapir_script::Script<Self, Self::EventType> {
                 static BYTECODE: &[u32] = &[#(#bytecode),*];
                 static GLOBALS: &[i32] = &[#(#globals),*];
 
                 ::tapir_script::Script::new(self, BYTECODE, GLOBALS)
             }
 
-            type EventType = #trigger_type;
-            fn create_event(&self, index: u8, stack: &[i32]) -> Self::EventType {
+            type TriggerType = #trigger_type;
+            type EventType = #event_type_decl;
+
+            fn create_event(&self, index: u8, stack: &[i32]) -> Self::TriggerType {
                 match index {
                     #(#triggers,)*
                     _ => unreachable!("Invalid index {index}"),
@@ -274,73 +283,84 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                     _ => unreachable!("Invalid extern function id {id}"),
                 }
             }
-        }
 
-        #visibility trait #event_handler_trait_name {
-            #(#event_handler_trait_fns;)*
-        }
-
-        impl #impl_generics #event_handler_trait_name for ::tapir_script::Script<#struct_name #ty_generics> #where_clause {
-            #(#event_handler_trait_impls)*
+            #handle_event_impl
         }
 
         const _: &[u8] = include_bytes!(#reduced_filename);
     }
 }
 
-fn generate_event_handlers(
+/// Generate the `handle_event` method for the TapirScript trait.
+///
+/// This method converts an incoming event enum variant to stack data and bytecode offset.
+/// If `event_type` is None, generates an empty match on the uninhabited `NoEventType`.
+fn generate_handle_event(
     event_handlers: &[compiler::EventHandler],
-) -> (Vec<TokenStream>, Vec<TokenStream>) {
-    event_handlers
+    event_type: &Option<syn::Path>,
+) -> TokenStream {
+    let Some(event_type) = event_type else {
+        // No event_type specified - generate an empty match on uninhabited type
+        return quote! {
+            fn handle_event(__event: Self::EventType, _: &mut ::tapir_script::__private::Vec<i32>) -> Option<usize> {
+                match __event {} // empty match on uninhabited type - can never be called
+            }
+        };
+    };
+
+    let match_arms: Vec<_> = event_handlers
         .iter()
-        .map(|event_handler| {
-            let arg_definitions = event_handler
-                .arguments
-                .iter()
-                .map(|arg| {
-                    let kind = match arg.ty {
-                        Type::Int => quote!(i32),
-                        Type::Fix => quote!(::tapir_script::Fix),
-                        Type::Bool => quote!(bool),
-                        Type::Task => quote!(i32), // Task ID is an i32
-                        Type::Struct(_id) => todo!("Cannot use structs yet"),
-                        Type::Error => panic!("Should not have errors here"),
-                    };
-                    let name = format_ident!("{}", arg.name);
+        .map(|handler| {
+            // Convert snake_case event handler name to PascalCase variant name
+            let variant_name = format_ident!("{}", handler.name.to_upper_camel_case());
 
-                    quote!(#name: #kind)
-                })
-                .collect::<Vec<_>>();
+            let arg_names: Vec<_> = (0..handler.arguments.len())
+                .map(|i| format_ident!("arg{}", i))
+                .collect();
 
-            let event_name = format_ident!("on_{}", event_handler.name);
-
-            let initial_stack_vector = iter::once(quote!(initial_stack.push(-1);)).chain(event_handler.arguments.iter().map(|arg| {
-                let arg_name = format_ident!("{}", arg.name);
+            let stack_writes = arg_names.iter().map(|arg| {
                 quote! {
-                    initial_stack.push(::tapir_script::TapirProperty::to_i32(&#arg_name))
+                    ::tapir_script::ConvertBetweenTapir::write_to_tapir_vec(&#arg, __stack);
                 }
-            }));
+            });
 
-            let initial_stack_vector_len = event_handler.arguments.len() + 1; // the mandatory return value
+            let pc = handler.bytecode_offset;
 
-            let initial_pc = event_handler.bytecode_offset;
-
-            (
-                quote!(fn #event_name(&mut self, #(#arg_definitions,)*)),
+            if arg_names.is_empty() {
                 quote! {
-                    fn #event_name(&mut self, #(#arg_definitions,)*) {
-                        let mut initial_stack = ::tapir_script::__private::Vec::with_capacity(#initial_stack_vector_len);
-                        #(#initial_stack_vector;)*
-
-                        unsafe { self.__private_trigger_event(initial_stack, #initial_pc); }
+                    #event_type::#variant_name => {
+                        Some(#pc)
                     }
-                },
-            )
+                }
+            } else {
+                quote! {
+                    #event_type::#variant_name(#(#arg_names),*) => {
+                        #(#stack_writes)*
+                        Some(#pc)
+                    }
+                }
+            }
         })
-        .unzip()
+        .collect();
+
+    quote! {
+        fn handle_event(__event: Self::EventType, __stack: &mut ::tapir_script::__private::Vec<i32>) -> Option<usize> {
+            match __event {
+                #(#match_arms)*
+                #[allow(unreachable_patterns)]
+                _ => None,
+            }
+        }
+    }
 }
 
-fn get_script_path(ast: &DeriveInput) -> (PathBuf, Option<syn::Path>) {
+struct ScriptPathInfo {
+    path: PathBuf,
+    trigger_type: Option<syn::Path>,
+    event_type: Option<syn::Path>,
+}
+
+fn get_script_path(ast: &DeriveInput) -> ScriptPathInfo {
     let Some(top_level_tapir_attribute) = ast
         .attrs
         .iter()
@@ -371,35 +391,48 @@ fn get_script_path(ast: &DeriveInput) -> (PathBuf, Option<syn::Path>) {
         filename
     };
 
-    (reduced_filename, top_level_args.trigger_type)
+    ScriptPathInfo {
+        path: reduced_filename,
+        trigger_type: top_level_args.trigger_type,
+        event_type: top_level_args.event_type,
+    }
 }
 
 struct TopLevelTapirArgs {
     script_name: LitStr,
     trigger_type: Option<syn::Path>,
+    event_type: Option<syn::Path>,
 }
 
 impl syn::parse::Parse for TopLevelTapirArgs {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         let script_name = input.parse()?;
         let mut trigger_type = None;
+        let mut event_type = None;
 
-        if input.peek(Token![,]) {
+        while input.peek(Token![,]) {
             let _: Token![,] = input.parse()?;
+            if input.is_empty() {
+                break;
+            }
             let ident: Ident = input.parse()?;
             let _: Token![=] = input.parse()?;
 
             match ident.to_string().as_str() {
                 "trigger_type" => trigger_type = Some(input.parse()?),
-                _ => return Err(input.error("Expected 'trigger_type'")),
+                "event_type" => event_type = Some(input.parse()?),
+                _ => return Err(input.error("Expected 'trigger_type' or 'event_type'")),
             }
-        } else if !input.is_empty() {
-            return Err(input.error("Expected 'trigger_type =' or nothing"));
+        }
+
+        if !input.is_empty() {
+            return Err(input.error("Expected 'trigger_type =', 'event_type =', or nothing"));
         }
 
         Ok(Self {
             script_name,
             trigger_type,
+            event_type,
         })
     }
 }
@@ -436,11 +469,7 @@ pub fn convert_between_tapir_derive(struct_def: TokenStream) -> TokenStream {
         .map(|f| f.ident.as_ref().unwrap())
         .collect();
 
-    let field_types: Vec<_> = named_fields
-        .named
-        .iter()
-        .map(|f| &f.ty)
-        .collect();
+    let field_types: Vec<_> = named_fields.named.iter().map(|f| &f.ty).collect();
 
     // Generate SIZE: sum of all field sizes (compile-time constant)
     let size_computation = if field_types.is_empty() {

@@ -1,0 +1,11 @@
+---
+source: compiler/src/compile.rs
+expression: msg
+---
+[E0059] Error: Script contains event handlers but no event_type was specified. Add `event_type = MyEventEnum` to your #[tapir(...)] attribute.
+   ╭─[ test.tapir:2:1 ]
+   │
+ 2 │ event fn on_start() {
+   │ ──┬──  
+   │   ╰──── Script contains event handlers but no event_type was specified. Add `event_type = MyEventEnum` to your #[tapir(...)] attribute.
+───╯

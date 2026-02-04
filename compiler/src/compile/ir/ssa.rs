@@ -295,6 +295,7 @@ mod test {
                 available_fields: None,
                 enable_optimisations: true,
                 enable_prelude: false,
+                has_event_type: true,
             };
 
             let struct_registry = StructRegistry::default();

@@ -6,8 +6,13 @@ use tapir_script::{Script, TapirScript};
 
 use crate::{AnimationEvent, Fix2D, entities::EntityData, sprites};
 
+pub enum CollectableEvent {
+    BecomeHealthCoin,
+    CollideWithPlayer,
+}
+
 #[derive(TapirScript)]
-#[tapir("tapir/collectable.tapir", trigger_type = AnimationEvent)]
+#[tapir("tapir/collectable.tapir", trigger_type = AnimationEvent, event_type = CollectableEvent)]
 pub struct Collectable {
     position: Fix2D,
     anim_frame: i32,
@@ -29,9 +34,9 @@ impl Collectable {
 }
 
 impl EntityData for Collectable {
-    fn update(script: &mut Script<Self>, player_rect: Rect<i32>) {
+    fn update(script: &mut Script<Self, CollectableEvent>, player_rect: Rect<i32>) {
         if script.properties.bounding_rect().touches(player_rect) {
-            script.on_collide_with_player();
+            script.send_event(CollectableEvent::CollideWithPlayer);
         }
     }
 

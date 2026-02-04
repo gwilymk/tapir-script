@@ -1,7 +1,11 @@
 use tapir_script::TapirScript;
 
+pub enum EventsEvent {
+    Loopy(i32),
+}
+
 #[derive(TapirScript)]
-#[tapir("tests/basic_event.tapir")]
+#[tapir("tests/basic_event.tapir", event_type = EventsEvent)]
 struct Events {
     int_prop: i32,
 }
@@ -10,7 +14,7 @@ struct Events {
 fn events() {
     let mut events = Events { int_prop: 0 }.script();
 
-    events.on_loopy(20);
+    events.send_event(EventsEvent::Loopy(20));
 
     for i in 0..20 {
         events.run();

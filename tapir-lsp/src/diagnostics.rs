@@ -29,6 +29,8 @@ pub fn analyse_and_publish(
         available_fields: None,
         enable_optimisations: false,
         enable_prelude: !is_prelude,
+        // LSP doesn't know about Rust attributes, so be permissive
+        has_event_type: true,
     };
 
     let start = Instant::now();

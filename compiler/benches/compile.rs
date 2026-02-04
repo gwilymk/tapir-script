@@ -137,6 +137,7 @@ fn settings(enable_optimisations: bool) -> CompileSettings {
         available_fields: None,
         enable_optimisations,
         enable_prelude: true,
+        has_event_type: true,
     }
 }
 

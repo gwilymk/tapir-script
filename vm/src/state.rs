@@ -348,7 +348,7 @@ pub(crate) trait ObjectSafeProperties {
 
 pub(crate) struct ObjectSafePropertiesImpl<'a, T, U>
 where
-    T: TapirScript<EventType = U>,
+    T: TapirScript<TriggerType = U>,
 {
     pub properties: &'a mut T,
     pub events: Vec<U>,
@@ -356,7 +356,7 @@ where
 
 impl<'a, T, U> ObjectSafeProperties for ObjectSafePropertiesImpl<'a, T, U>
 where
-    T: TapirScript<EventType = U>,
+    T: TapirScript<TriggerType = U>,
 {
     fn set_prop(&mut self, index: u8, value: i32) {
         self.properties.set_prop(index, value);

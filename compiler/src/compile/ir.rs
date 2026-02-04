@@ -528,6 +528,7 @@ mod test {
                 available_fields: None,
                 enable_optimisations: true,
                 enable_prelude: false,
+                has_event_type: true,
             };
 
             // Struct registration and type resolution

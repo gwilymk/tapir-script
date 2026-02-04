@@ -359,6 +359,7 @@ mod test {
                 available_fields: None,
                 enable_optimisations: true,
                 enable_prelude: false,
+                has_event_type: true,
             };
 
             // Register structs before symbol resolution
@@ -518,6 +519,7 @@ loop {
             available_fields: None,
             enable_optimisations: true,
             enable_prelude: false,
+            has_event_type: true,
         };
 
         // This should complete, not hang

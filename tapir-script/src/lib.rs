@@ -4,7 +4,7 @@
 extern crate alloc;
 
 pub use tapir_script_macros::{ConvertBetweenTapir, TapirScript};
-pub use vm::{Script, TapirScript};
+pub use vm::{NoEventType, Script, TapirScript};
 
 pub type Fix = agb_fixnum::Num<i32, 8>;
 use agb_fixnum::Vector2D;

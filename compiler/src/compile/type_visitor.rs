@@ -1677,6 +1677,7 @@ mod test {
                 available_fields: None,
                 enable_optimisations: false,
                 enable_prelude: false,
+                has_event_type: true,
             };
             let mut symtab_visitor =
                 SymTabVisitor::new(&settings, &mut script, &struct_registry, &mut diagnostics);
@@ -1757,6 +1758,7 @@ mod test {
                 available_fields: None,
                 enable_optimisations: false,
                 enable_prelude: false,
+                has_event_type: true,
             };
             let mut symtab_visitor =
                 SymTabVisitor::new(&settings, &mut script, &struct_registry, &mut diagnostics);

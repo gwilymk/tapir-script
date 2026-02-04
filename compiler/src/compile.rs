@@ -5,14 +5,14 @@ use symtab_visitor::SymTabVisitor;
 use type_visitor::{TypeTable, TypeVisitor};
 
 use crate::{
-    EventHandler, ExternFunction, Trigger,
+    ErrorKind, EventHandler, ExternFunction, Trigger,
     ast::{BinaryOperator, FunctionId, Script, SymbolId, UnaryOperator},
     compile::ir::{
         BlockId, SymbolSpans, TapIr, TapIrFunction, create_ir, make_ssa,
         regalloc::{self, RegisterAllocations},
     },
     prelude::{self, USER_FILE_ID},
-    reporting::Diagnostics,
+    reporting::{DiagnosticMessage, Diagnostics},
     tokens::Span,
     types::{StructRegistry, Type},
 };
@@ -69,6 +69,20 @@ pub fn analyse_ast<'input>(
     }
     type_visitor.check_global_annotations(&ast.globals, symtab_visitor.get_symtab(), diagnostics);
 
+    // Validate: if event handlers exist but no event_type specified, error
+    if !settings.has_event_type {
+        for f in &ast.functions {
+            if let Some(event_handler) = &f.modifiers.is_event_handler {
+                ErrorKind::EventHandlerWithoutEventType
+                    .at(
+                        *event_handler,
+                        DiagnosticMessage::EventHandlerWithoutEventType,
+                    )
+                    .emit(diagnostics);
+            }
+        }
+    }
+
     let type_table = type_visitor.into_type_table();
     (symtab_visitor.into_symtab(), type_table, struct_registry)
 }
@@ -112,6 +126,10 @@ pub struct CompileSettings {
     pub available_fields: Option<Vec<String>>,
     pub enable_optimisations: bool,
     pub enable_prelude: bool,
+    /// Whether an event_type was specified in the macro attribute.
+    /// If false and event handlers exist, compilation will fail.
+    /// Should be set to true for LSP/tooling where we can't check the Rust attribute.
+    pub has_event_type: bool,
 }
 
 /// Result of a successful compilation, containing bytecode and any warnings.
@@ -208,8 +226,10 @@ pub fn compile(
         compiler.compile_function(&function, &registers);
     }
 
+    let bytecode = compiler.finalise();
+
     Ok(CompileOutput {
-        bytecode: compiler.finalise(),
+        bytecode,
         warnings: diagnostics,
     })
 }
@@ -673,6 +693,7 @@ mod test {
                 available_fields: None,
                 enable_optimisations,
                 enable_prelude,
+                has_event_type: true,
             };
 
             let output = compile(path, &input, &compiler_settings).unwrap();
@@ -691,6 +712,7 @@ mod test {
             available_fields: None,
             enable_optimisations: false,
             enable_prelude: true,
+            has_event_type: true,
         };
 
         let result = compile("test.tapir", source, &settings);
@@ -703,6 +725,30 @@ mod test {
                     msg.contains("can only be declared in the prelude"),
                     "Expected prelude error message, got: {msg}"
                 );
+            }
+        }
+    }
+
+    #[test]
+    fn event_handler_without_event_type_is_error() {
+        let source = r#"
+event fn on_start() {
+    wait;
+}
+"#;
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+            enable_prelude: true,
+            has_event_type: false, // This triggers the error
+        };
+
+        let result = compile("test.tapir", source, &settings);
+        match result {
+            Ok(_) => panic!("Expected compilation to fail"),
+            Err(mut err) => {
+                let msg = err.pretty_string(false);
+                assert_snapshot!(msg);
             }
         }
     }

@@ -15,8 +15,8 @@ mod enemy;
 mod particle;
 
 pub use coin_to_health::CoinToHealth;
-pub use collectable::{Collectable, CollectableEvents};
-pub use enemy::Enemy;
+pub use collectable::{Collectable, CollectableEvent};
+pub use enemy::{Enemy, EnemyEvent};
 pub use particle::Particle;
 
 enum_dispatch!(
@@ -27,24 +27,24 @@ enum_dispatch!(
     }
 
     pub enum Entity {
-        Collectable(Script<Collectable>),
+        Collectable(Script<Collectable, CollectableEvent>),
         CoinToHealth(Script<CoinToHealth>),
         Particle(Script<Particle>),
-        Enemy(Script<Enemy>),
+        Enemy(Script<Enemy, EnemyEvent>),
     }
 );
 
-pub trait EntityData: TapirScript<EventType = AnimationEvent> + Sized {
+pub trait EntityData: TapirScript<TriggerType = AnimationEvent> + Sized {
     fn z(&self) -> i32 {
         0
     }
-    fn update(_script: &mut Script<Self>, _player_rect: Rect<i32>) {}
+    fn update(_script: &mut Script<Self, Self::EventType>, _player_rect: Rect<i32>) {}
     fn show(&self, frame: &mut GraphicsFrame, camera: Vector2D<i32>);
 }
 
-impl<T> EntityTrait for Script<T>
+impl<T, E> EntityTrait for Script<T, E>
 where
-    T: EntityData,
+    T: EntityData<EventType = E>,
 {
     fn z(&self) -> i32 {
         self.properties.z()
@@ -62,8 +62,8 @@ where
 
 impl<T> From<T> for Entity
 where
-    Script<T>: EntityTrait,
-    Entity: From<Script<T>>,
+    Script<T, T::EventType>: EntityTrait,
+    Entity: From<Script<T, T::EventType>>,
     T: EntityData,
 {
     fn from(value: T) -> Self {

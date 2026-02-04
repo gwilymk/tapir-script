@@ -7,8 +7,12 @@ use tapir_script::{Script, TapirScript};
 
 use crate::{AnimationEvent, Fix2D, entities::EntityData, sprites};
 
+pub enum EnemyEvent {
+    Hit,
+}
+
 #[derive(TapirScript)]
-#[tapir("tapir/enemy.tapir", trigger_type = AnimationEvent)]
+#[tapir("tapir/enemy.tapir", trigger_type = AnimationEvent, event_type = EnemyEvent)]
 pub struct Enemy {
     position: Fix2D,
     animation_frame: i32,
@@ -32,9 +36,9 @@ impl Enemy {
 }
 
 impl EntityData for Enemy {
-    fn update(script: &mut Script<Self>, player_rect: Rect<i32>) {
+    fn update(script: &mut Script<Self, EnemyEvent>, player_rect: Rect<i32>) {
         if script.properties.bounding_rect().touches(player_rect) {
-            script.on_hit();
+            script.send_event(EnemyEvent::Hit);
         }
     }
 
