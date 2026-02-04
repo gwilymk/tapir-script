@@ -132,6 +132,8 @@ pub enum Token<'input> {
     KeywordSelf,
     #[token("task")]
     KeywordTask,
+    #[token("import")]
+    KeywordImport,
 
     #[token("true")]
     True,
@@ -167,6 +169,8 @@ pub enum Token<'input> {
     Comma,
     #[token(".")]
     Dot,
+    #[token("..")]
+    DotDot,
 
     #[token("+")]
     OperatorAdd,

@@ -1,0 +1,18 @@
+---
+source: compiler/src/lexer.rs
+expression: output
+input_file: compiler/src/snapshot_tests/lexer/import_tokens.tapir
+---
+[
+  Ok(KeywordImport),
+  Ok(Identifier("common")),
+  Ok(Semicolon),
+  Ok(KeywordImport),
+  Ok(DotDot),
+  Ok(OperatorDiv),
+  Ok(Identifier("utils")),
+  Ok(OperatorDiv),
+  Ok(Identifier("math")),
+  Ok(Semicolon),
+  Ok(DotDot),
+]

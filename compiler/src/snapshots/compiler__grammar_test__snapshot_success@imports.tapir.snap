@@ -1,0 +1,141 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/imports.tapir
+---
+Script(
+  imports: [
+    ImportDeclaration(
+      path: ImportPath(
+        segments: [
+          Ident("common"),
+        ],
+        span: "[span]",
+      ),
+      span: "[span]",
+    ),
+    ImportDeclaration(
+      path: ImportPath(
+        segments: [
+          Ident("utils"),
+          Ident("math"),
+        ],
+        span: "[span]",
+      ),
+      span: "[span]",
+    ),
+    ImportDeclaration(
+      path: ImportPath(
+        segments: [
+          DotDot,
+          Ident("shared"),
+        ],
+        span: "[span]",
+      ),
+      span: "[span]",
+    ),
+    ImportDeclaration(
+      path: ImportPath(
+        segments: [
+          DotDot,
+          DotDot,
+          Ident("deeply"),
+          Ident("nested"),
+          Ident("module"),
+        ],
+        span: "[span]",
+      ),
+      span: "[span]",
+    ),
+    ImportDeclaration(
+      path: ImportPath(
+        segments: [
+          DotDot,
+          Ident("utils"),
+          Ident("helpers"),
+        ],
+        span: "[span]",
+      ),
+      span: "[span]",
+    ),
+    ImportDeclaration(
+      path: ImportPath(
+        segments: [
+          Ident("types"),
+        ],
+        span: "[span]",
+      ),
+      span: "[span]",
+    ),
+  ],
+  struct_declarations: [
+    StructDeclaration(
+      name: TypeWithLocation(
+        t: None,
+        name: "Point",
+        span: "[span]",
+      ),
+      fields: [
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "x",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+        TypedIdent(
+          ident: Ident(
+            span: "[span]",
+            ident: "y",
+          ),
+          ty: Some(TypeWithLocation(
+            t: Some(Int),
+            name: "int",
+            span: "[span]",
+          )),
+        ),
+      ],
+      span: "[span]",
+    ),
+  ],
+  property_declarations: [
+    PropertyDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "pos",
+        ),
+        ty: Some(TypeWithLocation(
+          t: None,
+          name: "Point",
+          span: "[span]",
+        )),
+      ),
+      span: "[span]",
+    ),
+  ],
+  globals: [],
+  functions: [
+    Function(
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

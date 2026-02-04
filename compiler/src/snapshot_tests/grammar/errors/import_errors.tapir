@@ -1,0 +1,11 @@
+# Missing semicolon
+import foo
+
+# Trailing slash (parsed as incomplete path)
+import foo/;
+
+# Empty import (just semicolon)
+import ;
+
+# Lone dot (. is not valid, only .. is)
+import ./foo;

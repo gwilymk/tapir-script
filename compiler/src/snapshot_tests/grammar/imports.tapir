@@ -1,0 +1,19 @@
+# Basic import
+import common;
+
+# Nested path import
+import utils/math;
+
+# Parent directory import
+import ../shared;
+
+# Multiple parent directories
+import ../../deeply/nested/module;
+
+# Mixed path with parent and nested
+import ../utils/helpers;
+
+# Import at the start followed by other declarations
+import types;
+struct Point { x: int, y: int }
+property pos: Point;

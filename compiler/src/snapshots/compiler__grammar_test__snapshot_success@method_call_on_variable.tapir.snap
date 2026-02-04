@@ -4,6 +4,7 @@ expression: ast
 input_file: compiler/src/snapshot_tests/grammar/method_call_on_variable.tapir
 ---
 Script(
+  imports: [],
   struct_declarations: [],
   property_declarations: [
     PropertyDeclaration(

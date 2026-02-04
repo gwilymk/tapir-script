@@ -4,6 +4,7 @@ expression: ast
 input_file: compiler/src/snapshot_tests/grammar/unary_operators.tapir
 ---
 Script(
+  imports: [],
   struct_declarations: [],
   property_declarations: [],
   globals: [],

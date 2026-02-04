@@ -39,6 +39,7 @@ extern {
         "struct" => Token::KeywordStruct,
         "self" => Token::KeywordSelf,
         t_task => Token::KeywordTask,
+        import => Token::KeywordImport,
 
         identifier => Token::Identifier(<&'input str>),
         integer => Token::Integer(<&'input str>),
@@ -80,6 +81,7 @@ extern {
         "!" => Token::OperatorNot,
         "~" => Token::OperatorBitNot,
         "." => Token::Dot,
+        ".." => Token::DotDot,
     }
 }
 
@@ -93,6 +95,7 @@ TopLevelStatement: TopLevelStatement<'input> = {
     <GlobalDecl> => TopLevelStatement::GlobalDeclaration(<>),
     <PropertyDecl> => TopLevelStatement::PropertyDeclaration(<>),
     <StructDecl> => TopLevelStatement::StructDeclaration(<>),
+    <ImportDecl> => TopLevelStatement::ImportDeclaration(<>),
     <error: !> => {
         diagnostics.add_lalrpop(<>.error, file_id);
         TopLevelStatement::Error
@@ -117,6 +120,24 @@ PropertyDecl: PropertyDeclaration<'input> = {
 StructDecl: StructDeclaration<'input> = {
     <start:@L> "struct" <name:Type> "{" <fields:CommaSeparated<TypedIdentifierRequired>> "}" <end:@R> =>
         StructDeclaration { name, fields, span: Span::new(file_id, start, end) },
+}
+
+ImportDecl: ImportDeclaration<'input> = {
+    <start:@L> import <path:ImportPath> ";" <end:@R> =>
+        ImportDeclaration { path, span: Span::new(file_id, start, end) },
+}
+
+ImportPath: ImportPath<'input> = {
+    <start:@L> <first:ImportPathSegment> <rest:("/" <ImportPathSegment>)*> <end:@R> => {
+        let mut segments = vec![first];
+        segments.extend(rest);
+        ImportPath { segments, span: Span::new(file_id, start, end) }
+    }
+}
+
+ImportPathSegment: ImportPathSegment<'input> = {
+    <ident:identifier> => ImportPathSegment::Ident(ident),
+    ".." => ImportPathSegment::DotDot,
 }
 
 BuiltinFunctionDecl: BuiltinFunction<'input> = {

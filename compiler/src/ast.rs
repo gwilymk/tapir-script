@@ -68,8 +68,32 @@ pub struct OperatorOverloadInfo {
 
 pub type Fix = agb_fixnum::Num<i32, 8>;
 
+/// An import declaration: `import path/to/module;`
+#[derive(Clone, Debug, Serialize)]
+pub struct ImportDeclaration<'input> {
+    pub path: ImportPath<'input>,
+    pub span: Span,
+}
+
+/// The path in an import declaration, e.g., `../utils/math`
+#[derive(Clone, Debug, Serialize)]
+pub struct ImportPath<'input> {
+    pub segments: Vec<ImportPathSegment<'input>>,
+    pub span: Span,
+}
+
+/// A segment in an import path
+#[derive(Clone, Debug, Serialize)]
+pub enum ImportPathSegment<'input> {
+    /// A regular identifier segment
+    Ident(&'input str),
+    /// Parent directory reference (..)
+    DotDot,
+}
+
 #[derive(Clone, Debug, Serialize)]
 pub struct Script<'input> {
+    pub imports: Vec<ImportDeclaration<'input>>,
     pub struct_declarations: Vec<StructDeclaration<'input>>,
     pub property_declarations: Vec<PropertyDeclaration<'input>>,
     pub globals: Vec<GlobalDeclaration<'input>>,
@@ -130,6 +154,7 @@ impl<'input> Script<'input> {
         let mut globals = vec![];
         let mut property_declarations = vec![];
         let mut struct_declarations = vec![];
+        let mut imports = vec![];
 
         for top_level_statement in top_level.into_iter() {
             match top_level_statement {
@@ -149,6 +174,9 @@ impl<'input> Script<'input> {
                 }
                 TopLevelStatement::StructDeclaration(struct_decl) => {
                     struct_declarations.push(struct_decl)
+                }
+                TopLevelStatement::ImportDeclaration(import) => {
+                    imports.push(import)
                 }
 
                 TopLevelStatement::Error => {}
@@ -173,6 +201,7 @@ impl<'input> Script<'input> {
         functions.insert(0, top_level_function);
 
         Self {
+            imports,
             struct_declarations,
             property_declarations,
             globals,
@@ -196,6 +225,7 @@ impl<'input> Script<'input> {
         self.functions.splice(1..1, other_functions);
 
         // Prepend other declarations
+        // Note: imports are NOT merged - they are processed during import resolution
         self.struct_declarations
             .splice(0..0, other.struct_declarations);
         self.property_declarations
@@ -362,6 +392,7 @@ pub enum TopLevelStatement<'input> {
     GlobalDeclaration(GlobalDeclaration<'input>),
     PropertyDeclaration(PropertyDeclaration<'input>),
     StructDeclaration(StructDeclaration<'input>),
+    ImportDeclaration(ImportDeclaration<'input>),
     Error,
 }
 

@@ -4,6 +4,7 @@ expression: script
 input_file: compiler/src/compile/snapshot_tests/symtab_visitor/global_nested_struct_success.tapir
 ---
 Script(
+  imports: [],
   struct_declarations: [
     StructDeclaration(
       name: TypeWithLocation(

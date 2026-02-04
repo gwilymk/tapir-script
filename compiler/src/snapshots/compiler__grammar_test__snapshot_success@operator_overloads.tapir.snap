@@ -4,6 +4,7 @@ expression: ast
 input_file: compiler/src/snapshot_tests/grammar/operator_overloads.tapir
 ---
 Script(
+  imports: [],
   struct_declarations: [
     StructDeclaration(
       name: TypeWithLocation(

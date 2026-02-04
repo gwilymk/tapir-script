@@ -417,6 +417,7 @@ mod tests {
 
     fn make_script_with_structs(decls: Vec<StructDeclaration<'static>>) -> Script<'static> {
         Script {
+            imports: vec![],
             struct_declarations: decls,
             property_declarations: vec![],
             globals: vec![],
