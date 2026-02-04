@@ -175,9 +175,7 @@ impl<'input> Script<'input> {
                 TopLevelStatement::StructDeclaration(struct_decl) => {
                     struct_declarations.push(struct_decl)
                 }
-                TopLevelStatement::ImportDeclaration(import) => {
-                    imports.push(import)
-                }
+                TopLevelStatement::ImportDeclaration(import) => imports.push(import),
 
                 TopLevelStatement::Error => {}
             }

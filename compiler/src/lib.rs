@@ -24,7 +24,7 @@ pub use compile::analyse::{
 };
 pub use compile::disassemble;
 pub use compile::symtab_visitor::GlobalInfo;
-pub use compile::{CompileSettings, Property, PRELUDE_PATH, PRELUDE_SOURCE};
+pub use compile::{CompileSettings, PRELUDE_PATH, PRELUDE_SOURCE, Property};
 pub use file_loader::{FileLoader, FsFileLoader, TestFileLoader};
 pub use reporting::format::DiagnosticCache;
 pub use reporting::{

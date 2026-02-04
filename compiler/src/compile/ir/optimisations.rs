@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    hash::RandomState,
     ops::{BitOr, BitOrAssign},
 };
 
@@ -87,7 +88,7 @@ fn rename_all_variables(
 }
 
 fn reduce_renames(renames: &HashMap<SymbolId, SymbolId>) -> HashMap<SymbolId, SymbolId> {
-    let mut rename_graph = DiGraphMap::new();
+    let mut rename_graph: DiGraphMap<_, _, RandomState> = DiGraphMap::default();
     for (from, to) in renames {
         rename_graph.add_edge(*to, *from, ());
     }

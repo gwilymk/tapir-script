@@ -1,5 +1,6 @@
 use std::{
     collections::{BTreeSet, HashMap},
+    hash::RandomState,
     mem,
 };
 
@@ -59,7 +60,7 @@ pub fn inline_small_functions(
     // Collect every FunctionId where we can actually do an inline, and the function it intends to inline.
     // When we actually inline, we should only look at the leaves of this graph, to ensure that by inlining into
     // something, we don't then inline _that_ and create something that's way too big.
-    let mut inlining_graph = DiGraphMap::new();
+    let mut inlining_graph: DiGraphMap<_, _, RandomState> = DiGraphMap::default();
     for f in functions.iter() {
         for callee in f.direct_callees() {
             if inlinable_functions.contains(&callee) {

@@ -1,3 +1,5 @@
+use std::hash::RandomState;
+
 use petgraph::{prelude::DiGraphMap, visit::IntoNeighbors};
 
 use crate::compile::ir::{
@@ -8,7 +10,7 @@ pub fn simplify_blocks(f: &mut TapIrFunction) -> OptimisationResult {
     let mut did_something = OptimisationResult::DidNothing;
 
     // we need to know the predecessors of every block unfortunately
-    let mut full_graph = DiGraphMap::new();
+    let mut full_graph: DiGraphMap<_, _, RandomState> = DiGraphMap::default();
     for block in f.blocks() {
         for neighbour in f.neighbors(block.id()) {
             full_graph.add_edge(block.id(), neighbour, ());

@@ -1,3 +1,5 @@
+use std::hash::RandomState;
+
 use petgraph::{prelude::DiGraphMap, visit::Dfs};
 
 use crate::{
@@ -7,7 +9,7 @@ use crate::{
 
 pub fn remove_unreferenced_functions(functions: &mut Vec<TapIrFunction>) -> OptimisationResult {
     // step 1. Build a call graph for all the functions, and gather the roots
-    let mut call_graph = DiGraphMap::new();
+    let mut call_graph: DiGraphMap<_, _, RandomState> = DiGraphMap::default();
     let mut roots = vec![FunctionId::toplevel()];
 
     for f in functions.iter() {

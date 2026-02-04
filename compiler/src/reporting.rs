@@ -1211,10 +1211,10 @@ impl ErrorKind {
             },
             Self::InvalidToken => DiagnosticMessage::InvalidToken,
             Self::InvalidFix => DiagnosticMessage::InvalidFix,
-            Self::CircularImport { cycle } => DiagnosticMessage::CircularImport { cycle: cycle.clone() },
-            Self::ImportFileNotFound { .. } => {
-                DiagnosticMessage::ImportFileNotFound
-            }
+            Self::CircularImport { cycle } => DiagnosticMessage::CircularImport {
+                cycle: cycle.clone(),
+            },
+            Self::ImportFileNotFound { .. } => DiagnosticMessage::ImportFileNotFound,
             Self::DuplicateImportedDefinition { name, .. } => {
                 DiagnosticMessage::DuplicateImportedDefinition { name: name.clone() }
             }
