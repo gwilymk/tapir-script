@@ -128,7 +128,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                         let mut buffer = [0i32; #total_fields];
                         ::tapir_script::ConvertBetweenTapir::write_to_tapir(&self.#field_ident, &mut buffer);
                         buffer[#tuple_position] = value;
-                        self.#field_ident = ::tapir_script::ConvertBetweenTapir::read_from_tapir(&buffer).0;
+                        self.#field_ident = ::tapir_script::ConvertBetweenTapir::read_from_tapir(&buffer);
                     }
                 };
 
@@ -452,23 +452,26 @@ pub fn convert_between_tapir_derive(struct_def: TokenStream) -> TokenStream {
         quote! { #(#size_terms)+* }
     };
 
-    // Generate into_tapir: write each field recursively
+    // Generate write_to_tapir: write each field at its offset
     let into_tapir_writes: Vec<_> = field_idents
         .iter()
-        .map(|ident| {
+        .zip(field_types.iter())
+        .map(|(ident, ty)| {
             quote! {
-                index += ::tapir_script::ConvertBetweenTapir::write_to_tapir(&self.#ident, &mut target[index..]);
+                ::tapir_script::ConvertBetweenTapir::write_to_tapir(&self.#ident, &mut target[index..]);
+                index += <#ty as ::tapir_script::ConvertBetweenTapir>::SIZE;
             }
         })
         .collect();
 
-    // Generate from_tapir: read each field recursively
+    // Generate read_from_tapir: read each field at its offset
     let from_tapir_reads: Vec<_> = field_idents
         .iter()
-        .map(|ident| {
+        .zip(field_types.iter())
+        .map(|(ident, ty)| {
             quote! {
-                let (#ident, next_idx) = ::tapir_script::ConvertBetweenTapir::read_from_tapir(&values[index..]);
-                index += next_idx;
+                let #ident = ::tapir_script::ConvertBetweenTapir::read_from_tapir(&values[index..]);
+                index += <#ty as ::tapir_script::ConvertBetweenTapir>::SIZE;
             }
         })
         .collect();
@@ -478,19 +481,15 @@ pub fn convert_between_tapir_derive(struct_def: TokenStream) -> TokenStream {
         impl #impl_generics ::tapir_script::ConvertBetweenTapir for #struct_name #ty_generics #where_clause {
             const SIZE: usize = #size_computation;
 
-            fn write_to_tapir(&self, target: &mut [i32]) -> usize {
+            fn write_to_tapir(&self, target: &mut [i32]) {
                 let mut index = 0;
                 #(#into_tapir_writes)*
-                index
             }
 
-            fn read_from_tapir(values: &[i32]) -> (Self, usize) {
+            fn read_from_tapir(values: &[i32]) -> Self {
                 let mut index = 0;
                 #(#from_tapir_reads)*
-                (
-                    Self { #(#field_idents,)* },
-                    index
-                )
+                Self { #(#field_idents,)* }
             }
         }
     }
