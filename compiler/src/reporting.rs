@@ -316,6 +316,16 @@ pub enum DiagnosticMessage {
     InvalidTokenLabel,
     InvalidFixnumLabel,
 
+    // Import error messages
+    CircularImport {
+        cycle: String,
+    },
+    ImportFileNotFound,
+    DuplicateImportedDefinition {
+        name: String,
+    },
+    ToplevelStatementsInImport,
+
     // Notes
     ExpectedOneOfTokens {
         tokens: String,
@@ -601,6 +611,18 @@ impl DiagnosticMessage {
             DiagnosticMessage::InvalidTokenLabel => "Invalid token".into(),
             DiagnosticMessage::InvalidFixnumLabel => "Invalid fixnum".into(),
 
+            // Import error messages
+            DiagnosticMessage::CircularImport { cycle } => {
+                format!("Circular import detected: {cycle}")
+            }
+            DiagnosticMessage::ImportFileNotFound => "Imported file not found".into(),
+            DiagnosticMessage::DuplicateImportedDefinition { name } => {
+                format!("'{name}' is already defined")
+            }
+            DiagnosticMessage::ToplevelStatementsInImport => {
+                "Imported files cannot contain top-level statements".into()
+            }
+
             // Notes
             DiagnosticMessage::ExpectedOneOfTokens { tokens } => {
                 format!("Expected one of tokens {tokens}")
@@ -861,6 +883,23 @@ pub enum ErrorKind {
     },
     InvalidToken,
     InvalidFix,
+
+    // Import errors
+    /// Circular import detected
+    CircularImport {
+        cycle: String,
+    },
+    /// Imported file not found
+    ImportFileNotFound {
+        path: String,
+    },
+    /// Duplicate definition from import
+    DuplicateImportedDefinition {
+        name: String,
+        kind: String,
+    },
+    /// Top-level statements in imported file
+    ToplevelStatementsInImport,
 }
 
 impl ErrorKind {
@@ -925,6 +964,10 @@ impl ErrorKind {
             Self::InvalidNumber { .. } => "E0030",
             Self::InvalidToken => "E0031",
             Self::InvalidFix => "E0032",
+            Self::CircularImport { .. } => "E0060",
+            Self::ImportFileNotFound { .. } => "E0061",
+            Self::DuplicateImportedDefinition { .. } => "E0062",
+            Self::ToplevelStatementsInImport => "E0063",
         }
     }
 
@@ -1168,6 +1211,14 @@ impl ErrorKind {
             },
             Self::InvalidToken => DiagnosticMessage::InvalidToken,
             Self::InvalidFix => DiagnosticMessage::InvalidFix,
+            Self::CircularImport { cycle } => DiagnosticMessage::CircularImport { cycle: cycle.clone() },
+            Self::ImportFileNotFound { .. } => {
+                DiagnosticMessage::ImportFileNotFound
+            }
+            Self::DuplicateImportedDefinition { name, .. } => {
+                DiagnosticMessage::DuplicateImportedDefinition { name: name.clone() }
+            }
+            Self::ToplevelStatementsInImport => DiagnosticMessage::ToplevelStatementsInImport,
         }
     }
 

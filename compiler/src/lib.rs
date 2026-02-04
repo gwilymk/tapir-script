@@ -6,6 +6,7 @@ use lalrpop_util::lalrpop_mod;
 mod ast;
 mod compile;
 mod file_loader;
+mod import_resolver;
 mod lexer;
 mod prelude;
 mod reporting;
