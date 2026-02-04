@@ -83,7 +83,7 @@ impl LexicalErrorKind {
 #[logos(skip r"[ \t\n\f\r]+", error = LexicalErrorKind)]
 pub enum Token<'input> {
     /// Regular comment starting with single # (skipped/ignored)
-    #[regex(r"#.*\n?", |lex| lex.slice())]
+    #[regex(r"#[^\n]*?", |lex| lex.slice())]
     Comment(&'input str),
 
     #[token("wait")]
