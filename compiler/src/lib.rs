@@ -5,6 +5,7 @@ use lalrpop_util::lalrpop_mod;
 
 mod ast;
 mod compile;
+mod file_loader;
 mod lexer;
 mod prelude;
 mod reporting;
@@ -23,6 +24,7 @@ pub use compile::analyse::{
 pub use compile::disassemble;
 pub use compile::symtab_visitor::GlobalInfo;
 pub use compile::{CompileSettings, Property};
+pub use file_loader::{FileLoader, FsFileLoader, TestFileLoader};
 pub use reporting::format::DiagnosticCache;
 pub use reporting::{
     Diagnostic, DiagnosticMessage, Diagnostics, ErrorKind, Severity, SourcePosition, SourceRange,
