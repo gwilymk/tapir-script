@@ -110,3 +110,16 @@ See `docs/tapir-reference.md` for the complete tapir-script language syntax and 
 Tests use `insta` with RON format. Snapshots are in `snapshot_tests/` directories within each crate's source tree.
 Look at the `.snap.new` files yourself to decide if you're happy with the test results, but NEVER accept them. Always
 stop and ask me to review the snapshots and accept them myself.
+
+## Developer Experience Priority
+
+**Error messages are the #1 priority in tapir-script.** Developer experience is the most important aspect of the language.
+
+When adding features:
+1. Always consider error messages first - what happens when things go wrong?
+2. Accumulate as many errors as possible before stopping compilation (the "tapir error handling way")
+3. Provide helpful, actionable error messages with clear context
+4. Include relevant source locations in all diagnostics
+5. Consider edge cases and how they'll be reported to users
+
+Never bail out early if you can continue to find more errors. Users should see all the problems at once, not fix one error only to discover another.
