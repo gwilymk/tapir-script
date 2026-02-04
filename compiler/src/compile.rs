@@ -11,13 +11,23 @@ use crate::{
         BlockId, SymbolSpans, TapIr, TapIrFunction, create_ir, make_ssa,
         regalloc::{self, RegisterAllocations},
     },
-    prelude::{self, USER_FILE_ID},
+    file_loader::FileLoader,
+    grammar,
+    import_resolver::ImportResolver,
+    lexer::Lexer,
+    prelude::{PRELUDE_FILE_ID, USER_FILE_ID},
     reporting::{DiagnosticMessage, Diagnostics},
     tokens::Span,
     types::{StructRegistry, Type},
 };
 
 use self::symtab_visitor::SymTab;
+
+/// Path used for the embedded prelude in the file loader.
+pub const PRELUDE_PATH: &str = "@prelude";
+
+/// The bundled prelude source code.
+pub const PRELUDE_SOURCE: &str = include_str!("../stdlib/prelude.tapir");
 
 pub mod analyse;
 pub(crate) mod constant_eval;
@@ -138,23 +148,97 @@ pub struct CompileOutput {
     pub warnings: Diagnostics,
 }
 
-pub fn compile(
+/// Compile with a file loader for resolving imports.
+///
+/// This is the primary compile function for multi-file compilation.
+/// The file loader owns source strings and provides import resolution.
+///
+/// The `filename` should be relative or absolute path that the file loader
+/// can resolve. The file loader must already contain the main file's content.
+pub fn compile_with_loader(
     filename: impl AsRef<Path>,
-    input: &str,
     settings: &CompileSettings,
+    file_loader: &dyn FileLoader,
 ) -> Result<CompileOutput, Diagnostics> {
-    let mut diagnostics = Diagnostics::new(USER_FILE_ID, &filename, input);
+    let filename = filename.as_ref();
 
-    let mut ast = match prelude::parse_with_prelude(
-        &filename,
-        input,
-        &mut diagnostics,
-        settings.enable_prelude,
-    ) {
-        Some((ast, _)) => ast,
-        None => return Err(diagnostics),
+    // Determine file IDs: prelude gets 0, main file gets 1, imports start at 2
+    let (prelude_file_id, main_file_id, import_start_id) = if settings.enable_prelude {
+        (Some(PRELUDE_FILE_ID), USER_FILE_ID, 2)
+    } else {
+        (None, PRELUDE_FILE_ID, 1) // When no prelude, main file uses ID 0
     };
 
+    // Load main file from the file loader
+    let main_source: &str = match file_loader.load(filename) {
+        Some(s) => s,
+        None => {
+            // Create minimal diagnostics for file not found
+            let mut diagnostics = Diagnostics::new(main_file_id, filename, "");
+            crate::ErrorKind::ImportFileNotFound {
+                path: filename.display().to_string(),
+            }
+            .at(
+                Span::new(main_file_id, 0, 0),
+                DiagnosticMessage::ImportFileNotFound,
+            )
+            .emit(&mut diagnostics);
+            return Err(diagnostics);
+        }
+    };
+
+    let mut diagnostics = Diagnostics::new(main_file_id, filename, main_source);
+
+    // Parse prelude if enabled
+    let mut ast = if let Some(prelude_id) = prelude_file_id {
+        let prelude_source = file_loader
+            .load(Path::new(PRELUDE_PATH))
+            .expect("Prelude must be inserted into file loader before compile_with_loader");
+
+        diagnostics.add_file(prelude_id, PRELUDE_PATH, prelude_source);
+
+        // Parse prelude
+        let parser = grammar::ScriptParser::new();
+        let mut prelude_lexer = Lexer::new(prelude_source, prelude_id);
+        let prelude_ast = match parser.parse(prelude_id, &mut diagnostics, prelude_lexer.iter()) {
+            Ok(ast) => ast,
+            Err(e) => {
+                diagnostics.add_lalrpop(e, prelude_id);
+                return Err(diagnostics);
+            }
+        };
+
+        // Parse main file
+        let mut main_lexer = Lexer::new(main_source, main_file_id);
+        let mut main_ast = match parser.parse(main_file_id, &mut diagnostics, main_lexer.iter()) {
+            Ok(ast) => ast,
+            Err(e) => {
+                diagnostics.add_lalrpop(e, main_file_id);
+                return Err(diagnostics);
+            }
+        };
+
+        // Merge prelude into main AST
+        main_ast.merge_from(prelude_ast);
+        main_ast
+    } else {
+        // No prelude: parse main file only (using prelude file ID for builtin declarations)
+        let parser = grammar::ScriptParser::new();
+        let mut main_lexer = Lexer::new(main_source, main_file_id);
+        match parser.parse(main_file_id, &mut diagnostics, main_lexer.iter()) {
+            Ok(ast) => ast,
+            Err(e) => {
+                diagnostics.add_lalrpop(e, main_file_id);
+                return Err(diagnostics);
+            }
+        }
+    };
+
+    // Resolve imports
+    let mut import_resolver = ImportResolver::new(file_loader, import_start_id);
+    import_resolver.resolve_imports(&mut ast, filename, &mut diagnostics);
+
+    // Continue with normal compilation pipeline
     let (mut symtab, type_table, struct_registry) =
         analyse_ast(&mut ast, settings, &mut diagnostics);
 
@@ -222,7 +306,6 @@ pub fn compile(
 
     for mut function in ir_functions {
         let registers = regalloc::allocate_registers(&mut function);
-
         compiler.compile_function(&function, &registers);
     }
 
@@ -683,11 +766,19 @@ mod test {
 
     #[test]
     fn compiler_snapshot_tests() {
+        use crate::file_loader::FsFileLoader;
+
         glob!("snapshot_tests", "compiler/*.tapir", |path| {
             let input = fs::read_to_string(path).unwrap();
 
             let enable_optimisations = input.contains("# optimise\n");
             let enable_prelude = input.contains("# prelude\n");
+
+            let loader = FsFileLoader::new();
+            loader.insert(path, &input);
+            if enable_prelude {
+                loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+            }
 
             let compiler_settings = CompileSettings {
                 available_fields: None,
@@ -696,7 +787,7 @@ mod test {
                 has_event_type: true,
             };
 
-            let output = compile(path, &input, &compiler_settings).unwrap();
+            let output = compile_with_loader(path, &compiler_settings, &loader).unwrap();
 
             let mut decompiled = String::new();
             disassemble::disassemble(&output.bytecode.data, &mut decompiled).unwrap();
@@ -707,7 +798,12 @@ mod test {
 
     #[test]
     fn builtin_outside_prelude_is_error() {
+        use crate::file_loader::TestFileLoader;
+
         let source = "builtin(99) fn my_builtin(x: int) -> int;";
+        let loader = TestFileLoader::new().with_file("test.tapir", source);
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+
         let settings = CompileSettings {
             available_fields: None,
             enable_optimisations: false,
@@ -715,7 +811,7 @@ mod test {
             has_event_type: true,
         };
 
-        let result = compile("test.tapir", source, &settings);
+        let result = compile_with_loader("test.tapir", &settings, &loader);
         match result {
             Ok(_) => panic!("Expected compilation to fail"),
             Err(mut err) => {
@@ -731,11 +827,16 @@ mod test {
 
     #[test]
     fn event_handler_without_event_type_is_error() {
+        use crate::file_loader::TestFileLoader;
+
         let source = r#"
 event fn on_start() {
     wait;
 }
 "#;
+        let loader = TestFileLoader::new().with_file("test.tapir", source);
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+
         let settings = CompileSettings {
             available_fields: None,
             enable_optimisations: false,
@@ -743,7 +844,7 @@ event fn on_start() {
             has_event_type: false, // This triggers the error
         };
 
-        let result = compile("test.tapir", source, &settings);
+        let result = compile_with_loader("test.tapir", &settings, &loader);
         match result {
             Ok(_) => panic!("Expected compilation to fail"),
             Err(mut err) => {
@@ -751,5 +852,109 @@ event fn on_start() {
                 assert_snapshot!(msg);
             }
         }
+    }
+
+    #[test]
+    fn compile_with_loader_simple() {
+        use crate::file_loader::TestFileLoader;
+
+        let loader = TestFileLoader::new().with_file("main.tapir", "property x: int; x = 42;");
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+            enable_prelude: true,
+            has_event_type: true,
+        };
+
+        let result = compile_with_loader("main.tapir", &settings, &loader);
+        assert!(result.is_ok(), "Compilation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn compile_with_loader_with_import() {
+        use crate::file_loader::TestFileLoader;
+
+        let loader = TestFileLoader::new()
+            .with_file("types.tapir", "struct Point { x: int, y: int }")
+            .with_file(
+                "main.tapir",
+                "import types; property pos: Point; pos.x = 10;",
+            );
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+            enable_prelude: true,
+            has_event_type: true,
+        };
+
+        let result = compile_with_loader("main.tapir", &settings, &loader);
+        assert!(result.is_ok(), "Compilation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn compile_with_loader_transitive_import() {
+        use crate::file_loader::TestFileLoader;
+
+        let loader = TestFileLoader::new()
+            .with_file("common.tapir", "struct Point { x: int, y: int }")
+            .with_file(
+                "utils.tapir",
+                "import common; fn make_point() -> Point { return Point(0, 0); }",
+            )
+            .with_file(
+                "main.tapir",
+                "import utils; property pos: Point; pos = make_point();",
+            );
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+            enable_prelude: true,
+            has_event_type: true,
+        };
+
+        let result = compile_with_loader("main.tapir", &settings, &loader);
+        assert!(result.is_ok(), "Compilation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn compile_with_loader_no_prelude() {
+        use crate::file_loader::TestFileLoader;
+
+        let loader = TestFileLoader::new().with_file("main.tapir", "property x: int; x = 42;");
+        // Don't insert prelude
+
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+            enable_prelude: false,
+            has_event_type: true,
+        };
+
+        let result = compile_with_loader("main.tapir", &settings, &loader);
+        assert!(result.is_ok(), "Compilation failed: {:?}", result.err());
+    }
+
+    #[test]
+    fn compile_with_loader_import_error() {
+        use crate::file_loader::TestFileLoader;
+
+        let loader = TestFileLoader::new().with_file("main.tapir", "import nonexistent;");
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+
+        let settings = CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+            enable_prelude: true,
+            has_event_type: true,
+        };
+
+        let result = compile_with_loader("main.tapir", &settings, &loader);
+        assert!(result.is_err());
     }
 }

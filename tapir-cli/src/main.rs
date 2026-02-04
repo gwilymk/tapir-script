@@ -1,7 +1,10 @@
-use std::{fs, io::Read, process::ExitCode};
+use std::{io::Read, path::Path, process::ExitCode};
 
 use clap::{Parser, Subcommand};
-use compiler::{CompileResult, CompileSettings, Diagnostics, disassemble};
+use compiler::{
+    CompileResult, CompileSettings, Diagnostics, FsFileLoader, PRELUDE_PATH, PRELUDE_SOURCE,
+    compile_with_loader, disassemble,
+};
 
 #[derive(Parser)]
 #[command(name = "tapirc")]
@@ -54,21 +57,26 @@ fn lsp_command() -> ExitCode {
 }
 
 fn compile_command(file: &str, no_opt: bool, no_prelude: bool) -> ExitCode {
-    let (display_name, input) = if file == "-" {
+    let loader = FsFileLoader::new();
+
+    // Insert prelude if enabled
+    if !no_prelude {
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+    }
+
+    // Handle stdin or file input
+    let file_path = if file == "-" {
+        // Read from stdin and insert into loader
         let mut input = String::new();
         if let Err(e) = std::io::stdin().read_to_string(&mut input) {
             eprintln!("Error reading from stdin: {}", e);
             return ExitCode::from(2);
         }
-        ("<stdin>".to_string(), input)
+        let path = "<stdin>";
+        loader.insert(path, input);
+        path
     } else {
-        match fs::read_to_string(file) {
-            Ok(content) => (file.to_string(), content),
-            Err(e) => {
-                eprintln!("Error reading file '{}': {}", file, e);
-                return ExitCode::from(2);
-            }
-        }
+        file
     };
 
     let settings = CompileSettings {
@@ -79,7 +87,7 @@ fn compile_command(file: &str, no_opt: bool, no_prelude: bool) -> ExitCode {
         has_event_type: true,
     };
 
-    match compiler::compile(&display_name, &input, settings) {
+    match compile_with_loader(Path::new(file_path), &settings, &loader) {
         Ok(result) => {
             print_result(&result);
             if result.warnings.has_any() {

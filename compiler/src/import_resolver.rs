@@ -78,11 +78,7 @@ impl<'src> ImportResolver<'src> {
                 .skip_while(|p| *p != &canonical)
                 .map(|p| p.display().to_string())
                 .collect();
-            let cycle_str = format!(
-                "{} -> {}",
-                cycle.join(" -> "),
-                canonical.display()
-            );
+            let cycle_str = format!("{} -> {}", cycle.join(" -> "), canonical.display());
 
             // We can't easily get the span here, so use a generic error
             // The actual span would be from the import that caused this
@@ -131,10 +127,10 @@ impl<'src> ImportResolver<'src> {
         let import_path = self.resolve_import_path(file_dir, import);
 
         // Check if already loaded (deduplication)
-        if let Some(canonical) = self.loader.canonicalise(&import_path) {
-            if self.loaded_files.contains(&canonical) {
-                return; // Already loaded, skip
-            }
+        if let Some(canonical) = self.loader.canonicalise(&import_path)
+            && self.loaded_files.contains(&canonical)
+        {
+            return; // Already loaded, skip
         }
 
         // Load the file - source string has 'src lifetime from the loader
@@ -158,7 +154,8 @@ impl<'src> ImportResolver<'src> {
         let parser = grammar::ScriptParser::new();
         let mut lexer = Lexer::new(source, file_id);
 
-        let mut imported_ast: Script<'src> = match parser.parse(file_id, diagnostics, lexer.iter()) {
+        let mut imported_ast: Script<'src> = match parser.parse(file_id, diagnostics, lexer.iter())
+        {
             Ok(ast) => ast,
             Err(e) => {
                 diagnostics.add_lalrpop(e, file_id);
@@ -263,7 +260,11 @@ impl<'src> ImportResolver<'src> {
         // Check for duplicate properties
         for prop in source.property_declarations {
             let name = prop.name.name();
-            if target.property_declarations.iter().any(|p| p.name.name() == name) {
+            if target
+                .property_declarations
+                .iter()
+                .any(|p| p.name.name() == name)
+            {
                 ErrorKind::DuplicateImportedDefinition {
                     name: name.to_string(),
                     kind: "property".to_string(),
@@ -323,7 +324,11 @@ impl<'src> ImportResolver<'src> {
         // Check for duplicate builtin functions
         for builtin in source.builtin_functions {
             let mangled = builtin.mangled_name();
-            if target.builtin_functions.iter().any(|b| b.mangled_name() == mangled) {
+            if target
+                .builtin_functions
+                .iter()
+                .any(|b| b.mangled_name() == mangled)
+            {
                 ErrorKind::DuplicateImportedDefinition {
                     name: mangled.to_string(),
                     kind: "builtin function".to_string(),
@@ -347,7 +352,11 @@ mod tests {
     use super::*;
     use crate::file_loader::TestFileLoader;
 
-    fn parse_script<'a>(source: &'a str, file_id: FileId, diagnostics: &mut Diagnostics) -> Option<Script<'a>> {
+    fn parse_script<'a>(
+        source: &'a str,
+        file_id: FileId,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<Script<'a>> {
         let parser = grammar::ScriptParser::new();
         let mut lexer = Lexer::new(source, file_id);
         match parser.parse(file_id, diagnostics, lexer.iter()) {
@@ -376,7 +385,11 @@ mod tests {
         let mut resolver = ImportResolver::new(&loader, 1);
         resolver.resolve_imports(&mut ast, Path::new("main.tapir"), &mut diagnostics);
 
-        assert!(!diagnostics.has_errors(), "Import resolution failed: {:?}", diagnostics);
+        assert!(
+            !diagnostics.has_errors(),
+            "Import resolution failed: {:?}",
+            diagnostics
+        );
         assert_eq!(ast.imports.len(), 0); // Imports consumed
         assert_eq!(ast.struct_declarations.len(), 1); // Point imported
         assert_eq!(ast.struct_declarations[0].name.name, "Point");
@@ -385,7 +398,10 @@ mod tests {
     #[test]
     fn test_nested_import() {
         let loader = TestFileLoader::new()
-            .with_file("utils/math.tapir", "fn add(a: int, b: int) -> int { return a + b; }")
+            .with_file(
+                "utils/math.tapir",
+                "fn add(a: int, b: int) -> int { return a + b; }",
+            )
             .with_file("main.tapir", "import utils/math;");
 
         let main_source = loader.get("main.tapir");
@@ -397,7 +413,11 @@ mod tests {
         let mut resolver = ImportResolver::new(&loader, 1);
         resolver.resolve_imports(&mut ast, Path::new("main.tapir"), &mut diagnostics);
 
-        assert!(!diagnostics.has_errors(), "Import resolution failed: {:?}", diagnostics);
+        assert!(
+            !diagnostics.has_errors(),
+            "Import resolution failed: {:?}",
+            diagnostics
+        );
         // Should have @toplevel + add function
         assert!(ast.functions.iter().any(|f| f.name == "add"));
     }
@@ -417,14 +437,17 @@ mod tests {
         let mut resolver = ImportResolver::new(&loader, 1);
         resolver.resolve_imports(&mut ast, Path::new("sub/main.tapir"), &mut diagnostics);
 
-        assert!(!diagnostics.has_errors(), "Import resolution failed: {:?}", diagnostics);
+        assert!(
+            !diagnostics.has_errors(),
+            "Import resolution failed: {:?}",
+            diagnostics
+        );
         assert_eq!(ast.struct_declarations.len(), 1);
     }
 
     #[test]
     fn test_file_not_found() {
-        let loader = TestFileLoader::new()
-            .with_file("main.tapir", "import nonexistent;");
+        let loader = TestFileLoader::new().with_file("main.tapir", "import nonexistent;");
 
         let main_source = loader.get("main.tapir");
         let file_id = FileId::new(0);
@@ -475,7 +498,11 @@ mod tests {
         resolver.resolve_imports(&mut ast, Path::new("main.tapir"), &mut diagnostics);
 
         // Should succeed - common is only loaded once via deduplication
-        assert!(!diagnostics.has_errors(), "Diamond import failed: {:?}", diagnostics);
+        assert!(
+            !diagnostics.has_errors(),
+            "Diamond import failed: {:?}",
+            diagnostics
+        );
         // Should have exactly one Point struct
         assert_eq!(ast.struct_declarations.len(), 1);
     }
@@ -485,7 +512,10 @@ mod tests {
         // main imports a, a imports common, main should get common's definitions
         let loader = TestFileLoader::new()
             .with_file("common.tapir", "struct Point { x: int, y: int }")
-            .with_file("a.tapir", "import common; fn make_point() -> Point { return Point(0, 0); }")
+            .with_file(
+                "a.tapir",
+                "import common; fn make_point() -> Point { return Point(0, 0); }",
+            )
             .with_file("main.tapir", "import a;");
 
         let main_source = loader.get("main.tapir");
@@ -497,7 +527,11 @@ mod tests {
         let mut resolver = ImportResolver::new(&loader, 1);
         resolver.resolve_imports(&mut ast, Path::new("main.tapir"), &mut diagnostics);
 
-        assert!(!diagnostics.has_errors(), "Transitive import failed: {:?}", diagnostics);
+        assert!(
+            !diagnostics.has_errors(),
+            "Transitive import failed: {:?}",
+            diagnostics
+        );
         // Should have Point struct (from common via a)
         assert_eq!(ast.struct_declarations.len(), 1);
         // Should have make_point function (from a)

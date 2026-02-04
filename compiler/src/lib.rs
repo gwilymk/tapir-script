@@ -24,7 +24,7 @@ pub use compile::analyse::{
 };
 pub use compile::disassemble;
 pub use compile::symtab_visitor::GlobalInfo;
-pub use compile::{CompileSettings, Property};
+pub use compile::{CompileSettings, Property, PRELUDE_PATH, PRELUDE_SOURCE};
 pub use file_loader::{FileLoader, FsFileLoader, TestFileLoader};
 pub use reporting::format::DiagnosticCache;
 pub use reporting::{
@@ -33,12 +33,52 @@ pub use reporting::{
 pub use tokens::Span;
 pub use types::{StructDef, StructField, StructId, StructRegistry, Type};
 
+/// Compile a single file without import support.
+///
+/// This is a convenience wrapper around `compile_with_loader` for single-file
+/// compilation. If you need imports, use `compile_with_loader` directly with
+/// an `FsFileLoader`.
 pub fn compile(
     filename: impl AsRef<Path>,
     input: &str,
     compile_settings: CompileSettings,
 ) -> Result<CompileResult, Diagnostics> {
-    let output = compile::compile(filename, input, &compile_settings)?;
+    let loader = FsFileLoader::new();
+
+    // Insert the input at the filename path
+    loader.insert(filename.as_ref(), input);
+
+    // Insert prelude if enabled
+    if compile_settings.enable_prelude {
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+    }
+
+    compile_with_loader(filename, &compile_settings, &loader)
+}
+
+/// Compile with a file loader for resolving imports.
+///
+/// This is the primary compile function for multi-file compilation.
+/// The file loader owns source strings and provides import resolution.
+///
+/// **Setup requirements:**
+/// - If `settings.enable_prelude` is true, the prelude must be inserted into
+///   the file loader at `PRELUDE_PATH` before calling this function.
+/// - The main file must be loadable from the file loader at `filename`.
+///
+/// Example:
+/// ```ignore
+/// let loader = FsFileLoader::new();
+/// loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+/// // ... file is on disk, loader will read it
+/// let result = compile_with_loader("script.tapir", &settings, &loader)?;
+/// ```
+pub fn compile_with_loader(
+    filename: impl AsRef<Path>,
+    compile_settings: &CompileSettings,
+    file_loader: &dyn FileLoader,
+) -> Result<CompileResult, Diagnostics> {
+    let output = compile::compile_with_loader(filename, compile_settings, file_loader)?;
     let parts = output.bytecode.into_parts();
 
     Ok(CompileResult {
