@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::error::Error;
+use std::path::Path;
 use std::time::Instant;
 
 use compiler::Severity;
-use compiler::{AnalysisResult, CompileSettings};
+use compiler::{AnalysisResult, CompileSettings, FsFileLoader, PRELUDE_PATH, PRELUDE_SOURCE};
 use lsp_server::{Connection, Message, Notification};
 use lsp_types::{
     Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, PublishDiagnosticsParams, Url,
@@ -33,8 +34,17 @@ pub fn analyse_and_publish(
         has_event_type: true,
     };
 
+    // Create file loader with the current file's content
+    let loader = FsFileLoader::new();
+    loader.insert(Path::new(filename), &text);
+
+    // Insert prelude if enabled
+    if !is_prelude {
+        loader.insert(PRELUDE_PATH, PRELUDE_SOURCE);
+    }
+
     let start = Instant::now();
-    let mut analysis = compiler::analyse(filename, &text, &settings);
+    let mut analysis = compiler::analyse_with_loader(filename, &settings, &loader);
     let elapsed = start.elapsed();
 
     eprintln!("[tapir-lsp] Analysed {filename} in {elapsed:?}");

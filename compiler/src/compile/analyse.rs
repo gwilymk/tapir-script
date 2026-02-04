@@ -9,13 +9,18 @@ use std::{collections::HashMap, path::Path};
 use crate::{
     PropertyInfo,
     ast::Script,
+    file_loader::FileLoader,
+    grammar,
+    import_resolver::ImportResolver,
+    lexer::Lexer,
     prelude::{self, PRELUDE_FILE_ID, USER_FILE_ID},
     reporting::Diagnostics,
+    tokens::Span,
 };
 
 use super::{
-    CompileSettings, Property, analyse_ast, references::extract_references, symtab_visitor::SymTab,
-    type_visitor::TypeTable,
+    CompileSettings, PRELUDE_PATH, PRELUDE_SOURCE, Property, analyse_ast,
+    references::extract_references, symtab_visitor::SymTab, type_visitor::TypeTable,
 };
 
 pub use types::{
@@ -68,6 +73,191 @@ pub fn analyse(
         }
     };
 
+    let (symtab, type_table, struct_registry) = analyse_ast(&mut ast, settings, &mut diagnostics);
+
+    // Extract symbol information
+    let symbols = extract_symbols(&symtab, &type_table);
+
+    // Extract global information
+    let globals = symtab.globals().to_vec();
+
+    // Extract property information
+    let properties = symtab.properties().iter().map(property_to_info).collect();
+
+    // Extract function information
+    let functions = extract_functions(&ast, &symtab);
+
+    // Extract references from the AST
+    let references = extract_references(&ast, &symtab, &struct_registry);
+
+    // Extract hover information
+    let hover_info = extract_hover_info(&ast, &symtab, &type_table, &struct_registry, &comments);
+
+    // Extract signature help information
+    let (signatures, call_sites) = extract_signature_help(&ast);
+
+    // Extract inlay hints for variable types
+    let inlay_hints = extract_inlay_hints(&ast, &symtab, &type_table, &struct_registry);
+
+    AnalysisResult {
+        diagnostics,
+        symbols,
+        globals,
+        properties,
+        functions,
+        references,
+        hover_info,
+        call_sites,
+        signatures,
+        inlay_hints,
+    }
+}
+
+/// Analyse a tapir script with import support.
+///
+/// This uses a file loader to resolve imports. The main file must be loadable
+/// from the file loader at `filename`. If `settings.enable_prelude` is true,
+/// the prelude must be available at `PRELUDE_PATH`.
+pub fn analyse_with_loader(
+    filename: impl AsRef<Path>,
+    settings: &CompileSettings,
+    file_loader: &dyn FileLoader,
+) -> AnalysisResult {
+    let filename = filename.as_ref();
+
+    // Determine file IDs: prelude gets 0, main file gets 1, imports start at 2
+    let (prelude_file_id, main_file_id, import_start_id) = if settings.enable_prelude {
+        (Some(PRELUDE_FILE_ID), USER_FILE_ID, 2)
+    } else {
+        (None, PRELUDE_FILE_ID, 1)
+    };
+
+    // Load main file from the file loader
+    let main_source: &str = match file_loader.load(filename) {
+        Some(s) => s,
+        None => {
+            // Create minimal diagnostics for file not found
+            let mut diagnostics = Diagnostics::new(main_file_id, filename, "");
+            crate::ErrorKind::ImportFileNotFound {
+                path: filename.display().to_string(),
+            }
+            .at(
+                Span::new(main_file_id, 0, 0),
+                crate::DiagnosticMessage::ImportFileNotFound,
+            )
+            .emit(&mut diagnostics);
+
+            return AnalysisResult {
+                diagnostics,
+                symbols: vec![],
+                globals: vec![],
+                properties: vec![],
+                functions: vec![],
+                references: HashMap::new(),
+                hover_info: HashMap::new(),
+                call_sites: vec![],
+                signatures: HashMap::new(),
+                inlay_hints: vec![],
+            };
+        }
+    };
+
+    let mut diagnostics = Diagnostics::new(main_file_id, filename, main_source);
+    let parser = grammar::ScriptParser::new();
+
+    // Parse prelude if enabled
+    let mut ast = if let Some(prelude_id) = prelude_file_id {
+        let prelude_source = match file_loader.load(Path::new(PRELUDE_PATH)) {
+            Some(s) => s,
+            None => {
+                // Prelude not found - use embedded version
+                PRELUDE_SOURCE
+            }
+        };
+
+        diagnostics.add_file(prelude_id, PRELUDE_PATH, prelude_source);
+
+        // Parse prelude
+        let mut prelude_lexer = Lexer::new(prelude_source, prelude_id);
+        let prelude_ast = match parser.parse(prelude_id, &mut diagnostics, prelude_lexer.iter()) {
+            Ok(ast) => ast,
+            Err(e) => {
+                diagnostics.add_lalrpop(e, prelude_id);
+                return AnalysisResult {
+                    diagnostics,
+                    symbols: vec![],
+                    globals: vec![],
+                    properties: vec![],
+                    functions: vec![],
+                    references: HashMap::new(),
+                    hover_info: HashMap::new(),
+                    call_sites: vec![],
+                    signatures: HashMap::new(),
+                    inlay_hints: vec![],
+                };
+            }
+        };
+
+        // Parse main file
+        let mut main_lexer = Lexer::new(main_source, main_file_id);
+        let mut main_ast = match parser.parse(main_file_id, &mut diagnostics, main_lexer.iter()) {
+            Ok(ast) => ast,
+            Err(e) => {
+                diagnostics.add_lalrpop(e, main_file_id);
+                return AnalysisResult {
+                    diagnostics,
+                    symbols: vec![],
+                    globals: vec![],
+                    properties: vec![],
+                    functions: vec![],
+                    references: HashMap::new(),
+                    hover_info: HashMap::new(),
+                    call_sites: vec![],
+                    signatures: HashMap::new(),
+                    inlay_hints: vec![],
+                };
+            }
+        };
+
+        // Merge prelude into main AST
+        main_ast.merge_from(prelude_ast);
+        main_ast
+    } else {
+        // No prelude: parse main file only
+        let mut main_lexer = Lexer::new(main_source, main_file_id);
+        match parser.parse(main_file_id, &mut diagnostics, main_lexer.iter()) {
+            Ok(ast) => ast,
+            Err(e) => {
+                diagnostics.add_lalrpop(e, main_file_id);
+                return AnalysisResult {
+                    diagnostics,
+                    symbols: vec![],
+                    globals: vec![],
+                    properties: vec![],
+                    functions: vec![],
+                    references: HashMap::new(),
+                    hover_info: HashMap::new(),
+                    call_sites: vec![],
+                    signatures: HashMap::new(),
+                    inlay_hints: vec![],
+                };
+            }
+        }
+    };
+
+    // Resolve imports
+    let mut import_resolver = ImportResolver::new(file_loader, import_start_id);
+    import_resolver.resolve_imports(&mut ast, filename, &mut diagnostics);
+
+    // Re-parse main file to get comments (we need to do this after import resolution
+    // since we don't want to include comments from imported files in hover info)
+    let comments = {
+        let mut lexer = Lexer::new(main_source, main_file_id);
+        let _ = lexer.iter().count(); // Consume all tokens to populate comment table
+        lexer.into_comment_table()
+    };
+
+    // Continue with analysis
     let (symtab, type_table, struct_registry) = analyse_ast(&mut ast, settings, &mut diagnostics);
 
     // Extract symbol information

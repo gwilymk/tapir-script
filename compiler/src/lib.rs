@@ -20,7 +20,7 @@ mod grammar_test;
 
 pub use compile::analyse::{
     AnalysisResult, CallSiteInfo, FunctionArgumentInfo, FunctionInfo, HoverInfo, InlayHintInfo,
-    ParameterInfo, SignatureInfo, SymbolInfo, analyse,
+    ParameterInfo, SignatureInfo, SymbolInfo, analyse, analyse_with_loader,
 };
 pub use compile::disassemble;
 pub use compile::symtab_visitor::GlobalInfo;

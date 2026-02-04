@@ -4,14 +4,13 @@
   "description": "Language support for Tapir Script",
   "version": "0.0.1",
   "publisher": "tapir",
+  "repository": "https://github.com/gwilymk/tapir-script",
+  "license": "MPL-2.0",
   "engines": {
     "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages"
-  ],
-  "activationEvents": [
-    "onLanguage:tapir"
   ],
   "main": "./dist/extension.js",
   "contributes": {
