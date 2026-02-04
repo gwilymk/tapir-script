@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use compiler::{CompileSettings, Type};
+use compiler::CompileSettings;
 use heck::ToUpperCamelCase;
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote, ToTokens};
@@ -69,37 +69,29 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         .map(|(trigger_index, trigger)| {
             let ident = format_ident!("{}", trigger.name);
 
-            let (mut args, definitions): (Vec<_>, Vec<_>) = trigger
-                .arguments
-                .iter()
-                .enumerate()
-                .rev()
-                .map(|(index, ty)| {
-                    let arg_name = format_ident!("arg{index}");
-                    let value = quote!(stack[#index]);
-                    let value = match *ty {
-                        Type::Int => quote! { #value },
-                        Type::Fix => quote! { ::tapir_script::Fix::from_raw(#value) },
-                        Type::Bool => quote! { #value != 0 },
-                        _ => panic!("Unknown type {ty}"),
-                    };
+            let arg_names: Vec<_> = (0..trigger.arguments.len())
+                .map(|i| format_ident!("arg{i}"))
+                .collect();
 
-                    (arg_name.clone(), quote! { let #arg_name = #value })
+            let definitions: Vec<_> = arg_names
+                .iter()
+                .map(|arg_name| {
+                    quote! { let #arg_name = ::tapir_script::__private::read_arg(stack, &mut __offset); }
                 })
-                .unzip();
+                .collect();
 
             let trigger_index = trigger_index as u8;
 
-            let args = if args.is_empty() {
+            let args = if arg_names.is_empty() {
                 quote! {}
             } else {
-                args.reverse();
-                quote! { (#(#args,)*) }
+                quote! { (#(#arg_names,)*) }
             };
 
             quote! {
                 #trigger_index => {
-                    #(#definitions;)*
+                    let mut __offset = 0;
+                    #(#definitions)*
 
                     #trigger_type::#ident #args
                 }
@@ -158,50 +150,35 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
         |(extern_fn_index, extern_function)| {
             let fn_name_ident = format_ident!("{}", extern_function.name);
 
-            let (arg_idents, arg_definitions): (Vec<_>, Vec<_>) = extern_function
-                .arguments
+            // Generate argument reading code - uses type inference from function signature
+            let arg_idents: Vec<_> = (0..extern_function.arguments.len())
+                .map(|i| format_ident!("arg{}", i))
+                .collect();
+
+            let arg_definitions: Vec<_> = arg_idents
                 .iter()
-                .enumerate()
-                .map(|(i, ty)| {
-                    let arg_ident = format_ident!("arg{}", i);
-
-                    let value = quote!(stack[first_arg + #i]);
-                    let value = match *ty {
-                        Type::Int => quote! { #value },
-                        Type::Fix => quote! { ::tapir_script::Fix::from_raw(#value) },
-                        Type::Bool => quote! { #value != 0 },
-                        _ => panic!("Unknown type {ty}"),
-                    };
-
-                    (arg_ident.clone(), quote! { let #arg_ident = #value })
+                .map(|arg_ident| {
+                    quote! {
+                        let #arg_ident = ::tapir_script::__private::read_arg(stack, &mut __offset);
+                    }
                 })
-                .unzip();
+                .collect();
 
             let args = quote! { (#(#arg_idents,)*) };
 
-            let (ret_idents, ret_handling): (Vec<_>, Vec<_>) = extern_function
-                .returns
+            // Generate return value writing code
+            let ret_idents: Vec<_> = (0..extern_function.returns.len())
+                .map(|i| format_ident!("ret{}", i))
+                .collect();
+
+            let ret_handling: Vec<_> = ret_idents
                 .iter()
-                .enumerate()
-                .map(|(i, ty)| {
-                    let ret_ident = format_ident!("ret{}", i);
-                    let target = quote!({
-                        if stack.len() <= first_arg + #i {
-                            stack.resize(first_arg + #i + 1, 0);
-                        }
-                        &mut stack[first_arg + #i]
-                    });
-
-                    let target_writer = match *ty {
-                        Type::Int => quote! { *#target = #ret_ident },
-                        Type::Fix => quote! { *#target = #ret_ident.to_raw() },
-                        Type::Bool => quote! { *#target = #ret_ident as i32 },
-                        _ => panic!("Unknown type {ty}"),
-                    };
-
-                    (ret_ident, target_writer)
+                .map(|ret_ident| {
+                    quote! {
+                        ::tapir_script::__private::write_ret(&#ret_ident, stack, &mut __ret_offset);
+                    }
                 })
-                .unzip();
+                .collect();
 
             let function_call = if ret_idents.is_empty() {
                 quote! { self.#fn_name_ident #args; }
@@ -216,10 +193,13 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
 
             quote! {
                 #extern_fn_index => {
-                    #(#arg_definitions;)*
+                    let mut __offset = first_arg;
+                    #(#arg_definitions)*
 
                     #function_call
-                    #(#ret_handling;)*
+
+                    let mut __ret_offset = first_arg;
+                    #(#ret_handling)*
                 }
             }
         },

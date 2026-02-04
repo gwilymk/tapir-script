@@ -473,20 +473,22 @@ impl<'a> BlockVisitor<'a> {
                 self.blocks_for_expression(expression, target, symtab);
             }
             ast::StatementKind::Trigger { arguments, .. } => {
-                let args = arguments
-                    .iter()
-                    .map(|a| {
-                        let symbol = symtab.new_temporary();
-                        self.blocks_for_expression(a, symbol, symtab);
-                        symbol
-                    })
-                    .collect();
+                // Evaluate arguments and expand struct types to leaf symbols
+                let mut args = Vec::new();
+                for arg in arguments {
+                    let arg_sym = symtab.new_temporary();
+                    self.blocks_for_expression(arg, arg_sym, symtab);
+                    collect_leaf_symbols(arg_sym, symtab, &mut args);
+                }
 
                 let f = *statement
                     .meta
                     .get()
                     .expect("Should have function IDs by now");
-                self.current_block.push(TapIr::Trigger { f, args });
+                self.current_block.push(TapIr::Trigger {
+                    f,
+                    args: args.into_boxed_slice(),
+                });
             }
             ast::StatementKind::Return { values } => {
                 let mut return_values = Vec::new();

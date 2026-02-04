@@ -69,11 +69,11 @@ position.y = target_y;
 
 # Arrived at health bar - pop into particles
 var particle_pos = position.round() + int2(8, 8);
-trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
-trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
-trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
-trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
-trigger SpawnParticle(particle_pos.x, particle_pos.y, 0);
+trigger SpawnParticle(particle_pos, 0);
+trigger SpawnParticle(particle_pos, 0);
+trigger SpawnParticle(particle_pos, 0);
+trigger SpawnParticle(particle_pos, 0);
+trigger SpawnParticle(particle_pos, 0);
 
 trigger ScreenShake(2);
 trigger PlaySound(1);

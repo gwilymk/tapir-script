@@ -1,0 +1,26 @@
+# Test extern functions with struct parameters
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+property result: Point;
+property distance_result: int;
+
+extern fn add_points(a: Point, b: Point) -> Point;
+extern fn scale_point(p: Point, scale: int) -> Point;
+extern fn get_distance(p: Point) -> int;
+
+# Test extern call with struct arguments and return
+var p1 = Point(10, 20);
+var p2 = Point(5, 15);
+var sum = add_points(p1, p2);
+result = sum;
+
+# Test extern call with mixed args (struct and scalar)
+var scaled = scale_point(p1, 2);
+
+# Test extern call returning scalar from struct arg
+var dist = get_distance(scaled);
+distance_result = dist;

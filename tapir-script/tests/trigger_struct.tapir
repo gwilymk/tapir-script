@@ -1,0 +1,23 @@
+# Test triggers with struct arguments
+
+struct Point {
+    x: int,
+    y: int,
+}
+
+# Trigger with a single struct argument
+var p1 = Point(10, 20);
+trigger PointMoved(p1);
+wait;
+
+# Trigger with struct constructed inline
+trigger PointMoved(Point(5, 15));
+wait;
+
+# Trigger with mixed struct and scalar arguments
+trigger PointScaled(p1, 3);
+wait;
+
+# Trigger with two struct arguments
+var p2 = Point(1, 2);
+trigger PointsAdded(p1, p2);

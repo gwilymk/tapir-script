@@ -12,6 +12,29 @@ use agb_fixnum::Vector2D;
 #[doc(hidden)]
 pub mod __private {
     pub use alloc::vec::Vec;
+
+    use super::ConvertBetweenTapir;
+
+    /// Read a value from the stack at the given offset, advancing the offset.
+    /// Type is inferred from context (e.g., function parameter type).
+    #[inline]
+    pub fn read_arg<T: ConvertBetweenTapir>(stack: &[i32], offset: &mut usize) -> T {
+        let value = T::read_from_tapir(&stack[*offset..*offset + T::SIZE]);
+        *offset += T::SIZE;
+        value
+    }
+
+    /// Write a value to the stack at the given offset, advancing the offset.
+    /// Resizes the stack if necessary.
+    #[inline]
+    pub fn write_ret<T: ConvertBetweenTapir>(value: &T, stack: &mut Vec<i32>, offset: &mut usize) {
+        let size = T::SIZE;
+        if stack.len() < *offset + size {
+            stack.resize(*offset + size, 0);
+        }
+        T::write_to_tapir(value, &mut stack[*offset..*offset + size]);
+        *offset += size;
+    }
 }
 
 impl ConvertBetweenTapir for Vector2D<i32> {
@@ -63,7 +86,9 @@ pub trait ConvertBetweenTapir: Sized {
     /// Convenience method: resize vec and write. Uses SIZE for exact allocation.
     fn write_to_tapir_vec(&self, target: &mut alloc::vec::Vec<i32>) {
         let start = target.len();
-        target.resize(start + Self::SIZE, 0);
+        if target.len() < start + Self::SIZE {
+            target.resize(start + Self::SIZE, 0);
+        }
         self.write_to_tapir(&mut target[start..]);
     }
 }

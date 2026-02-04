@@ -28,12 +28,10 @@ fn blink_task() {
  
 blink_task = spawn blink_task();
 
-event fn input(x: fix, y: fix) {
+event fn input(dir: fix2) {
     if is_stunned {
         return;
     }
-
-    var dir = fix2(x, y);
     current_speed = current_speed + dir * ACCEL;
 
     if dir.x * current_speed.x <= 0. {
@@ -107,16 +105,16 @@ event fn die() {
         position.y = position.y - 0.3;
         wait;
 
-        var pos = position.round();
+        var pos = position.round() + int2(8, 8);
 
         if count % 60 == 0 {
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
-            trigger SpawnParticle(pos.x + 8, pos.y + 8, 2);
+            trigger SpawnParticle(pos, 2);
+            trigger SpawnParticle(pos, 2);
+            trigger SpawnParticle(pos, 2);
+            trigger SpawnParticle(pos, 2);
+            trigger SpawnParticle(pos, 2);
+            trigger SpawnParticle(pos, 2);
+            trigger SpawnParticle(pos, 2);
             trigger PlaySound(2);
 
             trigger ScreenShake(10);

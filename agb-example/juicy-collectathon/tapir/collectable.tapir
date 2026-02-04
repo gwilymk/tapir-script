@@ -51,19 +51,18 @@ event fn collide_with_player() {
     }
 
     if is_health_coin {
-        var position = position.round();
-        trigger CoinToHealth(position.x, position.y);
+        trigger CoinToHealth(position.round());
         trigger DestroySelf;
         return;
     }
 
     var particle_position = position.round() + int2(8, 8);
 
-    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
-    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
-    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
-    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
-    trigger SpawnParticle(particle_position.x, particle_position.y, 0);
+    trigger SpawnParticle(particle_position, 0);
+    trigger SpawnParticle(particle_position, 0);
+    trigger SpawnParticle(particle_position, 0);
+    trigger SpawnParticle(particle_position, 0);
+    trigger SpawnParticle(particle_position, 0);
 
     trigger ScreenShake(3);
     trigger PlaySound(5);

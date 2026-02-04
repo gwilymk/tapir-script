@@ -116,8 +116,8 @@ fn main(gba: &mut agb::Gba) {
                             .send_event(PlayerAnimationEvent::Die);
                     }
                 }
-                AnimationEvent::SpawnParticle(x, y, kind) => {
-                    new_entities.push(Particle::new(vec2(x, y), kind).into());
+                AnimationEvent::SpawnParticle(pos, kind) => {
+                    new_entities.push(Particle::new(pos, kind).into());
                 }
                 AnimationEvent::ScreenShake(intensity) => {
                     screen_shaker.send_event(ScreenShakerEvent::Shake(intensity));
@@ -137,8 +137,8 @@ fn main(gba: &mut agb::Gba) {
             for event in entity.update(player_rect) {
                 match event {
                     AnimationEvent::DestroySelf => keep = false,
-                    AnimationEvent::SpawnParticle(x, y, kind) => {
-                        new_entities.push(Particle::new(vec2(x, y), kind).into());
+                    AnimationEvent::SpawnParticle(pos, kind) => {
+                        new_entities.push(Particle::new(pos, kind).into());
                     }
                     AnimationEvent::IncreaseScore => {
                         sfx::play_sfx(&mut mixer, 0, num!(1) + Fix::new(score % 10) / 20);
@@ -171,12 +171,12 @@ fn main(gba: &mut agb::Gba) {
                     AnimationEvent::PlaySound(sfx_id) => {
                         sfx::play_sfx(&mut mixer, sfx_id, num!(1));
                     }
-                    AnimationEvent::CoinToHealth(x, y) => {
+                    AnimationEvent::CoinToHealth(pos) => {
                         // Spawn flying coin that goes to health bar
                         let target_x = WIDTH / 2 + player_health * 7;
                         let target_y = 1;
                         new_entities.push(
-                            CoinToHealth::new(vec2(x.into(), y.into()), vec2(target_x, target_y))
+                            CoinToHealth::new(pos.into(), vec2(target_x, target_y))
                                 .into(),
                         );
                     }
@@ -206,7 +206,7 @@ fn main(gba: &mut agb::Gba) {
 
 pub enum AnimationEvent {
     DestroySelf,
-    SpawnParticle(i32, i32, i32),
+    SpawnParticle(Vector2D<i32>, i32),
     IncreaseScore,
     HealthArrived,
     ScreenShake(i32),
@@ -214,7 +214,7 @@ pub enum AnimationEvent {
     PlayerDamaged,
     PlayerDied,
     PlaySound(i32),
-    CoinToHealth(i32, i32),
+    CoinToHealth(Vector2D<i32>),
 }
 
 struct Player {
@@ -233,9 +233,8 @@ impl Player {
     }
 
     pub fn update(&mut self, input: &ButtonController) -> Vec<AnimationEvent> {
-        let vector = input.vector();
         self.player_animation
-            .send_event(PlayerAnimationEvent::Input(vector.x, vector.y));
+            .send_event(PlayerAnimationEvent::Input(input.vector()));
         self.player_animation.run()
     }
 
@@ -256,7 +255,7 @@ impl Player {
 }
 
 pub enum PlayerAnimationEvent {
-    Input(Fix, Fix),
+    Input(Fix2D),
     Hurt,
     Die,
 }

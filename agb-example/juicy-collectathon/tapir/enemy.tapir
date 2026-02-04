@@ -37,14 +37,14 @@ fn explode() {
     trigger DestroySelf;
     trigger ScreenShake(7);
 
-    var position = position.round();
-    trigger SpawnParticle(position.x, position.y, 1);
-    trigger SpawnParticle(position.x, position.y, 1);
-    trigger SpawnParticle(position.x, position.y, 1);
-    trigger SpawnParticle(position.x, position.y, 1);
-    trigger SpawnParticle(position.x, position.y, 1);
-    trigger SpawnParticle(position.x, position.y, 1);
-    trigger SpawnParticle(position.x, position.y, 1);
+    var pos = position.round();
+    trigger SpawnParticle(pos, 1);
+    trigger SpawnParticle(pos, 1);
+    trigger SpawnParticle(pos, 1);
+    trigger SpawnParticle(pos, 1);
+    trigger SpawnParticle(pos, 1);
+    trigger SpawnParticle(pos, 1);
+    trigger SpawnParticle(pos, 1);
     trigger PlaySound(2);
 }
 
