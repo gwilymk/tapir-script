@@ -376,8 +376,7 @@ impl Compiler {
             });
         }
 
-        let stack_size =
-            max_stack_size(function, register_allocations.first_free_register().0);
+        let stack_size = max_stack_size(function, register_allocations.first_free_register().0);
         if stack_size > 0 {
             self.bytecode.stack_alloc(stack_size);
         }
@@ -857,9 +856,7 @@ fn max_stack_size(function: &TapIrFunction, first_free: u8) -> u8 {
             let extra = match instr {
                 TapIr::Call { target, args, .. } => 1 + args.len().max(target.len()) as u8,
                 TapIr::Spawn { args, .. } | TapIr::Trigger { args, .. } => 1 + args.len() as u8,
-                TapIr::CallExternal { target, args, .. } => {
-                    args.len().max(target.len()) as u8
-                }
+                TapIr::CallExternal { target, args, .. } => args.len().max(target.len()) as u8,
                 TapIr::CallBuiltin { args, .. } => args.len().max(1) as u8,
                 _ => 0,
             };

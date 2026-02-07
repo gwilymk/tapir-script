@@ -388,7 +388,9 @@ impl State {
 
     fn set_reg(&mut self, reg: u8, value: i32) {
         let reg_id = self.reg_id(reg);
-        unsafe { *self.stack.get_unchecked_mut(reg_id) = value; }
+        unsafe {
+            *self.stack.get_unchecked_mut(reg_id) = value;
+        }
     }
 
     fn get_reg(&self, reg: u8) -> i32 {

@@ -175,10 +175,8 @@ fn main(gba: &mut agb::Gba) {
                         // Spawn flying coin that goes to health bar
                         let target_x = WIDTH / 2 + player_health * 7;
                         let target_y = 1;
-                        new_entities.push(
-                            CoinToHealth::new(pos.into(), vec2(target_x, target_y))
-                                .into(),
-                        );
+                        new_entities
+                            .push(CoinToHealth::new(pos.into(), vec2(target_x, target_y)).into());
                     }
                 }
             }

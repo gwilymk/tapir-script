@@ -257,7 +257,7 @@ pub fn tapir_script_derive(struct_def: TokenStream) -> TokenStream {
                 }
             }
 
-            fn extern_call(&mut self, id: usize, stack: &mut tapir_script::__private::Vec<i32>, first_arg: usize) {
+            fn extern_call(&mut self, id: usize, stack: &mut [i32], first_arg: usize) {
                 match id {
                     #(#extern_functions,)*
                     _ => unreachable!("Invalid extern function id {id}"),
