@@ -371,7 +371,13 @@ TypedIdentifier: TypedIdent<'input> = {
 };
 
 Block: Vec<Statement<'input>> = "{" <Statement*> "}";
-ElseBlock = "else" <Block>;
+
+ElseBlock = { 
+    "else" <Block>,
+    "else" <start: @L> "if" <condition: Expression> <true_block: Block> <false_block: ElseBlock?> <end: @R> => vec![StatementKind::If {
+        condition, true_block, false_block: false_block.unwrap_or_else(Vec::new),
+    }.with_span(file_id, start, end)]
+}
 
 Expression: Expression<'input> = {
     #[precedence(level="1")]

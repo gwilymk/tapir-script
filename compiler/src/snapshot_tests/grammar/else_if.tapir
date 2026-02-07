@@ -1,0 +1,23 @@
+if 1 == 2 {
+    var x = 1;
+} else if 2 == 3 {
+    var x = 2;
+} else {
+    var x = 3;
+}
+
+if true {
+    var a = 1;
+} else if false {
+    var a = 2;
+} else if true {
+    var a = 3;
+} else {
+    var a = 4;
+}
+
+if true {
+    var b = 1;
+} else if false {
+    var b = 2;
+}

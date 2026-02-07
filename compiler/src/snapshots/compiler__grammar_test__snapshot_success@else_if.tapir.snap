@@ -1,0 +1,357 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/else_if.tapir
+---
+Script(
+  imports: [],
+  struct_declarations: [],
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: BinaryOperation(
+                lhs: Expression(
+                  span: "[span]",
+                  kind: Integer(1),
+                  meta: {},
+                ),
+                operator: EqEq,
+                rhs: Expression(
+                  span: "[span]",
+                  kind: Integer(2),
+                  meta: {},
+                ),
+              ),
+              meta: {},
+            ),
+            true_block: [
+              Statement(
+                span: "[span]",
+                kind: VariableDeclaration(
+                  idents: [
+                    TypedIdent(
+                      ident: Ident(
+                        span: "[span]",
+                        ident: "x",
+                      ),
+                      ty: None,
+                    ),
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(1),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+            false_block: [
+              Statement(
+                span: "[span]",
+                kind: If(
+                  condition: Expression(
+                    span: "[span]",
+                    kind: BinaryOperation(
+                      lhs: Expression(
+                        span: "[span]",
+                        kind: Integer(2),
+                        meta: {},
+                      ),
+                      operator: EqEq,
+                      rhs: Expression(
+                        span: "[span]",
+                        kind: Integer(3),
+                        meta: {},
+                      ),
+                    ),
+                    meta: {},
+                  ),
+                  true_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: VariableDeclaration(
+                        idents: [
+                          TypedIdent(
+                            ident: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                            ty: None,
+                          ),
+                        ],
+                        values: [
+                          Expression(
+                            span: "[span]",
+                            kind: Integer(2),
+                            meta: {},
+                          ),
+                        ],
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                  false_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: VariableDeclaration(
+                        idents: [
+                          TypedIdent(
+                            ident: Ident(
+                              span: "[span]",
+                              ident: "x",
+                            ),
+                            ty: None,
+                          ),
+                        ],
+                        values: [
+                          Expression(
+                            span: "[span]",
+                            kind: Integer(3),
+                            meta: {},
+                          ),
+                        ],
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: Bool(true),
+              meta: {},
+            ),
+            true_block: [
+              Statement(
+                span: "[span]",
+                kind: VariableDeclaration(
+                  idents: [
+                    TypedIdent(
+                      ident: Ident(
+                        span: "[span]",
+                        ident: "a",
+                      ),
+                      ty: None,
+                    ),
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(1),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+            false_block: [
+              Statement(
+                span: "[span]",
+                kind: If(
+                  condition: Expression(
+                    span: "[span]",
+                    kind: Bool(false),
+                    meta: {},
+                  ),
+                  true_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: VariableDeclaration(
+                        idents: [
+                          TypedIdent(
+                            ident: Ident(
+                              span: "[span]",
+                              ident: "a",
+                            ),
+                            ty: None,
+                          ),
+                        ],
+                        values: [
+                          Expression(
+                            span: "[span]",
+                            kind: Integer(2),
+                            meta: {},
+                          ),
+                        ],
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                  false_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: If(
+                        condition: Expression(
+                          span: "[span]",
+                          kind: Bool(true),
+                          meta: {},
+                        ),
+                        true_block: [
+                          Statement(
+                            span: "[span]",
+                            kind: VariableDeclaration(
+                              idents: [
+                                TypedIdent(
+                                  ident: Ident(
+                                    span: "[span]",
+                                    ident: "a",
+                                  ),
+                                  ty: None,
+                                ),
+                              ],
+                              values: [
+                                Expression(
+                                  span: "[span]",
+                                  kind: Integer(3),
+                                  meta: {},
+                                ),
+                              ],
+                            ),
+                            meta: {},
+                          ),
+                        ],
+                        false_block: [
+                          Statement(
+                            span: "[span]",
+                            kind: VariableDeclaration(
+                              idents: [
+                                TypedIdent(
+                                  ident: Ident(
+                                    span: "[span]",
+                                    ident: "a",
+                                  ),
+                                  ty: None,
+                                ),
+                              ],
+                              values: [
+                                Expression(
+                                  span: "[span]",
+                                  kind: Integer(4),
+                                  meta: {},
+                                ),
+                              ],
+                            ),
+                            meta: {},
+                          ),
+                        ],
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: If(
+            condition: Expression(
+              span: "[span]",
+              kind: Bool(true),
+              meta: {},
+            ),
+            true_block: [
+              Statement(
+                span: "[span]",
+                kind: VariableDeclaration(
+                  idents: [
+                    TypedIdent(
+                      ident: Ident(
+                        span: "[span]",
+                        ident: "b",
+                      ),
+                      ty: None,
+                    ),
+                  ],
+                  values: [
+                    Expression(
+                      span: "[span]",
+                      kind: Integer(1),
+                      meta: {},
+                    ),
+                  ],
+                ),
+                meta: {},
+              ),
+            ],
+            false_block: [
+              Statement(
+                span: "[span]",
+                kind: If(
+                  condition: Expression(
+                    span: "[span]",
+                    kind: Bool(false),
+                    meta: {},
+                  ),
+                  true_block: [
+                    Statement(
+                      span: "[span]",
+                      kind: VariableDeclaration(
+                        idents: [
+                          TypedIdent(
+                            ident: Ident(
+                              span: "[span]",
+                              ident: "b",
+                            ),
+                            ty: None,
+                          ),
+                        ],
+                        values: [
+                          Expression(
+                            span: "[span]",
+                            kind: Integer(2),
+                            meta: {},
+                          ),
+                        ],
+                      ),
+                      meta: {},
+                    ),
+                  ],
+                  false_block: [],
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)
