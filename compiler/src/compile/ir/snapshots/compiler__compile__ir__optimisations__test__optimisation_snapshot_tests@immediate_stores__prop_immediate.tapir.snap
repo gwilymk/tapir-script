@@ -1,0 +1,37 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/immediate_stores/prop_immediate.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.4 = int 0
+storeprop temp.4, 0
+temp.5 = int 100
+storeprop temp.5, 1
+return 
+
+
+----------- immediate_stores -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.4 = int 0
+storeprop imm(0), 0
+temp.5 = int 100
+storeprop imm(100), 1
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+storeprop imm(0), 0
+storeprop imm(100), 1
+return

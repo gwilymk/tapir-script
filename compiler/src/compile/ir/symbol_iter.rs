@@ -2,7 +2,7 @@ use std::slice;
 
 use crate::ast::SymbolId;
 
-use super::{BlockExitInstr, Operand, TapIr};
+use super::{BlockExitInstr, Operand, StoreValue, TapIr};
 
 pub(super) enum SymbolIter<'a> {
     None,
@@ -15,11 +15,13 @@ impl<'a> SymbolIter<'a> {
     pub fn new_source(instr: &'a TapIr) -> Self {
         match instr {
             TapIr::Move { source, .. }
-            | TapIr::StoreProp { value: source, .. }
-            | TapIr::SetGlobal { value: source, .. }
             | TapIr::UnaryOp {
                 operand: source, ..
             } => Self::One(Some(*source)),
+            TapIr::StoreProp { value, .. } | TapIr::SetGlobal { value, .. } => match value {
+                StoreValue::Symbol(sym) => Self::One(Some(*sym)),
+                StoreValue::Immediate(_) => Self::None,
+            },
             TapIr::BinOp { lhs, rhs, .. } => match rhs {
                 Operand::Symbol(rhs) => Self::Two(Some(*lhs), Some(*rhs)),
                 Operand::Immediate(_) | Operand::ShiftedImmediate(_) => Self::One(Some(*lhs)),
@@ -87,11 +89,13 @@ impl<'a> SymbolIterMut<'a> {
     pub fn new_source(instr: &'a mut TapIr) -> Self {
         match instr {
             TapIr::Move { source, .. }
-            | TapIr::StoreProp { value: source, .. }
-            | TapIr::SetGlobal { value: source, .. }
             | TapIr::UnaryOp {
                 operand: source, ..
             } => Self::One(Some(source)),
+            TapIr::StoreProp { value, .. } | TapIr::SetGlobal { value, .. } => match value {
+                StoreValue::Symbol(sym) => Self::One(Some(sym)),
+                StoreValue::Immediate(_) => Self::None,
+            },
             TapIr::BinOp { lhs, rhs, .. } => match rhs {
                 Operand::Symbol(rhs) => Self::Two(Some(lhs), Some(rhs)),
                 Operand::Immediate(_) | Operand::ShiftedImmediate(_) => Self::One(Some(lhs)),

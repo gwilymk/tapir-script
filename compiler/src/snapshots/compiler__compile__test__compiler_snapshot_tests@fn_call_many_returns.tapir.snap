@@ -8,13 +8,13 @@ input_file: compiler/src/snapshot_tests/compiler/fn_call_many_returns.tapir
 00000002: mov 1, 3
 00000003: ret
 00000004: ret
-00000005: loadk 1, 3
-00000007: mov 2, 1
-00000008: mov 3, 2
-00000009: loadk 4, 3
-00000011: add 1, 3, 4
-00000012: mov 3, 2
-00000013: loadk 4, 3
-00000015: mul 2, 3, 4
-00000016: loadk 3, 1
-00000018: ret
+00000005: loadi 1, 3
+00000006: mov 2, 1
+00000007: mov 3, 2
+00000008: loadi 4, 3
+00000009: add 1, 3, 4
+00000010: mov 3, 2
+00000011: loadi 4, 3
+00000012: mul 2, 3, 4
+00000013: loadi 3, 1
+00000014: ret

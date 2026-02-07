@@ -1,0 +1,38 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/immediate_stores/global_immediate.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.3 = int 42
+setglobal 0, temp.3
+getglobal temp.4, 0
+storeprop temp.4, 0
+return 
+
+
+----------- immediate_stores -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.3 = int 42
+setglobal 0, imm(42)
+getglobal temp.4, 0
+storeprop temp.4, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+setglobal 0, imm(42)
+getglobal temp.4, 0
+storeprop temp.4, 0
+return

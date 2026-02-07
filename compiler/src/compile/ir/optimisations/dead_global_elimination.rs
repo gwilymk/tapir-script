@@ -80,7 +80,7 @@ pub fn eliminate_dead_globals(
 mod tests {
     use super::*;
     use crate::ast::{FunctionId, SymbolId};
-    use crate::compile::ir::{BlockExitInstr, BlockId, FunctionModifiers, TapIrBlock};
+    use crate::compile::ir::{BlockExitInstr, BlockId, FunctionModifiers, StoreValue, TapIrBlock};
     use crate::compile::symtab_visitor::{GlobalId, GlobalInfo};
     use crate::tokens::{FileId, Span};
     use crate::types::Type;
@@ -128,7 +128,7 @@ mod tests {
             FunctionId(0),
             vec![TapIr::SetGlobal {
                 global_index: 0,
-                value: SymbolId(10),
+                value: StoreValue::Symbol(SymbolId(10)),
             }],
         )];
 
@@ -176,7 +176,7 @@ mod tests {
             vec![
                 TapIr::SetGlobal {
                     global_index: 0,
-                    value: SymbolId(10),
+                    value: StoreValue::Symbol(SymbolId(10)),
                 }, // A - dead
                 TapIr::GetGlobal {
                     target: SymbolId(11),
@@ -184,7 +184,7 @@ mod tests {
                 }, // B - read
                 TapIr::SetGlobal {
                     global_index: 2,
-                    value: SymbolId(12),
+                    value: StoreValue::Symbol(SymbolId(12)),
                 }, // C - dead
                 TapIr::GetGlobal {
                     target: SymbolId(13),
@@ -192,7 +192,7 @@ mod tests {
                 }, // D - read
                 TapIr::SetGlobal {
                     global_index: 1,
-                    value: SymbolId(14),
+                    value: StoreValue::Symbol(SymbolId(14)),
                 }, // B - write after read
             ],
         )];
@@ -282,7 +282,7 @@ mod tests {
                 FunctionId(0),
                 vec![TapIr::SetGlobal {
                     global_index: 0,
-                    value: SymbolId(10),
+                    value: StoreValue::Symbol(SymbolId(10)),
                 }],
             ),
             create_simple_function(
@@ -311,11 +311,11 @@ mod tests {
             vec![
                 TapIr::SetGlobal {
                     global_index: 0,
-                    value: SymbolId(10),
+                    value: StoreValue::Symbol(SymbolId(10)),
                 },
                 TapIr::SetGlobal {
                     global_index: 0,
-                    value: SymbolId(11),
+                    value: StoreValue::Symbol(SymbolId(11)),
                 },
             ],
         )];

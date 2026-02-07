@@ -1,9 +1,8 @@
 ---
-source: crates/tapir-script/compiler/src/compile.rs
+source: compiler/src/compile.rs
 expression: decompiled
-input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/multi_assign_function.tapir
+input_file: compiler/src/snapshot_tests/compiler/multi_assign_function.tapir
 ---
-00000000: loadk 1, 3
-00000002: setprop 1, 0
-00000003: ret
-00000004: ret
+00000000: setpropi 3, 0
+00000001: ret
+00000002: ret

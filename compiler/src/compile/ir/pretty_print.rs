@@ -129,11 +129,11 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
             )
         }
         TapIr::StoreProp { prop_index, value } => {
-            write!(
-                output,
-                "storeprop {}, {prop_index}",
-                symtab.debug_name_for_symbol(*value)
-            )
+            let value_str = match value {
+                super::StoreValue::Symbol(s) => symtab.debug_name_for_symbol(*s),
+                super::StoreValue::Immediate(imm) => format!("imm({imm})"),
+            };
+            write!(output, "storeprop {value_str}, {prop_index}")
         }
         TapIr::GetGlobal {
             target,
@@ -150,12 +150,11 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
             global_index,
             value,
         } => {
-            write!(
-                output,
-                "setglobal {}, {}",
-                global_index,
-                symtab.debug_name_for_symbol(*value),
-            )
+            let value_str = match value {
+                super::StoreValue::Symbol(s) => symtab.debug_name_for_symbol(*s),
+                super::StoreValue::Immediate(imm) => format!("imm({imm})"),
+            };
+            write!(output, "setglobal {global_index}, {value_str}")
         }
         TapIr::UnaryOp {
             target,

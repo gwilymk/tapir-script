@@ -1,0 +1,7 @@
+# immediate_stores, dead_store_elimination
+property result: int;
+
+global counter: int = 0;
+
+counter = 42;
+result = counter;

@@ -1,22 +1,22 @@
 ---
-source: crates/tapir-script/compiler/src/compile.rs
+source: compiler/src/compile.rs
 expression: decompiled
-input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/regalloc_loop.tapir
+input_file: compiler/src/snapshot_tests/compiler/regalloc_loop.tapir
 ---
-00000000: loadk 7, 3
-00000002: mov 6, 7
-00000003: mov 1, 6
-00000004: jmp 5
-00000005: mov 4, 1
-00000006: mov 5, 4
-00000007: loadk 3, 1
-00000009: jumpif 3
-00000010: jmp 12
+00000000: loadi 7, 3
+00000001: mov 6, 7
+00000002: mov 1, 6
+00000003: jmp 4
+00000004: mov 4, 1
+00000005: mov 5, 4
+00000006: loadi 3, 1
+00000007: jumpif 3
+00000008: jmp 10
+00000009: jmp 12
+00000010: mov 2, 1
 00000011: jmp 14
 00000012: mov 2, 1
-00000013: jmp 16
-00000014: mov 2, 1
-00000015: jmp 16
-00000016: mov 1, 2
-00000017: jmp 5
-00000018: ret
+00000013: jmp 14
+00000014: mov 1, 2
+00000015: jmp 4
+00000016: ret

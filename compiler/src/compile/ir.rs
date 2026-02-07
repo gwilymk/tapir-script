@@ -43,6 +43,12 @@ pub enum Operand {
     ShiftedImmediate(u8),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StoreValue {
+    Symbol(SymbolId),
+    Immediate(i16),
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TapIr {
     Constant(SymbolId, Constant),
@@ -95,7 +101,7 @@ pub enum TapIr {
     },
     StoreProp {
         prop_index: usize,
-        value: SymbolId,
+        value: StoreValue,
     },
     GetGlobal {
         target: SymbolId,
@@ -103,7 +109,7 @@ pub enum TapIr {
     },
     SetGlobal {
         global_index: usize,
-        value: SymbolId,
+        value: StoreValue,
     },
 }
 
@@ -229,11 +235,13 @@ impl TapIrBlock {
                 TapIr::Constant(symbol_id, ..)
                 | TapIr::GetProp {
                     target: symbol_id, ..
-                }
-                | TapIr::StoreProp {
-                    value: symbol_id, ..
                 } => {
                     symbols.insert(*symbol_id);
+                }
+                TapIr::StoreProp { value, .. } => {
+                    if let StoreValue::Symbol(sym) = value {
+                        symbols.insert(*sym);
+                    }
                 }
                 TapIr::Move { target, source } => {
                     symbols.extend([*target, *source]);
@@ -270,11 +278,13 @@ impl TapIrBlock {
                 }
                 TapIr::GetGlobal {
                     target: symbol_id, ..
-                }
-                | TapIr::SetGlobal {
-                    value: symbol_id, ..
                 } => {
                     symbols.insert(*symbol_id);
+                }
+                TapIr::SetGlobal { value, .. } => {
+                    if let StoreValue::Symbol(sym) = value {
+                        symbols.insert(*sym);
+                    }
                 }
             }
         }

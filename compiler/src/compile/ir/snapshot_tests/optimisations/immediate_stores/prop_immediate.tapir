@@ -1,0 +1,6 @@
+# immediate_stores, dead_store_elimination
+property x: int;
+property y: int;
+
+x = 0;
+y = 100;

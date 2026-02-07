@@ -13,8 +13,8 @@ use crate::{
 };
 
 use super::{
-    BlockExitInstr, BlockId, Constant, FunctionModifiers, Operand, SymbolSpans, TapIr, TapIrBlock,
-    TapIrFunction,
+    BlockExitInstr, BlockId, Constant, FunctionModifiers, Operand, StoreValue, SymbolSpans, TapIr,
+    TapIrBlock, TapIrFunction,
 };
 
 pub fn create_ir(
@@ -265,7 +265,7 @@ impl<'a> BlockVisitor<'a> {
                                     // Scalar field - generate StoreProp directly
                                     self.current_block.push(TapIr::StoreProp {
                                         prop_index: *prop_index,
-                                        value: temp,
+                                        value: StoreValue::Symbol(temp),
                                     });
                                 }
                                 Some(FieldAccessor::Nested(_, dst_layout)) => {
@@ -317,7 +317,7 @@ impl<'a> BlockVisitor<'a> {
                                 // Scalar field - generate SetGlobal directly
                                 self.current_block.push(TapIr::SetGlobal {
                                     global_index: global_id.0,
-                                    value: temp,
+                                    value: StoreValue::Symbol(temp),
                                 });
                             }
                             Some(FieldAccessor::Nested(_, dst_layout)) => {
@@ -1076,13 +1076,13 @@ impl<'a> BlockVisitor<'a> {
             SymbolStorage::Property(idx) => {
                 self.current_block.push(TapIr::StoreProp {
                     prop_index: idx,
-                    value,
+                    value: StoreValue::Symbol(value),
                 });
             }
             SymbolStorage::Global(idx) => {
                 self.current_block.push(TapIr::SetGlobal {
                     global_index: idx,
-                    value,
+                    value: StoreValue::Symbol(value),
                 });
             }
             SymbolStorage::Local => {
@@ -1135,13 +1135,13 @@ impl<'a> BlockVisitor<'a> {
             FieldAccessor::Property(idx) => {
                 self.current_block.push(TapIr::StoreProp {
                     prop_index: *idx,
-                    value,
+                    value: StoreValue::Symbol(value),
                 });
             }
             FieldAccessor::Global(id) => {
                 self.current_block.push(TapIr::SetGlobal {
                     global_index: id.0,
-                    value,
+                    value: StoreValue::Symbol(value),
                 });
             }
             FieldAccessor::Nested(..) => {

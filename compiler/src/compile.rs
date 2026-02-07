@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::Path};
 
-use bytecode::{Type1, Type3};
+use bytecode::{Type1, Type2, Type3};
 use symtab_visitor::SymTabVisitor;
 use type_visitor::{TypeTable, TypeVisitor};
 
@@ -419,13 +419,17 @@ impl Compiler {
             for instr in block.instrs() {
                 match instr {
                     TapIr::Constant(target, constant) => {
-                        let constant = match constant {
-                            ir::Constant::Int(i) => *i as u32,
-                            ir::Constant::Fix(num) => num.to_raw() as u32,
-                            ir::Constant::Bool(b) => *b as u32,
+                        let raw = match constant {
+                            ir::Constant::Int(i) => *i,
+                            ir::Constant::Fix(num) => num.to_raw(),
+                            ir::Constant::Bool(b) => *b as i32,
                         };
 
-                        self.bytecode.constant(v(target), constant);
+                        if let Ok(imm) = i16::try_from(raw) {
+                            self.bytecode.load_i(v(target), imm);
+                        } else {
+                            self.bytecode.constant(v(target), raw as u32);
+                        }
                     }
                     TapIr::Move { target, source } => self.bytecode.mov(v(target), v(source)),
                     TapIr::BinOp {
@@ -487,9 +491,14 @@ impl Compiler {
                     TapIr::GetProp { target, prop_index } => {
                         self.bytecode.get_prop(v(target), *prop_index as u8);
                     }
-                    TapIr::StoreProp { prop_index, value } => {
-                        self.bytecode.set_prop(v(value), *prop_index as u8);
-                    }
+                    TapIr::StoreProp { prop_index, value } => match value {
+                        ir::StoreValue::Symbol(sym) => {
+                            self.bytecode.set_prop(v(sym), *prop_index as u8);
+                        }
+                        ir::StoreValue::Immediate(imm) => {
+                            self.bytecode.set_prop_i(*prop_index as u8, *imm);
+                        }
+                    },
                     TapIr::CallBuiltin { target, f, args } => {
                         // Put args starting at first_argument (no offset, like extern calls)
                         put_args(&mut self.bytecode, args, true);
@@ -508,9 +517,14 @@ impl Compiler {
                     TapIr::SetGlobal {
                         global_index,
                         value,
-                    } => {
-                        self.bytecode.set_global(v(value), *global_index as u8);
-                    }
+                    } => match value {
+                        ir::StoreValue::Symbol(sym) => {
+                            self.bytecode.set_global(v(sym), *global_index as u8);
+                        }
+                        ir::StoreValue::Immediate(imm) => {
+                            self.bytecode.set_global_i(*global_index as u8, *imm);
+                        }
+                    },
                 }
             }
 
@@ -675,6 +689,19 @@ impl Bytecode {
     fn constant(&mut self, target: u8, value: u32) {
         self.data.push(Type1::constant(target).encode());
         self.data.push(value);
+    }
+
+    fn load_i(&mut self, target: u8, imm: i16) {
+        self.data.push(Type2::load_i(target, imm).encode());
+    }
+
+    fn set_prop_i(&mut self, prop_index: u8, imm: i16) {
+        self.data.push(Type2::set_prop_i(prop_index, imm).encode());
+    }
+
+    fn set_global_i(&mut self, global_index: u8, imm: i16) {
+        self.data
+            .push(Type2::set_global_i(global_index, imm).encode());
     }
 
     fn call(&mut self, first_arg: u8) {

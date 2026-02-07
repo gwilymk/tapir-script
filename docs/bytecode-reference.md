@@ -4,19 +4,25 @@ Tapir-script compiles to bytecode that runs on a register-based virtual machine 
 
 ## Instruction Format
 
-All instructions are exactly 32 bits. The first 8 bits are always the opcode. There are two instruction formats:
+All instructions are exactly 32 bits. The first 8 bits are always the opcode. There are three instruction formats:
 
 ### Type 1 (most instructions)
 
 | Bits 31-24 | Bits 23-16 | Bits 15-8 | Bits 7-0 |
 | ---------- | ---------- | --------- | -------- |
-| opcode     | target     | a         | b        |
+| b          | a          | target    | opcode   |
+
+### Type 2 (immediate value instructions)
+
+| Bits 31-16     | Bits 15-8 | Bits 7-0 |
+| -------------- | --------- | -------- |
+| imm (signed 16-bit) | reg  | opcode   |
 
 ### Type 3 (jumps)
 
-| Bits 31-24 | Bits 23-0      |
-| ---------- | -------------- |
-| opcode     | value (24-bit) |
+| Bits 31-8        | Bits 7-0 |
+| ---------------- | -------- |
+| value (24-bit)   | opcode   |
 
 ## Registers
 
@@ -34,6 +40,7 @@ The VM uses a register-based model with a growable stack. Registers are addresse
 | -------------- | ------ | ------------------------------------------------------------- |
 | `Mov`          | Type 1 | `r[target] = r[a]`                                            |
 | `LoadConstant` | Type 1 | `r[target] = bytecode[pc++]` (next word is a 32-bit constant) |
+| `LoadI`        | Type 2 | `r[reg] = imm` (sign-extended 16-bit immediate)               |
 
 ### Arithmetic (Type 1: `r[target] = r[a] op r[b]`)
 
@@ -71,19 +78,21 @@ Note: Shift amounts are masked to 0-31 to match Rust's behavior.
 | `Lt`   | `a < b`   |
 | `LtEq` | `a <= b`  |
 
-### Properties (Type 1)
+### Properties
 
-| Opcode    | Description               |
-| --------- | ------------------------- |
-| `GetProp` | `r[target] = property[a]` |
-| `SetProp` | `property[a] = r[target]` |
+| Opcode     | Format | Description                             |
+| ---------- | ------ | --------------------------------------- |
+| `GetProp`  | Type 1 | `r[target] = property[a]`               |
+| `SetProp`  | Type 1 | `property[a] = r[target]`               |
+| `SetPropI` | Type 2 | `property[reg] = imm` (16-bit immediate)|
 
-### Globals (Type 1)
+### Globals
 
-| Opcode      | Description              |
-| ----------- | ------------------------ |
-| `GetGlobal` | `r[target] = global[a]`  |
-| `SetGlobal` | `global[a] = r[target]`  |
+| Opcode       | Format | Description                               |
+| ------------ | ------ | ----------------------------------------- |
+| `GetGlobal`  | Type 1 | `r[target] = global[a]`                   |
+| `SetGlobal`  | Type 1 | `global[a] = r[target]`                   |
+| `SetGlobalI` | Type 2 | `global[reg] = imm` (16-bit immediate)    |
 
 Global variables are script-defined mutable values with constant initializers. They are stored separately from the bytecode and initialized when the VM is created. Unlike properties, globals are internal to the script and not accessible from Rust.
 
@@ -186,14 +195,12 @@ The VM maintains multiple execution states (threads). Each `run()` call:
 # fn add(a: int, b: int) -> int { return a + b; }
 # var x = add(3, 5);
 
-0: LoadConstant r1      # r1 = 3
-1: 3
-2: LoadConstant r2      # r2 = 5
-3: 5
-4: Call 0               # prepare call, r0 = return info
-5: Jump 7               # jump to function
-6: Mov r1, r1           # (return value already in r1)
+0: LoadI r1, 3          # r1 = 3
+1: LoadI r2, 5          # r2 = 5
+2: Call 0               # prepare call, r0 = return info
+3: Jump 5               # jump to function
+4: Mov r1, r1           # (return value already in r1)
 ...
-7: Add r1, r1, r2       # function body: r1 = r1 + r2
-8: Ret                  # return
+5: Add r1, r1, r2       # function body: r1 = r1 + r2
+6: Ret                  # return
 ```

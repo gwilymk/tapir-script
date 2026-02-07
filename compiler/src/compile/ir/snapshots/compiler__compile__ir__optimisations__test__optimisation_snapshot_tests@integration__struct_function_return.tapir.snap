@@ -683,6 +683,26 @@ jmp 8
 return 
 
 
+----------- immediate_stores -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+jmp 4
+
+---- block 4 ----
+temp.123 = int 6
+jmp 1
+
+---- block 1 ----
+temp.94 = int 14
+storeprop imm(14), 0
+jmp 8
+
+---- block 8 ----
+return 
+
+
 ----------- empty_block -------------
 =======================
 fn @toplevel() -> 
@@ -696,7 +716,7 @@ jmp 1
 
 ---- block 1 ----
 temp.94 = int 14
-storeprop temp.94, 0
+storeprop imm(14), 0
 return 
 
 
@@ -710,7 +730,7 @@ jmp 4
 
 ---- block 4 ----
 temp.94 = int 14
-storeprop temp.94, 0
+storeprop imm(14), 0
 jmp 1
 
 ---- block 1 ----
@@ -725,8 +745,7 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.94 = int 14
-storeprop temp.94, 0
+storeprop imm(14), 0
 jmp 1
 
 ---- block 1 ----
@@ -741,8 +760,7 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.94 = int 14
-storeprop temp.94, 0
+storeprop imm(14), 0
 return 
 
 
@@ -751,8 +769,7 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.94 = int 14
-storeprop temp.94, 0
+storeprop imm(14), 0
 jmp 4
 
 ---- block 4 ----
@@ -764,6 +781,5 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.94 = int 14
-storeprop temp.94, 0
+storeprop imm(14), 0
 return

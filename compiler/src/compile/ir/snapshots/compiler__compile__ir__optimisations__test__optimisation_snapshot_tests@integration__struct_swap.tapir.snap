@@ -151,11 +151,24 @@ storeprop temp.108, 0
 return 
 
 
+----------- immediate_stores -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.58 = int 1
+temp.59 = int 2
+temp.66 = int 3
+temp.67 = int 4
+temp.108 = int 5
+storeprop imm(5), 0
+return 
+
+
 ----------- dead_store_elimination -------------
 =======================
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.108 = int 5
-storeprop temp.108, 0
+storeprop imm(5), 0
 return

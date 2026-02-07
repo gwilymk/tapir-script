@@ -1,0 +1,10 @@
+# optimise
+property result: int;
+
+global counter: int = 0;
+
+counter = 42;
+result = counter;
+wait;
+counter = counter + 1;
+result = counter;

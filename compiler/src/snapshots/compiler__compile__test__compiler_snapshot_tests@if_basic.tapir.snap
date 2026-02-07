@@ -1,21 +1,21 @@
 ---
-source: crates/tapir-script/compiler/src/compile.rs
+source: compiler/src/compile.rs
 expression: decompiled
-input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/if_basic.tapir
+input_file: compiler/src/snapshot_tests/compiler/if_basic.tapir
 ---
-00000000: loadk 4, 3
-00000002: mov 1, 4
-00000003: mov 4, 1
-00000004: loadk 5, 3
-00000006: eq 1, 4, 5
-00000007: jumpif 1
-00000008: jmp 10
-00000009: jmp 14
-00000010: loadk 1, 7
-00000012: mov 3, 1
-00000013: jmp 18
-00000014: loadk 1, 8
-00000016: mov 2, 1
-00000017: jmp 18
-00000018: ret
-00000019: ret
+00000000: loadi 4, 3
+00000001: mov 1, 4
+00000002: mov 4, 1
+00000003: loadi 5, 3
+00000004: eq 1, 4, 5
+00000005: jumpif 1
+00000006: jmp 8
+00000007: jmp 11
+00000008: loadi 1, 7
+00000009: mov 3, 1
+00000010: jmp 14
+00000011: loadi 1, 8
+00000012: mov 2, 1
+00000013: jmp 14
+00000014: ret
+00000015: ret

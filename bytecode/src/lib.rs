@@ -69,6 +69,11 @@ pub enum Opcode {
 
     LoadConstant,
 
+    // Type 2
+    LoadI,
+    SetPropI,
+    SetGlobalI,
+
     // Type 3
     Jump,
 }
@@ -150,6 +155,60 @@ impl Type3 {
         Self {
             opcode: Opcode::n(opcode).expect("Invalid encoded"),
             value,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct Type2 {
+    opcode: Opcode,
+
+    pub reg: u8,
+    pub imm: i16,
+}
+
+impl Type2 {
+    pub const fn opcode(self) -> Opcode {
+        self.opcode
+    }
+
+    pub const fn encode(self) -> u32 {
+        let imm_bytes = self.imm.to_le_bytes();
+        u32::from_le_bytes([self.opcode as u8, self.reg, imm_bytes[0], imm_bytes[1]])
+    }
+
+    pub fn decode(encoded: u32) -> Self {
+        let [opcode, reg, imm_lo, imm_hi] = encoded.to_le_bytes();
+        Self {
+            opcode: Opcode::n(opcode).expect("Invalid encoded"),
+            reg,
+            imm: i16::from_le_bytes([imm_lo, imm_hi]),
+        }
+    }
+}
+
+impl Type2 {
+    pub const fn load_i(target: u8, imm: i16) -> Self {
+        Self {
+            opcode: Opcode::LoadI,
+            reg: target,
+            imm,
+        }
+    }
+
+    pub const fn set_prop_i(prop_index: u8, imm: i16) -> Self {
+        Self {
+            opcode: Opcode::SetPropI,
+            reg: prop_index,
+            imm,
+        }
+    }
+
+    pub const fn set_global_i(global_index: u8, imm: i16) -> Self {
+        Self {
+            opcode: Opcode::SetGlobalI,
+            reg: global_index,
+            imm,
         }
     }
 }

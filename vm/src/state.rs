@@ -303,6 +303,18 @@ impl State {
 
                     self.set_reg(target, constant as i32);
                 }
+                O::LoadI => {
+                    let t2 = bytecode::Type2::decode(instr);
+                    self.set_reg(t2.reg, t2.imm as i32);
+                }
+                O::SetPropI => {
+                    let t2 = bytecode::Type2::decode(instr);
+                    properties.set_prop(t2.reg, t2.imm as i32);
+                }
+                O::SetGlobalI => {
+                    let t2 = bytecode::Type2::decode(instr);
+                    globals[t2.reg as usize] = t2.imm as i32;
+                }
                 O::CallBuiltin => {
                     type1!(target, builtin_id, first_arg);
                     let builtin_id = builtin_id as i8 as i16;

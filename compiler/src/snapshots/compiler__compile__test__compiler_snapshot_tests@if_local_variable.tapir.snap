@@ -1,19 +1,19 @@
 ---
-source: crates/tapir-script/compiler/src/compile.rs
+source: compiler/src/compile.rs
 expression: decompiled
-input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/if_local_variable.tapir
+input_file: compiler/src/snapshot_tests/compiler/if_local_variable.tapir
 ---
-00000000: loadk 1, 3
-00000002: mov 3, 1
-00000003: loadk 1, 1
-00000005: jumpif 1
-00000006: jmp 8
-00000007: jmp 14
-00000008: loadk 1, 5
-00000010: mov 3, 1
-00000011: mov 1, 3
-00000012: mov 2, 1
-00000013: jmp 15
-00000014: jmp 15
-00000015: ret
-00000016: ret
+00000000: loadi 1, 3
+00000001: mov 3, 1
+00000002: loadi 1, 1
+00000003: jumpif 1
+00000004: jmp 6
+00000005: jmp 11
+00000006: loadi 1, 5
+00000007: mov 3, 1
+00000008: mov 1, 3
+00000009: mov 2, 1
+00000010: jmp 12
+00000011: jmp 12
+00000012: ret
+00000013: ret

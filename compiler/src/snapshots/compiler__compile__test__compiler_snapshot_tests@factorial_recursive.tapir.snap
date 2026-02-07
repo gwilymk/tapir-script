@@ -1,46 +1,46 @@
 ---
-source: crates/tapir-script/compiler/src/compile.rs
+source: compiler/src/compile.rs
 expression: decompiled
-input_file: crates/tapir-script/compiler/src/snapshot_tests/compiler/factorial_recursive.tapir
+input_file: compiler/src/snapshot_tests/compiler/factorial_recursive.tapir
 ---
-00000000: loadk 3, 10
-00000002: mov 5, 3
-00000003: call 4
-00000004: jmp 10
-00000005: mov 1, 5
-00000006: mov 2, 1
-00000007: wait
+00000000: loadi 3, 10
+00000001: mov 5, 3
+00000002: call 4
+00000003: jmp 9
+00000004: mov 1, 5
+00000005: mov 2, 1
+00000006: wait
+00000007: ret
 00000008: ret
-00000009: ret
-00000010: mov 3, 1
-00000011: loadk 4, 0
-00000013: eq 2, 3, 4
-00000014: jumpif 2
-00000015: jmp 17
-00000016: jmp 21
-00000017: loadk 2, 1
-00000019: mov 1, 2
-00000020: ret
-00000021: jmp 22
-00000022: mov 3, 1
-00000023: loadk 4, 1
-00000025: eq 2, 3, 4
-00000026: jumpif 2
-00000027: jmp 29
-00000028: jmp 33
-00000029: loadk 2, 1
-00000031: mov 1, 2
-00000032: ret
-00000033: jmp 34
-00000034: wait
-00000035: mov 3, 1
-00000036: mov 4, 1
-00000037: loadk 5, 1
-00000039: sub 2, 4, 5
-00000040: mov 7, 2
-00000041: call 6
-00000042: jmp 10
-00000043: mov 4, 7
-00000044: mul 2, 3, 4
-00000045: mov 1, 2
-00000046: ret
+00000009: mov 3, 1
+00000010: loadi 4, 0
+00000011: eq 2, 3, 4
+00000012: jumpif 2
+00000013: jmp 15
+00000014: jmp 18
+00000015: loadi 2, 1
+00000016: mov 1, 2
+00000017: ret
+00000018: jmp 19
+00000019: mov 3, 1
+00000020: loadi 4, 1
+00000021: eq 2, 3, 4
+00000022: jumpif 2
+00000023: jmp 25
+00000024: jmp 28
+00000025: loadi 2, 1
+00000026: mov 1, 2
+00000027: ret
+00000028: jmp 29
+00000029: wait
+00000030: mov 3, 1
+00000031: mov 4, 1
+00000032: loadi 5, 1
+00000033: sub 2, 4, 5
+00000034: mov 7, 2
+00000035: call 6
+00000036: jmp 9
+00000037: mov 4, 7
+00000038: mul 2, 3, 4
+00000039: mov 1, 2
+00000040: ret

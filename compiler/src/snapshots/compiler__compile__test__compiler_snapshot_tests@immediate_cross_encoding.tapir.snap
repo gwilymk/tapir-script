@@ -10,8 +10,8 @@ input_file: compiler/src/snapshot_tests/compiler/immediate_cross_encoding.tapir
 00000004: fixaddi 1, 2, 255
 00000005: setprop 1, 0
 00000006: getprop 2, 0
-00000007: loadk 3, 257
-00000009: add 1, 2, 3
-00000010: setprop 1, 0
+00000007: loadi 3, 257
+00000008: add 1, 2, 3
+00000009: setprop 1, 0
+00000010: ret
 00000011: ret
-00000012: ret

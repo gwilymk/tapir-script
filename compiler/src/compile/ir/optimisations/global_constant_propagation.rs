@@ -82,7 +82,7 @@ pub fn propagate_readonly_globals(
 mod tests {
     use super::*;
     use crate::ast::{FunctionId, SymbolId};
-    use crate::compile::ir::{BlockExitInstr, BlockId, FunctionModifiers, TapIrBlock};
+    use crate::compile::ir::{BlockExitInstr, BlockId, FunctionModifiers, StoreValue, TapIrBlock};
     use crate::compile::symtab_visitor::GlobalInfo;
     use crate::tokens::{FileId, Span};
 
@@ -158,7 +158,7 @@ mod tests {
                 },
                 TapIr::SetGlobal {
                     global_index: 0,
-                    value: SymbolId(10),
+                    value: StoreValue::Symbol(SymbolId(10)),
                 },
             ],
         )];
@@ -248,7 +248,7 @@ mod tests {
                 },
                 TapIr::SetGlobal {
                     global_index: 1,
-                    value: SymbolId(11),
+                    value: StoreValue::Symbol(SymbolId(11)),
                 },
                 TapIr::GetGlobal {
                     target: SymbolId(12),
@@ -297,7 +297,7 @@ mod tests {
                 FunctionId(1),
                 vec![TapIr::SetGlobal {
                     global_index: 0,
-                    value: SymbolId(20),
+                    value: StoreValue::Symbol(SymbolId(20)),
                 }],
             ),
         ];

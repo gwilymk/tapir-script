@@ -1,6 +1,6 @@
 use std::fmt::{self, Write};
 
-use bytecode::{Opcode, Type1, Type3};
+use bytecode::{Opcode, Type1, Type2, Type3};
 
 fn disassemble_non_constant(instr: u32, target: &mut dyn Write) -> fmt::Result {
     macro_rules! t1 {
@@ -70,6 +70,19 @@ fn disassemble_non_constant(instr: u32, target: &mut dyn Write) -> fmt::Result {
         bytecode::Opcode::GetGlobal => t1!("getglobal", 2),
         bytecode::Opcode::SetGlobal => t1!("setglobal", 2),
         bytecode::Opcode::LoadConstant => unreachable!("Load constant should not be hit here"),
+
+        bytecode::Opcode::LoadI => {
+            let t2 = Type2::decode(instr);
+            writeln!(target, "loadi {}, {}", t2.reg, t2.imm)
+        }
+        bytecode::Opcode::SetPropI => {
+            let t2 = Type2::decode(instr);
+            writeln!(target, "setpropi {}, {}", t2.imm, t2.reg)
+        }
+        bytecode::Opcode::SetGlobalI => {
+            let t2 = Type2::decode(instr);
+            writeln!(target, "setglobali {}, {}", t2.imm, t2.reg)
+        }
 
         bytecode::Opcode::Jump => {
             let t3 = Type3::decode(instr);
