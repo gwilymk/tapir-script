@@ -409,7 +409,7 @@ pub(crate) trait ObjectSafeProperties {
 
     fn add_event(&mut self, index: u8, args: &[i32]);
 
-    fn extern_call(&mut self, id: usize, stack: &mut Vec<i32>, first_arg: usize);
+    fn extern_call(&mut self, id: usize, stack: &mut [i32], first_arg: usize);
 }
 
 pub(crate) struct ObjectSafePropertiesImpl<'a, T, U>
@@ -436,7 +436,7 @@ where
         self.events.push(self.properties.create_event(index, args));
     }
 
-    fn extern_call(&mut self, id: usize, stack: &mut Vec<i32>, first_arg: usize) {
+    fn extern_call(&mut self, id: usize, stack: &mut [i32], first_arg: usize) {
         self.properties.extern_call(id, stack, first_arg);
     }
 }
