@@ -235,6 +235,45 @@ jmp 5
 jmp 0
 
 
+----------- immediate_arithmetic -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.20 = int 100
+getprop temp.21, 0
+temp.22 = divide(temp.20, temp.21)
+storeprop temp.22, 0
+return 
+
+=======================
+fn divide(n.1, d.2) -> int
+
+---- block 2 ----
+temp.25 = int 0
+jmp 0
+
+---- block 0 ----
+r.27 = φ(n.1 from 2, r.37 from 5)
+q.32 = φ(temp.25 from 2, q.41 from 5)
+temp.31 = r.27 < d.2
+conditional_jump temp.31 3 4
+
+---- block 3 ----
+return q.32
+
+---- block 4 ----
+temp.36 = r.27 - d.2
+r.37 = temp.36
+temp.39 = int 1
+temp.40 = q.32 + imm(1)
+q.41 = temp.40
+jmp 5
+
+---- block 5 ----
+jmp 0
+
+
 ----------- empty_block -------------
 =======================
 fn @toplevel() -> 
@@ -266,7 +305,7 @@ return q.32
 temp.36 = r.27 - d.2
 r.37 = temp.36
 temp.39 = int 1
-temp.40 = q.32 + temp.39
+temp.40 = q.32 + imm(1)
 q.41 = temp.40
 jmp 0
 
@@ -296,9 +335,9 @@ jmp 7
 ---- block 5 ----
 temp.49 = r.46 - temp.21
 r.44 = temp.49
-temp.50 = int 1
-temp.51 = q.48 + temp.50
-q.45 = temp.51
+temp.51 = int 1
+temp.50 = q.48 + imm(1)
+q.45 = temp.50
 jmp 3
 
 ---- block 7 ----
@@ -330,7 +369,7 @@ return q.32
 temp.36 = r.27 - d.2
 r.37 = temp.36
 temp.39 = int 1
-temp.40 = q.32 + temp.39
+temp.40 = q.32 + imm(1)
 q.41 = temp.40
 jmp 0
 
@@ -360,9 +399,9 @@ jmp 7
 ---- block 5 ----
 temp.49 = r.46 - temp.21
 r.44 = temp.49
-temp.50 = int 1
-temp.51 = q.48 + temp.50
-q.45 = temp.51
+temp.51 = int 1
+temp.50 = q.48 + imm(1)
+q.45 = temp.50
 jmp 3
 
 ---- block 7 ----
@@ -400,9 +439,9 @@ jmp 7
 ---- block 5 ----
 temp.49 = r.46 - temp.21
 r.44 = temp.49
-temp.50 = int 1
-temp.51 = q.48 + temp.50
-q.45 = temp.51
+temp.51 = int 1
+temp.50 = q.48 + imm(1)
+q.45 = temp.50
 jmp 3
 
 ---- block 7 ----
@@ -440,9 +479,9 @@ jmp 7
 ---- block 5 ----
 temp.49 = r.46 - temp.21
 r.44 = temp.49
-temp.50 = int 1
-temp.51 = q.48 + temp.50
-q.45 = temp.51
+temp.51 = int 1
+temp.50 = q.48 + imm(1)
+q.45 = temp.50
 jmp 3
 
 ---- block 7 ----
@@ -479,9 +518,9 @@ jmp 7
 ---- block 5 ----
 temp.49 = r.46 - temp.21
 r.44 = temp.49
-temp.50 = int 1
-temp.51 = q.48 + temp.50
-q.45 = temp.51
+temp.51 = int 1
+temp.50 = q.48 + imm(1)
+q.45 = temp.50
 jmp 3
 
 ---- block 7 ----
@@ -517,9 +556,8 @@ jmp 7
 ---- block 5 ----
 temp.49 = r.46 - temp.21
 r.44 = temp.49
-temp.50 = int 1
-temp.51 = q.48 + temp.50
-q.45 = temp.51
+temp.50 = q.48 + imm(1)
+q.45 = temp.50
 jmp 3
 
 ---- block 7 ----
@@ -553,9 +591,8 @@ return
 ---- block 5 ----
 temp.49 = r.46 - temp.21
 r.44 = temp.49
-temp.50 = int 1
-temp.51 = q.48 + temp.50
-q.45 = temp.51
+temp.50 = q.48 + imm(1)
+q.45 = temp.50
 jmp 3
 
 
@@ -582,7 +619,6 @@ return
 ---- block 5 ----
 temp.49 = r.46 - temp.21
 r.44 = temp.49
-temp.50 = int 1
-temp.51 = q.48 + temp.50
-q.45 = temp.51
+temp.50 = q.48 + imm(1)
+q.45 = temp.50
 jmp 3

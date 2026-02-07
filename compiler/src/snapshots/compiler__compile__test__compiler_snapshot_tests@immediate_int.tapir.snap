@@ -1,0 +1,23 @@
+---
+source: compiler/src/compile.rs
+expression: decompiled
+input_file: compiler/src/snapshot_tests/compiler/immediate_int.tapir
+---
+00000000: getprop 2, 0
+00000001: addi 1, 2, 1
+00000002: setprop 1, 0
+00000003: getprop 2, 0
+00000004: addi 1, 2, 255
+00000005: setprop 1, 0
+00000006: getprop 2, 0
+00000007: subi 1, 2, 10
+00000008: setprop 1, 0
+00000009: getprop 2, 0
+00000010: muli 1, 2, 3
+00000011: setprop 1, 0
+00000012: getprop 1, 0
+00000013: neg 2, 1
+00000014: addi 1, 2, 10
+00000015: setprop 1, 0
+00000016: ret
+00000017: ret

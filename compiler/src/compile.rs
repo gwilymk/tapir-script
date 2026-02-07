@@ -433,9 +433,19 @@ impl Compiler {
                         lhs,
                         op,
                         rhs,
-                    } => {
-                        self.bytecode.binop(v(target), v(lhs), *op, v(rhs));
-                    }
+                    } => match rhs {
+                        ir::Operand::Symbol(rhs) => {
+                            self.bytecode.binop(v(target), v(lhs), *op, v(rhs));
+                        }
+                        ir::Operand::Immediate(imm) => {
+                            self.bytecode
+                                .binop_direct_imm(v(target), v(lhs), *op, *imm);
+                        }
+                        ir::Operand::ShiftedImmediate(imm) => {
+                            self.bytecode
+                                .binop_shifted_imm(v(target), v(lhs), *op, *imm);
+                        }
+                    },
                     TapIr::UnaryOp {
                         target,
                         operand,
@@ -741,6 +751,32 @@ impl Bytecode {
 
         self.data
             .push(Type1::binop(opcode, target, lhs, rhs).encode());
+    }
+
+    fn binop_direct_imm(&mut self, target: u8, lhs: u8, binop: BinaryOperator, imm: u8) {
+        let opcode = match binop {
+            BinaryOperator::Add => Opcode::AddI,
+            BinaryOperator::Sub => Opcode::SubI,
+            BinaryOperator::Mul => Opcode::MulI,
+            BinaryOperator::Div => Opcode::DivI,
+            BinaryOperator::Shl => Opcode::ShlI,
+            BinaryOperator::Shr => Opcode::ShrI,
+            _ => unreachable!("Invalid op for direct immediate: {binop}"),
+        };
+        self.data
+            .push(Type1::binop_imm(opcode, target, lhs, imm).encode());
+    }
+
+    fn binop_shifted_imm(&mut self, target: u8, lhs: u8, binop: BinaryOperator, imm: u8) {
+        let opcode = match binop {
+            BinaryOperator::Add => Opcode::FixAddI,
+            BinaryOperator::Sub => Opcode::FixSubI,
+            BinaryOperator::FixMul => Opcode::FixMulI,
+            BinaryOperator::FixDiv => Opcode::FixDivI,
+            _ => unreachable!("Invalid op for shifted immediate: {binop}"),
+        };
+        self.data
+            .push(Type1::binop_imm(opcode, target, lhs, imm).encode());
     }
 
     fn unaryop(&mut self, target: u8, operand: u8, unaryop: UnaryOperator) {

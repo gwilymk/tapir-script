@@ -36,6 +36,13 @@ use crate::{
     compile::{symtab_visitor::SymTab, type_visitor::TriggerId},
 };
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Operand {
+    Symbol(SymbolId),
+    Immediate(u8),
+    ShiftedImmediate(u8),
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TapIr {
     Constant(SymbolId, Constant),
@@ -47,7 +54,7 @@ pub enum TapIr {
         target: SymbolId,
         lhs: SymbolId,
         op: BinaryOperator,
-        rhs: SymbolId,
+        rhs: Operand,
     },
     UnaryOp {
         target: SymbolId,
@@ -233,7 +240,12 @@ impl TapIrBlock {
                 }
                 TapIr::BinOp {
                     target, lhs, rhs, ..
-                } => symbols.extend([*target, *lhs, *rhs]),
+                } => {
+                    symbols.extend([*target, *lhs]);
+                    if let Operand::Symbol(rhs) = rhs {
+                        symbols.insert(*rhs);
+                    }
+                }
                 TapIr::UnaryOp {
                     target, operand, ..
                 } => symbols.extend([*target, *operand]),
@@ -448,6 +460,21 @@ impl TapIrFunction {
 
     pub(super) fn block(&self, block_id: BlockId) -> Option<&TapIrBlock> {
         self.blocks.get(&block_id)
+    }
+
+    pub fn constant_map(&self) -> HashMap<SymbolId, Constant> {
+        let mut constants = HashMap::new();
+        for block in self.blocks() {
+            for instr in block.instrs() {
+                let TapIr::Constant(target, value) = *instr else {
+                    continue;
+                };
+                if constants.insert(target, value).is_some() {
+                    panic!("Should only be assigned once, because SSA");
+                }
+            }
+        }
+        constants
     }
 
     fn insert_block(&mut self, block: TapIrBlock) {

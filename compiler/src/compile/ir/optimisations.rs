@@ -26,6 +26,7 @@ mod duplicate_loads;
 mod empty_block;
 mod empty_phi;
 mod global_constant_propagation;
+mod immediate_arithmetic;
 mod inline;
 mod unreferenced_blocks_in_phi;
 mod unreferenced_function;
@@ -301,6 +302,11 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
                 &SymbolSpans,
                 &mut Diagnostics,
             ) -> OptimisationResult),
+    ),
+    (
+        "immediate_arithmetic",
+        &(immediate_arithmetic::immediate_arithmetic
+            as fn(&mut TapIrFunction, &mut SymTab) -> OptimisationResult),
     ),
     (
         "duplicate_loads",

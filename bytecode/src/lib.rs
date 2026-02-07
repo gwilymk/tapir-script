@@ -34,6 +34,18 @@ pub enum Opcode {
     BitAnd,
     BitOr,
 
+    // Immediate binops (b field is immediate value, not a register)
+    AddI,
+    SubI,
+    MulI,
+    DivI,
+    FixAddI,
+    FixSubI,
+    FixMulI,
+    FixDivI,
+    ShlI,
+    ShrI,
+
     // Unary ops
     Neg,
     Not,
@@ -169,6 +181,17 @@ impl Type1 {
         );
 
         Self::new3(opcode, target, lhs, rhs)
+    }
+
+    /// Immediate binary operation: target = a op imm
+    /// The b field contains an immediate value, not a register index.
+    pub const fn binop_imm(opcode: Opcode, target: u8, lhs: u8, imm: u8) -> Self {
+        assert!(
+            opcode as u8 >= Opcode::AddI as u8 && opcode as u8 <= Opcode::ShrI as u8,
+            "Invalid opcode for immediate binary operator",
+        );
+
+        Self::new3(opcode, target, lhs, imm)
     }
 
     pub const fn unaryop(opcode: Opcode, target: u8, operand: u8) -> Self {

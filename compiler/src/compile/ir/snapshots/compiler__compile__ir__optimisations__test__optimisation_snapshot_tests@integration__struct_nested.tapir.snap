@@ -690,6 +690,41 @@ jmp 1
 return 
 
 
+----------- immediate_arithmetic -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.205 = int 0
+temp.209 = int 10
+temp.210 = int 20
+temp.233 = int 5
+temp.351 = int 5
+temp.352 = int 5
+jmp 6
+
+---- block 6 ----
+jmp 8
+
+---- block 8 ----
+jmp 5
+
+---- block 5 ----
+temp.346 = int 200
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+temp.269 = temp.346 + imm(5)
+storeprop temp.269, 0
+jmp 1
+
+---- block 1 ----
+return 
+
+
 ----------- duplicate_loads -------------
 =======================
 fn @toplevel() -> 
@@ -717,7 +752,7 @@ jmp 2
 jmp 4
 
 ---- block 4 ----
-temp.269 = temp.346 + temp.351
+temp.269 = temp.346 + imm(5)
 storeprop temp.269, 0
 jmp 1
 
@@ -746,7 +781,7 @@ temp.346 = int 200
 jmp 4
 
 ---- block 4 ----
-temp.269 = temp.346 + temp.351
+temp.269 = temp.346 + imm(5)
 storeprop temp.269, 0
 return 
 
@@ -769,33 +804,7 @@ temp.346 = int 200
 jmp 5
 
 ---- block 5 ----
-temp.269 = temp.346 + temp.351
-storeprop temp.269, 0
-jmp 4
-
----- block 4 ----
-return 
-
-
------------ copy_propagation -------------
-=======================
-fn @toplevel() -> 
-
----- block 0 ----
-temp.205 = int 0
-temp.209 = int 10
-temp.210 = int 20
-temp.233 = int 5
-temp.351 = temp.233
-temp.352 = temp.233
-jmp 8
-
----- block 8 ----
-temp.346 = int 200
-jmp 5
-
----- block 5 ----
-temp.269 = temp.346 + temp.233
+temp.269 = temp.346 + imm(5)
 storeprop temp.269, 0
 jmp 4
 
@@ -816,7 +825,7 @@ temp.346 = int 200
 jmp 5
 
 ---- block 5 ----
-temp.269 = temp.346 + temp.233
+temp.269 = temp.346 + imm(5)
 storeprop temp.269, 0
 jmp 4
 

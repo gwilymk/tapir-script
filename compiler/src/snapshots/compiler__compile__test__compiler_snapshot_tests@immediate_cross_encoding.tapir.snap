@@ -1,0 +1,17 @@
+---
+source: compiler/src/compile.rs
+expression: decompiled
+input_file: compiler/src/snapshot_tests/compiler/immediate_cross_encoding.tapir
+---
+00000000: getprop 2, 0
+00000001: fixaddi 1, 2, 16
+00000002: setprop 1, 0
+00000003: getprop 2, 0
+00000004: fixaddi 1, 2, 255
+00000005: setprop 1, 0
+00000006: getprop 2, 0
+00000007: loadk 3, 257
+00000009: add 1, 2, 3
+00000010: setprop 1, 0
+00000011: ret
+00000012: ret

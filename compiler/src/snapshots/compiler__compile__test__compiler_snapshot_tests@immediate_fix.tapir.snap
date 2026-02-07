@@ -1,0 +1,16 @@
+---
+source: compiler/src/compile.rs
+expression: decompiled
+input_file: compiler/src/snapshot_tests/compiler/immediate_fix.tapir
+---
+00000000: getprop 2, 0
+00000001: fixaddi 1, 2, 16
+00000002: setprop 1, 0
+00000003: getprop 2, 0
+00000004: addi 1, 2, 128
+00000005: setprop 1, 0
+00000006: getprop 2, 0
+00000007: subi 1, 2, 64
+00000008: setprop 1, 0
+00000009: ret
+00000010: ret

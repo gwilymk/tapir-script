@@ -141,6 +141,47 @@ impl State {
                 O::BitAnd => binop!(a, b, a & b),
                 O::BitOr => binop!(a, b, a | b),
 
+                O::AddI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, self.get_reg(a) + imm as i32);
+                }
+                O::SubI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, self.get_reg(a) - imm as i32);
+                }
+                O::MulI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, self.get_reg(a) * imm as i32);
+                }
+                O::DivI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, self.get_reg(a).div_euclid(imm as i32));
+                }
+                O::FixAddI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, self.get_reg(a) + ((imm as i32) << 4));
+                }
+                O::FixSubI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, self.get_reg(a) - ((imm as i32) << 4));
+                }
+                O::FixMulI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, (self.get_reg(a) * imm as i32) >> 4);
+                }
+                O::FixDivI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, (self.get_reg(a) << 4) / imm as i32);
+                }
+                O::ShlI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, self.get_reg(a) << (imm & 31));
+                }
+                O::ShrI => {
+                    type1!(target, a, imm);
+                    self.set_reg(target, self.get_reg(a) >> (imm & 31));
+                }
+
                 O::Neg => {
                     type1!(target, operand);
                     self.set_reg(target, -self.get_reg(operand));

@@ -1,0 +1,61 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/immediate_arithmetic/cross_encoding.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.10, 0
+temp.11 = int 256
+temp.12 = temp.10 + temp.11
+storeprop temp.12, 0
+getprop temp.13, 0
+temp.14 = int 4080
+temp.15 = temp.13 + temp.14
+storeprop temp.15, 0
+getprop temp.16, 0
+temp.17 = int 257
+temp.18 = temp.16 + temp.17
+storeprop temp.18, 0
+return 
+
+
+----------- immediate_arithmetic -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.10, 0
+temp.11 = int 256
+temp.12 = temp.10 + simm(16)
+storeprop temp.12, 0
+getprop temp.13, 0
+temp.14 = int 4080
+temp.15 = temp.13 + simm(255)
+storeprop temp.15, 0
+getprop temp.16, 0
+temp.17 = int 257
+temp.18 = temp.16 + temp.17
+storeprop temp.18, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.10, 0
+temp.12 = temp.10 + simm(16)
+storeprop temp.12, 0
+getprop temp.13, 0
+temp.15 = temp.13 + simm(255)
+storeprop temp.15, 0
+getprop temp.16, 0
+temp.17 = int 257
+temp.18 = temp.16 + temp.17
+storeprop temp.18, 0
+return

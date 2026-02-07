@@ -2,7 +2,7 @@ use std::slice;
 
 use crate::ast::SymbolId;
 
-use super::{BlockExitInstr, TapIr};
+use super::{BlockExitInstr, Operand, TapIr};
 
 pub(super) enum SymbolIter<'a> {
     None,
@@ -20,7 +20,10 @@ impl<'a> SymbolIter<'a> {
             | TapIr::UnaryOp {
                 operand: source, ..
             } => Self::One(Some(*source)),
-            TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(*lhs), Some(*rhs)),
+            TapIr::BinOp { lhs, rhs, .. } => match rhs {
+                Operand::Symbol(rhs) => Self::Two(Some(*lhs), Some(*rhs)),
+                Operand::Immediate(_) | Operand::ShiftedImmediate(_) => Self::One(Some(*lhs)),
+            },
             TapIr::Call { args, .. }
             | TapIr::CallExternal { args, .. }
             | TapIr::CallBuiltin { args, .. }
@@ -89,7 +92,10 @@ impl<'a> SymbolIterMut<'a> {
             | TapIr::UnaryOp {
                 operand: source, ..
             } => Self::One(Some(source)),
-            TapIr::BinOp { lhs, rhs, .. } => Self::Two(Some(lhs), Some(rhs)),
+            TapIr::BinOp { lhs, rhs, .. } => match rhs {
+                Operand::Symbol(rhs) => Self::Two(Some(lhs), Some(rhs)),
+                Operand::Immediate(_) | Operand::ShiftedImmediate(_) => Self::One(Some(lhs)),
+            },
             TapIr::Call { args, .. }
             | TapIr::CallExternal { args, .. }
             | TapIr::CallBuiltin { args, .. }

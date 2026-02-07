@@ -13,7 +13,7 @@ use crate::{
 };
 
 use super::{
-    BlockExitInstr, BlockId, Constant, FunctionModifiers, SymbolSpans, TapIr, TapIrBlock,
+    BlockExitInstr, BlockId, Constant, FunctionModifiers, Operand, SymbolSpans, TapIr, TapIrBlock,
     TapIrFunction,
 };
 
@@ -666,7 +666,7 @@ impl<'a> BlockVisitor<'a> {
                         self.current_block.push(TapIr::BinOp {
                             target: target_symbol,
                             lhs: lhs_target,
-                            rhs: rhs_target,
+                            rhs: Operand::Symbol(rhs_target),
                             op: *operator,
                         });
                     }

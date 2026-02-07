@@ -1,0 +1,4 @@
+# constant_folding, immediate_arithmetic, dead_store_elimination
+property x: int;
+x = 10 - x;
+x = 256 - x;

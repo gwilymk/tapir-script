@@ -1,0 +1,49 @@
+---
+source: compiler/src/compile/ir/optimisations.rs
+expression: output
+input_file: compiler/src/compile/ir/snapshot_tests/optimisations/immediate_arithmetic/fix.tapir
+---
+----------- before -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.7, 0
+temp.8 = fix 0.5
+temp.9 = temp.7 + temp.8
+storeprop temp.9, 0
+getprop temp.10, 0
+temp.11 = fix 1
+temp.12 = temp.10 + temp.11
+storeprop temp.12, 0
+return 
+
+
+----------- immediate_arithmetic -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.7, 0
+temp.8 = fix 0.5
+temp.9 = temp.7 + imm(128)
+storeprop temp.9, 0
+getprop temp.10, 0
+temp.11 = fix 1
+temp.12 = temp.10 + simm(16)
+storeprop temp.12, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+getprop temp.7, 0
+temp.9 = temp.7 + imm(128)
+storeprop temp.9, 0
+getprop temp.10, 0
+temp.12 = temp.10 + simm(16)
+storeprop temp.12, 0
+return

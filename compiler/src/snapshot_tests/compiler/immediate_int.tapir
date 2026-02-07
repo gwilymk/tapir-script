@@ -1,0 +1,7 @@
+# optimise
+property x: int;
+x = x + 1;
+x = x + 255;
+x = x - 10;
+x = x * 3;
+x = 10 - x;

@@ -22,13 +22,20 @@ fn pretty_print_tapir(ir: &TapIr, symtab: &SymTab<'_>, output: &mut dyn Write) -
             lhs,
             op,
             rhs,
-        } => write!(
-            output,
-            "{} = {} {op} {}",
-            symtab.debug_name_for_symbol(*target),
-            symtab.debug_name_for_symbol(*lhs),
-            symtab.debug_name_for_symbol(*rhs)
-        ),
+        } => {
+            let rhs_str = match rhs {
+                Operand::Symbol(s) => symtab.debug_name_for_symbol(*s),
+                Operand::Immediate(imm) => format!("imm({imm})"),
+                Operand::ShiftedImmediate(imm) => format!("simm({imm})"),
+            };
+            write!(
+                output,
+                "{} = {} {op} {}",
+                symtab.debug_name_for_symbol(*target),
+                symtab.debug_name_for_symbol(*lhs),
+                rhs_str
+            )
+        }
         TapIr::Wait { frames: None } => write!(output, "wait"),
         TapIr::Wait { frames: Some(f) } => {
             write!(output, "wait {}", symtab.debug_name_for_symbol(*f))

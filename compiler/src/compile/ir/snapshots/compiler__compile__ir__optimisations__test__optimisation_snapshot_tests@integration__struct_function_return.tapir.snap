@@ -201,6 +201,38 @@ temp.112 = p.y.46 << temp.116
 return temp.105, temp.112
 
 
+----------- immediate_arithmetic -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.66 = int 3
+temp.67 = int 4
+temp.6.x.68, temp.6.y.69 = make_point(temp.66, temp.67)
+temp.15.x.78, temp.15.y.79 = double_point(temp.6.x.68, temp.6.y.69)
+temp.94 = temp.15.x.78 + temp.15.y.79
+storeprop temp.94, 0
+return 
+
+=======================
+fn make_point(x.3, y.4) -> int, int
+
+---- block 0 ----
+return x.3, y.4
+
+=======================
+fn double_point(p.x.45, p.y.46) -> int, int
+
+---- block 0 ----
+temp.104 = int 2
+temp.115 = int 1
+temp.105 = p.x.45 << imm(1)
+temp.111 = int 2
+temp.116 = int 1
+temp.112 = p.y.46 << imm(1)
+return temp.105, temp.112
+
+
 ----------- duplicate_loads -------------
 =======================
 fn @toplevel() -> 
@@ -226,10 +258,10 @@ fn double_point(p.x.45, p.y.46) -> int, int
 ---- block 0 ----
 temp.104 = int 2
 temp.115 = int 1
-temp.105 = p.x.45 << temp.115
+temp.105 = p.x.45 << imm(1)
 temp.111 = temp.104
 temp.116 = temp.115
-temp.112 = p.y.46 << temp.116
+temp.112 = p.y.46 << imm(1)
 return temp.105, temp.112
 
 
@@ -256,17 +288,17 @@ jmp 1
 jmp 6
 
 ---- block 6 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = temp.6.x.68 << temp.121
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = temp.6.x.68 << imm(1)
+temp.125 = temp.121
 temp.126 = temp.122
-temp.123 = temp.121
-temp.125 = temp.6.y.69 << temp.123
+temp.124 = temp.6.y.69 << imm(1)
 jmp 8
 
 ---- block 8 ----
-temp.119 = φ(temp.124 from 6)
-temp.120 = φ(temp.125 from 6)
+temp.119 = φ(temp.123 from 6)
+temp.120 = φ(temp.124 from 6)
 temp.15.x.78 = temp.119
 temp.15.y.79 = temp.120
 jmp 5
@@ -288,10 +320,10 @@ fn double_point(p.x.45, p.y.46) -> int, int
 ---- block 0 ----
 temp.104 = int 2
 temp.115 = int 1
-temp.105 = p.x.45 << temp.115
+temp.105 = p.x.45 << imm(1)
 temp.111 = temp.104
 temp.116 = temp.115
-temp.112 = p.y.46 << temp.116
+temp.112 = p.y.46 << imm(1)
 return temp.105, temp.112
 
 
@@ -318,17 +350,17 @@ jmp 1
 jmp 6
 
 ---- block 6 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = temp.6.x.68 << temp.121
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = temp.6.x.68 << imm(1)
+temp.125 = temp.121
 temp.126 = temp.122
-temp.123 = temp.121
-temp.125 = temp.6.y.69 << temp.123
+temp.124 = temp.6.y.69 << imm(1)
 jmp 8
 
 ---- block 8 ----
-temp.119 = φ(temp.124 from 6)
-temp.120 = φ(temp.125 from 6)
+temp.119 = φ(temp.123 from 6)
+temp.120 = φ(temp.124 from 6)
 temp.15.x.78 = temp.119
 temp.15.y.79 = temp.120
 jmp 5
@@ -360,17 +392,17 @@ jmp 1
 jmp 6
 
 ---- block 6 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = temp.6.x.68 << temp.121
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = temp.6.x.68 << imm(1)
+temp.125 = temp.121
 temp.126 = temp.122
-temp.123 = temp.121
-temp.125 = temp.6.y.69 << temp.123
+temp.124 = temp.6.y.69 << imm(1)
 jmp 8
 
 ---- block 8 ----
-temp.15.x.78 = temp.124
-temp.15.y.79 = temp.125
+temp.15.x.78 = temp.123
+temp.15.y.79 = temp.124
 jmp 5
 
 ---- block 5 ----
@@ -397,17 +429,17 @@ jmp 4
 jmp 1
 
 ---- block 1 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = temp.6.x.68 << temp.121
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = temp.6.x.68 << imm(1)
+temp.125 = temp.121
 temp.126 = temp.122
-temp.123 = temp.121
-temp.125 = temp.6.y.69 << temp.123
+temp.124 = temp.6.y.69 << imm(1)
 jmp 6
 
 ---- block 6 ----
-temp.15.x.78 = temp.124
-temp.15.y.79 = temp.125
+temp.15.x.78 = temp.123
+temp.15.y.79 = temp.124
 jmp 8
 
 ---- block 8 ----
@@ -437,21 +469,21 @@ jmp 4
 jmp 1
 
 ---- block 1 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = temp.66 << temp.121
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = temp.66 << imm(1)
+temp.125 = temp.121
 temp.126 = temp.122
-temp.123 = temp.121
-temp.125 = temp.67 << temp.121
+temp.124 = temp.67 << imm(1)
 jmp 6
 
 ---- block 6 ----
-temp.15.x.78 = temp.124
-temp.15.y.79 = temp.125
+temp.15.x.78 = temp.123
+temp.15.y.79 = temp.124
 jmp 8
 
 ---- block 8 ----
-temp.94 = temp.124 + temp.125
+temp.94 = temp.123 + temp.124
 storeprop temp.94, 0
 jmp 5
 
@@ -475,17 +507,17 @@ jmp 4
 jmp 1
 
 ---- block 1 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = temp.66 << temp.121
-temp.125 = temp.67 << temp.121
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = temp.66 << imm(1)
+temp.124 = temp.67 << imm(1)
 jmp 6
 
 ---- block 6 ----
 jmp 8
 
 ---- block 8 ----
-temp.94 = temp.124 + temp.125
+temp.94 = temp.123 + temp.124
 storeprop temp.94, 0
 jmp 5
 
@@ -509,17 +541,51 @@ jmp 4
 jmp 1
 
 ---- block 1 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = int 6
-temp.125 = int 8
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = int 6
+temp.124 = int 8
 jmp 6
 
 ---- block 6 ----
 jmp 8
 
 ---- block 8 ----
-temp.94 = temp.124 + temp.125
+temp.94 = temp.123 + temp.124
+storeprop temp.94, 0
+jmp 5
+
+---- block 5 ----
+return 
+
+
+----------- immediate_arithmetic -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.66 = int 3
+temp.67 = int 4
+jmp 2
+
+---- block 2 ----
+jmp 4
+
+---- block 4 ----
+jmp 1
+
+---- block 1 ----
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = int 6
+temp.124 = int 8
+jmp 6
+
+---- block 6 ----
+jmp 8
+
+---- block 8 ----
+temp.94 = temp.123 + imm(8)
 storeprop temp.94, 0
 jmp 5
 
@@ -540,14 +606,14 @@ jmp 4
 jmp 1
 
 ---- block 1 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = int 6
-temp.125 = int 8
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = int 6
+temp.124 = int 8
 jmp 8
 
 ---- block 8 ----
-temp.94 = temp.124 + temp.125
+temp.94 = temp.123 + imm(8)
 storeprop temp.94, 0
 return 
 
@@ -562,14 +628,14 @@ temp.67 = int 4
 jmp 4
 
 ---- block 4 ----
-temp.122 = int 2
-temp.121 = int 1
-temp.124 = int 6
-temp.125 = int 8
+temp.121 = int 2
+temp.122 = int 1
+temp.123 = int 6
+temp.124 = int 8
 jmp 1
 
 ---- block 1 ----
-temp.94 = temp.124 + temp.125
+temp.94 = temp.123 + imm(8)
 storeprop temp.94, 0
 jmp 8
 
@@ -585,12 +651,11 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.124 = int 6
-temp.125 = int 8
+temp.123 = int 6
 jmp 1
 
 ---- block 1 ----
-temp.94 = temp.124 + temp.125
+temp.94 = temp.123 + imm(8)
 storeprop temp.94, 0
 jmp 8
 
@@ -606,8 +671,7 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.124 = int 6
-temp.125 = int 8
+temp.123 = int 6
 jmp 1
 
 ---- block 1 ----
@@ -627,8 +691,7 @@ fn @toplevel() ->
 jmp 4
 
 ---- block 4 ----
-temp.124 = int 6
-temp.125 = int 8
+temp.123 = int 6
 jmp 1
 
 ---- block 1 ----
@@ -642,8 +705,7 @@ return
 fn @toplevel() -> 
 
 ---- block 0 ----
-temp.124 = int 6
-temp.125 = int 8
+temp.123 = int 6
 jmp 4
 
 ---- block 4 ----

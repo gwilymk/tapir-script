@@ -283,6 +283,52 @@ return
 jmp 0
 
 
+----------- immediate_arithmetic -------------
+=======================
+fn @toplevel() -> 
+
+---- block 2 ----
+temp.53 = int 0
+temp.55 = int 1
+temp.56 = int 1
+temp.63 = int 0
+jmp 0
+
+---- block 0 ----
+i.65 = φ(temp.63 from 2, i.106 from 5)
+sum.69 = φ(temp.53 from 2, sum.86 from 5)
+p.x.72 = φ(temp.55 from 2, p.x.94 from 5)
+p.y.75 = φ(temp.56 from 2, p.y.102 from 5)
+temp.67 = int 5
+temp.68 = i.65 >= temp.67
+conditional_jump temp.68 3 4
+
+---- block 3 ----
+storeprop sum.69, 0
+jmp 1
+
+---- block 4 ----
+temp.79 = sum.69 + p.x.72
+temp.85 = temp.79 + p.y.75
+sum.86 = temp.85
+temp.92 = int 1
+temp.93 = p.x.72 + imm(1)
+p.x.94 = temp.93
+temp.100 = int 1
+temp.101 = p.y.75 + imm(1)
+p.y.102 = temp.101
+temp.104 = int 1
+temp.105 = i.65 + imm(1)
+i.106 = temp.105
+jmp 5
+
+---- block 1 ----
+return 
+
+---- block 5 ----
+jmp 0
+
+
 ----------- duplicate_loads -------------
 =======================
 fn @toplevel() -> 
@@ -312,13 +358,13 @@ temp.79 = sum.69 + p.x.72
 temp.85 = temp.79 + p.y.75
 sum.86 = temp.85
 temp.92 = int 1
-temp.93 = p.x.72 + temp.92
+temp.93 = p.x.72 + imm(1)
 p.x.94 = temp.93
 temp.100 = temp.92
-temp.101 = p.y.75 + temp.100
+temp.101 = p.y.75 + imm(1)
 p.y.102 = temp.101
 temp.104 = temp.92
-temp.105 = i.65 + temp.104
+temp.105 = i.65 + imm(1)
 i.106 = temp.105
 jmp 5
 
@@ -358,13 +404,13 @@ temp.79 = sum.69 + p.x.72
 temp.85 = temp.79 + p.y.75
 sum.86 = temp.85
 temp.92 = int 1
-temp.93 = p.x.72 + temp.92
+temp.93 = p.x.72 + imm(1)
 p.x.94 = temp.93
 temp.100 = temp.92
-temp.101 = p.y.75 + temp.100
+temp.101 = p.y.75 + imm(1)
 p.y.102 = temp.101
 temp.104 = temp.92
-temp.105 = i.65 + temp.104
+temp.105 = i.65 + imm(1)
 i.106 = temp.105
 jmp 0
 
@@ -398,13 +444,13 @@ temp.79 = sum.69 + p.x.72
 temp.85 = temp.79 + p.y.75
 sum.86 = temp.85
 temp.92 = int 1
-temp.93 = p.x.72 + temp.92
+temp.93 = p.x.72 + imm(1)
 p.x.94 = temp.93
 temp.100 = temp.92
-temp.101 = p.y.75 + temp.100
+temp.101 = p.y.75 + imm(1)
 p.y.102 = temp.101
 temp.104 = temp.92
-temp.105 = i.65 + temp.104
+temp.105 = i.65 + imm(1)
 i.106 = temp.105
 jmp 0
 
@@ -438,13 +484,13 @@ temp.79 = sum.69 + p.x.72
 temp.85 = temp.79 + p.y.75
 sum.86 = temp.85
 temp.92 = int 1
-temp.93 = p.x.72 + temp.92
+temp.93 = p.x.72 + imm(1)
 p.x.94 = temp.93
 temp.100 = temp.92
-temp.101 = p.y.75 + temp.92
+temp.101 = p.y.75 + imm(1)
 p.y.102 = temp.101
 temp.104 = temp.92
-temp.105 = i.65 + temp.92
+temp.105 = i.65 + imm(1)
 i.106 = temp.105
 jmp 0
 
@@ -476,10 +522,45 @@ temp.79 = sum.69 + p.x.72
 temp.85 = temp.79 + p.y.75
 sum.86 = temp.85
 temp.92 = int 1
-temp.93 = p.x.72 + temp.92
+temp.93 = p.x.72 + imm(1)
 p.x.94 = temp.93
-temp.101 = p.y.75 + temp.92
+temp.101 = p.y.75 + imm(1)
 p.y.102 = temp.101
-temp.105 = i.65 + temp.92
+temp.105 = i.65 + imm(1)
+i.106 = temp.105
+jmp 0
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 2 ----
+temp.53 = int 0
+temp.55 = int 1
+jmp 0
+
+---- block 0 ----
+i.65 = φ(temp.53 from 2, i.106 from 4)
+sum.69 = φ(temp.53 from 2, sum.86 from 4)
+p.x.72 = φ(temp.55 from 2, p.x.94 from 4)
+p.y.75 = φ(temp.55 from 2, p.y.102 from 4)
+temp.67 = int 5
+temp.68 = i.65 >= temp.67
+conditional_jump temp.68 3 4
+
+---- block 3 ----
+storeprop sum.69, 0
+return 
+
+---- block 4 ----
+temp.79 = sum.69 + p.x.72
+temp.85 = temp.79 + p.y.75
+sum.86 = temp.85
+temp.93 = p.x.72 + imm(1)
+p.x.94 = temp.93
+temp.101 = p.y.75 + imm(1)
+p.y.102 = temp.101
+temp.105 = i.65 + imm(1)
 i.106 = temp.105
 jmp 0

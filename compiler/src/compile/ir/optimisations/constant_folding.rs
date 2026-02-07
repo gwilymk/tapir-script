@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-
 use agb_fixnum::Num;
 
 use crate::{
     ast::{BinaryOperator, UnaryOperator},
     compile::{
         ir::{
-            Constant, SymbolSpans, TapIr, TapIrFunction, TapIrFunctionBlockIter,
+            Constant, Operand, SymbolSpans, TapIr, TapIrFunction, TapIrFunctionBlockIter,
             optimisations::OptimisationResult,
         },
         symtab_visitor::SymTab,
@@ -47,20 +45,7 @@ pub fn constant_folding(
     symbol_spans: &SymbolSpans,
     diagnostics: &mut Diagnostics,
 ) -> OptimisationResult {
-    let mut constants = HashMap::new();
-
-    let mut dfs = TapIrFunctionBlockIter::new_dfs(f);
-    while let Some(block) = dfs.next(f) {
-        for instr in block.instrs() {
-            let TapIr::Constant(target, value) = *instr else {
-                continue;
-            };
-
-            if constants.insert(target, value).is_some() {
-                panic!("Should only be assigned once, because SSA");
-            }
-        }
-    }
+    let constants = f.constant_map();
 
     let mut did_something = OptimisationResult::DidNothing;
 
@@ -183,11 +168,43 @@ pub fn constant_folding(
                 continue;
             };
 
-            let lhs_constant = constants.get(lhs).copied();
-            let rhs_constant = constants.get(rhs).copied();
-
             use BinaryOperator as B;
             use Constant as C;
+
+            let lhs_constant = constants.get(lhs).copied();
+
+            // When RHS is an immediate and LHS is a known constant, try to fold.
+            // We don't emit warnings here because they were already emitted when
+            // the RHS was still a symbol (before immediate_arithmetic converted it).
+            //
+            // Only fold unambiguous type combinations:
+            //   Int + Immediate  → int_op  (Immediate always encodes an int value)
+            //   Fix + ShiftedImmediate → fix_op  (ShiftedImmediate always encodes a fix value)
+            // Other combinations (Fix + Immediate from strength reduction, Int + ShiftedImmediate)
+            // are skipped because the type reconstruction would be ambiguous.
+            if let Operand::Immediate(_) | Operand::ShiftedImmediate(_) = *rhs {
+                let fold_result = match (lhs_constant, *rhs) {
+                    (Some(C::Int(i1)), Operand::Immediate(v)) => {
+                        Some(int_op(i1, *op, v as i32))
+                    }
+                    (Some(C::Fix(n1)), Operand::ShiftedImmediate(v)) => {
+                        Some(fix_op(n1, *op, Fix::from_raw((v as i32) * 16)))
+                    }
+                    _ => None,
+                };
+
+                if let Some(Ok(c)) = fold_result {
+                    *instr = TapIr::Constant(*target, c);
+                    did_something = OptimisationResult::DidSomething;
+                }
+                continue;
+            }
+
+            let Operand::Symbol(rhs_sym) = *rhs else {
+                unreachable!("Immediate cases handled above");
+            };
+
+            let rhs_constant = constants.get(&rhs_sym).copied();
 
             let t = *target;
 
@@ -199,7 +216,7 @@ pub fn constant_folding(
             };
             let take_rhs = TapIr::Move {
                 target: t,
-                source: *rhs,
+                source: rhs_sym,
             };
 
             // Helper to emit a warning when folding fails
@@ -219,7 +236,7 @@ pub fn constant_folding(
             };
 
             let target_span = symbol_spans.get(*target);
-            let rhs_span = symbol_spans.get(*rhs);
+            let rhs_span = symbol_spans.get(rhs_sym);
 
             let replacement = match (lhs_constant, *op, rhs_constant) {
                 // ==================
@@ -267,12 +284,12 @@ pub fn constant_folding(
                 // 0 - x = -x
                 (Some(C::Int(0)), B::Sub, _) => TapIr::UnaryOp {
                     target: t,
-                    operand: *rhs,
+                    operand: rhs_sym,
                     op: UnaryOperator::Neg,
                 },
                 (Some(C::Fix(n)), B::Sub, _) if n == f0 => TapIr::UnaryOp {
                     target: t,
-                    operand: *rhs,
+                    operand: rhs_sym,
                     op: UnaryOperator::Neg,
                 },
 
@@ -316,7 +333,7 @@ pub fn constant_folding(
                         target: t,
                         lhs: *lhs,
                         op: B::Mul,
-                        rhs: temp,
+                        rhs: Operand::Symbol(temp),
                     };
 
                     instrs.insert(index - 1, TapIr::Constant(temp, C::Int(n.floor())));
@@ -331,7 +348,7 @@ pub fn constant_folding(
                         target: t,
                         lhs: temp,
                         op: B::Mul,
-                        rhs: *rhs,
+                        rhs: Operand::Symbol(rhs_sym),
                     };
 
                     instrs.insert(index - 1, TapIr::Constant(temp, C::Int(n.floor())));
@@ -351,7 +368,7 @@ pub fn constant_folding(
                         target: t,
                         lhs: *lhs,
                         op: B::Shl,
-                        rhs: temp,
+                        rhs: Operand::Symbol(temp),
                     };
 
                     instrs.insert(index - 1, TapIr::Constant(temp, C::Int(shift)));
@@ -365,9 +382,9 @@ pub fn constant_folding(
 
                     *instr = TapIr::BinOp {
                         target: t,
-                        lhs: *rhs,
+                        lhs: rhs_sym,
                         op: B::Shl,
-                        rhs: temp,
+                        rhs: Operand::Symbol(temp),
                     };
 
                     instrs.insert(index - 1, TapIr::Constant(temp, C::Int(shift)));
@@ -388,7 +405,7 @@ pub fn constant_folding(
                         target: t,
                         lhs: *lhs,
                         op: B::Shr,
-                        rhs: temp,
+                        rhs: Operand::Symbol(temp),
                     };
 
                     instrs.insert(index - 1, TapIr::Constant(temp, C::Int(shift)));

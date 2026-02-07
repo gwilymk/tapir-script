@@ -43,6 +43,29 @@ storeprop temp.10, 0
 return 
 
 
+----------- immediate_arithmetic -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.6 = int 2147483647
+temp.9 = int 1
+temp.10 = temp.6 + imm(1)
+storeprop temp.10, 0
+return 
+
+
+----------- dead_store_elimination -------------
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.6 = int 2147483647
+temp.10 = temp.6 + imm(1)
+storeprop temp.10, 0
+return 
+
+
 ----------- warnings -------------
 [W0002] Warning: Integer overflow detected
    ╭─[ integer_overflow_warning.tapir:5:10 ]

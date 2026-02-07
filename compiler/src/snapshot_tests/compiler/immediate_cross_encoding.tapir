@@ -1,0 +1,5 @@
+# optimise
+property x: int;
+x = x + 256;
+x = x + 4080;
+x = x + 257;
