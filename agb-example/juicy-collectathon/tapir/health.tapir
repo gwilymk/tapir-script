@@ -18,23 +18,21 @@ loop {
 
             wait;
         }
-    } else {
-        if prev_health < health {
-            # Gained health - play animation backward
-            # Offset by 1 so we animate the new bar, not one past it
-            health_offset = 1;
-            health_frame = 12;
-            loop {
-                if health_frame > 0 {
-                    health_frame = health_frame - 1;
-                } else {
-                    break;
-                }
-
-                wait;
+    } else if prev_health < health {
+        # Gained health - play animation backward
+        # Offset by 1 so we animate the new bar, not one past it
+        health_offset = 1;
+        health_frame = 12;
+        loop {
+            if health_frame > 0 {
+                health_frame = health_frame - 1;
+            } else {
+                break;
             }
-            health_offset = 0;
+
+            wait;
         }
+        health_offset = 0;
     }
 
     prev_health = health;
