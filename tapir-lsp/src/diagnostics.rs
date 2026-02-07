@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::error::Error;
 use std::path::Path;
 use std::time::Instant;
@@ -11,14 +10,18 @@ use lsp_types::{
     notification::{Notification as _, PublishDiagnostics},
 };
 
-use crate::state::FileState;
+use crate::state::{FileState, Files};
 use crate::util::source_range_to_lsp_range;
 
+#[expect(
+    clippy::mutable_key_type,
+    reason = "Uri's Hash/Eq only depends on the URL string"
+)]
 pub fn analyse_and_publish(
     connection: &Connection,
     uri: Uri,
     text: String,
-    files: &mut HashMap<Uri, FileState>,
+    files: &mut Files,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     let filename = uri.path().as_str();
 

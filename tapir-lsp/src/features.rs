@@ -451,6 +451,10 @@ pub fn find_rename(
         return None;
     }
 
+    #[expect(
+        clippy::mutable_key_type,
+        reason = "Uri's Hash/Eq only depends on the URL string"
+    )]
     let mut changes = HashMap::new();
     changes.insert(uri.clone(), edits);
 

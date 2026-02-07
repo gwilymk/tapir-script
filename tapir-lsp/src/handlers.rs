@@ -1,11 +1,10 @@
-use std::collections::HashMap;
 use std::error::Error;
 
 use lsp_server::{Connection, Message, Notification, Response};
 use lsp_types::{
     DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams, HoverParams,
     InlayHintParams, ReferenceParams, RenameParams, SignatureHelpParams,
-    TextDocumentPositionParams, Uri,
+    TextDocumentPositionParams,
     notification::{DidChangeTextDocument, DidOpenTextDocument, Notification as _},
     request::{
         GotoDefinition, HoverRequest, InlayHintRequest, PrepareRenameRequest, References, Rename,
@@ -18,12 +17,16 @@ use crate::features::{
     find_definition, find_hover, find_references, find_rename, find_signature_help,
     get_inlay_hints, prepare_rename,
 };
-use crate::state::FileState;
+use crate::state::Files;
 
+#[expect(
+    clippy::mutable_key_type,
+    reason = "Uri's Hash/Eq only depends on the URL string"
+)]
 pub fn handle_request(
     connection: &Connection,
     request: lsp_server::Request,
-    files: &mut HashMap<Uri, FileState>,
+    files: &mut Files,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     match request.method.as_str() {
         GotoDefinition::METHOD => {
@@ -154,10 +157,14 @@ pub fn handle_request(
     Ok(())
 }
 
+#[expect(
+    clippy::mutable_key_type,
+    reason = "Uri's Hash/Eq only depends on the URL string"
+)]
 pub fn handle_notification(
     connection: &Connection,
     notification: Notification,
-    files: &mut HashMap<Uri, FileState>,
+    files: &mut Files,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     match notification.method.as_str() {
         DidOpenTextDocument::METHOD => {

@@ -5,16 +5,16 @@ mod handlers;
 mod state;
 mod util;
 
-use std::{collections::HashMap, error::Error};
+use std::error::Error;
 
 use lsp_server::{Connection, Message};
 use lsp_types::{
     HoverProviderCapability, InitializeParams, OneOf, RenameOptions, ServerCapabilities,
-    SignatureHelpOptions, TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
+    SignatureHelpOptions, TextDocumentSyncCapability, TextDocumentSyncKind,
 };
 
 use handlers::{handle_notification, handle_request};
-use state::FileState;
+use state::Files;
 
 /// Run the tapir language server over stdio.
 pub fn run() -> Result<(), Box<dyn Error + Sync + Send>> {
@@ -54,7 +54,11 @@ pub fn run() -> Result<(), Box<dyn Error + Sync + Send>> {
 }
 
 fn main_loop(connection: Connection) -> Result<(), Box<dyn Error + Sync + Send>> {
-    let mut files: HashMap<Uri, FileState> = HashMap::new();
+    #[expect(
+        clippy::mutable_key_type,
+        reason = "Uri's Hash/Eq only depends on the URL string"
+    )]
+    let mut files = Files::new();
 
     for msg in &connection.receiver {
         match msg {
