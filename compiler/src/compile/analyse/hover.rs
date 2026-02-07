@@ -118,7 +118,7 @@ pub fn extract_hover_info(
         let signature = format!("{} {}({}){}", prefix, function.name, args, return_str);
 
         let info = HoverInfo {
-            name: function.name.to_string(),
+            name: function.name.clone(),
             signature,
             doc_comment: comments.doc_for_item(function.span),
         };
@@ -611,6 +611,9 @@ fn extract_from_expression(
                     hover_info,
                 );
             }
+        }
+        ExpressionKind::SpawnBlock { .. } => {
+            unreachable!("SpawnBlock should have been desugared before this point")
         }
         ExpressionKind::UnaryOperation { operand, .. } => {
             extract_from_expression(

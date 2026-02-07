@@ -927,6 +927,9 @@ impl<'a> BlockVisitor<'a> {
                     }
                 }
             }
+            ast::ExpressionKind::SpawnBlock { .. } => {
+                unreachable!("SpawnBlock should have been desugared before this point")
+            }
         }
     }
 

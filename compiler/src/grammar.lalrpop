@@ -164,11 +164,11 @@ BuiltinId: BuiltinFunctionId = {
 FunctionDefinition: Function<'input> = {
     // Regular function: fn name(...) { ... }
     <modifiers: FunctionModifiers> "fn" <start: @L> <name: identifier> <end: @R> "(" <arguments: FunctionArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { kind: FunctionKind::Regular, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+        Function { kind: FunctionKind::Regular, name: name.to_string(), arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 
     // Method: fn Type.name(...) { ... }
     <modifiers: FunctionModifiers> "fn" <receiver: TypeIdentifier> "." <start: @L> <name: identifier> <end: @R> "(" <arguments: MethodArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
-        Function { kind: FunctionKind::Method { receiver_type: receiver }, name, arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
+        Function { kind: FunctionKind::Method { receiver_type: receiver }, name: name.to_string(), arguments, return_types, statements, span: Span::new(file_id, start, end), modifiers, meta: Metadata::new() },
 
     // Operator: fn LeftType op RightType(...) { ... }
     <modifiers: FunctionModifiers> "fn"
@@ -178,7 +178,7 @@ FunctionDefinition: Function<'input> = {
     "(" <arguments: OperatorArguments> ")" <return_types: FunctionReturn> <statements: Block> =>
         Function {
             kind: FunctionKind::Operator(OperatorDef { left_type, op, right_type }),
-            name: "",
+            name: String::new(),
             arguments,
             return_types,
             statements,
@@ -499,8 +499,14 @@ Term: Expression<'input> = {
     // Spawn expression: spawns a function call as a concurrent task
     <start: @L> spawn <ident: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> =>
         ExpressionKind::Spawn {
-            name: ident,
+            name: ident.to_string(),
             arguments,
+        }.with_span(file_id, start, end),
+
+    // Spawn block: spawns an inline block as a concurrent task
+    <start: @L> spawn <body: Block> <end: @R> =>
+        ExpressionKind::SpawnBlock {
+            body,
         }.with_span(file_id, start, end),
 }
 

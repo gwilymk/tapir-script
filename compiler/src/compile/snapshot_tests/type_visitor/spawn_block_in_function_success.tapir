@@ -1,0 +1,7 @@
+property x: int;
+
+fn start() {
+    spawn {
+        x = 42;
+    };
+}

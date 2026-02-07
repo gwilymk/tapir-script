@@ -1,0 +1,6 @@
+property x: int;
+global g: int = 0;
+
+spawn {
+    x = g + 1;
+};

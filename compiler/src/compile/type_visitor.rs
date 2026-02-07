@@ -50,7 +50,7 @@ pub struct TypeVisitor<'input, 'reg> {
 pub struct TriggerId(pub usize);
 
 struct FunctionInfo<'input> {
-    name: &'input str,
+    name: String,
     span: Span,
     args: Vec<FunctionArgumentInfo<'input>>,
     rets: Vec<Type>,
@@ -102,7 +102,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             resolved_functions.insert(
                 InternalOrExternalFunctionId::StructConstructor(struct_id),
                 FunctionInfo {
-                    name: Box::leak(struct_def.name.clone().into_boxed_str()),
+                    name: struct_def.name.clone(),
                     span: struct_def.span,
                     args,
                     rets: vec![Type::Struct(struct_id)],
@@ -125,7 +125,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             resolved_functions.insert(
                 InternalOrExternalFunctionId::Internal(*function.meta.get().unwrap()),
                 FunctionInfo {
-                    name: function.name,
+                    name: function.name.clone(),
                     span: function.span,
                     args,
                     rets: function
@@ -153,7 +153,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             resolved_functions.insert(
                 InternalOrExternalFunctionId::External(*function.meta.get().unwrap()),
                 FunctionInfo {
-                    name: function.name,
+                    name: function.name.to_string(),
                     span: function.span,
                     args,
                     rets: function
@@ -181,7 +181,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
             resolved_functions.insert(
                 InternalOrExternalFunctionId::Builtin(*function.meta.get().unwrap()),
                 FunctionInfo {
-                    name: function.name,
+                    name: function.name.to_string(),
                     span: function.span,
                     args,
                     rets: function
@@ -1408,6 +1408,9 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                 );
                 Type::Task
             }
+            ast::ExpressionKind::SpawnBlock { .. } => {
+                unreachable!("SpawnBlock should have been desugared before this point")
+            }
         }
     }
 
@@ -1435,7 +1438,7 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
     fn type_for_call(
         &mut self,
         span: Span,
-        name: &'input str,
+        name: &str,
         function_id: Option<InternalOrExternalFunctionId>,
         arguments: &mut [Expression<'input>],
         symtab: &SymTab,
@@ -1631,7 +1634,9 @@ mod test {
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
     use crate::{
-        compile::{CompileSettings, loop_visitor, struct_visitor, symtab_visitor::SymTabVisitor},
+        compile::{
+            CompileSettings, desugar, loop_visitor, struct_visitor, symtab_visitor::SymTabVisitor,
+        },
         grammar,
         lexer::Lexer,
         tokens::FileId,
@@ -1655,6 +1660,8 @@ mod test {
             let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer.iter())
                 .unwrap();
+
+            desugar::run(&mut script);
 
             // Struct registration and type resolution
             let mut struct_registry = StructRegistry::default();
@@ -1736,6 +1743,8 @@ mod test {
             let mut script = parser
                 .parse(file_id, &mut diagnostics, lexer.iter())
                 .unwrap();
+
+            desugar::run(&mut script);
 
             // Struct registration and type resolution
             let mut struct_registry = StructRegistry::default();

@@ -1,0 +1,19 @@
+---
+source: compiler/src/compile.rs
+expression: decompiled
+input_file: compiler/src/snapshot_tests/compiler/spawn_block_with_loop.tapir
+---
+00000000: spawn 1, 2, 0
+00000001: jmp 7
+00000002: loadk 1, 5
+00000004: wait
+00000005: ret
+00000006: ret
+00000007: jmp 8
+00000008: getprop 2, 0
+00000009: loadk 3, 1
+00000011: add 1, 2, 3
+00000012: setprop 1, 0
+00000013: wait
+00000014: jmp 8
+00000015: ret

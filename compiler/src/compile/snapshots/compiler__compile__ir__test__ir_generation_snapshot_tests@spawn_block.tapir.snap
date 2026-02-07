@@ -1,0 +1,19 @@
+---
+source: compiler/src/compile/ir.rs
+expression: output
+input_file: compiler/src/compile/snapshot_tests/ir/spawn_block.tapir
+---
+=======================
+fn @toplevel() -> 
+
+---- block 0 ----
+temp.1 = spawn @spawn_block_0()
+return 
+
+=======================
+fn @spawn_block_0() -> 
+
+---- block 0 ----
+temp.2 = int 42
+storeprop temp.2, 0
+return

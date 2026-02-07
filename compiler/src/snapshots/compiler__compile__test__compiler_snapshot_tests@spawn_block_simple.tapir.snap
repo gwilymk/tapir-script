@@ -1,0 +1,13 @@
+---
+source: compiler/src/compile.rs
+expression: decompiled
+input_file: compiler/src/snapshot_tests/compiler/spawn_block_simple.tapir
+---
+00000000: spawn 1, 2, 0
+00000001: jmp 4
+00000002: ret
+00000003: ret
+00000004: loadk 1, 42
+00000006: setprop 1, 0
+00000007: ret
+00000008: ret

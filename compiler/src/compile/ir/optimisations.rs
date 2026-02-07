@@ -326,6 +326,7 @@ mod test {
     use crate::{
         CompileSettings,
         compile::{
+            desugar,
             ir::{create_ir, make_ssa, pretty_print},
             loop_visitor::visit_loop_check,
             struct_visitor,
@@ -355,6 +356,8 @@ mod test {
             let mut script = parser
                 .parse(file_id, &mut diagnostics, lexer.iter())
                 .unwrap();
+
+            desugar::run(&mut script);
 
             let compile_settings = CompileSettings {
                 available_fields: None,

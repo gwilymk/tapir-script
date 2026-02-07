@@ -1,0 +1,19 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: diagnostics.pretty_string(false)
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/spawn_block_local_capture_fail.tapir
+---
+[E0001] Error: Unknown variable 'x'
+   ╭─[ spawn_block_local_capture_fail.tapir:4:13 ]
+   │
+ 4 │         x = x + 1;
+   │             ┬  
+   │             ╰── Unknown variable
+───╯
+[E0001] Error: Unknown variable 'x'
+   ╭─[ spawn_block_local_capture_fail.tapir:4:9 ]
+   │
+ 4 │         x = x + 1;
+   │         ┬  
+   │         ╰── Unknown variable
+───╯

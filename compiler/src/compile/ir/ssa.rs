@@ -264,7 +264,7 @@ mod test {
     use crate::{
         CompileSettings,
         compile::{
-            loop_visitor::visit_loop_check, symtab_visitor::SymTabVisitor,
+            desugar, loop_visitor::visit_loop_check, symtab_visitor::SymTabVisitor,
             type_visitor::TypeVisitor,
         },
         grammar,
@@ -290,6 +290,8 @@ mod test {
             let mut script = parser
                 .parse(file_id, &mut diagnostics, lexer.iter())
                 .unwrap();
+
+            desugar::run(&mut script);
 
             let compile_settings = CompileSettings {
                 available_fields: None,

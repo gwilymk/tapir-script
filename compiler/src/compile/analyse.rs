@@ -341,7 +341,7 @@ fn extract_functions(ast: &Script<'_>, _symtab: &SymTab<'_>) -> Vec<FunctionInfo
             .collect();
 
         functions.push(FunctionInfo {
-            name: function.name.to_string(),
+            name: function.name.clone(),
             span: function.span,
             arguments,
             return_types: function

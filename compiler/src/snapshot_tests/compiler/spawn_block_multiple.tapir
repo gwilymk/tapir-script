@@ -1,0 +1,16 @@
+property x: int;
+property y: int;
+
+spawn {
+    loop {
+        x = x + 1;
+        wait;
+    }
+};
+
+spawn {
+    loop {
+        y = y + 1;
+        wait;
+    }
+};

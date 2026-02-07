@@ -1,0 +1,10 @@
+property counter: int;
+
+spawn {
+    loop {
+        counter = counter + 1;
+        wait;
+    }
+};
+
+wait 5;

@@ -801,7 +801,7 @@ impl<'input> SymTabVisitor<'input> {
 
             // Use mangled_name() - returns "Type@method" for methods, "name" for functions
             if !register_function(
-                function.mangled_name().into_owned(),
+                function.mangled_name(),
                 function.span,
                 InternalOrExternalFunctionId::Builtin(fid),
                 &mut function_declarations,
@@ -871,7 +871,7 @@ impl<'input> SymTabVisitor<'input> {
 
             // Use mangled_name() - returns "Type@op@Type" for operators, "Type@method" for methods, "name" for functions
             register_function(
-                function.mangled_name().into_owned(),
+                function.mangled_name(),
                 function.span,
                 InternalOrExternalFunctionId::Internal(fid),
                 &mut function_declarations,
@@ -1244,7 +1244,7 @@ impl<'input> SymTabVisitor<'input> {
                 self.visit_expr(operand, diagnostics);
             }
             ExpressionKind::Call { arguments, name } => {
-                if let Some(function) = self.function_names.get(*name) {
+                if let Some(function) = self.function_names.get(&**name) {
                     expr.meta.set(*function);
                 } else {
                     ErrorKind::UnknownFunction {
@@ -1274,7 +1274,7 @@ impl<'input> SymTabVisitor<'input> {
                 }
             }
             ExpressionKind::Spawn { name, arguments } => {
-                if let Some(function) = self.function_names.get(*name) {
+                if let Some(function) = self.function_names.get(&**name) {
                     expr.meta.set(*function);
                 } else {
                     ErrorKind::UnknownFunction {
@@ -1287,6 +1287,9 @@ impl<'input> SymTabVisitor<'input> {
                 for argument in arguments {
                     self.visit_expr(argument, diagnostics);
                 }
+            }
+            ExpressionKind::SpawnBlock { .. } => {
+                unreachable!("SpawnBlock should have been desugared before this point")
             }
             ExpressionKind::Integer(_)
             | ExpressionKind::Fix(_)
@@ -1767,7 +1770,12 @@ mod test {
 
     use insta::{assert_ron_snapshot, assert_snapshot, glob};
 
-    use crate::{compile::struct_visitor, grammar, lexer::Lexer, tokens::FileId};
+    use crate::{
+        compile::{desugar, struct_visitor},
+        grammar,
+        lexer::Lexer,
+        tokens::FileId,
+    };
 
     use super::*;
 
@@ -1785,6 +1793,8 @@ mod test {
             let mut script = parser
                 .parse(file_id, &mut diagnostics, lexer.iter())
                 .unwrap();
+
+            desugar::run(&mut script);
 
             // Struct registration and type resolution
             let mut struct_registry = StructRegistry::default();
@@ -1834,6 +1844,8 @@ mod test {
             let mut script = parser
                 .parse(FileId::new(0), &mut diagnostics, lexer.iter())
                 .unwrap();
+
+            desugar::run(&mut script);
 
             // Struct registration and type resolution
             let mut struct_registry = StructRegistry::default();

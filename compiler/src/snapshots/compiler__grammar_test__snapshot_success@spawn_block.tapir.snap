@@ -1,0 +1,109 @@
+---
+source: compiler/src/grammar_test.rs
+expression: ast
+input_file: compiler/src/snapshot_tests/grammar/spawn_block.tapir
+---
+Script(
+  imports: [],
+  struct_declarations: [],
+  property_declarations: [
+    PropertyDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "x",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Int),
+          name: "int",
+          span: "[span]",
+        )),
+      ),
+      span: "[span]",
+    ),
+  ],
+  globals: [],
+  functions: [
+    Function(
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: SpawnBlock(
+                body: [
+                  Statement(
+                    span: "[span]",
+                    kind: Assignment(
+                      targets: [
+                        Expression(
+                          span: "[span]",
+                          kind: Variable("x"),
+                          meta: {},
+                        ),
+                      ],
+                      values: [
+                        Expression(
+                          span: "[span]",
+                          kind: Integer(1),
+                          meta: {},
+                        ),
+                      ],
+                    ),
+                    meta: {},
+                  ),
+                ],
+              ),
+              meta: {},
+            ),
+          ),
+          meta: {},
+        ),
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: SpawnBlock(
+                body: [
+                  Statement(
+                    span: "[span]",
+                    kind: Loop(
+                      block: [
+                        Statement(
+                          span: "[span]",
+                          kind: Wait(
+                            frames: None,
+                          ),
+                          meta: {},
+                        ),
+                      ],
+                    ),
+                    meta: {},
+                  ),
+                ],
+              ),
+              meta: {},
+            ),
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {},
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

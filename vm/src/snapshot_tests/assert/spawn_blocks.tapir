@@ -1,0 +1,84 @@
+# Tests for spawn blocks (inline spawn { ... } syntax)
+extern fn assert(value: bool);
+
+# Basic spawn block sets a global
+global block_ran = 0;
+
+spawn {
+    block_ran = 1;
+};
+assert(block_ran == 0);  # Not run yet
+wait;
+assert(block_ran == 1);  # Now it ran
+
+# Spawn block with wait inside
+global waited_block = 0;
+
+spawn {
+    wait;
+    waited_block = 42;
+};
+wait;
+assert(waited_block == 0);  # First wait: spawned task hits its own wait
+wait;
+assert(waited_block == 42);  # Second wait: spawned task finishes
+
+# Multiple spawn blocks
+global multi_a = 0;
+global multi_b = 0;
+
+spawn {
+    multi_a = 10;
+};
+spawn {
+    multi_b = 20;
+};
+assert(multi_a == 0);
+assert(multi_b == 0);
+wait;
+assert(multi_a == 10);
+assert(multi_b == 20);
+
+# Spawn block with loop
+global loop_count = 0;
+
+spawn {
+    loop {
+        loop_count = loop_count + 1;
+        if loop_count == 3 {
+            break;
+        }
+        wait;
+    }
+};
+wait;
+assert(loop_count == 1);
+wait;
+assert(loop_count == 2);
+wait;
+assert(loop_count == 3);
+
+# Spawn block returns a task handle
+global cancel_test = 0;
+
+var t = spawn {
+    wait;
+    cancel_test = 99;
+};
+t.cancel();
+wait 2;
+assert(cancel_test == 0);  # Cancelled before it could set the value
+
+# Spawn block inside a function
+global fn_spawn_result = 0;
+
+fn do_spawn() {
+    spawn {
+        fn_spawn_result = 77;
+    };
+}
+
+do_spawn();
+assert(fn_spawn_result == 0);
+wait;
+assert(fn_spawn_result == 77);

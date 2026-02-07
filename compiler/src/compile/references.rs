@@ -22,7 +22,7 @@ pub fn extract_references(
     let mut function_spans: HashMap<&str, Span> = HashMap::new();
     for func in &ast.functions {
         if func.name != "@toplevel" {
-            function_spans.insert(func.name, func.span);
+            function_spans.insert(&func.name, func.span);
         }
     }
     for func in &ast.extern_functions {
@@ -244,7 +244,7 @@ fn extract_references_from_expression(
             }
         }
         ExpressionKind::Call { name, arguments } => {
-            if let Some(&def_span) = function_spans.get(name) {
+            if let Some(&def_span) = function_spans.get(*name) {
                 references.insert(expr.span, def_span);
             }
             for arg in arguments {
@@ -311,7 +311,7 @@ fn extract_references_from_expression(
             }
         }
         ExpressionKind::Spawn { name, arguments } => {
-            if let Some(&def_span) = function_spans.get(name) {
+            if let Some(&def_span) = function_spans.get(&**name) {
                 references.insert(expr.span, def_span);
             }
             for arg in arguments {
@@ -323,6 +323,9 @@ fn extract_references_from_expression(
                     references,
                 );
             }
+        }
+        ExpressionKind::SpawnBlock { .. } => {
+            unreachable!("SpawnBlock should have been desugared before this point")
         }
         ExpressionKind::UnaryOperation { operand, .. } => {
             extract_references_from_expression(

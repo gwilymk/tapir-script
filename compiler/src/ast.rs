@@ -1,4 +1,4 @@
-use std::{borrow::Cow, fmt::Display, iter};
+use std::{fmt::Display, iter};
 
 use crate::{
     tokens::{FileId, Span},
@@ -183,7 +183,7 @@ impl<'input> Script<'input> {
 
         let top_level_function = Function {
             kind: FunctionKind::Regular,
-            name: "@toplevel",
+            name: "@toplevel".to_string(),
             span: Span::new(file_id, 0, 0),
             statements: top_level_function_statements,
             arguments: vec![],
@@ -275,8 +275,8 @@ pub enum FunctionKind<'input> {
 pub struct Function<'input> {
     /// The kind of function (regular, method, or operator)
     pub kind: FunctionKind<'input>,
-    /// The function/method name (empty string for operators)
-    pub name: &'input str,
+    /// The function/method name (empty string for operators).
+    pub name: String,
     /// Span of the function name (or operator for operator overloads)
     pub span: Span,
     /// Function body
@@ -327,16 +327,16 @@ impl<'input> Function<'input> {
     /// For operators: "LeftType@op@RightType"
     /// For methods: "Type@method"
     /// For regular functions: just the name
-    pub fn mangled_name(&self) -> Cow<'_, str> {
+    pub fn mangled_name(&self) -> String {
         match &self.kind {
-            FunctionKind::Operator(op_def) => Cow::Owned(format!(
+            FunctionKind::Operator(op_def) => format!(
                 "{}@{}@{}",
                 op_def.left_type.ident, op_def.op, op_def.right_type.ident
-            )),
+            ),
             FunctionKind::Method { receiver_type } => {
-                Cow::Owned(format!("{}@{}", receiver_type.ident, self.name))
+                format!("{}@{}", receiver_type.ident, self.name)
             }
-            FunctionKind::Regular => Cow::Borrowed(self.name),
+            FunctionKind::Regular => self.name.clone(),
         }
     }
 }
@@ -344,10 +344,10 @@ impl<'input> Function<'input> {
 impl<'input> BuiltinFunction<'input> {
     /// Returns the mangled function name.
     /// For methods: "Type@method", for regular functions: just the name.
-    pub fn mangled_name(&self) -> Cow<'_, str> {
+    pub fn mangled_name(&self) -> String {
         match &self.receiver_type {
-            Some(receiver) => Cow::Owned(format!("{}@{}", receiver.ident, self.name)),
-            None => Cow::Borrowed(self.name),
+            Some(receiver) => format!("{}@{}", receiver.ident, self.name),
+            None => self.name.to_string(),
         }
     }
 }
@@ -580,6 +580,9 @@ impl<'input> Expression<'input> {
             ExpressionKind::Spawn { arguments, .. } => Box::new(
                 iter::once(self).chain(arguments.iter().flat_map(|argument| argument.all_inner())),
             ),
+            ExpressionKind::SpawnBlock { .. } => {
+                unreachable!("SpawnBlock should have been desugared before this point")
+            }
         }
     }
 }
@@ -623,8 +626,14 @@ pub enum ExpressionKind<'input> {
 
     /// Spawn a function call as a concurrent task
     Spawn {
-        name: &'input str,
+        name: String,
         arguments: Vec<Expression<'input>>,
+    },
+
+    /// Spawn an inline block as a concurrent task.
+    /// Desugared into a synthetic function + Spawn before symbol resolution.
+    SpawnBlock {
+        body: Vec<Statement<'input>>,
     },
 }
 

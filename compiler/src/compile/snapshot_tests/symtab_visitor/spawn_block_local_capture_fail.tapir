@@ -1,0 +1,6 @@
+fn example() {
+    var x = 42;
+    spawn {
+        x = x + 1;
+    };
+}

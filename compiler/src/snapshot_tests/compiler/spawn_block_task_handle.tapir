@@ -1,0 +1,9 @@
+property x: int;
+global t: task;
+
+t = spawn {
+    loop {
+        x = x + 1;
+        wait;
+    }
+};

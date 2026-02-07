@@ -31,6 +31,7 @@ pub const PRELUDE_SOURCE: &str = include_str!("../stdlib/prelude.tapir");
 
 pub mod analyse;
 pub(crate) mod constant_eval;
+mod desugar;
 pub mod disassemble;
 mod ir;
 mod loop_visitor;
@@ -49,6 +50,9 @@ pub fn analyse_ast<'input>(
     settings: &CompileSettings,
     diagnostics: &mut Diagnostics,
 ) -> (SymTab<'input>, TypeTable<'input>, StructRegistry) {
+    // Desugar (before symbol resolution)
+    desugar::run(ast);
+
     // Phase 0: Struct registration and type resolution (must be before symbol resolution)
     let mut struct_registry = StructRegistry::default();
     let struct_names = struct_visitor::register_structs(ast, &mut struct_registry, diagnostics);
@@ -237,6 +241,9 @@ pub fn compile_with_loader(
     // Resolve imports
     let mut import_resolver = ImportResolver::new(file_loader, import_start_id);
     import_resolver.resolve_imports(&mut ast, filename, &mut diagnostics);
+
+    // Desugar (before symbol resolution)
+    desugar::run(&mut ast);
 
     // Continue with normal compilation pipeline
     let (mut symtab, type_table, struct_registry) =

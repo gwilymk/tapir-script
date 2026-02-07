@@ -68,6 +68,9 @@ pub fn eval_constant_expr(expr: &Expression<'_>) -> Result<ConstantValue, Consta
         | ExpressionKind::Spawn { .. }
         | ExpressionKind::Error
         | ExpressionKind::Nop => Err(ConstantEvalError::NotConstant { span: expr.span }),
+        ExpressionKind::SpawnBlock { .. } => {
+            unreachable!("SpawnBlock should have been desugared before this point")
+        }
     }
 }
 

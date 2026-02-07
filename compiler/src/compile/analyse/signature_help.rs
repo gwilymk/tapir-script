@@ -180,7 +180,7 @@ fn extract_from_expression(
             }
         }
         ExpressionKind::Spawn { name, arguments } => {
-            if signatures.contains_key(*name) {
+            if signatures.contains_key(&**name) {
                 let argument_start_offsets: Vec<usize> =
                     arguments.iter().map(|arg| arg.span.start()).collect();
                 let argument_end_offsets: Vec<usize> =
@@ -196,6 +196,9 @@ fn extract_from_expression(
             for arg in arguments {
                 extract_from_expression(arg, signatures, call_sites);
             }
+        }
+        ExpressionKind::SpawnBlock { .. } => {
+            unreachable!("SpawnBlock should have been desugared before this point")
         }
         ExpressionKind::UnaryOperation { operand, .. } => {
             extract_from_expression(operand, signatures, call_sites);

@@ -1,0 +1,8 @@
+---
+source: compiler/src/compile/type_visitor.rs
+expression: all_types
+input_file: compiler/src/compile/snapshot_tests/type_visitor/spawn_block_in_function_success.tapir
+---
+[
+  ("x", Int),
+]

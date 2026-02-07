@@ -1,0 +1,4 @@
+property x: int;
+spawn { x = 1; };
+spawn { x = 2; };
+spawn { x = 3; };

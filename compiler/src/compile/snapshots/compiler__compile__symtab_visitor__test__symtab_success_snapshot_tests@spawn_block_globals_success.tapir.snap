@@ -1,0 +1,142 @@
+---
+source: compiler/src/compile/symtab_visitor.rs
+expression: script
+input_file: compiler/src/compile/snapshot_tests/symtab_visitor/spawn_block_globals_success.tapir
+---
+Script(
+  imports: [],
+  struct_declarations: [],
+  property_declarations: [
+    PropertyDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "x",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Int),
+          name: "int",
+          span: "[span]",
+        )),
+      ),
+      span: "[span]",
+    ),
+  ],
+  globals: [
+    GlobalDeclaration(
+      name: TypedIdent(
+        ident: Ident(
+          span: "[span]",
+          ident: "g",
+        ),
+        ty: Some(TypeWithLocation(
+          t: Some(Int),
+          name: "int",
+          span: "[span]",
+        )),
+      ),
+      value: Some(Expression(
+        span: "[span]",
+        kind: Integer(0),
+        meta: {},
+      )),
+      span: "[span]",
+    ),
+  ],
+  functions: [
+    Function(
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: Spawn(
+                name: "@spawn_block_0",
+                arguments: [],
+              ),
+              meta: {
+                "compiler::ast::InternalOrExternalFunctionId": "Internal(FunctionId(1))",
+              },
+            ),
+          ),
+          meta: {},
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(0)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
+      },
+    ),
+    Function(
+      kind: Regular,
+      name: "@spawn_block_0",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Assignment(
+            targets: [
+              Expression(
+                span: "[span]",
+                kind: Variable("x"),
+                meta: {
+                  "compiler::ast::SymbolId": "SymbolId(0)",
+                },
+              ),
+            ],
+            values: [
+              Expression(
+                span: "[span]",
+                kind: BinaryOperation(
+                  lhs: Expression(
+                    span: "[span]",
+                    kind: Variable("g"),
+                    meta: {
+                      "compiler::ast::SymbolId": "SymbolId(4611686018427387904)",
+                    },
+                  ),
+                  operator: Add,
+                  rhs: Expression(
+                    span: "[span]",
+                    kind: Integer(1),
+                    meta: {},
+                  ),
+                ),
+                meta: {},
+              ),
+            ],
+          ),
+          meta: {
+            "alloc::vec::Vec<compiler::ast::SymbolId>": "[SymbolId(0)]",
+          },
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: {
+        "compiler::ast::FunctionId": "FunctionId(1)",
+        "compiler::compile::symtab_visitor::FunctionArgumentSymbols": "FunctionArgumentSymbols([])",
+      },
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)

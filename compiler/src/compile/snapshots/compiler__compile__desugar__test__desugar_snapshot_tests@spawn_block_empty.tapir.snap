@@ -1,0 +1,60 @@
+---
+source: compiler/src/compile/desugar.rs
+expression: script
+input_file: compiler/src/compile/snapshot_tests/desugar/spawn_block_empty.tapir
+---
+Script(
+  imports: [],
+  struct_declarations: [],
+  property_declarations: [],
+  globals: [],
+  functions: [
+    Function(
+      kind: Regular,
+      name: "@toplevel",
+      span: "[span]",
+      statements: [
+        Statement(
+          span: "[span]",
+          kind: Expression(
+            expression: Expression(
+              span: "[span]",
+              kind: Spawn(
+                name: "@spawn_block_0",
+                arguments: [],
+              ),
+              meta: "[meta]",
+            ),
+          ),
+          meta: "[meta]",
+        ),
+      ],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: "[meta]",
+    ),
+    Function(
+      kind: Regular,
+      name: "@spawn_block_0",
+      span: "[span]",
+      statements: [],
+      arguments: [],
+      return_types: FunctionReturn(
+        types: [],
+        span: "[span]",
+      ),
+      modifiers: FunctionModifiers(
+        is_event_handler: None,
+      ),
+      meta: "[meta]",
+    ),
+  ],
+  extern_functions: [],
+  builtin_functions: [],
+)
