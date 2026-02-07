@@ -7,9 +7,12 @@ use type_visitor::{TypeTable, TypeVisitor};
 use crate::{
     ErrorKind, EventHandler, ExternFunction, Trigger,
     ast::{BinaryOperator, FunctionId, Script, SymbolId, UnaryOperator},
-    compile::ir::{
-        BlockId, SymbolSpans, TapIr, TapIrFunction, create_ir, make_ssa,
-        regalloc::{self, RegisterAllocations},
+    compile::{
+        bytecode_peephole::peephole_optimisation,
+        ir::{
+            BlockId, SymbolSpans, TapIr, TapIrFunction, create_ir, make_ssa,
+            regalloc::{self, RegisterAllocations},
+        },
     },
     file_loader::FileLoader,
     grammar,
@@ -30,6 +33,7 @@ pub const PRELUDE_PATH: &str = "@prelude";
 pub const PRELUDE_SOURCE: &str = include_str!("../stdlib/prelude.tapir");
 
 pub mod analyse;
+mod bytecode_peephole;
 pub(crate) mod constant_eval;
 mod desugar;
 pub mod disassemble;
@@ -316,7 +320,11 @@ pub fn compile_with_loader(
         compiler.compile_function(&function, &registers);
     }
 
-    let bytecode = compiler.finalise();
+    let mut bytecode = compiler.finalise();
+
+    if settings.enable_optimisations {
+        peephole_optimisation(&mut bytecode);
+    }
 
     Ok(CompileOutput {
         bytecode,
