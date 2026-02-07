@@ -1397,20 +1397,15 @@ impl<'input, 'reg> TypeVisitor<'input, 'reg> {
                     Type::Error // void or multi-return method used as expression
                 }
             }
-            ast::ExpressionKind::Spawn { call } => {
-                // Type check the inner call - spawn doesn't care about the call's return value
-                // Extract the call details and type-check arguments without requiring a return value
-                if let ast::ExpressionKind::Call { name, arguments } = &mut call.kind {
-                    self.type_for_call(
-                        call.span,
-                        name,
-                        call.meta.get().copied(),
-                        arguments,
-                        symtab,
-                        diagnostics,
-                    );
-                }
-                // Spawn itself returns Type::Task
+            ast::ExpressionKind::Spawn { name, arguments } => {
+                self.type_for_call(
+                    expression.span,
+                    name,
+                    expression.meta.get().copied(),
+                    arguments,
+                    symtab,
+                    diagnostics,
+                );
                 Type::Task
             }
         }

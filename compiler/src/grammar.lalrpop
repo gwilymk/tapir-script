@@ -496,13 +496,11 @@ Term: Expression<'input> = {
             arguments,
         }.with_span(file_id, start, end),
 
-    // Spawn expression: wraps a function call
+    // Spawn expression: spawns a function call as a concurrent task
     <start: @L> spawn <ident: identifier> "(" <arguments: CommaSeparated<Expression>> ")" <end: @R> =>
         ExpressionKind::Spawn {
-            call: Box::new(ExpressionKind::Call {
-                name: ident,
-                arguments,
-            }.with_span(file_id, start, end))
+            name: ident,
+            arguments,
         }.with_span(file_id, start, end),
 }
 

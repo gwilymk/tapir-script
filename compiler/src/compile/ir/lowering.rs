@@ -893,12 +893,7 @@ impl<'a> BlockVisitor<'a> {
                     });
                 }
             }
-            ast::ExpressionKind::Spawn { call } => {
-                // The call expression should be a Call - extract function info from it
-                let ast::ExpressionKind::Call { arguments, .. } = &call.kind else {
-                    panic!("Spawn should contain a Call expression");
-                };
-
+            ast::ExpressionKind::Spawn { arguments, .. } => {
                 // Evaluate arguments
                 let args = arguments
                     .iter()
@@ -909,9 +904,9 @@ impl<'a> BlockVisitor<'a> {
                     })
                     .collect();
 
-                // Get the function ID from the call expression's metadata
+                // Get the function ID from the expression's metadata
                 let f: InternalOrExternalFunctionId =
-                    *call.meta.get().expect("Should have function IDs by now");
+                    *expr.meta.get().expect("Should have function IDs by now");
 
                 match f {
                     InternalOrExternalFunctionId::Internal(function_id) => {

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use lsp_types::{
     GotoDefinitionResponse, Hover, HoverContents, InlayHint, InlayHintLabel, Location,
     MarkupContent, MarkupKind, ParameterInformation, ParameterLabel, Position,
-    PrepareRenameResponse, SignatureHelp, SignatureInformation, TextEdit, Url, WorkspaceEdit,
+    PrepareRenameResponse, SignatureHelp, SignatureInformation, TextEdit, Uri, WorkspaceEdit,
 };
 
 use crate::state::FileState;
@@ -11,7 +11,7 @@ use crate::util::{offset_to_position, position_to_offset, source_range_to_lsp_ra
 
 pub fn find_definition(
     file_state: &mut FileState,
-    uri: &Url,
+    uri: &Uri,
     position: Position,
 ) -> Option<GotoDefinitionResponse> {
     // Convert position to byte offset
@@ -225,7 +225,7 @@ fn extract_identifier_before(text: &str, pos: usize) -> Option<String> {
 
 pub fn find_references(
     file_state: &mut FileState,
-    uri: &Url,
+    uri: &Uri,
     position: Position,
     include_declaration: bool,
 ) -> Option<Vec<Location>> {
@@ -384,7 +384,7 @@ pub fn prepare_rename(
 
 pub fn find_rename(
     file_state: &mut FileState,
-    uri: &Url,
+    uri: &Uri,
     position: Position,
     new_name: String,
 ) -> Option<WorkspaceEdit> {

@@ -179,8 +179,23 @@ fn extract_from_expression(
                 extract_from_expression(arg, signatures, call_sites);
             }
         }
-        ExpressionKind::Spawn { call } => {
-            extract_from_expression(call, signatures, call_sites);
+        ExpressionKind::Spawn { name, arguments } => {
+            if signatures.contains_key(*name) {
+                let argument_start_offsets: Vec<usize> =
+                    arguments.iter().map(|arg| arg.span.start()).collect();
+                let argument_end_offsets: Vec<usize> =
+                    arguments.iter().map(|arg| arg.span.end()).collect();
+
+                call_sites.push(CallSiteInfo {
+                    function_name: name.to_string(),
+                    arguments_span: expr.span,
+                    argument_start_offsets,
+                    argument_end_offsets,
+                });
+            }
+            for arg in arguments {
+                extract_from_expression(arg, signatures, call_sites);
+            }
         }
         ExpressionKind::UnaryOperation { operand, .. } => {
             extract_from_expression(operand, signatures, call_sites);

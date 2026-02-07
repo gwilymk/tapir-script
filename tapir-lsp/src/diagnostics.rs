@@ -7,7 +7,7 @@ use compiler::Severity;
 use compiler::{AnalysisResult, CompileSettings, FsFileLoader, PRELUDE_PATH, PRELUDE_SOURCE};
 use lsp_server::{Connection, Message, Notification};
 use lsp_types::{
-    Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, PublishDiagnosticsParams, Url,
+    Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity, PublishDiagnosticsParams, Uri,
     notification::{Notification as _, PublishDiagnostics},
 };
 
@@ -16,11 +16,11 @@ use crate::util::source_range_to_lsp_range;
 
 pub fn analyse_and_publish(
     connection: &Connection,
-    uri: Url,
+    uri: Uri,
     text: String,
-    files: &mut HashMap<Url, FileState>,
+    files: &mut HashMap<Uri, FileState>,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
-    let filename = uri.path();
+    let filename = uri.path().as_str();
 
     // When editing the prelude itself, disable prelude loading
     // so the file is treated as the prelude (allowing builtin declarations)
@@ -67,7 +67,7 @@ pub fn analyse_and_publish(
     Ok(())
 }
 
-fn convert_diagnostics(uri: Url, result: &mut AnalysisResult) -> Vec<Diagnostic> {
+fn convert_diagnostics(uri: Uri, result: &mut AnalysisResult) -> Vec<Diagnostic> {
     // Collect diagnostic info first to avoid borrow conflicts
     let diag_info: Vec<_> = result
         .diagnostics

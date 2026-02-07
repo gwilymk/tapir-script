@@ -5,7 +5,7 @@ use lsp_server::{Connection, Message, Notification, Response};
 use lsp_types::{
     DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams, HoverParams,
     InlayHintParams, ReferenceParams, RenameParams, SignatureHelpParams,
-    TextDocumentPositionParams, Url,
+    TextDocumentPositionParams, Uri,
     notification::{DidChangeTextDocument, DidOpenTextDocument, Notification as _},
     request::{
         GotoDefinition, HoverRequest, InlayHintRequest, PrepareRenameRequest, References, Rename,
@@ -23,7 +23,7 @@ use crate::state::FileState;
 pub fn handle_request(
     connection: &Connection,
     request: lsp_server::Request,
-    files: &mut HashMap<Url, FileState>,
+    files: &mut HashMap<Uri, FileState>,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     match request.method.as_str() {
         GotoDefinition::METHOD => {
@@ -157,7 +157,7 @@ pub fn handle_request(
 pub fn handle_notification(
     connection: &Connection,
     notification: Notification,
-    files: &mut HashMap<Url, FileState>,
+    files: &mut HashMap<Uri, FileState>,
 ) -> Result<(), Box<dyn Error + Sync + Send>> {
     match notification.method.as_str() {
         DidOpenTextDocument::METHOD => {

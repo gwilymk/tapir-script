@@ -577,7 +577,9 @@ impl<'input> Expression<'input> {
                     .chain(receiver.all_inner())
                     .chain(arguments.iter().flat_map(|argument| argument.all_inner())),
             ),
-            ExpressionKind::Spawn { call } => Box::new(iter::once(self).chain(call.all_inner())),
+            ExpressionKind::Spawn { arguments, .. } => Box::new(
+                iter::once(self).chain(arguments.iter().flat_map(|argument| argument.all_inner())),
+            ),
         }
     }
 }
@@ -621,7 +623,8 @@ pub enum ExpressionKind<'input> {
 
     /// Spawn a function call as a concurrent task
     Spawn {
-        call: Box<Expression<'input>>,
+        name: &'input str,
+        arguments: Vec<Expression<'input>>,
     },
 }
 

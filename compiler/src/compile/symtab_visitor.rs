@@ -1273,9 +1273,20 @@ impl<'input> SymTabVisitor<'input> {
                     self.visit_expr(argument, diagnostics);
                 }
             }
-            ExpressionKind::Spawn { call } => {
-                // Visit the inner call expression
-                self.visit_expr(call, diagnostics);
+            ExpressionKind::Spawn { name, arguments } => {
+                if let Some(function) = self.function_names.get(*name) {
+                    expr.meta.set(*function);
+                } else {
+                    ErrorKind::UnknownFunction {
+                        name: name.to_string(),
+                    }
+                    .at(expr.span, DiagnosticMessage::UnknownFunctionLabel)
+                    .emit(diagnostics);
+                }
+
+                for argument in arguments {
+                    self.visit_expr(argument, diagnostics);
+                }
             }
             ExpressionKind::Integer(_)
             | ExpressionKind::Fix(_)

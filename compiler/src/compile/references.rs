@@ -310,14 +310,19 @@ fn extract_references_from_expression(
                 );
             }
         }
-        ExpressionKind::Spawn { call } => {
-            extract_references_from_expression(
-                call,
-                symtab,
-                struct_registry,
-                function_spans,
-                references,
-            );
+        ExpressionKind::Spawn { name, arguments } => {
+            if let Some(&def_span) = function_spans.get(name) {
+                references.insert(expr.span, def_span);
+            }
+            for arg in arguments {
+                extract_references_from_expression(
+                    arg,
+                    symtab,
+                    struct_registry,
+                    function_spans,
+                    references,
+                );
+            }
         }
         ExpressionKind::UnaryOperation { operand, .. } => {
             extract_references_from_expression(

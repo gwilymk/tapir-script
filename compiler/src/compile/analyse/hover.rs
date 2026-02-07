@@ -595,15 +595,22 @@ fn extract_from_expression(
                 );
             }
         }
-        ExpressionKind::Spawn { call } => {
-            extract_from_expression(
-                call,
-                symtab,
-                type_table,
-                struct_registry,
-                function_signatures,
-                hover_info,
-            );
+        ExpressionKind::Spawn { arguments, .. } => {
+            if let Some(function_id) = expr.meta.get::<InternalOrExternalFunctionId>()
+                && let Some(sig) = function_signatures.get(function_id)
+            {
+                hover_info.insert(expr.span, sig.clone());
+            }
+            for arg in arguments {
+                extract_from_expression(
+                    arg,
+                    symtab,
+                    type_table,
+                    struct_registry,
+                    function_signatures,
+                    hover_info,
+                );
+            }
         }
         ExpressionKind::UnaryOperation { operand, .. } => {
             extract_from_expression(

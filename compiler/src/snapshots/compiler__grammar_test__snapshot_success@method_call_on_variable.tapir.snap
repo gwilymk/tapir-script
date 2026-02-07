@@ -59,14 +59,8 @@ Script(
               Expression(
                 span: "[span]",
                 kind: Spawn(
-                  call: Expression(
-                    span: "[span]",
-                    kind: Call(
-                      name: "worker",
-                      arguments: [],
-                    ),
-                    meta: {},
-                  ),
+                  name: "worker",
+                  arguments: [],
                 ),
                 meta: {},
               ),

@@ -10,7 +10,7 @@ use std::{collections::HashMap, error::Error};
 use lsp_server::{Connection, Message};
 use lsp_types::{
     HoverProviderCapability, InitializeParams, OneOf, RenameOptions, ServerCapabilities,
-    SignatureHelpOptions, TextDocumentSyncCapability, TextDocumentSyncKind, Url,
+    SignatureHelpOptions, TextDocumentSyncCapability, TextDocumentSyncKind, Uri,
 };
 
 use handlers::{handle_notification, handle_request};
@@ -54,7 +54,7 @@ pub fn run() -> Result<(), Box<dyn Error + Sync + Send>> {
 }
 
 fn main_loop(connection: Connection) -> Result<(), Box<dyn Error + Sync + Send>> {
-    let mut files: HashMap<Url, FileState> = HashMap::new();
+    let mut files: HashMap<Uri, FileState> = HashMap::new();
 
     for msg in &connection.receiver {
         match msg {
