@@ -26,7 +26,7 @@ All instructions are exactly 32 bits. The first 8 bits are always the opcode. Th
 
 ## Registers
 
-The VM uses a register-based model with a growable stack. Registers are addressed relative to a stack offset that changes during function calls.
+The VM uses a register-based model with a stack. Each function begins with a `StackAlloc` instruction that pre-allocates enough stack space for all local registers and call scratch space. Registers are addressed relative to a stack offset that changes during function calls.
 
 - `r0` is special during calls (stores return address + stack offset)
 - Arguments are passed in `r1`, `r2`, `r3`, etc.
@@ -127,12 +127,13 @@ Built-in variables are runtime-provided values accessed by index:
 
 ### Control Flow
 
-| Opcode   | Format | Description                                            |
-| -------- | ------ | ------------------------------------------------------ |
-| `Jump`   | Type 3 | `pc = value`                                           |
-| `JumpIf` | Type 1 | If `r[target] == 0`, skip next instruction (`pc += 1`) |
-| `Wait`   | Type 1 | Yield execution, return `Waiting`                      |
-| `Ret`    | Type 1 | Return from function (see calling convention)          |
+| Opcode       | Format | Description                                                        |
+| ------------ | ------ | ------------------------------------------------------------------ |
+| `StackAlloc` | Type 1 | Ensure stack has at least `target` registers for this call frame   |
+| `Jump`       | Type 3 | `pc = value`                                                       |
+| `JumpIf`     | Type 1 | If `r[target] == 0`, skip next instruction (`pc += 1`)             |
+| `Wait`       | Type 1 | Yield execution, return `Waiting`                                  |
+| `Ret`        | Type 1 | Return from function (see calling convention)                      |
 
 ### Function Calls (Type 1)
 
@@ -212,12 +213,14 @@ The VM maintains multiple execution states (threads). Each `run()` call:
 # fn add(a: int, b: int) -> int { return a + b; }
 # var x = add(3, 5);
 
-0: LoadI r1, 3          # r1 = 3
-1: LoadI r2, 5          # r2 = 5
-2: Call 0               # prepare call, r0 = return info
-3: Jump 5               # jump to function
-4: Mov r1, r1           # (return value already in r1)
+0: StackAlloc 5          # caller needs 5 registers (locals + call scratch)
+1: LoadI r1, 3           # r1 = 3
+2: LoadI r2, 5           # r2 = 5
+3: Call 0                # prepare call, r0 = return info
+4: Jump 7                # jump to function
+5: Mov r1, r1            # (return value already in r1)
 ...
-5: Add r1, r1, r2       # function body: r1 = r1 + r2
-6: Ret                  # return
+7: StackAlloc 4          # callee needs 4 registers
+8: Add r1, r1, r2        # function body: r1 = r1 + r2
+9: Ret                   # return
 ```

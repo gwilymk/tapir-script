@@ -3,20 +3,22 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/extern_call_mixed_with_fn.tapir
 ---
-00000000: extern call 0, 4
-00000001: mov 3, 4
-00000002: mov 1, 3
-00000003: mov 3, 1
-00000004: mov 5, 3
-00000005: call 4
-00000006: jmp 12
-00000007: mov 1, 5
-00000008: mov 2, 1
-00000009: wait
-00000010: ret
+00000000: stackalloc 6
+00000001: extern call 0, 4
+00000002: mov 3, 4
+00000003: mov 1, 3
+00000004: mov 3, 1
+00000005: mov 5, 3
+00000006: call 4
+00000007: jmp 13
+00000008: mov 1, 5
+00000009: mov 2, 1
+00000010: wait
 00000011: ret
-00000012: mov 3, 1
-00000013: loadi 4, 2
-00000014: mul 2, 3, 4
-00000015: mov 1, 2
-00000016: ret
+00000012: ret
+00000013: stackalloc 5
+00000014: mov 3, 1
+00000015: loadi 4, 2
+00000016: mul 2, 3, 4
+00000017: mov 1, 2
+00000018: ret

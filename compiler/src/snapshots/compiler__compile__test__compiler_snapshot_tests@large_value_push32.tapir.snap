@@ -3,11 +3,12 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/large_value_push32.tapir
 ---
-00000000: loadi 1, 8
-00000001: mov 4, 1
-00000002: loadi 1, 1024
-00000003: mov 3, 1
-00000004: loadk 1, 2147483647
-00000006: mov 2, 1
-00000007: ret
+00000000: stackalloc 5
+00000001: loadi 1, 8
+00000002: mov 4, 1
+00000003: loadi 1, 1024
+00000004: mov 3, 1
+00000005: loadk 1, 2147483647
+00000007: mov 2, 1
 00000008: ret
+00000009: ret

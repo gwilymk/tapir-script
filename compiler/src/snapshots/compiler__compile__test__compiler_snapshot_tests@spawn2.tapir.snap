@@ -3,37 +3,39 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/spawn2.tapir
 ---
-00000000: loadi 1, 1
-00000001: loadi 2, 2
-00000002: mov 6, 1
-00000003: mov 7, 2
-00000004: spawn 4, 5, 2
-00000005: jmp 19
-00000006: loadi 1, 0
-00000007: loadi 2, 7
-00000008: mov 6, 1
-00000009: mov 7, 2
-00000010: spawn 3, 5, 2
-00000011: jmp 19
-00000012: wait
+00000000: stackalloc 8
+00000001: loadi 1, 1
+00000002: loadi 2, 2
+00000003: mov 6, 1
+00000004: mov 7, 2
+00000005: spawn 4, 5, 2
+00000006: jmp 20
+00000007: loadi 1, 0
+00000008: loadi 2, 7
+00000009: mov 6, 1
+00000010: mov 7, 2
+00000011: spawn 3, 5, 2
+00000012: jmp 20
 00000013: wait
 00000014: wait
-00000015: loadi 1, 4
-00000016: setprop 1, 0
-00000017: ret
+00000015: wait
+00000016: loadi 1, 4
+00000017: setprop 1, 0
 00000018: ret
-00000019: wait
-00000020: mov 3, 1
-00000021: jumpif 3
-00000022: jmp 24
-00000023: jmp 27
-00000024: wait
-00000025: mov 4, 2
-00000026: jmp 29
+00000019: ret
+00000020: stackalloc 5
+00000021: wait
+00000022: mov 3, 1
+00000023: jumpif 3
+00000024: jmp 26
+00000025: jmp 29
+00000026: wait
 00000027: mov 4, 2
-00000028: jmp 29
-00000029: mov 3, 4
-00000030: setprop 3, 0
-00000031: wait
-00000032: ret
-00000033: ret
+00000028: jmp 31
+00000029: mov 4, 2
+00000030: jmp 31
+00000031: mov 3, 4
+00000032: setprop 3, 0
+00000033: wait
+00000034: ret
+00000035: ret

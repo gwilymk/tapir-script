@@ -3,22 +3,24 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/then.tapir
 ---
-00000000: loadi 1, 7
-00000001: mov 6, 1
-00000002: call 5
-00000003: jmp 16
-00000004: mov 4, 6
-00000005: loadi 4, 77
-00000006: mov 1, 4
-00000007: mov 3, 1
-00000008: loadi 3, 2
-00000009: mov 6, 3
-00000010: call 5
-00000011: jmp 16
-00000012: mov 1, 6
-00000013: mov 2, 1
-00000014: ret
+00000000: stackalloc 7
+00000001: loadi 1, 7
+00000002: mov 6, 1
+00000003: call 5
+00000004: jmp 17
+00000005: mov 4, 6
+00000006: loadi 4, 77
+00000007: mov 1, 4
+00000008: mov 3, 1
+00000009: loadi 3, 2
+00000010: mov 6, 3
+00000011: call 5
+00000012: jmp 17
+00000013: mov 1, 6
+00000014: mov 2, 1
 00000015: ret
-00000016: loadi 2, 3
-00000017: mov 1, 2
-00000018: ret
+00000016: ret
+00000017: stackalloc 3
+00000018: loadi 2, 3
+00000019: mov 1, 2
+00000020: ret

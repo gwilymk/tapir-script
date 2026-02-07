@@ -3,11 +3,12 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/zero_subtraction.tapir
 ---
-00000000: getprop 2, 0
-00000001: neg 1, 2
-00000002: setprop 1, 0
-00000003: getprop 2, 0
-00000004: neg 1, 2
-00000005: setprop 1, 0
-00000006: ret
+00000000: stackalloc 3
+00000001: getprop 2, 0
+00000002: neg 1, 2
+00000003: setprop 1, 0
+00000004: getprop 2, 0
+00000005: neg 1, 2
+00000006: setprop 1, 0
 00000007: ret
+00000008: ret

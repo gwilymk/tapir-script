@@ -3,15 +3,16 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/properties.tapir
 ---
-00000000: loadi 1, 3
-00000001: setprop 1, 0
-00000002: getprop 1, 0
-00000003: loadi 3, 5
-00000004: mul 2, 1, 3
-00000005: loadi 3, 2
-00000006: add 1, 2, 3
-00000007: mov 2, 1
-00000008: mov 1, 2
-00000009: setprop 1, 0
-00000010: ret
+00000000: stackalloc 4
+00000001: loadi 1, 3
+00000002: setprop 1, 0
+00000003: getprop 1, 0
+00000004: loadi 3, 5
+00000005: mul 2, 1, 3
+00000006: loadi 3, 2
+00000007: add 1, 2, 3
+00000008: mov 2, 1
+00000009: mov 1, 2
+00000010: setprop 1, 0
 00000011: ret
+00000012: ret

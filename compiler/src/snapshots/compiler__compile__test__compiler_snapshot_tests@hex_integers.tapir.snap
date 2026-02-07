@@ -3,15 +3,16 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/hex_integers.tapir
 ---
-00000000: loadi 1, 255
-00000001: setprop 1, 0
-00000002: loadi 2, 256
-00000003: loadi 3, 512
-00000004: add 1, 2, 3
-00000005: setprop 1, 0
-00000006: loadk 2, 43981
-00000008: loadi 3, 255
-00000009: bitand 1, 2, 3
-00000010: setprop 1, 0
-00000011: ret
+00000000: stackalloc 4
+00000001: loadi 1, 255
+00000002: setprop 1, 0
+00000003: loadi 2, 256
+00000004: loadi 3, 512
+00000005: add 1, 2, 3
+00000006: setprop 1, 0
+00000007: loadk 2, 43981
+00000009: loadi 3, 255
+00000010: bitand 1, 2, 3
+00000011: setprop 1, 0
 00000012: ret
+00000013: ret

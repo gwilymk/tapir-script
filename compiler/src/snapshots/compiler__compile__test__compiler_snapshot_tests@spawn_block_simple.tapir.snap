@@ -3,11 +3,13 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/spawn_block_simple.tapir
 ---
-00000000: spawn 1, 2, 0
-00000001: jmp 4
-00000002: ret
+00000000: stackalloc 3
+00000001: spawn 1, 2, 0
+00000002: jmp 5
 00000003: ret
-00000004: loadi 1, 42
-00000005: setprop 1, 0
-00000006: ret
-00000007: ret
+00000004: ret
+00000005: stackalloc 2
+00000006: loadi 1, 42
+00000007: setprop 1, 0
+00000008: ret
+00000009: ret

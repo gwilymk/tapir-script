@@ -3,23 +3,24 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/optimise_division_by_subtraction.tapir
 ---
-00000000: loadi 10, 100
-00000001: getprop 7, 0
-00000002: loadi 9, 0
-00000003: mov 6, 10
-00000004: mov 3, 9
-00000005: jmp 6
-00000006: lt 8, 6, 7
-00000007: jumpif 8
-00000008: jmp 10
-00000009: jmp 12
-00000010: setprop 3, 0
-00000011: ret
-00000012: sub 4, 6, 7
-00000013: mov 5, 4
-00000014: addi 1, 3, 1
-00000015: mov 2, 1
-00000016: mov 6, 5
-00000017: mov 3, 2
-00000018: jmp 6
-00000019: ret
+00000000: stackalloc 11
+00000001: loadi 10, 100
+00000002: getprop 7, 0
+00000003: loadi 9, 0
+00000004: mov 6, 10
+00000005: mov 3, 9
+00000006: jmp 7
+00000007: lt 8, 6, 7
+00000008: jumpif 8
+00000009: jmp 11
+00000010: jmp 13
+00000011: setprop 3, 0
+00000012: ret
+00000013: sub 4, 6, 7
+00000014: mov 5, 4
+00000015: addi 1, 3, 1
+00000016: mov 2, 1
+00000017: mov 6, 5
+00000018: mov 3, 2
+00000019: jmp 7
+00000020: ret

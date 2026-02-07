@@ -3,6 +3,7 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/multi_assign_paired.tapir
 ---
-00000000: setpropi 3, 0
-00000001: ret
+00000000: stackalloc 1
+00000001: setpropi 3, 0
 00000002: ret
+00000003: ret

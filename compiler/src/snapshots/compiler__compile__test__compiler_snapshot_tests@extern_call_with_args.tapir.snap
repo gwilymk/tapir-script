@@ -3,13 +3,14 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/extern_call_with_args.tapir
 ---
-00000000: loadi 3, 3
-00000001: loadi 4, 5
-00000002: mov 5, 3
-00000003: mov 6, 4
-00000004: extern call 0, 5
-00000005: mov 1, 5
-00000006: mov 2, 1
-00000007: wait
-00000008: ret
+00000000: stackalloc 7
+00000001: loadi 3, 3
+00000002: loadi 4, 5
+00000003: mov 5, 3
+00000004: mov 6, 4
+00000005: extern call 0, 5
+00000006: mov 1, 5
+00000007: mov 2, 1
+00000008: wait
 00000009: ret
+00000010: ret

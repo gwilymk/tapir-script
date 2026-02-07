@@ -3,17 +3,18 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/variables.tapir
 ---
-00000000: loadi 3, 3
-00000001: mov 1, 3
-00000002: mov 4, 1
-00000003: loadi 5, 2
-00000004: add 3, 4, 5
-00000005: mov 4, 3
-00000006: mov 3, 1
-00000007: mov 1, 4
-00000008: loadi 5, 3
-00000009: mul 4, 1, 5
-00000010: add 1, 3, 4
-00000011: mov 2, 1
-00000012: ret
+00000000: stackalloc 6
+00000001: loadi 3, 3
+00000002: mov 1, 3
+00000003: mov 4, 1
+00000004: loadi 5, 2
+00000005: add 3, 4, 5
+00000006: mov 4, 3
+00000007: mov 3, 1
+00000008: mov 1, 4
+00000009: loadi 5, 3
+00000010: mul 4, 1, 5
+00000011: add 1, 3, 4
+00000012: mov 2, 1
 00000013: ret
+00000014: ret

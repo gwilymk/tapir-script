@@ -376,6 +376,12 @@ impl Compiler {
             });
         }
 
+        let stack_size =
+            max_stack_size(function, register_allocations.first_free_register().0);
+        if stack_size > 0 {
+            self.bytecode.stack_alloc(stack_size);
+        }
+
         self.compile_blocks(function, register_allocations);
 
         // if there is no return value, then no return is required to be compiled so we should add one
@@ -667,6 +673,10 @@ impl Bytecode {
 }
 
 impl Bytecode {
+    fn stack_alloc(&mut self, size: u8) {
+        self.data.push(Type1::stack_alloc(size).encode());
+    }
+
     fn ret(&mut self) {
         self.data.push(Type1::ret().encode());
     }
@@ -815,6 +825,25 @@ impl Bytecode {
         self.data
             .push(Type1::unaryop(opcode, target, operand).encode());
     }
+}
+
+fn max_stack_size(function: &TapIrFunction, first_free: u8) -> u8 {
+    let mut max_extra: u8 = 0;
+    for block in function.blocks() {
+        for instr in block.instrs() {
+            let extra = match instr {
+                TapIr::Call { target, args, .. } => 1 + args.len().max(target.len()) as u8,
+                TapIr::Spawn { args, .. } | TapIr::Trigger { args, .. } => 1 + args.len() as u8,
+                TapIr::CallExternal { target, args, .. } => {
+                    args.len().max(target.len()) as u8
+                }
+                TapIr::CallBuiltin { args, .. } => args.len().max(1) as u8,
+                _ => 0,
+            };
+            max_extra = max_extra.max(extra);
+        }
+    }
+    first_free.saturating_add(max_extra)
 }
 
 // The internal usize here is the index in the bytecode where this label sits

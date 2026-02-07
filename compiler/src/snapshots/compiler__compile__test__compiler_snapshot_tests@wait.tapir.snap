@@ -3,24 +3,25 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/wait.tapir
 ---
-00000000: loadi 1, 5
-00000001: mov 2, 1
-00000002: loadi 1, 3
-00000003: setprop 1, 0
-00000004: wait
-00000005: mov 1, 2
-00000006: loadi 3, 1
-00000007: add 2, 1, 3
-00000008: mov 1, 2
-00000009: mov 2, 1
-00000010: setprop 2, 0
-00000011: wait
-00000012: mov 2, 1
-00000013: loadi 3, 1
-00000014: add 1, 2, 3
-00000015: mov 2, 1
-00000016: mov 1, 2
-00000017: setprop 1, 0
-00000018: wait
-00000019: ret
+00000000: stackalloc 4
+00000001: loadi 1, 5
+00000002: mov 2, 1
+00000003: loadi 1, 3
+00000004: setprop 1, 0
+00000005: wait
+00000006: mov 1, 2
+00000007: loadi 3, 1
+00000008: add 2, 1, 3
+00000009: mov 1, 2
+00000010: mov 2, 1
+00000011: setprop 2, 0
+00000012: wait
+00000013: mov 2, 1
+00000014: loadi 3, 1
+00000015: add 1, 2, 3
+00000016: mov 2, 1
+00000017: mov 1, 2
+00000018: setprop 1, 0
+00000019: wait
 00000020: ret
+00000021: ret

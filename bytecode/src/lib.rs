@@ -74,6 +74,8 @@ pub enum Opcode {
     SetPropI,
     SetGlobalI,
 
+    StackAlloc,
+
     // Type 3
     Jump,
 }
@@ -309,6 +311,10 @@ impl Type1 {
 
     pub const fn set_global(value: u8, global_index: u8) -> Self {
         Self::new2(Opcode::SetGlobal, value, global_index)
+    }
+
+    pub const fn stack_alloc(size: u8) -> Self {
+        Self::new1(Opcode::StackAlloc, size)
     }
 }
 

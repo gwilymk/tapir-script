@@ -3,20 +3,21 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/regalloc_loop.tapir
 ---
-00000000: loadi 7, 3
-00000001: mov 6, 7
-00000002: mov 1, 6
-00000003: jmp 4
-00000004: mov 4, 1
-00000005: mov 5, 4
-00000006: loadi 3, 1
-00000007: jumpif 3
-00000008: jmp 10
-00000009: jmp 12
-00000010: mov 2, 1
-00000011: jmp 14
-00000012: mov 2, 1
-00000013: jmp 14
-00000014: mov 1, 2
-00000015: jmp 4
-00000016: ret
+00000000: stackalloc 8
+00000001: loadi 7, 3
+00000002: mov 6, 7
+00000003: mov 1, 6
+00000004: jmp 5
+00000005: mov 4, 1
+00000006: mov 5, 4
+00000007: loadi 3, 1
+00000008: jumpif 3
+00000009: jmp 11
+00000010: jmp 13
+00000011: mov 2, 1
+00000012: jmp 15
+00000013: mov 2, 1
+00000014: jmp 15
+00000015: mov 1, 2
+00000016: jmp 5
+00000017: ret

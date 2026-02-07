@@ -25,13 +25,9 @@ pub mod __private {
     }
 
     /// Write a value to the stack at the given offset, advancing the offset.
-    /// Resizes the stack if necessary.
     #[inline]
     pub fn write_ret<T: ConvertBetweenTapir>(value: &T, stack: &mut Vec<i32>, offset: &mut usize) {
         let size = T::SIZE;
-        if stack.len() < *offset + size {
-            stack.resize(*offset + size, 0);
-        }
         T::write_to_tapir(value, &mut stack[*offset..*offset + size]);
         *offset += size;
     }

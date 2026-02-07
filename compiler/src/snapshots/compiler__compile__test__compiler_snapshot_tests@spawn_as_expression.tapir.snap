@@ -3,11 +3,13 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/spawn_as_expression.tapir
 ---
-00000000: spawn 1, 2, 0
-00000001: jmp 5
-00000002: setglobal 1, 0
-00000003: ret
+00000000: stackalloc 3
+00000001: spawn 1, 2, 0
+00000002: jmp 6
+00000003: setglobal 1, 0
 00000004: ret
-00000005: wait
-00000006: ret
-00000007: ret
+00000005: ret
+00000006: stackalloc 1
+00000007: wait
+00000008: ret
+00000009: ret

@@ -3,18 +3,20 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/fn_call_many_returns.tapir
 ---
-00000000: call 2
-00000001: jmp 5
-00000002: mov 1, 3
-00000003: ret
+00000000: stackalloc 4
+00000001: call 2
+00000002: jmp 6
+00000003: mov 1, 3
 00000004: ret
-00000005: loadi 1, 3
-00000006: mov 2, 1
-00000007: mov 3, 2
-00000008: loadi 4, 3
-00000009: add 1, 3, 4
-00000010: mov 3, 2
-00000011: loadi 4, 3
-00000012: mul 2, 3, 4
-00000013: loadi 3, 1
-00000014: ret
+00000005: ret
+00000006: stackalloc 5
+00000007: loadi 1, 3
+00000008: mov 2, 1
+00000009: mov 3, 2
+00000010: loadi 4, 3
+00000011: add 1, 3, 4
+00000012: mov 3, 2
+00000013: loadi 4, 3
+00000014: mul 2, 3, 4
+00000015: loadi 3, 1
+00000016: ret

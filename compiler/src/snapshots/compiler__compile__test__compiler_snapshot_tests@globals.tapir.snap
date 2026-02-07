@@ -3,18 +3,19 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/globals.tapir
 ---
-00000000: getglobal 2, 0
-00000001: loadi 3, 1
-00000002: add 1, 2, 3
-00000003: setglobal 1, 0
-00000004: getglobal 1, 0
-00000005: setprop 1, 0
-00000006: wait
-00000007: getglobal 2, 0
-00000008: loadi 3, 1
-00000009: add 1, 2, 3
-00000010: setglobal 1, 0
-00000011: getglobal 1, 0
-00000012: setprop 1, 0
-00000013: ret
+00000000: stackalloc 4
+00000001: getglobal 2, 0
+00000002: loadi 3, 1
+00000003: add 1, 2, 3
+00000004: setglobal 1, 0
+00000005: getglobal 1, 0
+00000006: setprop 1, 0
+00000007: wait
+00000008: getglobal 2, 0
+00000009: loadi 3, 1
+00000010: add 1, 2, 3
+00000011: setglobal 1, 0
+00000012: getglobal 1, 0
+00000013: setprop 1, 0
 00000014: ret
+00000015: ret

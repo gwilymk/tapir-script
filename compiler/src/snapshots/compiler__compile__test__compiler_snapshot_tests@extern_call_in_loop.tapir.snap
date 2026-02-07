@@ -3,17 +3,18 @@ source: compiler/src/compile.rs
 expression: decompiled
 input_file: compiler/src/snapshot_tests/compiler/extern_call_in_loop.tapir
 ---
-00000000: jmp 1
-00000001: extern call 0, 4
-00000002: mov 2, 4
-00000003: loadi 3, 0
-00000004: eq 1, 2, 3
-00000005: jumpif 1
-00000006: jmp 8
+00000000: stackalloc 5
+00000001: jmp 2
+00000002: extern call 0, 4
+00000003: mov 2, 4
+00000004: loadi 3, 0
+00000005: eq 1, 2, 3
+00000006: jumpif 1
 00000007: jmp 9
 00000008: jmp 10
 00000009: jmp 11
-00000010: ret
-00000011: wait
-00000012: jmp 1
-00000013: ret
+00000010: jmp 12
+00000011: ret
+00000012: wait
+00000013: jmp 2
+00000014: ret

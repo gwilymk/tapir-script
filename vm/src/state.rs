@@ -361,6 +361,14 @@ impl State {
                     globals[global_index as usize] = self.get_reg(value);
                 }
 
+                O::StackAlloc => {
+                    type1!(size);
+                    let needed = self.stack_offset + size as usize;
+                    if self.stack.len() < needed {
+                        self.stack.resize(needed, 0);
+                    }
+                }
+
                 O::Jump => {
                     let target = instr >> 8;
                     self.pc = target as usize;
@@ -370,23 +378,17 @@ impl State {
     }
 
     fn set_reg(&mut self, reg: u8, value: i32) {
-        *self.reg(reg) = value;
+        let reg_id = self.reg_id(reg);
+        unsafe { *self.stack.get_unchecked_mut(reg_id) = value; }
     }
 
     fn get_reg(&self, reg: u8) -> i32 {
         let reg_id = self.reg_id(reg);
-        self.stack.get(reg_id).copied().unwrap_or(0)
+        unsafe { *self.stack.get_unchecked(reg_id) }
     }
 
     fn reg_id(&self, reg: u8) -> usize {
         self.stack_offset + reg as usize
-    }
-
-    fn reg(&mut self, reg: u8) -> &mut i32 {
-        let reg_id = self.reg_id(reg);
-        self.stack.resize(self.stack.len().max(reg_id + 1), 0);
-
-        &mut self.stack[reg_id]
     }
 }
 
