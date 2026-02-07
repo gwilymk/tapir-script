@@ -1,34 +1,34 @@
+import collectable_pop;
+
 property position: fix2;
 property target: int2;
 property should_show: bool;
 property frame: int;
 
 global t = 0;
-global start_x: fix;
-global start_y: fix;
+global start: fix2;
 
-fn animate() {
+spawn {
     loop {
         frame = frame + 1;
         wait 2;
     }
-}
+};
 
-spawn animate();
-
-start_x = position.x;
-start_y = position.y;
+start = position;
 
 should_show = true;
 
 var target_x = to_fix(target.x);
 var target_y = to_fix(target.y);
 
-var duration = 90; # frames (1.5 seconds at 60fps)
+var target_fix = fix2(target_x, target_y);
+
+var duration = 180; # frames (3 seconds at 60fps)
 
 # Spiral parameters
-var num_rotations = 2; # number of full spirals
-var max_radius = 40.; # starting spiral radius
+var num_rotations = 6;
+var max_radius = 100.;
 
 loop {
     if t >= duration {
@@ -42,25 +42,22 @@ loop {
     var ease = 1. - (1. - progress) * (1. - progress);
 
     # Base position - linear interpolation from start to target
-    var base_x = start_x + (target_x - start_x) * ease;
-    var base_y = start_y + (target_y - start_y) * ease;
+    var base = start + (target_fix - start) * ease;
 
-    # Spiral offset - radius shrinks as we approach target
-    var radius = max_radius * (1. - progress);
+    # Spiral offset - radius shrinks as we approach target but start at 0
+    var radius = max_radius * (1. - progress) * progress * (1. - progress) * (9. / 4.);
 
     # Angle increases with time for spiral effect
     # sin/cos take 0..1 as input (0..2pi), so num_rotations full rotations
     var angle = to_fix(t) * to_fix(num_rotations) / to_fix(duration);
 
     # Apply spiral offset using sin/cos approximation
-    var spiral_x = radius * cos(angle);
-    var spiral_y = radius * sin(angle);
+    var spiral = radius * fix2(cos(angle), sin(angle));
 
-    position.x = base_x + spiral_x;
-    position.y = base_y + spiral_y;
+    position = base + spiral;
 
     t = t + 1;
-    wait 1;
+    wait;
 }
 
 # Snap to exact target position
@@ -69,11 +66,7 @@ position.y = target_y;
 
 # Arrived at health bar - pop into particles
 var particle_pos = position.round() + int2(8, 8);
-trigger SpawnParticle(particle_pos, 0);
-trigger SpawnParticle(particle_pos, 0);
-trigger SpawnParticle(particle_pos, 0);
-trigger SpawnParticle(particle_pos, 0);
-trigger SpawnParticle(particle_pos, 0);
+collectable_pop(particle_pos);
 
 trigger ScreenShake(2);
 trigger PlaySound(1);

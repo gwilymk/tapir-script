@@ -1,0 +1,7 @@
+fn collectable_pop(particle_position: int2) {
+    trigger SpawnParticle(particle_position, 0);
+    trigger SpawnParticle(particle_position, 0);
+    trigger SpawnParticle(particle_position, 0);
+    trigger SpawnParticle(particle_position, 0);
+    trigger SpawnParticle(particle_position, 0);
+}

@@ -1,3 +1,5 @@
+import collectable_pop;
+
 property anim_frame: int;
 property position: fix2;
 property should_show: bool;
@@ -58,12 +60,7 @@ event fn collide_with_player() {
 
     var particle_position = position.round() + int2(8, 8);
 
-    trigger SpawnParticle(particle_position, 0);
-    trigger SpawnParticle(particle_position, 0);
-    trigger SpawnParticle(particle_position, 0);
-    trigger SpawnParticle(particle_position, 0);
-    trigger SpawnParticle(particle_position, 0);
-
+    collectable_pop(particle_position);
     trigger ScreenShake(3);
     trigger PlaySound(5);
 
