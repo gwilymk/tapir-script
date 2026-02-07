@@ -442,8 +442,7 @@ impl Compiler {
                             self.bytecode.binop(v(target), v(lhs), *op, v(rhs));
                         }
                         ir::Operand::Immediate(imm) => {
-                            self.bytecode
-                                .binop_direct_imm(v(target), v(lhs), *op, *imm);
+                            self.bytecode.binop_direct_imm(v(target), v(lhs), *op, *imm);
                         }
                         ir::Operand::ShiftedImmediate(imm) => {
                             self.bytecode

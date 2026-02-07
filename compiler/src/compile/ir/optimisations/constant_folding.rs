@@ -184,9 +184,7 @@ pub fn constant_folding(
             // are skipped because the type reconstruction would be ambiguous.
             if let Operand::Immediate(_) | Operand::ShiftedImmediate(_) = *rhs {
                 let fold_result = match (lhs_constant, *rhs) {
-                    (Some(C::Int(i1)), Operand::Immediate(v)) => {
-                        Some(int_op(i1, *op, v as i32))
-                    }
+                    (Some(C::Int(i1)), Operand::Immediate(v)) => Some(int_op(i1, *op, v as i32)),
                     (Some(C::Fix(n1)), Operand::ShiftedImmediate(v)) => {
                         Some(fix_op(n1, *op, Fix::from_raw((v as i32) * 16)))
                     }

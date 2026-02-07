@@ -311,8 +311,7 @@ static OPTIMISATIONS: &[(&str, &'static dyn Optimisation)] = &[
     ),
     (
         "immediate_stores",
-        &(immediate_stores::immediate_stores
-            as fn(&mut TapIrFunction) -> OptimisationResult),
+        &(immediate_stores::immediate_stores as fn(&mut TapIrFunction) -> OptimisationResult),
     ),
     (
         "duplicate_loads",
