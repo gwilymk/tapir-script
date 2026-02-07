@@ -260,6 +260,15 @@ impl State {
                     }
                 }
 
+                O::JumpIfNot => {
+                    type1!(test);
+
+                    let test_value = self.get_reg(test);
+                    if test_value != 0 {
+                        self.pc += 1;
+                    }
+                }
+
                 O::Ret => {
                     let value = self.get_reg(0);
                     if value == -1 {

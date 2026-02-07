@@ -418,9 +418,13 @@ impl Compiler {
             }
         };
 
-        for block in function.blocks() {
+        let blocks: Vec<_> = function.blocks().collect();
+
+        for (block_idx, block) in blocks.iter().enumerate() {
             let entry_point = self.bytecode.new_label();
             block_entrypoints.insert(block.id(), entry_point);
+
+            let next_block_id = blocks.get(block_idx + 1).map(|b| b.id());
 
             for instr in block.instrs() {
                 match instr {
@@ -535,19 +539,34 @@ impl Compiler {
 
             match block.block_exit() {
                 ir::BlockExitInstr::JumpToBlock(block_id) => {
-                    let jump = self.bytecode.new_jump();
-                    jumps.push((*block_id, jump));
+                    if Some(*block_id) != next_block_id {
+                        let jump = self.bytecode.new_jump();
+                        jumps.push((*block_id, jump));
+                    }
+                    // else: fall through to next block, no jump needed
                 }
                 ir::BlockExitInstr::ConditionalJump {
                     test,
                     if_true,
                     if_false,
                 } => {
-                    self.bytecode.jump_if(v(test));
-                    let true_jump = self.bytecode.new_jump();
-                    let false_jump = self.bytecode.new_jump();
-
-                    jumps.extend([(*if_true, true_jump), (*if_false, false_jump)]);
+                    if Some(*if_true) == next_block_id {
+                        // True branch follows: invert condition, jump to false
+                        self.bytecode.jump_if_not(v(test));
+                        let false_jump = self.bytecode.new_jump();
+                        jumps.push((*if_false, false_jump));
+                    } else if Some(*if_false) == next_block_id {
+                        // False branch follows: normal condition, jump to true
+                        self.bytecode.jump_if(v(test));
+                        let true_jump = self.bytecode.new_jump();
+                        jumps.push((*if_true, true_jump));
+                    } else {
+                        // Neither branch follows: emit both jumps
+                        self.bytecode.jump_if(v(test));
+                        let true_jump = self.bytecode.new_jump();
+                        let false_jump = self.bytecode.new_jump();
+                        jumps.extend([(*if_true, true_jump), (*if_false, false_jump)]);
+                    }
                 }
                 ir::BlockExitInstr::Return(symbol_ids) => {
                     for (i, symbol) in symbol_ids.iter().enumerate() {
@@ -738,6 +757,10 @@ impl Bytecode {
 
     fn jump_if(&mut self, target: u8) {
         self.data.push(Type1::jump_if(target).encode());
+    }
+
+    fn jump_if_not(&mut self, target: u8) {
+        self.data.push(Type1::jump_if_not(target).encode());
     }
 
     fn get_prop(&mut self, target: u8, prop_index: u8) {

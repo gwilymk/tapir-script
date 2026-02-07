@@ -7,17 +7,14 @@ input_file: compiler/src/snapshot_tests/compiler/regalloc_loop.tapir
 00000001: loadi 7, 3
 00000002: mov 6, 7
 00000003: mov 1, 6
-00000004: jmp 5
-00000005: mov 4, 1
-00000006: mov 5, 4
-00000007: loadi 3, 1
-00000008: jumpif 3
-00000009: jmp 11
-00000010: jmp 13
+00000004: mov 4, 1
+00000005: mov 5, 4
+00000006: loadi 3, 1
+00000007: jumpifnot 3
+00000008: jmp 11
+00000009: mov 2, 1
+00000010: jmp 12
 00000011: mov 2, 1
-00000012: jmp 15
-00000013: mov 2, 1
-00000014: jmp 15
-00000015: mov 1, 2
-00000016: jmp 5
-00000017: ret
+00000012: mov 1, 2
+00000013: jmp 4
+00000014: ret

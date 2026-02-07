@@ -10,11 +10,10 @@ input_file: compiler/src/snapshot_tests/compiler/spawn_block_task_handle.tapir
 00000004: ret
 00000005: ret
 00000006: stackalloc 4
-00000007: jmp 8
-00000008: getprop 2, 0
-00000009: loadi 3, 1
-00000010: add 1, 2, 3
-00000011: setprop 1, 0
-00000012: wait
-00000013: jmp 8
-00000014: ret
+00000007: getprop 2, 0
+00000008: loadi 3, 1
+00000009: add 1, 2, 3
+00000010: setprop 1, 0
+00000011: wait
+00000012: jmp 7
+00000013: ret

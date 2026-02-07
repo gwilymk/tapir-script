@@ -132,6 +132,7 @@ Built-in variables are runtime-provided values accessed by index:
 | `StackAlloc` | Type 1 | Ensure stack has at least `target` registers for this call frame   |
 | `Jump`       | Type 3 | `pc = value`                                                       |
 | `JumpIf`     | Type 1 | If `r[target] == 0`, skip next instruction (`pc += 1`)             |
+| `JumpIfNot`  | Type 1 | If `r[target] != 0`, skip next instruction (`pc += 1`)             |
 | `Wait`       | Type 1 | Yield execution, return `Waiting`                                  |
 | `Ret`        | Type 1 | Return from function (see calling convention)                      |
 

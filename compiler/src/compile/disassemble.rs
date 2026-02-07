@@ -65,6 +65,7 @@ fn disassemble_non_constant(instr: u32, target: &mut dyn Write) -> fmt::Result {
         bytecode::Opcode::Spawn => t1!("spawn", 3),
         bytecode::Opcode::Trigger => t1!("trigger", 2),
         bytecode::Opcode::JumpIf => t1!("jumpif", 1),
+        bytecode::Opcode::JumpIfNot => t1!("jumpifnot", 1),
         bytecode::Opcode::Ret => t1!("ret", 0),
         bytecode::Opcode::Wait => t1!("wait", 0),
         bytecode::Opcode::GetGlobal => t1!("getglobal", 2),

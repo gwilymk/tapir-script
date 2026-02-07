@@ -63,6 +63,7 @@ pub enum Opcode {
     Trigger,
 
     JumpIf,
+    JumpIfNot,
 
     Ret,
     Wait,
@@ -266,6 +267,10 @@ impl Type1 {
 
     pub const fn jump_if(target: u8) -> Self {
         Self::new1(Opcode::JumpIf, target)
+    }
+
+    pub const fn jump_if_not(target: u8) -> Self {
+        Self::new1(Opcode::JumpIfNot, target)
     }
 
     pub const fn call(first_arg: u8) -> Self {
