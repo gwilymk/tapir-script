@@ -52,7 +52,7 @@ fn on_hit() {
 }
 ```
 
-The synthetic function is always top-level, but the spawn *call* stays in place. This works because spawn blocks have no closure capture - the body only sees globals and properties regardless of where the block appears in source.
+The synthetic function is always top-level, but the spawn _call_ stays in place. This works because spawn blocks have no closure capture - the body only sees globals and properties regardless of where the block appears in source.
 
 ### No Closures
 
@@ -68,6 +68,7 @@ fn example() {
 ```
 
 Spawn blocks can only access:
+
 - Global variables
 - Properties
 - Other functions (including calling them)
@@ -102,9 +103,10 @@ spawn __spawn_block_0();
 
 ### Synthetic Function Naming
 
-Synthetic functions use the naming pattern `__spawn_block_<N>` where N is a unique counter. The double underscore prefix:
+Synthetic functions use the naming pattern `@spawn_block_<N>` where N is a unique counter. The @ prefix:
+
 - Indicates compiler-generated code
-- Is reserved (user functions starting with `__` could be disallowed)
+- Is reserved
 - Won't conflict with user-defined names
 
 ### Return Type
@@ -157,6 +159,19 @@ Add spawn block as an expression alongside the existing spawn call:
 
 **File:** `compiler/src/ast.rs`
 
+### String-Owned Names
+
+Change name fields from `&'input str` to `String` so that synthetic (compiler-generated) names don't require leaking. This affects:
+
+- `Function.name`: `&'input str` → `String`
+- `ExpressionKind::Call { name }`: `&'input str` → `String`
+
+The grammar produces these via `.to_string()` at parse time. This is a small cost — names are short and allocated once.
+
+Other `&'input str` fields (e.g. `Variable`, `TypeWithLocation.name`, `BuiltinFunction.name`, `ExternFunctionDefinition.name`) stay borrowed since they always come from source text.
+
+### SpawnBlock Variant
+
 Add a new expression variant for spawn blocks:
 
 ```rust
@@ -172,69 +187,177 @@ pub enum ExpressionKind<'input> {
 }
 ```
 
-## Desugaring Pass
+## Desugaring Infrastructure
 
 **File:** `compiler/src/compile/desugar.rs` (new file)
 
-Create a desugaring pass that runs after parsing but before symbol resolution. The pass:
+Rather than a single monolithic desugarer, we provide a `DesugarPass` trait and shared mutable AST walking functions. Each desugaring (spawn blocks now, `loop <expr> { }` and `else if` later) is a separate trait implementation. This addresses the lack of a mutable equivalent to `all_inner` — instead of adding `all_inner_mut()`, individual passes call shared `walk_*` functions in their default arms.
 
-1. Walks the AST looking for `SpawnBlock` expressions
-2. For each spawn block:
-   a. Generate a unique function name
-   b. Create a synthetic `FnDeclaration` with the block's body
-   c. Replace the `SpawnBlock` with a `Spawn { call }` expression
-3. Collect all synthetic functions
-4. Add them to the module's function declarations
+### The `DesugarPass` Trait
 
 ```rust
-pub struct Desugarer {
-    spawn_block_counter: u32,
+/// A desugaring pass that transforms the AST before symbol resolution.
+///
+/// Implement this trait for each desugaring transformation. The default
+/// methods recurse into children via `walk_*` free functions — override
+/// only the methods relevant to your transformation.
+pub trait DesugarPass<'input> {
+    fn visit_expression(&mut self, expr: &mut Expression<'input>) {
+        walk_expression(self, expr);
+    }
+
+    fn visit_statement(&mut self, stmt: &mut Statement<'input>) {
+        walk_statement(self, stmt);
+    }
+
+    /// Called after traversal to inject any new top-level items (e.g. synthetic functions).
+    fn finish(self, module: &mut Script<'input>);
+}
+```
+
+### Shared Walking Functions
+
+Free functions that handle the recursive traversal via mutual recursion with the trait methods. `walk_expression` calls `pass.visit_expression()` (not `walk_expression`) on each child — this ensures the pass's overridden method fires at every level. The default `visit_expression` calls `walk_expression`, completing the cycle: `visit → walk → visit → walk → ...` down the tree.
+
+```rust
+pub fn walk_expression<'input>(pass: &mut impl DesugarPass<'input>, expr: &mut Expression<'input>) {
+    match &mut expr.kind {
+        ExpressionKind::BinaryOperation { lhs, rhs, .. } => {
+            pass.visit_expression(lhs);
+            pass.visit_expression(rhs);
+        }
+        ExpressionKind::UnaryOperation { operand, .. } => {
+            pass.visit_expression(operand);
+        }
+        ExpressionKind::Call { arguments, .. } => {
+            for arg in arguments {
+                pass.visit_expression(arg);
+            }
+        }
+        ExpressionKind::Spawn { call } => {
+            pass.visit_expression(call);
+        }
+        ExpressionKind::SpawnBlock { body } => {
+            for stmt in body {
+                pass.visit_statement(stmt);
+            }
+        }
+        ExpressionKind::FieldAccess { base, .. } => {
+            pass.visit_expression(base);
+        }
+        ExpressionKind::MethodCall { receiver, arguments, .. } => {
+            pass.visit_expression(receiver);
+            for arg in arguments {
+                pass.visit_expression(arg);
+            }
+        }
+        // Leaves — nothing to recurse into
+        ExpressionKind::Integer(_)
+        | ExpressionKind::Fix(_)
+        | ExpressionKind::Bool(_)
+        | ExpressionKind::Variable(_)
+        | ExpressionKind::Nop
+        | ExpressionKind::Error => {}
+    }
+}
+
+pub fn walk_statement<'input>(pass: &mut impl DesugarPass<'input>, stmt: &mut Statement<'input>) {
+    match &mut stmt.kind {
+        StatementKind::Expression { expression } => pass.visit_expression(expression),
+        StatementKind::VariableDeclaration { values, .. } => {
+            for val in values { pass.visit_expression(val); }
+        }
+        StatementKind::Assignment { values, .. } => {
+            for val in values { pass.visit_expression(val); }
+        }
+        StatementKind::Wait { frames } => {
+            if let Some(expr) = frames { pass.visit_expression(expr); }
+        }
+        StatementKind::If { condition, true_block, false_block } => {
+            pass.visit_expression(condition);
+            for s in true_block { pass.visit_statement(s); }
+            for s in false_block { pass.visit_statement(s); }
+        }
+        StatementKind::Loop { block } | StatementKind::Block { block } => {
+            for s in block { pass.visit_statement(s); }
+        }
+        StatementKind::Return { values } => {
+            for val in values { pass.visit_expression(val); }
+        }
+        StatementKind::Trigger { arguments, .. } => {
+            for arg in arguments { pass.visit_expression(arg); }
+        }
+        StatementKind::Continue | StatementKind::Break
+        | StatementKind::Nop | StatementKind::Error => {}
+    }
+}
+
+/// Run a desugaring pass over a module. Walks all top-level statements
+/// and function bodies, then calls `finish` to inject any synthetic items.
+pub fn run_desugar_pass<'input>(mut pass: impl DesugarPass<'input>, module: &mut Script<'input>) {
+    for top_level in &mut module.statements {
+        match top_level {
+            TopLevelStatement::Statement(stmt) => pass.visit_statement(stmt),
+            TopLevelStatement::FunctionDefinition(f) => {
+                for stmt in &mut f.statements {
+                    pass.visit_statement(stmt);
+                }
+            }
+            _ => {}
+        }
+    }
+    pass.finish(module);
+}
+```
+
+### Spawn Block Desugarer
+
+The spawn block transformation as a `DesugarPass` implementation:
+
+```rust
+pub struct SpawnBlockDesugarer {
+    counter: u32,
     synthetic_functions: Vec<TopLevelStatement<'input>>,
 }
 
-impl Desugarer {
-    pub fn desugar_module(&mut self, module: &mut Module<'input>) {
-        // Walk all top-level statements and functions
-        for stmt in &mut module.statements {
-            self.desugar_statement(stmt);
-        }
+impl<'input> DesugarPass<'input> for SpawnBlockDesugarer {
+    fn visit_expression(&mut self, expr: &mut Expression<'input>) {
+        // Recurse first (bottom-up) so nested spawn blocks are handled
+        walk_expression(self, expr);
 
-        // Append synthetic functions to the module
-        module.statements.extend(self.synthetic_functions.drain(..));
+        if let ExpressionKind::SpawnBlock { body } = &mut expr.kind {
+            let name = format!("@spawn_block_{}", self.counter);
+            self.counter += 1;
+
+            let fn_decl = Function {
+                name: name.clone(),
+                statements: std::mem::take(body),
+                arguments: vec![],
+                return_types: FunctionReturn::default(),
+                span: expr.span,
+                kind: FunctionKind::Function,
+                modifiers: FunctionModifiers::default(),
+                meta: Metadata::default(),
+            };
+
+            self.synthetic_functions.push(TopLevelStatement::FunctionDefinition(fn_decl));
+
+            expr.kind = ExpressionKind::Spawn {
+                call: Box::new(ExpressionKind::Call {
+                    name,
+                    arguments: vec![],
+                }.with_span(expr.span.file_id, expr.span.start, expr.span.end))
+            };
+        }
     }
 
-    fn desugar_expression(&mut self, expr: &mut Expression<'input>) {
-        match &mut expr.kind {
-            ExpressionKind::SpawnBlock { body } => {
-                // Generate unique function name
-                let name = format!("__spawn_block_{}", self.spawn_block_counter);
-                self.spawn_block_counter += 1;
-
-                // Create synthetic function
-                let fn_decl = FnDeclaration {
-                    name: /* synthetic ident with name */,
-                    parameters: vec![],
-                    return_type: None,
-                    body: std::mem::take(body),
-                    // ...
-                };
-
-                self.synthetic_functions.push(TopLevelStatement::Fn(fn_decl));
-
-                // Replace SpawnBlock with Spawn { call }
-                expr.kind = ExpressionKind::Spawn {
-                    call: Box::new(ExpressionKind::Call {
-                        name: /* synthetic ident with name */,
-                        arguments: vec![],
-                    }.with_span(expr.span.file_id, ...))
-                };
-            }
-            // Recurse into other expressions...
-            _ => { /* visit children */ }
-        }
+    fn finish(self, module: &mut Script<'input>) {
+        module.statements.extend(self.synthetic_functions);
     }
 }
 ```
+
+Note: the pass recurses into children _before_ checking for `SpawnBlock`, so nested spawn blocks (e.g. a spawn block inside a spawn block's body) are handled bottom-up.
 
 ### Span Handling
 
@@ -249,16 +372,17 @@ This ensures errors inside spawn blocks point to the correct source location.
 
 **File:** `compiler/src/compile/compile.rs`
 
-Run desugaring after parsing, before symbol resolution:
+Run desugaring after parsing, before symbol resolution. Each desugar pass is run independently via `run_desugar_pass`:
 
 ```rust
 pub fn compile(source: &str, ...) -> Result<...> {
     // 1. Parse
     let mut module = parse(source)?;
 
-    // 2. NEW: Desugar spawn blocks into synthetic functions
-    let mut desugarer = Desugarer::new();
-    desugarer.desugar_module(&mut module);
+    // 2. NEW: Desugar
+    run_desugar_pass(SpawnBlockDesugarer::new(), &mut module);
+    // Future: run_desugar_pass(LoopCountDesugarer::new(), &mut module);
+    // Future: run_desugar_pass(ElseIfDesugarer::new(), &mut module);
 
     // 3. Build symbol table (existing)
     let symtab = build_symbol_table(&module, ...)?;
@@ -325,6 +449,7 @@ Show that spawn blocks create the expected AST structure before desugaring.
 Snapshot tests showing the transformation:
 
 **Input:**
+
 ```tapir
 spawn {
     wait;
@@ -332,11 +457,12 @@ spawn {
 ```
 
 **After desugaring:**
+
 ```tapir
-fn __spawn_block_0() {
+fn @spawn_block_0() {
     wait;
 }
-spawn __spawn_block_0();
+spawn @spawn_block_0();
 ```
 
 ### Type Checking Tests
@@ -408,6 +534,14 @@ spawn { wait; };
 
 ## Implementation Order
 
+### Phase 0: String-Owned Names
+
+1. **ast.rs**: Change `Function.name` and `Call.name` from `&'input str` to `String`
+2. **grammar.lalrpop**: Add `.to_string()` at parse sites for these fields
+3. **Fix compilation**: Update all uses across symtab_visitor, type_visitor, IR lowering, etc.
+
+**Compilable**: Yes - no behavior change, just ownership
+
 ### Phase 1: Grammar and AST
 
 1. **ast.rs**: Add `SpawnBlock { body: Vec<Statement> }` to `ExpressionKind`
@@ -416,13 +550,14 @@ spawn { wait; };
 
 **Compilable**: No - will fail at later stages without desugaring
 
-### Phase 2: Desugaring Pass
+### Phase 2: Desugaring Infrastructure + Spawn Block Pass
 
-1. **desugar.rs**: Create new desugaring module
-2. **desugar.rs**: Implement AST walker for expressions and statements
-3. **desugar.rs**: Transform `SpawnBlock` into synthetic function + spawn call
-4. **compile.rs**: Integrate desugaring pass before symbol resolution
-5. **Tests**: Desugaring snapshot tests
+1. **desugar.rs**: Create new desugaring module with `DesugarPass` trait and `walk_*` functions
+2. **desugar.rs**: Implement `run_desugar_pass` driver
+3. **desugar.rs**: Implement `SpawnBlockDesugarer` as a `DesugarPass`
+4. **compile.rs**: Integrate `run_desugar_pass(SpawnBlockDesugarer::new(), &mut module)` before symbol resolution
+5. **ast.rs**: Add `unreachable!()` for `SpawnBlock` in `all_inner` and other expression matchers
+6. **Tests**: Desugaring snapshot tests
 
 **Compilable**: Yes - spawn blocks work end-to-end
 
@@ -563,3 +698,16 @@ This would require significant VM changes for task result communication.
 ## Implementation Notes
 
 **Grammar verified (pre-implementation):** Added the spawn block grammar rule and `SpawnBlock` AST variant as a test. The LALRPOP grammar compiled without conflicts, and `spawn { ... }` parsed correctly while `spawn function()` continued to work. The changes were reverted after verification.
+
+**SpawnBlock in downstream passes:** Yes — `SpawnBlock` is fully eliminated by the desugaring pass, so later stages never see it. The type checker, IR lowering, `all_inner`, and any other match on `ExpressionKind` should add an `unreachable!("SpawnBlock should have been desugared")` arm. This:
+
+- Documents the intent clearly
+- Catches bugs immediately if desugaring is ever accidentally skipped
+- Satisfies exhaustiveness checking without silently ignoring the variant
+
+```rust
+// In type_visitor.rs, ir/lowering.rs, all_inner(), etc:
+ExpressionKind::SpawnBlock { .. } => {
+    unreachable!("SpawnBlock should have been desugared before this point")
+}
+```
