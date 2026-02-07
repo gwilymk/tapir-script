@@ -67,6 +67,23 @@ The VM uses a register-based model with a growable stack. Registers are addresse
 
 Note: Shift amounts are masked to 0-31 to match Rust's behavior.
 
+### Immediate Arithmetic (Type 1: `r[target] = r[a] op b`)
+
+These use the Type 1 format but the `b` field is an unsigned 8-bit immediate value (0–255) rather than a register index.
+
+| Opcode   | Operation                                               |
+| -------- | ------------------------------------------------------- |
+| `AddI`   | `a + b`                                                 |
+| `SubI`   | `a - b`                                                 |
+| `MulI`   | `a * b`                                                 |
+| `DivI`   | `a.div_euclid(b)` (Euclidean division)                  |
+| `FixAddI`| `a + (b << 4)` (fixed-point add with integer immediate) |
+| `FixSubI`| `a - (b << 4)` (fixed-point sub with integer immediate) |
+| `FixMulI`| `(a * b) >> 4` (fixed-point multiply)                   |
+| `FixDivI`| `(a << 4) / b` (fixed-point divide)                     |
+| `ShlI`   | `a << (b & 31)` (left shift)                            |
+| `ShrI`   | `a >> (b & 31)` (right shift signed)                    |
+
 ### Comparison (Type 1: `r[target] = (r[a] op r[b]) ? 1 : 0`)
 
 | Opcode | Operation |
