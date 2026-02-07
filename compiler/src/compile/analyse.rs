@@ -88,16 +88,22 @@ pub fn analyse(
     let functions = extract_functions(&ast, &symtab);
 
     // Extract references from the AST
-    let references = extract_references(&ast, &symtab, &struct_registry);
+    let mut references = extract_references(&ast, &symtab, &struct_registry);
 
     // Extract hover information
-    let hover_info = extract_hover_info(&ast, &symtab, &type_table, &struct_registry, &comments);
+    let mut hover_info =
+        extract_hover_info(&ast, &symtab, &type_table, &struct_registry, &comments);
 
     // Extract signature help information
-    let (signatures, call_sites) = extract_signature_help(&ast);
+    let (signatures, mut call_sites) = extract_signature_help(&ast);
 
     // Extract inlay hints for variable types
-    let inlay_hints = extract_inlay_hints(&ast, &symtab, &type_table, &struct_registry);
+    let inlay_hints = extract_inlay_hints(&ast, &symtab, &type_table, &struct_registry, file_id);
+
+    // Filter analysis data to only include entries from the main file
+    hover_info.retain(|span, _| span.file_id == file_id);
+    references.retain(|span, _| span.file_id == file_id);
+    call_sites.retain(|cs| cs.arguments_span.file_id == file_id);
 
     AnalysisResult {
         diagnostics,
@@ -254,7 +260,20 @@ pub fn analyse_with_loader(
     let comments = {
         let mut lexer = Lexer::new(main_source, main_file_id);
         let _ = lexer.iter().count(); // Consume all tokens to populate comment table
-        lexer.into_comment_table()
+        let mut comments = lexer.into_comment_table();
+
+        // Also collect prelude comments so doc comments on prelude functions
+        // are available when hovering over calls to them in user code
+        if let Some(prelude_id) = prelude_file_id {
+            let prelude_source = file_loader
+                .load(Path::new(PRELUDE_PATH))
+                .unwrap_or(PRELUDE_SOURCE);
+            let mut prelude_lexer = Lexer::new(prelude_source, prelude_id);
+            let _ = prelude_lexer.iter().count();
+            comments.merge_from(prelude_lexer.into_comment_table());
+        }
+
+        comments
     };
 
     // Continue with analysis
@@ -273,16 +292,23 @@ pub fn analyse_with_loader(
     let functions = extract_functions(&ast, &symtab);
 
     // Extract references from the AST
-    let references = extract_references(&ast, &symtab, &struct_registry);
+    let mut references = extract_references(&ast, &symtab, &struct_registry);
 
     // Extract hover information
-    let hover_info = extract_hover_info(&ast, &symtab, &type_table, &struct_registry, &comments);
+    let mut hover_info =
+        extract_hover_info(&ast, &symtab, &type_table, &struct_registry, &comments);
 
     // Extract signature help information
-    let (signatures, call_sites) = extract_signature_help(&ast);
+    let (signatures, mut call_sites) = extract_signature_help(&ast);
 
     // Extract inlay hints for variable types
-    let inlay_hints = extract_inlay_hints(&ast, &symtab, &type_table, &struct_registry);
+    let inlay_hints =
+        extract_inlay_hints(&ast, &symtab, &type_table, &struct_registry, main_file_id);
+
+    // Filter analysis data to only include entries from the main file
+    hover_info.retain(|span, _| span.file_id == main_file_id);
+    references.retain(|span, _| span.file_id == main_file_id);
+    call_sites.retain(|cs| cs.arguments_span.file_id == main_file_id);
 
     AnalysisResult {
         diagnostics,
@@ -647,5 +673,132 @@ mod test {
         for input in inputs {
             let _ = analyse("test.tapir", input, &default_settings());
         }
+    }
+
+    fn no_prelude_settings() -> CompileSettings {
+        CompileSettings {
+            available_fields: None,
+            enable_optimisations: false,
+            enable_prelude: false,
+            has_event_type: true,
+        }
+    }
+
+    /// Find hover info by name in the analysis result.
+    fn find_hover<'a>(result: &'a AnalysisResult, name: &str) -> Option<&'a HoverInfo> {
+        result.hover_info.values().find(|info| info.name == name)
+    }
+
+    #[test]
+    fn doc_comment_on_function() {
+        let input = "\
+## Adds two numbers together.
+fn add(a: int, b: int) -> int {
+    return a + b;
+}
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "add").expect("should have hover for add");
+        assert_eq!(
+            hover.doc_comment.as_deref(),
+            Some("Adds two numbers together.")
+        );
+    }
+
+    #[test]
+    fn doc_comment_on_method() {
+        let input = "\
+struct Point { x: int, y: int }
+
+## Returns the sum of both components.
+fn Point.sum(self) -> int {
+    return self.x + self.y;
+}
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "sum").expect("should have hover for sum");
+        assert_eq!(
+            hover.doc_comment.as_deref(),
+            Some("Returns the sum of both components.")
+        );
+    }
+
+    #[test]
+    fn doc_comment_multi_line() {
+        let input = "\
+## Line one.
+## Line two.
+fn test() { }
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "test").expect("should have hover for test");
+        assert_eq!(hover.doc_comment.as_deref(), Some("Line one.\nLine two."));
+    }
+
+    #[test]
+    fn no_doc_comment_when_separated_by_blank_line() {
+        let input = "\
+## Not attached.
+
+fn test() { }
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "test").expect("should have hover for test");
+        assert_eq!(hover.doc_comment, None);
+    }
+
+    #[test]
+    fn doc_comment_on_property() {
+        let input = "\
+## The player's health.
+property health: int;
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "health").expect("should have hover for health");
+        assert_eq!(hover.doc_comment.as_deref(), Some("The player's health."));
+    }
+
+    #[test]
+    fn doc_comment_on_global() {
+        let input = "\
+## Maximum speed.
+global max_speed: int = 10;
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "max_speed").expect("should have hover for max_speed");
+        assert_eq!(hover.doc_comment.as_deref(), Some("Maximum speed."));
+    }
+
+    #[test]
+    fn doc_comment_on_struct() {
+        let input = "\
+## A 2D point.
+struct Point { x: int, y: int }
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "Point").expect("should have hover for Point");
+        assert_eq!(hover.doc_comment.as_deref(), Some("A 2D point."));
+    }
+
+    #[test]
+    fn regular_comment_is_not_doc() {
+        let input = "\
+# Just a regular comment.
+fn test() { }
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "test").expect("should have hover for test");
+        assert_eq!(hover.doc_comment, None);
+    }
+
+    #[test]
+    fn doc_comment_on_event_fn() {
+        let input = "\
+## Called on start.
+event fn on_start() { }
+";
+        let result = analyse("test.tapir", input, &no_prelude_settings());
+        let hover = find_hover(&result, "on_start").expect("should have hover for on_start");
+        assert_eq!(hover.doc_comment.as_deref(), Some("Called on start."));
     }
 }

@@ -100,9 +100,19 @@ impl<'input> CommentTable<'input> {
             .map(|(_, src)| *src)
     }
 
+    /// Find doc comments (`##`) attached to the item at the given span.
+    ///
+    /// Searches backwards from the start of the line containing `item` for
+    /// consecutive doc comments with only whitespace between them.
     pub fn doc_for_item(&self, item: Span) -> Option<String> {
         let source = self.source_for(item.file_id)?;
-        let mut current_start = item.start;
+
+        // Start searching from the beginning of the line containing the item,
+        // not the item span itself. Item spans (e.g., for functions) may start
+        // mid-line after keywords like `fn Type.`, but the doc comment sits
+        // before the keyword on the same line.
+        let mut current_start = source[..item.start].rfind('\n').map(|p| p + 1).unwrap_or(0);
+
         let mut doc_lines = vec![];
 
         loop {
@@ -112,7 +122,11 @@ impl<'input> CommentTable<'input> {
                 .filter(|c| c.span.file_id == item.file_id)
                 .filter(|c| c.kind == CommentKind::Doc)
                 .filter(|c| c.span.end <= current_start)
-                .filter(|c| source[c.span.end..current_start].trim().is_empty())
+                .filter(|c| {
+                    let between = &source[c.span.end..current_start];
+                    between.trim().is_empty()
+                        && between.chars().filter(|&ch| ch == '\n').count() <= 1
+                })
                 .max_by_key(|c| c.span.end);
 
             if let Some(comment) = matching {

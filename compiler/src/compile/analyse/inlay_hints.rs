@@ -1,5 +1,6 @@
 use crate::{
     ast::{Script, Statement, StatementKind, SymbolId},
+    tokens::FileId,
     types::{StructRegistry, Type},
 };
 
@@ -14,10 +15,14 @@ pub fn extract_inlay_hints(
     symtab: &SymTab<'_>,
     type_table: &TypeTable<'_>,
     struct_registry: &StructRegistry,
+    main_file_id: FileId,
 ) -> Vec<InlayHintInfo> {
     let mut hints = Vec::new();
 
     for func in &ast.functions {
+        if func.span.file_id != main_file_id {
+            continue;
+        }
         extract_from_statements(
             &func.statements,
             symtab,
